@@ -11,12 +11,65 @@ class DirectMessageEvents(commands.Cog):
 
     @commands.Cog.listener()
     async def on_message(self, message):
-        if message.author.bot:
+        if message.author.bot or not isinstance(message.channel, discord.DMChannel):
             return
         prefix = self.bot.config.default_prefix
         if message.content.startswith(prefix):
             return
-        # self.bot.guilds.
+
+        def member_in_guild(guild2):
+            if guild2.get_member(message.author.id) is not None:
+                return True
+            else:
+                return False
+
+        def channel_in_guild(channel2):
+            if channel2.name == str(message.author.id) and channel2.category_id in self.bot.all_category:
+                return True
+            else:
+                return False
+
+        guilds = filter(member_in_guild, self.bot.guilds)
+        guild_list = {}
+        for guild in guilds:
+            try:
+                channel = next(filter(channel_in_guild, guild.text_channels))
+            except StopIteration:
+                channel = None
+            if not channel:
+                guild_list[guild.id] = False
+            else:
+                guild_list[guild.id] = True
+        if len(guild_list) == 0:
+            return await message.channel.send(
+                embed=discord.Embed(
+                    title="No Server Found",
+                    description="None of the servers that you are in has setup ModMail yet. If you expect to see "
+                                "something here and you don't know what might have went wrong, please join our "
+                                f"support server with the command `{prefix}support`.",
+                    color=self.bot.error_colour,
+                )
+            )
+        embeds = []
+        current_embed = None
+        for guild, existing in guild_list:
+            if not current_embed:
+                current_embed = discord.Embed(
+                    title="Choose Server",
+                    description="Select and confirm the server you want this message to be sent to.",
+                    color=self.bot.primary_colour,
+                )
+                current_embed.set_footer(text="Use the reactions to flip pages.")
+            current_embed.add_field(
+                name=guild,
+                value=("Create a new ticket." if existing is False else "")
+            )
+            if len(current_embed.fields) == 10:
+                embeds.append(current_embed)
+                current_embed = None
+
+
+
         member = message.guild.get_member(int(message.channel.name))
         if member is None:
             return await message.channel.send(
