@@ -232,6 +232,40 @@ class Owner(commands.Cog):
 
     @checks.is_owner()
     @commands.command(
+        description="Get a list of servers with the sepcified name.",
+        usage="findserver <name>",
+        hidden=True,
+    )
+    async def findserver(self, ctx, *, name: str):
+        guilds = []
+        for guild in self.bot.guilds:
+            if guild.name.lower().count(name) > 0:
+                guilds.append(f"{guild.name} `{guild.id}`")
+        if len(guilds) == 0:
+            await ctx.send(
+                embed=discord.Embed(
+                    description="No such guild was found.",
+                    color=self.bot.primary_colour,
+                )
+            )
+        else:
+            try:
+                await ctx.send(
+                    embed=discord.Embed(
+                        description="\n".join(guilds),
+                        color=self.bot.primary_colour,
+                    )
+                )
+            except discord.HTTPException:
+                await ctx.send(
+                    embed=discord.Embed(
+                        description="The message is too long to be sent.",
+                        color=self.bot.primary_colour,
+                    )
+                )
+
+    @checks.is_owner()
+    @commands.command(
         description="Create an invite to the specified server.",
         usage="createinvite <server id>",
         hidden=True,
@@ -240,9 +274,10 @@ class Owner(commands.Cog):
         for guild in self.bot.guilds:
             if guild.id == guild_id:
                 try:
+                    invite = (await guild.invites())[0]
                     return await ctx.send(
                         embed=discord.Embed(
-                            description=(await guild.invites())[0],
+                            description=invite.url,
                             color=self.bot.primary_colour,
                         )
                     )
