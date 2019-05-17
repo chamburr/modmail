@@ -221,7 +221,7 @@ class Paginator(Session):
 
     def __init__(self, *, length: int = 10, entries: list = None,
                  extra_pages: list = None, prefix: str = '', suffix: str = '', format: str = '',
-                 use_defaults: bool = True, embed: bool = True, choose_defaults: bool = False,
+                 use_defaults: bool = True, embed: bool = True,
                  joiner: str = '\n', timeout: int = 180):
         super().__init__()
         self._defaults = {(0, '⏮'): Button(emoji='⏮', position=0, callback=partial(self._default_indexer, 'start')),
@@ -249,7 +249,6 @@ class Paginator(Session):
         self.format = format
         self.joiner = joiner
         self.use_defaults = use_defaults
-        self.choose_defaults = choose_defaults
         self.use_embed = embed
 
     def chunker(self):
@@ -263,18 +262,7 @@ class Paginator(Session):
 
     async def start(self, ctx: commands.Context, page=None):
         """Start our Paginator session."""
-        if self.choose_defaults:
-            self._defaults[(5, '1️⃣')] = Button(emoji='1️⃣', position=5, callback=partial(self._default_chooser, 1))
-            self._defaults[(6, '2️⃣')] = Button(emoji='2️⃣', position=6, callback=partial(self._default_chooser, 2))
-            self._defaults[(7, '3️⃣')] = Button(emoji='3️⃣', position=7, callback=partial(self._default_chooser, 3))
-            self._defaults[(8, '4️⃣')] = Button(emoji='4️⃣', position=8, callback=partial(self._default_chooser, 4))
-            self._defaults[(9, '5️⃣')] = Button(emoji='5️⃣', position=9, callback=partial(self._default_chooser, 5))
-            self._defaults[(10, '6️⃣')] = Button(emoji='6️⃣', position=10, callback=partial(self._default_chooser, 6))
-            self._defaults[(11, '7️⃣')] = Button(emoji='7️⃣', position=11, callback=partial(self._default_chooser, 7))
-            self._defaults[(12, '8️⃣')] = Button(emoji='8️⃣', position=12, callback=partial(self._default_chooser, 8))
-            self._defaults[(13, '9️⃣')] = Button(emoji='9️⃣', position=13, callback=partial(self._default_chooser, 9))
-            self._defaults[(14, '🔟')] = Button(emoji='🔟', position=14, callback=partial(self._default_chooser, 10))
-        elif not self.use_defaults:
+        if not self.use_defaults:
             if not self._buttons:
                 raise AttributeError('Session has no buttons.')
 
@@ -345,9 +333,6 @@ class Paginator(Session):
             await self.page.edit(embed=self._pages[self._index])
         else:
             await self.page.edit(content=self._pages[self._index])
-
-    async def _default_chooser(self, control, ctx):
-        pass
 
 
 def button(emoji: str, *, try_remove=True, position: int = 666):
