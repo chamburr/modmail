@@ -19,13 +19,25 @@ class Events(commands.Cog):
             activity=discord.Game(name=f"DM to Contact Staff | {self.bot.config.default_prefix}help")
         )
         event_channel = self.bot.get_channel(self.bot.config.event_channel)
-        await event_channel.send(embed=discord.Embed(title="Bot Ready", color=0x00FF00))
+        await event_channel.send(
+            embed=discord.Embed(
+                title="Bot Ready",
+                color=0x00FF00,
+                timestamp=datetime.datetime.utcnow(),
+            )
+        )
 
     @commands.Cog.listener()
     async def on_shard_ready(self, shard):
         try:
             event_channel = self.bot.get_channel(self.bot.config.event_channel)
-            await event_channel.send(embed=discord.Embed(title=f"Shard {shard} Ready", color=0x00FF00))
+            await event_channel.send(
+                embed=discord.Embed(
+                    title=f"Shard {shard} Ready",
+                    color=0x00FF00,
+                    timestamp=datetime.datetime.utcnow(),
+                )
+            )
         except Exception:
             pass
 
@@ -33,7 +45,13 @@ class Events(commands.Cog):
     async def on_connect(self):
         try:
             event_channel = self.bot.get_channel(self.bot.config.event_channel)
-            await event_channel.send(embed=discord.Embed(title=f"Shard Connected", color=0x00FF00))
+            await event_channel.send(
+                embed=discord.Embed(
+                    title=f"Shard Connected",
+                    color=0x00FF00,
+                    timestamp=datetime.datetime.utcnow(),
+                )
+            )
         except Exception:
             pass
 
@@ -41,7 +59,13 @@ class Events(commands.Cog):
     async def on_disconnect(self):
         try:
             event_channel = self.bot.get_channel(self.bot.config.event_channel)
-            await event_channel.send(embed=discord.Embed(title=f"Shard Disconnected", color=0xFF0000))
+            await event_channel.send(
+                embed=discord.Embed(
+                    title=f"Shard Disconnected",
+                    color=0xFF0000,
+                    timestamp=datetime.datetime.utcnow(),
+                )
+            )
         except Exception:
             pass
 
@@ -49,7 +73,13 @@ class Events(commands.Cog):
     async def on_resumed(self):
         try:
             event_channel = self.bot.get_channel(self.bot.config.event_channel)
-            await event_channel.send(embed=discord.Embed(title=f"Shard Resumed", color=self.bot.config.primary_colour))
+            await event_channel.send(
+                embed=discord.Embed(
+                    title=f"Shard Resumed",
+                    color=self.bot.config.primary_colour,
+                    timestamp=datetime.datetime.utcnow(),
+                )
+            )
         except Exception:
             pass
 
@@ -59,7 +89,7 @@ class Events(commands.Cog):
         embed = discord.Embed(
             title='Event Error',
             description=f"```py\n{traceback.format_exc()}```",
-            colour=self.bot.error_colour,
+            color=self.bot.error_colour,
             timestamp=datetime.datetime.utcnow(),
         )
         embed.add_field(name='Event', value=event, inline=False)
