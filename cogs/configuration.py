@@ -117,8 +117,8 @@ class Configuration(commands.Cog):
                 description="Please consider buying premium! It is the best way that you can show support to us. "
                             "You will also get access to premium features such as custom messages to the user when "
                             "a ticket is created and closed, advanced logs that includes all the messages sent and "
-                            "received, as well as the ability for your staff to initiate a ticket with a user.\n\n"
-                            f"For more information on premium, see `{ctx.prefix}premium` or join our support server",
+                            "received, as well as priority support in our support server.\n\nFor more information "
+                            f"on premium, see `{ctx.prefix}premium` or join our support server.",
                 color=self.bot.primary_colour,
             )
         )

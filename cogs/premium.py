@@ -23,8 +23,8 @@ class Premium(commands.Cog):
         )
         embed.add_field(
             name="Premium Features",
-            value="- Custom message on new or closed ticket.\n- Advanced logging that includes chat history.\n- The "
-                  "ability for your staff to initiate a ticket with a user.\n- More features released in future.",
+            value="- Priority support.\n- Custom message on new or closed ticket.\n"
+                  "- Advanced logging that includes chat history.\n- More features released in future.",
             inline=False,
         )
         embed.add_field(
