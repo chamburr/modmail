@@ -181,6 +181,15 @@ class DirectMessageEvents(commands.Cog):
                     icon_url=message.author.avatar_url,
                 )
                 await channel.send(embed=embed)
+                if data[5] is not None:
+                    embed = discord.Embed(
+                        title="Custom Greeting Message",
+                        description=data[5],
+                        color=self.bot.mod_colour,
+                        timestamp=datetime.datetime.utcnow()
+                    )
+                    embed.set_footer(text=guild.name, icon_url=guild.icon_url)
+                    await message.channel.send(embed=embed)
             embed = discord.Embed(
                 title="Message Received",
                 description=message.content,

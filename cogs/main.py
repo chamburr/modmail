@@ -42,6 +42,16 @@ class Main(commands.Cog):
             member = ctx.guild.get_member(int(ctx.channel.name))
             if member:
                 try:
+                    data = self.bot.get_Data(ctx.guild.id)
+                    if data[6] is not None:
+                        embed2 = discord.Embed(
+                            title="Custom Close Message",
+                            description=data[6],
+                            color=self.bot.mod_colour,
+                            timestamp=datetime.datetime.utcnow(),
+                        )
+                        embed2.set_footer(text=ctx.guild.name, icon_url=ctx.guild.icon_url)
+                        await member.send(embed=embed2)
                     await member.send(embed=embed)
                 except discord.Forbidden:
                     pass

@@ -348,6 +348,44 @@ class Configuration(commands.Cog):
                 )
             )
 
+    @checks.in_database()
+    @checks.is_premium()
+    @commands.has_permissions(administrator=True)
+    @commands.guild_only()
+    @commands.command(
+        description="Set a super cool greeting message that is sent when a new ticket is opened.",
+        usage="greetingmessage <text>",
+    )
+    async def greetingmessage(self, ctx, *, text: str):
+        c = self.bot.conn.cursor()
+        c.execute("UPDATE data SET welcome=? WHERE guild=?", (text, ctx.guild.id))
+        self.bot.conn.commit()
+        await ctx.send(
+            embed=discord.Embed(
+                description="The greeting message is set successfully",
+                color=self.bot.primary_colour,
+            )
+        )
+
+    @checks.in_database()
+    @checks.is_premium()
+    @commands.has_permissions(administrator=True)
+    @commands.guild_only()
+    @commands.command(
+        description="Set a super cool close message that is sent when a ticket is closed.",
+        usage="closemessage <text>",
+    )
+    async def closemessage(self, ctx, *, text: str):
+        c = self.bot.conn.cursor()
+        c.execute("UPDATE data SET goodbye=? WHERE guild=?", (text, ctx.guild.id))
+        self.bot.conn.commit()
+        await ctx.send(
+            embed=discord.Embed(
+                description="The close message is set successfully",
+                color=self.bot.primary_colour,
+            )
+        )
+
 
 def setup(bot):
     bot.add_cog(Configuration(bot))
