@@ -1,4 +1,5 @@
 import datetime
+import traceback
 import discord
 from discord.ext import commands
 
@@ -17,6 +18,57 @@ class Events(commands.Cog):
         await self.bot.change_presence(
             activity=discord.Game(name=f"DM to Contact Staff | {self.bot.config.default_prefix}help")
         )
+        event_channel = self.bot.get_channel(self.bot.config.event_channel)
+        await event_channel.send(embed=discord.Embed(title="Bot Ready", color=0x00FF00))
+
+    @commands.Cog.listener()
+    async def on_shard_ready(self, shard):
+        try:
+            event_channel = self.bot.get_channel(self.bot.config.event_channel)
+            await event_channel.send(embed=discord.Embed(title=f"Shard {shard} Ready", color=0x00FF00))
+        except Exception:
+            pass
+
+    @commands.Cog.listener()
+    async def on_connect(self):
+        try:
+            event_channel = self.bot.get_channel(self.bot.config.event_channel)
+            await event_channel.send(embed=discord.Embed(title=f"Shard Connected", color=0x00FF00))
+        except Exception:
+            pass
+
+    @commands.Cog.listener()
+    async def on_disconnect(self):
+        try:
+            event_channel = self.bot.get_channel(self.bot.config.event_channel)
+            await event_channel.send(embed=discord.Embed(title=f"Shard Disconnected", color=0xFF0000))
+        except Exception:
+            pass
+
+    @commands.Cog.listener()
+    async def on_resumed(self):
+        try:
+            event_channel = self.bot.get_channel(self.bot.config.event_channel)
+            await event_channel.send(embed=discord.Embed(title=f"Shard Resumed", color=self.bot.config.primary_colour))
+        except Exception:
+            pass
+
+    @commands.Cog.listener()
+    async def on_error(self, event, *args, **kwargs):
+        error_channel = self.bot.get_channel(self.bot.config.error_channel)
+        embed = discord.Embed(
+            title='Event Error',
+            description=f"```py\n{traceback.format_exc()}```",
+            colour=self.bot.error_colour,
+            timestamp=datetime.datetime.utcnow(),
+        )
+        embed.add_field(name='Event', value=event, inline=False)
+        args_str = ['```py']
+        for index, arg in enumerate(args):
+            args_str.append(f'[{index}]: {arg!r}')
+        args_str.append('```')
+        embed.add_field(name='Args', value='\n'.join(args_str), inline=False)
+        await error_channel.send(embed=embed)
 
     @commands.Cog.listener()
     async def on_guild_join(self, guild):
