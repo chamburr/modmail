@@ -42,7 +42,7 @@ class Main(commands.Cog):
             member = ctx.guild.get_member(int(ctx.channel.name))
             if member:
                 try:
-                    data = self.bot.get_Data(ctx.guild.id)
+                    data = self.bot.get_data(ctx.guild.id)
                     if data[6] is not None:
                         embed2 = discord.Embed(
                             title="Custom Close Message",
