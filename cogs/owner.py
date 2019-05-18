@@ -15,7 +15,7 @@ class Owner(commands.Cog):
         self.bot = bot
         self._last_result = None
 
-    @checks.is_owner()
+    @checks.is_admin()
     @commands.command(
         description="Load a module.",
         usage="load <cog>",
@@ -39,7 +39,7 @@ class Owner(commands.Cog):
                 )
             )
 
-    @checks.is_owner()
+    @checks.is_admin()
     @commands.command(
         description="Unload a module.",
         usage="unload <cog>",
@@ -63,7 +63,7 @@ class Owner(commands.Cog):
                 )
             )
 
-    @checks.is_owner()
+    @checks.is_admin()
     @commands.command(
         description="Reload a module.",
         usage="reload <cog>",
@@ -88,7 +88,7 @@ class Owner(commands.Cog):
                 )
             )
 
-    @checks.is_owner()
+    @checks.is_admin()
     @commands.command(
         description="Shut down the bot.",
         usage="shutdown",
@@ -230,9 +230,9 @@ class Owner(commands.Cog):
                 )
             )
 
-    @checks.is_owner()
+    @checks.is_admin()
     @commands.command(
-        description="Get a list of servers with the sepcified name.",
+        description="Get a list of servers with the specified name.",
         usage="findserver <name>",
         hidden=True,
     )
@@ -245,7 +245,7 @@ class Owner(commands.Cog):
             await ctx.send(
                 embed=discord.Embed(
                     description="No such guild was found.",
-                    color=self.bot.primary_colour,
+                    color=self.bot.error_colour,
                 )
             )
         else:
@@ -260,11 +260,44 @@ class Owner(commands.Cog):
                 await ctx.send(
                     embed=discord.Embed(
                         description="The message is too long to be sent.",
-                        color=self.bot.primary_colour,
+                        color=self.bot.error_colour,
                     )
                 )
 
-    @checks.is_owner()
+    @checks.is_admin()
+    @commands.command(
+        description="Get a list of servers the bot shares with the user.",
+        usage="sharedservers <user ID>"
+    )
+    async def sharedservers(self, ctx, *, user: int):
+        guilds = []
+        for guild in self.bot.guilds:
+            if guild.get_member(user) is not None:
+                guilds.append(f"{guild.name} `{guild.id}`{' (Owner)' if guild.owner_id == user else ''}")
+        if len(guilds) == 0:
+            await ctx.send(
+                embed=discord.Embed(
+                    description="No such guild was found.",
+                    color=self.bot.error_colour,
+                )
+            )
+        else:
+            try:
+                await ctx.send(
+                    embed=discord.Embed(
+                        description="\n".join(guilds),
+                        color=self.bot.primary_colour,
+                    )
+                )
+            except discord.HTTPException:
+                await ctx.send(
+                    embed=discord.Embed(
+                        description="The message is too long to be sent.",
+                        color=self.bot.error_colour,
+                    )
+                )
+
+    @checks.is_admin()
     @commands.command(
         description="Create an invite to the specified server.",
         usage="createinvite <server id>",

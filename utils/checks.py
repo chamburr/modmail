@@ -2,9 +2,9 @@ import discord
 from discord.ext import commands
 
 
-def is_owner():
+def is_admin():
     async def predicate(ctx):
-        return ctx.author.id in ctx.bot.config.owners
+        return ctx.author.id in ctx.bot.config.admins
     return commands.check(predicate)
 
 
