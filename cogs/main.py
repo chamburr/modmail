@@ -9,6 +9,7 @@ class Main(commands.Cog):
         self.bot = bot
 
     @checks.is_modmail_channel()
+    @checks.is_mod()
     @checks.in_database()
     @commands.bot_has_permissions(manage_channels=True)
     @commands.guild_only()
@@ -62,6 +63,7 @@ class Main(commands.Cog):
                 )
             )
 
+    @checks.is_mod()
     @checks.in_database()
     @checks.is_premium()
     @commands.guild_only()
