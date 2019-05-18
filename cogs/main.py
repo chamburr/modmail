@@ -1,3 +1,4 @@
+import datetime
 import discord
 from discord.ext import commands
 
@@ -30,7 +31,8 @@ class Main(commands.Cog):
             embed = discord.Embed(
                 title="Ticket Closed",
                 description=(reason if reason is not None else "No reason was provided."),
-                color=self.bot.mod_colour,
+                color=self.bot.error_colour,
+                timestamp=datetime.datetime.utcnow(),
             )
             embed.set_author(
                 name=f"{ctx.author.name}#{ctx.author.discriminator}",
@@ -65,7 +67,6 @@ class Main(commands.Cog):
 
     @checks.is_mod()
     @checks.in_database()
-    @checks.is_premium()
     @commands.guild_only()
     @commands.command(
         description="Open a ticket with a user.",
@@ -73,7 +74,7 @@ class Main(commands.Cog):
         aliases=["new"],
     )
     async def open(self, ctx, *, user: discord.Member, reason: str = None):
-        await ctx.send("Placeholder" if not reason else reason)
+        await ctx.send("WIP")
 
 
 def setup(bot):

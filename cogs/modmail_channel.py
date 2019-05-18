@@ -1,4 +1,5 @@
 import io
+import datetime
 import discord
 from discord.ext import commands
 
@@ -36,6 +37,7 @@ class ModMailEvents(commands.Cog):
                 title="Message Received",
                 description=message.content,
                 color=self.bot.mod_colour,
+                timestamp=datetime.datetime.utcnow(),
             )
             embed.set_author(
                 name=f"{message.author.name}#{message.author.discriminator}",
