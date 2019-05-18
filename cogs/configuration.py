@@ -136,7 +136,8 @@ class Configuration(commands.Cog):
                 embed_links=True,
                 attach_files=True,
                 add_reactions=True,
-            )
+            ),
+            ctx.guild.default_role: discord.PermissionOverwrite(read_messages=False)
         }
         category = await ctx.guild.create_category_channel(name=category_name, overwrites=overwrites)
         logging_channel = None
@@ -234,7 +235,8 @@ class Configuration(commands.Cog):
                 embed_links=True,
                 attach_files=True,
                 add_reactions=True,
-            )
+            ),
+            ctx.guild.default_role: discord.PermissionOverwrite(read_messages=False)
         }
         category = await ctx.guild.create_category_channel(name=name, overwrites=overwrites)
         if data[2] is not None:
