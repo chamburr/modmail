@@ -1,5 +1,6 @@
 import io
 import asyncio
+import datetime
 import discord
 from discord.ext import commands
 
@@ -9,6 +10,7 @@ from utils.tools import get_guild_prefix
 class DirectMessageEvents(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
+        self.guild = None
 
     @commands.Cog.listener()
     async def on_message(self, message):
@@ -52,7 +54,7 @@ class DirectMessageEvents(commands.Cog):
                 )
                 current_embed.set_footer(text="Use the reactions to flip pages.")
             current_embed.add_field(
-                name=value[0],
+                name=f"{len(current_embed.fields) + 1}: {value[0]}",
                 value=f"{'Create a new ticket.' if value[1] is False else 'Existing ticket.'}\nServer ID: {guild}",
             )
             if len(current_embed.fields) == 10:
@@ -106,63 +108,107 @@ class DirectMessageEvents(commands.Cog):
                     color=self.bot.error_colour,
                 )
             )
+        await msg.delete()
         guild = embeds[page_index].fields[chosen].value.split()[-1]
-        guild = self.bot.get_guild(guild)
+        guild = self.bot.get_guild(int(guild))
         if guild is None:
-            await message.channel.send(
+            return await message.channel.send(
                 embed=discord.Embed(
                     description="The guild was not found.",
                     color=self.bot.error_colour,
                 )
             )
-        return await message.channel.send(f"You chose {chosen} on page {page_index} which "
-                                          f"is {embeds[page_index].fields[chosen].name}")
-
-
-        member = message.guild.get_member(int(message.channel.name))
-        if member is None:
+        if member_in_guild(guild) is False:
             return await message.channel.send(
                 embed=discord.Embed(
-                    title="Member Not Found",
-                    description="The user might have left the server. "
-                                f"Use `{prefix}close [reason]` to close this channel.",
+                    description="You are not in that server.",
                     color=self.bot.error_colour,
                 )
             )
+        data = self.bot.get_data(guild.id)
+        category = guild.get_channel(data[2])
+        if category is None:
+            return await message.channel.send(
+                embed=discord.Embed(
+                    description="A ModMail category was not found.",
+                    color=self.bot.error_colour,
+                )
+            )
+        new_ticket = False
         try:
+            channel = next(filter(lambda x: x.name == str(message.author.id), guild.text_channels))
+        except StopIteration:
+            try:
+                channel = await category.create_text_channel(str(message.author.id))
+                new_ticket = True
+                log_channel = guild.get_channel(data[4])
+                if log_channel is not None:
+                    try:
+                        embed = discord.Embed(
+                            title="New Ticket",
+                            color=self.bot.user_colour,
+                            timestamp=datetime.datetime.utcnow(),
+                        )
+                        embed.set_footer(
+                            text=f"{message.author.id} | {message.author.name}#{message.author.discriminator}",
+                            icon_url=message.author.avatar_url,
+                        )
+                        await log_channel.send(embed=embed)
+                    except discord.Forbidden:
+                        pass
+            except discord.HTTPException:
+                return await message.channel.send(
+                    embed=discord.Embed(
+                        description="A HTTPException error occurred. This is most likely because the server has "
+                                    "reached the maximum number of channels.",
+                        color=self.bot.error_colour,
+                    )
+                )
+        try:
+            if new_ticket is True:
+                self.guild = guild
+                prefix = get_guild_prefix(self.bot, self)
+                embed = discord.Embed(
+                    title="New Ticket",
+                    description="Type a message in this channel to reply. Messages starting with the server prefix "
+                                f"`{prefix}` are ignored, and can be used for staff discussion. Use the command "
+                                f"`{prefix}close [reason]` to close this ticket.",
+                    color=self.bot.primary_colour,
+                    timestamp=datetime.datetime.utcnow()
+                )
+                embed.set_footer(
+                    text=f"{message.author.id} | {message.author.name}#{message.author.discriminator}",
+                    icon_url=message.author.avatar_url,
+                )
+                await channel.send(embed=embed)
             embed = discord.Embed(
                 title="Message Received",
                 description=message.content,
-                color=self.bot.mod_colour,
+                color=self.bot.user_colour,
+                timestamp=datetime.datetime.utcnow(),
             )
-            embed.set_author(
-                name=f"{message.author.name}#{message.author.discriminator}",
+            embed.set_footer(
+                text=f"{message.author.id} | {message.author.name}#{message.author.discriminator}",
                 icon_url=message.author.avatar_url,
             )
-            embed.set_footer(text=message.guild.name, icon_url=message.guild.icon_url)
             files = []
             for file in message.attachments:
                 saved_file = io.BytesIO()
                 await file.save(saved_file)
                 files.append(discord.File(saved_file, file.filename))
-            await member.send(embed=embed, files=files)
+            await channel.send(embed=embed, files=files)
             embed.title = "Message Sent"
-            embed.set_footer(text=f"{member.id} | {member.name}#{member.discriminator}", icon_url=member.avatar_url)
+            embed.set_footer(text=guild.name, icon_url=guild.icon_url)
             for file in files:
                 file.reset()
             await message.channel.send(embed=embed, files=files)
         except discord.Forbidden:
             return await message.channel.send(
                 embed=discord.Embed(
-                    title="Failed",
-                    description="The message could not be sent. The user might have disabled Direct Messages.",
+                    description="No permission to send message in the channel. Please contact an admin on the server.",
                     color=self.bot.error_colour,
                 )
             )
-        try:
-            await message.delete()
-        except discord.Forbidden:
-            pass
 
 
 def setup(bot):
