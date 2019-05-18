@@ -15,7 +15,7 @@ class Owner(commands.Cog):
         self.bot = bot
         self._last_result = None
 
-    @checks.is_admin()
+    @commands.is_owner()
     @commands.command(
         description="Load a module.",
         usage="load <cog>",
@@ -39,7 +39,7 @@ class Owner(commands.Cog):
                 )
             )
 
-    @checks.is_admin()
+    @commands.is_owner()
     @commands.command(
         description="Unload a module.",
         usage="unload <cog>",
@@ -63,7 +63,7 @@ class Owner(commands.Cog):
                 )
             )
 
-    @checks.is_admin()
+    @commands.is_owner()
     @commands.command(
         description="Reload a module.",
         usage="reload <cog>",
@@ -88,7 +88,7 @@ class Owner(commands.Cog):
                 )
             )
 
-    @checks.is_admin()
+    @commands.is_owner()
     @commands.command(
         description="Shut down the bot.",
         usage="shutdown",
