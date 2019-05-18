@@ -35,6 +35,11 @@ join_channel = 576954178153480233
 event_channel = 576954202308214785
 error_channel = 578549440365854730
 
+# Patron roles for premium servers
+premium = 576756461267451934
+premium_plus = 576754574346551306
+premium_advanced = 576754671620980740
+
 # The colour used in embeds
 primary_colour = 0x1E90FF
 user_colour = 0x00FF00
