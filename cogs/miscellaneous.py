@@ -1,4 +1,4 @@
-import time
+import asyncio
 import discord
 from discord.ext import commands
 
@@ -14,7 +14,7 @@ class Miscellaneous(commands.Cog):
     )
     async def sleep(self, ctx):
         async with ctx.channel.typing():
-            time.sleep(5)
+            await asyncio.sleep(5)
             await ctx.send("Slept, done.")
 
 
