@@ -239,7 +239,7 @@ class Owner(commands.Cog):
     async def findserver(self, ctx, *, name: str):
         guilds = []
         for guild in self.bot.guilds:
-            if guild.name.lower().count(name) > 0:
+            if guild.name.lower().count(name.lower()) > 0:
                 guilds.append(f"{guild.name} `{guild.id}`")
         if len(guilds) == 0:
             await ctx.send(
