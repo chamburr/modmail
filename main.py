@@ -16,6 +16,7 @@ logger.addHandler(handler)
 
 
 bot = ModMail(
+    fetch_offline_members=True,
     command_prefix=get_guild_prefix,
     case_insensitive=True,
     description="The one and only public ModMail Discord bot.",
