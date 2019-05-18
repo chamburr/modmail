@@ -17,7 +17,7 @@ def in_database():
             await ctx.send(
                 embed=discord.Embed(
                     description=f"Your server is not in the database yet. Use `{ctx.prefix}setup` first.",
-                    color=ctx.bot.primary_colour,
+                    color=ctx.bot.error_colour,
                 )
             )
         return True if res is not None else False
@@ -41,7 +41,7 @@ def is_premium():
                 embed=discord.Embed(
                     description="This server does not have premium. Want to get premium? More information "
                                 f"is available with the `{ctx.prefix}premium` command.",
-                    color=ctx.bot.primary_colour,
+                    color=ctx.bot.error_colour,
                 )
             )
             return False
@@ -60,7 +60,7 @@ def is_patron():
                 embed=discord.Embed(
                     description="This command requires you to be a patron. Want to become a patron? More information "
                                 f"is available with the `{ctx.prefix}premium` command.",
-                    color=ctx.bot.primary_colour,
+                    color=ctx.bot.error_colour,
                 )
             )
             return False
@@ -76,7 +76,7 @@ def is_modmail_channel():
             await ctx.send(
                 embed=discord.Embed(
                     description="This channel is not a ModMail channel.",
-                    color=ctx.bot.primary_colour,
+                    color=ctx.bot.error_colour,
                 )
             )
             return False

@@ -48,7 +48,7 @@ class ErrorHandler(commands.Cog):
                     title="Permission Denied",
                     description="You do not have permission to use this command. "
                                 f"Permissions needed: {', '.join(error.missing_perms)}",
-                    color=self.bot.primary_colour,
+                    color=self.bot.error_colour,
                 )
             )
         elif isinstance(error, commands.BotMissingPermissions):
