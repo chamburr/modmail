@@ -14,7 +14,7 @@ conn = sqlite3.connect('data.sqlite')
 class ModMail(commands.AutoShardedBot):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        self.start_time = datetime.datetime.now()
+        self.start_time = datetime.datetime.utcnow()
 
     @property
     def conn(self):
@@ -22,7 +22,7 @@ class ModMail(commands.AutoShardedBot):
 
     @property
     def uptime(self):
-        return datetime.datetime.now() - self.start_time
+        return datetime.datetime.utcnow() - self.start_time
 
     @property
     def version(self):
