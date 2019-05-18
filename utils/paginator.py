@@ -152,15 +152,16 @@ class Session:
 
     async def teardown(self, ctx):
         """Clean the session up."""
-        self._session_task.cancel()
         if ctx.guild is None:
-            for reaction in self.page.reactions:
-                await reaction.remove()
+            msg = await self.page.channel.fetch_message(self.page.id)
+            for reaction in msg.reactions:
+                await reaction.remove(ctx.bot.user)
             return
         try:
             await self.page.clear_reactions()
         except discord.NotFound:
             pass
+        self._session_task.cancel()
 
     async def _add_reactions(self, reactions):
         for reaction in reactions:
