@@ -27,7 +27,7 @@ bot = ModMail(
 # c = bot.conn.cursor()
 # c.execute("CREATE TABLE IF NOT EXISTS data "
 #           "(guild bigint NOT NULL PRIMARY KEY, prefix text, category bigint, accessrole bigint, "
-#           "logging bigint, welcome text, leave text)")
+#           "logging bigint, welcome text, goodbye text)")
 # c.execute("CREATE TABLE IF NOT EXISTS premium "
 #           "(user bigint NOT NULL PRIMARY KEY, server text)")
 # bot.conn.commit()
