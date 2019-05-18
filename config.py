@@ -8,11 +8,12 @@ default_prefix = "="
 owner = 446290930723717120
 
 # Bot owners that have access to owner commands
-owners = [
+admins = [
     446290930723717120,  # CHamburr#2591
+    402753815046127627,  # Akaitsune#3426
+    458932042252419072,  # KnightOfTla#2075
     415416051170541588,  # xXMareXx7700
-    283862626520399872,  # lieuwe_berg#7122
-    98822055402688512,  # ZixeSea#1234
+    98822055402688512,   # ZixeSea#1234
 ]
 
 # Cogs to load on startup
@@ -41,4 +42,4 @@ mod_colour = 0xFF4500
 error_colour = 0xFF0000
 
 # Version of bot
-__version__ = "0.1.0"
+__version__ = "1.0.0"
