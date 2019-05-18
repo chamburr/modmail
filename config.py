@@ -18,6 +18,7 @@ owners = [
 # Cogs to load on startup
 initial_extensions = [
     "cogs.configuration",
+    "cogs.direct_message",
     "cogs.error_handler",
     "cogs.events",
     "cogs.general",
