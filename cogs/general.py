@@ -10,6 +10,7 @@ class General(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
+    @commands.bot_has_permissions(add_reactions=True)
     @commands.command(
         description="Shows the help menu of all commands, or a specific command when specified.",
         usage="help [command]",
