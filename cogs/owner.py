@@ -318,7 +318,7 @@ class Owner(commands.Cog):
                     try:
                         return await ctx.send(
                             embed=discord.Embed(
-                                description=await guild.text_channels[0].create_invite(),
+                                description=(await guild.text_channels[0].create_invite()).url,
                                 color=self.bot.primary_colour,
                             )
                         )
