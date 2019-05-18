@@ -1,4 +1,5 @@
 import io
+import asyncio
 import discord
 from discord.ext import commands
 
@@ -37,22 +38,12 @@ class DirectMessageEvents(commands.Cog):
             except StopIteration:
                 channel = None
             if not channel:
-                guild_list[guild.id] = False
+                guild_list[str(guild.id)] = (guild.name, False)
             else:
-                guild_list[guild.id] = True
-        if len(guild_list) == 0:
-            return await message.channel.send(
-                embed=discord.Embed(
-                    title="No Server Found",
-                    description="None of the servers that you are in has setup ModMail yet. If you expect to see "
-                                "something here and you don't know what might have went wrong, please join our "
-                                f"support server with the command `{prefix}support`.",
-                    color=self.bot.error_colour,
-                )
-            )
+                guild_list[str(guild.id)] = (guild.name, True)
         embeds = []
         current_embed = None
-        for guild, existing in guild_list:
+        for guild, value in guild_list.items():
             if not current_embed:
                 current_embed = discord.Embed(
                     title="Choose Server",
@@ -61,13 +52,71 @@ class DirectMessageEvents(commands.Cog):
                 )
                 current_embed.set_footer(text="Use the reactions to flip pages.")
             current_embed.add_field(
-                name=guild,
-                value=("Create a new ticket." if existing is False else "")
+                name=value[0],
+                value=f"{'Create a new ticket.' if value[1] is False else 'Existing ticket.'}\nServer ID: {guild}",
             )
             if len(current_embed.fields) == 10:
                 embeds.append(current_embed)
                 current_embed = None
+        if current_embed is not None:
+            embeds.append(current_embed)
 
+        msg = await message.channel.send(embed=embeds[0])
+        reactions = ["1⃣", "2⃣", "3⃣", "4⃣", "5⃣", "6⃣", "7⃣", "8⃣", "9⃣", "🔟", "◀", "▶"]
+
+        async def add_reactions(length):
+            await msg.add_reaction("◀")
+            await msg.add_reaction("▶")
+            for index in range(0, length):
+                await msg.add_reaction(reactions[index])
+
+        def reaction_check(reaction2, user2):
+            if str(reaction2) in reactions and user2.id == message.author.id and reaction2.message.id == msg.id:
+                return True
+            else:
+                return False
+
+        await add_reactions(len(embeds[0].fields))
+        page_index = 0
+        chosen = -1
+        try:
+            while chosen < 0:
+                reaction, user = await self.bot.wait_for("reaction_add", check=reaction_check, timeout=60)
+                if str(reaction) == "◀":
+                    if page_index != 0:
+                        page_index = page_index - 1
+                        await msg.edit(embed=embeds[page_index])
+                        await add_reactions(len(embeds[page_index].fields))
+                elif str(reaction) == "▶":
+                    if page_index + 1 < len(embeds):
+                        page_index = page_index + 1
+                        await msg.edit(embed=embeds[page_index])
+                        if len(embeds[page_index].fields) != 10:
+                            to_remove = reactions[len(embeds[page_index].fields):-2]
+                            msg = await msg.channel.fetch_message(msg.id)
+                            for this_reaction in msg.reactions:
+                                if str(this_reaction) in to_remove:
+                                    await this_reaction.remove(self.bot.user)
+                elif reactions.index(str(reaction)) >= 0:
+                    chosen = reactions.index(str(reaction))
+        except asyncio.TimeoutError:
+            return await message.channel.send(
+                embed=discord.Embed(
+                    description="Time out. You did not choose anything.",
+                    color=self.bot.error_colour,
+                )
+            )
+        guild = embeds[page_index].fields[chosen].value.split()[-1]
+        guild = self.bot.get_guild(guild)
+        if guild is None:
+            await message.channel.send(
+                embed=discord.Embed(
+                    description="The guild was not found.",
+                    color=self.bot.error_colour,
+                )
+            )
+        return await message.channel.send(f"You chose {chosen} on page {page_index} which "
+                                          f"is {embeds[page_index].fields[chosen].name}")
 
 
         member = message.guild.get_member(int(message.channel.name))
