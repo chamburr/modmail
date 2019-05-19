@@ -36,7 +36,7 @@ def is_premium():
             row = row[0].split(",")
             for guild in row:
                 all_premium.append(guild)
-        if ctx.guild.id not in all_premium:
+        if str(ctx.guild.id) not in all_premium:
             await ctx.send(
                 embed=discord.Embed(
                     description="This server does not have premium. Want to get premium? More information "
