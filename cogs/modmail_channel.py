@@ -51,7 +51,7 @@ class ModMailEvents(commands.Cog):
                 files.append(discord.File(saved_file, file.filename))
             await member.send(embed=embed, files=files)
             embed.title = "Message Sent"
-            embed.set_footer(text=f"{member.id} | {member.name}#{member.discriminator}", icon_url=member.avatar_url)
+            embed.set_footer(text=f"{member.name}#{member.discriminator} | {member.id}", icon_url=member.avatar_url)
             for file in files:
                 file.reset()
             await message.channel.send(embed=embed, files=files)
