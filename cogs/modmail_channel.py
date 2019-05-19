@@ -43,7 +43,7 @@ class ModMailEvents(commands.Cog):
                 name=f"{message.author.name}#{message.author.discriminator}",
                 icon_url=message.author.avatar_url,
             )
-            embed.set_footer(text=message.guild.name, icon_url=message.guild.icon_url)
+            embed.set_footer(text=f"{message.guild.name} | {message.guild.id}", icon_url=message.guild.icon_url)
             files = []
             for file in message.attachments:
                 saved_file = io.BytesIO()

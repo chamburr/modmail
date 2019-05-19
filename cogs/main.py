@@ -38,7 +38,7 @@ class Main(commands.Cog):
                 name=f"{ctx.author.name}#{ctx.author.discriminator}",
                 icon_url=ctx.author.avatar_url,
             )
-            embed.set_footer(text=ctx.guild.name, icon_url=ctx.guild.icon_url)
+            embed.set_footer(text=f"{ctx.guild.name} | {ctx.guild.id}", icon_url=ctx.guild.icon_url)
             member = ctx.guild.get_member(int(ctx.channel.name))
             if member:
                 try:
@@ -50,7 +50,7 @@ class Main(commands.Cog):
                             color=self.bot.mod_colour,
                             timestamp=datetime.datetime.utcnow(),
                         )
-                        embed2.set_footer(text=ctx.guild.name, icon_url=ctx.guild.icon_url)
+                        embed2.set_footer(text=f"{ctx.guild.name} | {ctx.guild.id}", icon_url=ctx.guild.icon_url)
                         await member.send(embed=embed2)
                     await member.send(embed=embed)
                 except discord.Forbidden:
@@ -61,7 +61,7 @@ class Main(commands.Cog):
                 if channel is not None:
                     try:
                         embed.set_footer(
-                            text=f"{member.id} | {member.name}#{member.discriminator}",
+                            text=f"{member.name}#{member.discriminator} | {member.id}",
                             icon_url=member.avatar_url
                         )
                         await channel.send(embed=embed)

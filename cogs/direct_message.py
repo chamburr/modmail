@@ -158,7 +158,7 @@ class DirectMessageEvents(commands.Cog):
                             timestamp=datetime.datetime.utcnow(),
                         )
                         embed.set_footer(
-                            text=f"{message.author.id} | {message.author.name}#{message.author.discriminator}",
+                            text=f"{message.author.name}#{message.author.discriminator} | {message.author.id}",
                             icon_url=message.author.avatar_url,
                         )
                         await log_channel.send(embed=embed)
@@ -185,7 +185,7 @@ class DirectMessageEvents(commands.Cog):
                     timestamp=datetime.datetime.utcnow()
                 )
                 embed.set_footer(
-                    text=f"{message.author.id} | {message.author.name}#{message.author.discriminator}",
+                    text=f"{message.author.name}#{message.author.discriminator} | {message.author.id}",
                     icon_url=message.author.avatar_url,
                 )
                 await channel.send(embed=embed)
@@ -196,7 +196,7 @@ class DirectMessageEvents(commands.Cog):
                         color=self.bot.mod_colour,
                         timestamp=datetime.datetime.utcnow()
                     )
-                    embed.set_footer(text=guild.name, icon_url=guild.icon_url)
+                    embed.set_footer(text=f"{guild.name} | {guild.id}", icon_url=guild.icon_url)
                     await message.channel.send(embed=embed)
             embed = discord.Embed(
                 title="Message Received",
@@ -205,7 +205,7 @@ class DirectMessageEvents(commands.Cog):
                 timestamp=datetime.datetime.utcnow(),
             )
             embed.set_footer(
-                text=f"{message.author.id} | {message.author.name}#{message.author.discriminator}",
+                text=f"{message.author.name}#{message.author.discriminator} | {message.author.id}",
                 icon_url=message.author.avatar_url,
             )
             files = []
@@ -215,7 +215,7 @@ class DirectMessageEvents(commands.Cog):
                 files.append(discord.File(saved_file, file.filename))
             await channel.send(embed=embed, files=files)
             embed.title = "Message Sent"
-            embed.set_footer(text=guild.name, icon_url=guild.icon_url)
+            embed.set_footer(text=f"{guild.name} | {guild.id}", icon_url=guild.icon_url)
             for file in files:
                 file.reset()
             await message.channel.send(embed=embed, files=files)
