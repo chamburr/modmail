@@ -375,7 +375,7 @@ class Configuration(commands.Cog):
         description="Set a super cool close message that is sent when a ticket is closed.",
         usage="closemessage [text]",
     )
-    async def closemessage(self, ctx, *, text = None):
+    async def closemessage(self, ctx, *, text=None):
         c = self.bot.conn.cursor()
         c.execute("UPDATE data SET goodbye=? WHERE guild=?", (text, ctx.guild.id))
         self.bot.conn.commit()
@@ -385,6 +385,35 @@ class Configuration(commands.Cog):
                 color=self.bot.primary_colour,
             )
         )
+
+    @checks.in_database()
+    @checks.is_premium()
+    @commands.has_permissions(administrator=True)
+    @commands.guild_only()
+    @commands.command(
+        description="Toggle advanced logging which includes all messages.",
+        usage="loggingplus",
+    )
+    async def loggingplus(self, ctx):
+        data = self.bot.get_data(ctx.guild.id)
+        c = self.bot.conn.cursor()
+        if data[7] is None:
+            c.execute("UPDATE data SET loggingplus=? WHERE guild=?", (1, ctx.guild.id))
+            await ctx.send(
+                embed=discord.Embed(
+                    description="Advanced logging is enabled.",
+                    color=self.bot.primary_colour,
+                )
+            )
+        else:
+            c.execute("UPDATE data SET loggingplus=? WHERE guild=?", (None, ctx.guild.id))
+            await ctx.send(
+                embed=discord.Embed(
+                    description="Advanced logging is disabled.",
+                    color=self.bot.primary_colour,
+                )
+            )
+        self.bot.conn.commit()
 
 
 def setup(bot):
