@@ -90,14 +90,14 @@ class Owner(commands.Cog):
 
     @commands.is_owner()
     @commands.command(
-        description="Shut down the bot.",
-        usage="shutdown",
+        description="Restart the bot.",
+        usage="restart",
         hidden=True,
     )
-    async def shutdown(self, ctx):
+    async def restart(self, ctx):
         await ctx.send(
             embed=discord.Embed(
-                description="Shutting down... Bye-bye!",
+                description="Restarting...",
                 color=self.bot.primary_colour,
             )
         )
