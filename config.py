@@ -35,6 +35,9 @@ join_channel = 576954178153480233
 event_channel = 576954202308214785
 error_channel = 578549440365854730
 
+# This is where patron roles are at
+main_server = 576016832956334080
+
 # Patron roles for premium servers
 premium = 576756461267451934
 premium_plus = 576754574346551306
