@@ -127,7 +127,7 @@ class Premium(commands.Cog):
         slots = tools.get_premium_slots(self.bot, ctx.author.id)
         c.execute("SELECT server FROM premium WHERE user=?", (ctx.author.id,))
         servers = c.fetchone()
-        assigned_slots = 0 if servers is None else len(servers.split(","))
+        assigned_slots = 0 if servers is None else len(servers[0].split(","))
         if assigned_slots >= slots:
             return await ctx.send(
                 embed=discord.Embed(
@@ -135,7 +135,7 @@ class Premium(commands.Cog):
                     color=self.bot.error_colour,
                 )
             )
-        servers = servers.split(",").append(guild)
+        servers = servers[0].split(",").append(guild)
         c.execute("UPDATE premium SET server=? WHERE user=?", (",".join(servers), ctx.author.id))
         self.bot.conn.commit()
         await ctx.send(
