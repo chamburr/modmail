@@ -53,7 +53,7 @@ class Premium(commands.Cog):
             if row[1] is None:
                 continue
             premium_servers = row[1].split(',')
-            if ctx.guild.id in premium_servers:
+            if str(ctx.guild.id) in premium_servers:
                 return await ctx.send(
                     embed=discord.Embed(
                         description=f"This server has premium. Offered by: <@{row[0]}>.",
