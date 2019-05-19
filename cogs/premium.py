@@ -53,7 +53,7 @@ class Premium(commands.Cog):
         for row in res:
             if row[1] is None:
                 continue
-            premium_servers = row[1].split(',')
+            premium_servers = row[1].split(",")
             if str(ctx.guild.id) in premium_servers:
                 return await ctx.send(
                     embed=discord.Embed(
@@ -104,7 +104,7 @@ class Premium(commands.Cog):
             return await ctx.send(
                 embed=discord.Embed(
                     description="The server ID you provided is invalid.",
-                    color=self.bot.primary_colour,
+                    color=self.bot.error_colour,
                 )
             )
         c = self.bot.conn.cursor()
@@ -121,12 +121,26 @@ class Premium(commands.Cog):
             return await ctx.send(
                 embed=discord.Embed(
                     description="That server already has premium.",
-                    color=self.bot.primary_colour,
+                    color=self.bot.error_colour,
                 )
             )
+        slots = tools.get_premium_slots(self.bot, ctx.author.id)
+        c.execute("SELECT server FROM premium WHERE user=?", (ctx.author.id,))
+        servers = c.fetchone()
+        assigned_slots = 0 if servers is None else len(servers.split(","))
+        if assigned_slots >= slots:
+            return await ctx.send(
+                embed=discord.Embed(
+                    description="You have reached the maximum number of slots that can be assigned.",
+                    color=self.bot.error_colour,
+                )
+            )
+        servers = servers.split(",").append(guild)
+        c.execute("UPDATE premium SET server=? WHERE user=?", (",".join(servers), ctx.author.id))
+        self.bot.conn.commit()
         await ctx.send(
             embed=discord.Embed(
-                description="Placeholder",
+                description="That server now has premium.",
                 color=self.bot.primary_colour,
             )
         )
@@ -148,7 +162,7 @@ class Premium(commands.Cog):
         self.bot.conn.commit()
         await ctx.send(
             embed=discord.Embed(
-                description="Successfully removed that server from premium.",
+                description="That server no longer has premium.",
                 color=self.bot.primary_colour,
             )
         )
