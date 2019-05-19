@@ -73,13 +73,13 @@ class Main(commands.Cog):
                                 if m.author.id != self.bot.user.id or len(m.embeds) <= 0 \
                                    or m.embeds[0].title not in ["Message Received", "Message Sent"]:
                                     continue
-                                if isinstance(m.embeds[0].author, discord.Embed.Empty):
+                                if m.embeds[0].author.name:
                                     author = f"{' '.join(m.embeds[0].footer.text.split()[:-2])} (User)"
                                 else:
                                     author = f"{m.embeds[0].author.name} (Staff)"
                                 description = m.embeds[0].description
                                 if len(m.attachments) != 0:
-                                    if isinstance(description, discord.Embed.Empty):
+                                    if not description:
                                         description = f"({len(m.attachments)} attachments not shown)"
                                     else:
                                         description = description + f"({len(m.attachments)} attachments not shown)"
