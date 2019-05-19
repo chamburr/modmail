@@ -79,7 +79,7 @@ class Main(commands.Cog):
                                     author = f"{' '.join(m.embeds[0].footer.text.split()[:-2])} (User)"
                                 history = f"[{str(m.created_at.replace(microsecond=0))}] {author}: " \
                                           f"{m.embeds[0].description}\n" + history
-                            history = io.BytesIO(history)
+                            history = io.BytesIO(history.encode())
                             file = discord.File(history, f"modmail_logs_{ctx.channel.name}")
                             return await channel.send(embed=embed, file=file)
                         await channel.send(embed=embed)
