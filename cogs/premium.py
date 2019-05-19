@@ -135,7 +135,8 @@ class Premium(commands.Cog):
                     color=self.bot.error_colour,
                 )
             )
-        servers = servers[0].split(",").append(guild)
+        servers = servers[0].split(",")
+        servers.append(guild)
         c.execute("UPDATE premium SET server=? WHERE user=?", (",".join(servers), ctx.author.id))
         self.bot.conn.commit()
         await ctx.send(
