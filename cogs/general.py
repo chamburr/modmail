@@ -164,7 +164,7 @@ class General(commands.Cog):
         aliases=["server"],
     )
     async def support(self, ctx):
-        await ctx.send("You can join the support server with the following link:\nhttps://discord.gg/TYe3U4w")
+        await ctx.send("You can join the support server with the following link:\nhttps://discord.gg/wjWJwJB")
 
 
 def setup(bot):
