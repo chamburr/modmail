@@ -1,7 +1,8 @@
 import discord
 from discord.ext import commands
 
-import utils.checks as checks
+from utils import checks
+from utils import tools
 
 
 class Premium(commands.Cog):
@@ -82,10 +83,10 @@ class Premium(commands.Cog):
         servers = res[0].split(",")
         to_send = ""
         for server in servers:
-            if self.bot.get_guild(server) is None:
+            if self.bot.get_guild(int(server)) is None:
                 to_send += f"\nUnknown server `{server}`"
             else:
-                to_send += f"\n{self.bot.get_guild(server).name} `{server}`"
+                to_send += f"\n{self.bot.get_guild(int(server)).name} `{server}`"
         await ctx.send(
             embed=discord.Embed(
                 description=to_send,
@@ -143,6 +144,7 @@ class Premium(commands.Cog):
             return await ctx.send("You did not assign premium to that server.")
         servers = res[0].split(",").remove(guild)
         c.execute("UPDATE premium SET server=? WHERE user=?", (",".join(servers), ctx.author.id))
+        c.execute("UPDATE data SET welcome=?, goodbye=?, loggingplus=? WHERE guild=?", (None, None, None, guild))
         self.bot.conn.commit()
         await ctx.send(
             embed=discord.Embed(
