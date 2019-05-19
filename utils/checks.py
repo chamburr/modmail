@@ -1,6 +1,8 @@
 import discord
 from discord.ext import commands
 
+from utils import tools
+
 
 def is_admin():
     async def predicate(ctx):
@@ -56,14 +58,20 @@ def is_patron():
         c.execute("SELECT user FROM premium WHERE user=?", (ctx.author.id,))
         res = c.fetchone()
         if res is None:
-            await ctx.send(
-                embed=discord.Embed(
-                    description="This command requires you to be a patron. Want to become a patron? More information "
-                                f"is available with the `{ctx.prefix}premium` command.",
-                    color=ctx.bot.error_colour,
+            slots = tools.get_premium_slots(ctx.bot, ctx.author.id)
+            if slots is False:
+                await ctx.send(
+                    embed=discord.Embed(
+                        description="This command requires you to be a patron. Want to become a patron? More "
+                                    f"information is available with the `{ctx.prefix}premium` command.",
+                        color=ctx.bot.error_colour,
+                    )
                 )
-            )
-            return False
+                return False
+            else:
+                c.execute("INSERT INTO premium (user, server) VALUES (?, ?)", (ctx.author.id, None))
+                ctx.bot.conn.commit()
+                return True
         else:
             return True
     return commands.check(predicate)
