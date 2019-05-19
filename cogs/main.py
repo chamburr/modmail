@@ -73,14 +73,20 @@ class Main(commands.Cog):
                                 if m.author.id != self.bot.user.id or len(m.embeds) <= 0 \
                                    or m.embeds[0].title not in ["Message Received", "Message Sent"]:
                                     continue
-                                if m.embeds[0].author is not None:
-                                    author = f"{m.embeds[0].author.name} (Staff)"
-                                else:
+                                if isinstance(m.embeds[0].author, discord.Embed.Empty):
                                     author = f"{' '.join(m.embeds[0].footer.text.split()[:-2])} (User)"
+                                else:
+                                    author = f"{m.embeds[0].author.name} (Staff)"
+                                description = m.embeds[0].description
+                                if len(m.attachments) != 0:
+                                    if isinstance(description, discord.Embed.Empty):
+                                        description = f"({len(m.attachments)} attachments not shown)"
+                                    else:
+                                        description = description + f"({len(m.attachments)} attachments not shown)"
                                 history = f"[{str(m.created_at.replace(microsecond=0))}] {author}: " \
-                                          f"{m.embeds[0].description}\n" + history
+                                          f"{description}\n" + history
                             history = io.BytesIO(history.encode())
-                            file = discord.File(history, f"modmail_logs_{ctx.channel.name}")
+                            file = discord.File(history, f"modmail_logs_{ctx.channel.name}.txt")
                             return await channel.send(embed=embed, file=file)
                         await channel.send(embed=embed)
                     except discord.Forbidden:
