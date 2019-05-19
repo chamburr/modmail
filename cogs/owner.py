@@ -230,6 +230,33 @@ class Owner(commands.Cog):
                 )
             )
 
+    @commands.is_owner()
+    @commands.command(
+        description="Get the bot logs. Default to 10 lines.",
+        usage="botlogs [lines]",
+        hideen=True,
+    )
+    async def botlogs(self, ctx, *, lines: int = 10):
+        with open("discord.log", "r") as file:
+            content = file.readlines()
+        if lines > len(content):
+            lines = len(content)
+        content = "\n".join(content[(len(content) - lines):])
+        try:
+            await ctx.send(
+                embed=discord.Embed(
+                    description=f"```{content}```",
+                    color=self.bot.primary_colour,
+                )
+            )
+        except discord.HTTPException:
+            await ctx.send(
+                embed=discord.Embed(
+                    description="The message is too long to be sent.",
+                    color=self.bot.error_colour,
+                )
+            )
+
     @checks.is_admin()
     @commands.command(
         description="Get a list of servers with the specified name.",
