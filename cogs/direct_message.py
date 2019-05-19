@@ -17,7 +17,8 @@ class DirectMessageEvents(commands.Cog):
         if message.author.bot or not isinstance(message.channel, discord.DMChannel):
             return
         prefix = self.bot.config.default_prefix
-        if message.content.startswith(prefix) and not message.content.startswith(f"{prefix}send"):
+        if message.content.startswith(prefix) and not message.content.startswith(f"{prefix}send") \
+           and not message.content.startswith(f"{prefix}reply"):
             return
 
         def member_in_guild(guild2):
@@ -33,6 +34,29 @@ class DirectMessageEvents(commands.Cog):
                 return await message.channel.send(
                     embed=discord.Embed(
                         description=f"Wrong arguments. The correct usage is `{prefix}send <server ID> <message>`.",
+                        color=self.bot.error_colour,
+                    )
+                )
+        elif message.content.startswith(f"{prefix}reply"):
+            to_send = " ".join(message.content.split()[1:])
+            guild = False
+            async for msg in message.channel.history(limit=10):
+                if msg.author.id == self.bot.user.id and len(msg.embeds) > 0 \
+                   and msg.embeds[0].title in ["Message Received", "Message Sent"]:
+                    guild = msg.embeds[0].footer.text.split()[-1]
+            if not guild:
+                return await message.channel.send(
+                    embed=discord.Embed(
+                        description="The previous message was not found. Try sending the message without using command",
+                        color=self.bot.error_colour,
+                    )
+                )
+            else:
+                guild = int(guild)
+            if not to_send:
+                await message.channel.send(
+                    embed=discord.Embed(
+                        description="You did not specify what to send.",
                         color=self.bot.error_colour,
                     )
                 )
@@ -55,8 +79,10 @@ class DirectMessageEvents(commands.Cog):
                 if not current_embed:
                     current_embed = discord.Embed(
                         title="Choose Server",
-                        description="Select and confirm the server you want this message to be sent to.\n"
-                                    f"Tip: You can also use `{prefix}send <server ID> <message>`.",
+                        description="Select and confirm the server you want this message to be sent to.\n Tip: You can "
+                                    f"also use `{prefix}send <server ID> <message>`.\nSuper tip: Use `{prefix}reply "
+                                    "<message>` to continue the last conversation. It will send to the server of the "
+                                    "latest message found in this channel.",
                         color=self.bot.primary_colour,
                     )
                     current_embed.set_footer(text="Use the reactions to flip pages.")
