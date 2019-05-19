@@ -1,3 +1,4 @@
+import io
 import datetime
 import discord
 from discord.ext import commands
@@ -64,6 +65,22 @@ class Main(commands.Cog):
                             text=f"{member.name}#{member.discriminator} | {member.id}",
                             icon_url=member.avatar_url
                         )
+                        if data[7] == 1:
+                            messages = await ctx.channel.history(limit=10000).flatten()
+                            history = ""
+                            for m in messages:
+                                if m.author.id != self.bot.user.id or len(m.embeds) <= 0 \
+                                   or m.embeds[0].title not in ["Message Received", "Message Sent"]:
+                                    continue
+                                if m.embeds[0].author is not None:
+                                    author = f"{m.embeds[0].author.name} (Staff)"
+                                else:
+                                    author = f"{' '.join(m.embeds[0].footer.text.split()[:-2])} (User)"
+                                history = f"[{str(m.created_at.replace(microsecond=0))}] {author}: " \
+                                          f"{m.embeds[0].description}\n" + history
+                            history = io.BytesIO(history)
+                            file = discord.File(history, f"modmail_logs_{ctx.channel.name}")
+                            return await channel.send(embed=embed, file=file)
                         await channel.send(embed=embed)
                     except discord.Forbidden:
                         pass
@@ -80,10 +97,10 @@ class Main(commands.Cog):
     @commands.guild_only()
     @commands.command(
         description="Open a ticket with a user.",
-        usage="open <user> [reason]",
+        usage="open <user>",
         aliases=["new"],
     )
-    async def open(self, ctx, *, user: discord.Member, reason: str = None):
+    async def open(self, ctx, *, user: discord.Member):
         await ctx.send("WIP")
 
 
