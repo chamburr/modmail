@@ -354,9 +354,9 @@ class Configuration(commands.Cog):
     @commands.guild_only()
     @commands.command(
         description="Set a super cool greeting message that is sent when a new ticket is opened.",
-        usage="greetingmessage <text>",
+        usage="greetingmessage [text]",
     )
-    async def greetingmessage(self, ctx, *, text: str):
+    async def greetingmessage(self, ctx, *, text = None):
         c = self.bot.conn.cursor()
         c.execute("UPDATE data SET welcome=? WHERE guild=?", (text, ctx.guild.id))
         self.bot.conn.commit()
@@ -373,9 +373,9 @@ class Configuration(commands.Cog):
     @commands.guild_only()
     @commands.command(
         description="Set a super cool close message that is sent when a ticket is closed.",
-        usage="closemessage <text>",
+        usage="closemessage [text]",
     )
-    async def closemessage(self, ctx, *, text: str):
+    async def closemessage(self, ctx, *, text = None):
         c = self.bot.conn.cursor()
         c.execute("UPDATE data SET goodbye=? WHERE guild=?", (text, ctx.guild.id))
         self.bot.conn.commit()
