@@ -28,6 +28,9 @@ class Main(commands.Cog):
                     color=self.bot.primary_colour,
                 )
             )
+            data = self.bot.get_data(ctx.guild.id)
+            if data[7] == 1:
+                messages = await ctx.channel.history(limit=10000).flatten()
             await ctx.channel.delete()
             embed = discord.Embed(
                 title="Ticket Closed",
@@ -56,7 +59,6 @@ class Main(commands.Cog):
                     await member.send(embed=embed)
                 except discord.Forbidden:
                     pass
-            data = self.bot.get_data(ctx.guild.id)
             if data[4] is not None:
                 channel = ctx.guild.get_channel(data[4])
                 if channel is not None:
@@ -66,7 +68,6 @@ class Main(commands.Cog):
                             icon_url=member.avatar_url
                         )
                         if data[7] == 1:
-                            messages = await ctx.channel.history(limit=10000).flatten()
                             history = ""
                             for m in messages:
                                 if m.author.id != self.bot.user.id or len(m.embeds) <= 0 \
