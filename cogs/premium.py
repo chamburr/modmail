@@ -157,7 +157,8 @@ class Premium(commands.Cog):
         res = c.fetchone()
         if res[0] is None or str(guild) not in res[0].split(","):
             return await ctx.send("You did not assign premium to that server.")
-        servers = res[0].split(",").remove(str(guild))
+        servers = res[0].split(",")
+        servers.remove(str(guild))
         c.execute("UPDATE premium SET server=? WHERE user=?", (",".join(servers), ctx.author.id))
         c.execute("UPDATE data SET welcome=?, goodbye=?, loggingplus=? WHERE guild=?", (None, None, None, guild))
         self.bot.conn.commit()
