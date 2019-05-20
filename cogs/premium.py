@@ -117,7 +117,7 @@ class Premium(commands.Cog):
             row = row[0].split(",")
             for server in row:
                 all_premium.append(server)
-        if guild in all_premium:
+        if str(guild) in all_premium:
             return await ctx.send(
                 embed=discord.Embed(
                     description="That server already has premium.",
