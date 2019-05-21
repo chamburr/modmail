@@ -12,139 +12,10 @@ class DirectMessageEvents(commands.Cog):
         self.bot = bot
         self.guild = None
 
-    @commands.Cog.listener()
-    async def on_message(self, message):
-        if message.author.bot or not isinstance(message.channel, discord.DMChannel):
-            return
-        prefix = self.bot.config.default_prefix
-        if message.content.startswith(prefix) and not message.content.startswith(f"{prefix}send") \
-           and not message.content.startswith(f"{prefix}reply"):
-            return
-
+    async def send_mail(self, message, guild, to_send):
         def member_in_guild(guild2):
             return guild2.get_member(message.author.id) is not None
-
-        def channel_in_guild(channel2):
-            return channel2.name == str(message.author.id) and channel2.category_id in self.bot.all_category
-
-        if message.content.startswith(f"{prefix}send"):
-            guild = message.content.split()[1]
-            to_send = " ".join(message.content.split()[2:])
-            if not guild or not to_send:
-                return await message.channel.send(
-                    embed=discord.Embed(
-                        description=f"Wrong arguments. The correct usage is `{prefix}send <server ID> <message>`.",
-                        color=self.bot.error_colour,
-                    )
-                )
-        elif message.content.startswith(f"{prefix}reply"):
-            to_send = " ".join(message.content.split()[1:])
-            guild = False
-            async for msg in message.channel.history(limit=10):
-                if msg.author.id == self.bot.user.id and len(msg.embeds) > 0 \
-                   and msg.embeds[0].title in ["Message Received", "Message Sent"]:
-                    guild = msg.embeds[0].footer.text.split()[-1]
-            if not guild:
-                return await message.channel.send(
-                    embed=discord.Embed(
-                        description="The previous message was not found. Try sending the message without using command",
-                        color=self.bot.error_colour,
-                    )
-                )
-            else:
-                guild = int(guild)
-            if not to_send:
-                await message.channel.send(
-                    embed=discord.Embed(
-                        description="You did not specify what to send.",
-                        color=self.bot.error_colour,
-                    )
-                )
-        else:
-            to_send = message.content
-            guilds = filter(member_in_guild, self.bot.guilds)
-            guild_list = {}
-            for guild in guilds:
-                try:
-                    channel = next(filter(channel_in_guild, guild.text_channels))
-                except StopIteration:
-                    channel = None
-                if not channel:
-                    guild_list[str(guild.id)] = (guild.name, False)
-                else:
-                    guild_list[str(guild.id)] = (guild.name, True)
-            embeds = []
-            current_embed = None
-            for guild, value in guild_list.items():
-                if not current_embed:
-                    current_embed = discord.Embed(
-                        title="Choose Server",
-                        description="Select and confirm the server you want this message to be sent to.\n Tip: You can "
-                                    f"also use `{prefix}send <server ID> <message>`.\nSuper tip: Use `{prefix}reply "
-                                    "<message>` to continue the last conversation. It will send to the server of the "
-                                    "latest message found in this channel.",
-                        color=self.bot.primary_colour,
-                    )
-                    current_embed.set_footer(text="Use the reactions to flip pages.")
-                current_embed.add_field(
-                    name=f"{len(current_embed.fields) + 1}: {value[0]}",
-                    value=f"{'Create a new ticket.' if value[1] is False else 'Existing ticket.'}\nServer ID: {guild}",
-                )
-                if len(current_embed.fields) == 10:
-                    embeds.append(current_embed)
-                    current_embed = None
-            if current_embed is not None:
-                embeds.append(current_embed)
-
-            msg = await message.channel.send(embed=embeds[0])
-            reactions = ["1⃣", "2⃣", "3⃣", "4⃣", "5⃣", "6⃣", "7⃣", "8⃣", "9⃣", "🔟", "◀", "▶"]
-
-            async def add_reactions(length):
-                await msg.add_reaction("◀")
-                await msg.add_reaction("▶")
-                for index in range(0, length):
-                    await msg.add_reaction(reactions[index])
-
-            def reaction_check(reaction2, user2):
-                if str(reaction2) in reactions and user2.id == message.author.id and reaction2.message.id == msg.id:
-                    return True
-                else:
-                    return False
-
-            await add_reactions(len(embeds[0].fields))
-            page_index = 0
-            chosen = -1
-            try:
-                while chosen < 0:
-                    reaction, user = await self.bot.wait_for("reaction_add", check=reaction_check, timeout=60)
-                    if str(reaction) == "◀":
-                        if page_index != 0:
-                            page_index = page_index - 1
-                            await msg.edit(embed=embeds[page_index])
-                            await add_reactions(len(embeds[page_index].fields))
-                    elif str(reaction) == "▶":
-                        if page_index + 1 < len(embeds):
-                            page_index = page_index + 1
-                            await msg.edit(embed=embeds[page_index])
-                            if len(embeds[page_index].fields) != 10:
-                                to_remove = reactions[len(embeds[page_index].fields):-2]
-                                msg = await msg.channel.fetch_message(msg.id)
-                                for this_reaction in msg.reactions:
-                                    if str(this_reaction) in to_remove:
-                                        await this_reaction.remove(self.bot.user)
-                    elif reactions.index(str(reaction)) >= 0:
-                        chosen = reactions.index(str(reaction))
-            except asyncio.TimeoutError:
-                return await message.channel.send(
-                    embed=discord.Embed(
-                        description="Time out. You did not choose anything.",
-                        color=self.bot.error_colour,
-                    )
-                )
-            await msg.delete()
-            guild = embeds[page_index].fields[chosen].value.split()[-1]
         guild = self.bot.get_guild(int(guild))
-
         if guild is None:
             return await message.channel.send(
                 embed=discord.Embed(
@@ -252,6 +123,132 @@ class DirectMessageEvents(commands.Cog):
                     color=self.bot.error_colour,
                 )
             )
+
+    @commands.Cog.listener()
+    async def on_message(self, message):
+        if message.author.bot or not isinstance(message.channel, discord.DMChannel):
+            return
+        prefix = self.bot.config.default_prefix
+        if message.content.startswith(prefix):
+            return
+        guild = False
+        async for msg in message.channel.history(limit=10):
+            if msg.author.id == self.bot.user.id and len(msg.embeds) > 0 \
+               and msg.embeds[0].title in ["Message Received", "Message Sent"]:
+                guild = msg.embeds[0].footer.text.split()[-1]
+        if not guild:
+            return await message.channel.send(
+                embed=discord.Embed(
+                    description="The previous message was not found. Try sending the message with the command "
+                                f"`{prefix}new <message>` or `{prefix}send <server ID> <message>`.",
+                    color=self.bot.error_colour,
+                )
+            )
+        else:
+            await self.send_mail(message, int(guild), message.content)
+
+    @commands.dm_only()
+    @commands.command(
+        description="Create a new ticket or send to another server.",
+        usage="new <message>",
+        aliases=["create", "switch", "change"],
+    )
+    async def new(self, ctx, *, message: str):
+        def member_in_guild(guild2):
+            return guild2.get_member(ctx.author.id) is not None
+
+        def channel_in_guild(channel2):
+            return channel2.name == str(ctx.author.id) and channel2.category_id in self.bot.all_category
+        guilds = filter(member_in_guild, self.bot.guilds)
+        guild_list = {}
+        for guild in guilds:
+            try:
+                channel = next(filter(channel_in_guild, guild.text_channels))
+            except StopIteration:
+                channel = None
+            if not channel:
+                guild_list[str(guild.id)] = (guild.name, False)
+            else:
+                guild_list[str(guild.id)] = (guild.name, True)
+        prefix = self.bot.config.default_prefix
+        embeds = []
+        current_embed = None
+        for guild, value in guild_list.items():
+            if not current_embed:
+                current_embed = discord.Embed(
+                    title="Choose Server",
+                    description="Select and confirm the server you want this message to be sent to.\n Tip: You can "
+                                f"also use `{prefix}send <server ID> <message>`.\nSuper tip: Use `{prefix}reply "
+                                "<message>` to continue the last conversation. It will send to the server of the "
+                                "latest message found in this channel.",
+                    color=self.bot.primary_colour,
+                )
+                current_embed.set_footer(text="Use the reactions to flip pages.")
+            current_embed.add_field(
+                name=f"{len(current_embed.fields) + 1}: {value[0]}",
+                value=f"{'Create a new ticket.' if value[1] is False else 'Existing ticket.'}\nServer ID: {guild}",
+            )
+            if len(current_embed.fields) == 10:
+                embeds.append(current_embed)
+                current_embed = None
+        if current_embed is not None:
+            embeds.append(current_embed)
+        msg = await ctx.send(embed=embeds[0])
+        reactions = ["1⃣", "2⃣", "3⃣", "4⃣", "5⃣", "6⃣", "7⃣", "8⃣", "9⃣", "🔟", "◀", "▶"]
+
+        async def add_reactions(length):
+            await msg.add_reaction("◀")
+            await msg.add_reaction("▶")
+            for index in range(0, length):
+                await msg.add_reaction(reactions[index])
+
+        def reaction_check(reaction2, user2):
+            if str(reaction2) in reactions and user2.id == ctx.author.id and reaction2.message.id == msg.id:
+                return True
+            else:
+                return False
+
+        await add_reactions(len(embeds[0].fields))
+        page_index = 0
+        chosen = -1
+        try:
+            while chosen < 0:
+                reaction, user = await self.bot.wait_for("reaction_add", check=reaction_check, timeout=60)
+                if str(reaction) == "◀":
+                    if page_index != 0:
+                        page_index = page_index - 1
+                        await msg.edit(embed=embeds[page_index])
+                        await add_reactions(len(embeds[page_index].fields))
+                elif str(reaction) == "▶":
+                    if page_index + 1 < len(embeds):
+                        page_index = page_index + 1
+                        await msg.edit(embed=embeds[page_index])
+                        if len(embeds[page_index].fields) != 10:
+                            to_remove = reactions[len(embeds[page_index].fields):-2]
+                            msg = await msg.channel.fetch_message(msg.id)
+                            for this_reaction in msg.reactions:
+                                if str(this_reaction) in to_remove:
+                                    await this_reaction.remove(self.bot.user)
+                elif reactions.index(str(reaction)) >= 0:
+                    chosen = reactions.index(str(reaction))
+        except asyncio.TimeoutError:
+            return await ctx.send(
+                embed=discord.Embed(
+                    description="Time out. You did not choose anything.",
+                    color=self.bot.error_colour,
+                )
+            )
+        await msg.delete()
+        guild = embeds[page_index].fields[chosen].value.split()[-1]
+        await self.send_mail(ctx.message, guild, message)
+
+    @commands.dm_only()
+    @commands.command(
+        description="Shortcut for the command new.",
+        usage="send <server ID> <message>",
+    )
+    async def send(self, ctx, *, guild: int, message: str):
+        await self.send_mail(ctx.message, guild, message)
 
 
 def setup(bot):
