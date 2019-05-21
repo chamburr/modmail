@@ -153,7 +153,7 @@ class General(commands.Cog):
             embed=discord.Embed(
                 title="Invite Me!",
                 description=f"https://discordapp.com/api/oauth2/authorize?client_id={self.bot.user.id}"
-                            "&permissions=8&scope=bot",
+                            "&permissions=268823640&scope=bot",
                 color=self.bot.primary_colour,
             )
         )
