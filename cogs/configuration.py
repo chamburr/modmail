@@ -84,7 +84,7 @@ class Configuration(commands.Cog):
             embed=discord.Embed(
                 title="Step 3 of 3",
                 description="Do you want a channel for ModMail logs as well? It will log the details whenever a ticket "
-                            "is created or closed. Please enter either `yes` or `no`. You can change the name of this"
+                            "is created or closed. Please enter either `yes` or `no`. You can change the name of this "
                             "channel manually afterwards.",
                 color=self.bot.primary_colour,
             )
