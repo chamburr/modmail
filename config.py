@@ -8,6 +8,12 @@ default_prefix = "="
 owner = 446290930723717120
 
 # Bot owners that have access to owner commands
+owners = [
+    446290930723717120,  # CHamburr#2591
+    415416051170541588,  # xXMareXx#7700
+]
+
+# Bot admins that have access to admin commands
 admins = [
     446290930723717120,  # CHamburr#2591
     402753815046127627,  # Akaitsune#3426
