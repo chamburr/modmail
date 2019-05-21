@@ -178,9 +178,7 @@ class DirectMessageEvents(commands.Cog):
                 current_embed = discord.Embed(
                     title="Choose Server",
                     description="Select and confirm the server you want this message to be sent to.\n Tip: You can "
-                                f"also use `{prefix}send <server ID> <message>`.\nSuper tip: Use `{prefix}reply "
-                                "<message>` to continue the last conversation. It will send to the server of the "
-                                "latest message found in this channel.",
+                                f"also use `{prefix}send <server ID> <message>`.",
                     color=self.bot.primary_colour,
                 )
                 current_embed.set_footer(text="Use the reactions to flip pages.")
@@ -244,7 +242,7 @@ class DirectMessageEvents(commands.Cog):
 
     @commands.dm_only()
     @commands.command(
-        description="Shortcut for the command new.",
+        description="Shortcut for the `new` command.",
         usage="send <server ID> <message>",
     )
     async def send(self, ctx, guild: int, *, message: str):
