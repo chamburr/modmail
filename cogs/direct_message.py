@@ -247,7 +247,7 @@ class DirectMessageEvents(commands.Cog):
         description="Shortcut for the command new.",
         usage="send <server ID> <message>",
     )
-    async def send(self, ctx, *, guild: int, message: str):
+    async def send(self, ctx, guild: int, *, message: str):
         await self.send_mail(ctx.message, guild, message)
 
 
