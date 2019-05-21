@@ -105,7 +105,6 @@ class Main(commands.Cog):
     @commands.command(
         description="Open a ticket with a user.",
         usage="open <user>",
-        aliases=["new"],
     )
     async def open(self, ctx, *, user: discord.Member):
         await ctx.send("WIP")
