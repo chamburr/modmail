@@ -7,7 +7,7 @@ from discord.ext import commands
 from utils.tools import get_guild_prefix
 
 
-class DirectMessageEvents(commands.Cog):
+class DirectMessageEvents(commands.Cog, name="Direct Message"):
     def __init__(self, bot):
         self.bot = bot
         self.guild = None
