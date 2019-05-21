@@ -75,7 +75,6 @@ class Miscellaneous(commands.Cog):
     @commands.command(
         description="Get some information about this server.",
         usage="serverinfo",
-        aliases=["server"],
     )
     async def serverinfo(self, ctx):
         guild = ctx.guild
