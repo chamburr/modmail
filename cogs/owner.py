@@ -15,7 +15,7 @@ class Owner(commands.Cog):
         self.bot = bot
         self._last_result = None
 
-    @commands.is_owner()
+    @checks.is_owner()
     @commands.command(
         description="Load a module.",
         usage="load <cog>",
@@ -39,7 +39,7 @@ class Owner(commands.Cog):
                 )
             )
 
-    @commands.is_owner()
+    @checks.is_owner()
     @commands.command(
         description="Unload a module.",
         usage="unload <cog>",
@@ -63,7 +63,7 @@ class Owner(commands.Cog):
                 )
             )
 
-    @commands.is_owner()
+    @checks.is_owner()
     @commands.command(
         description="Reload a module.",
         usage="reload <cog>",
@@ -108,7 +108,7 @@ class Owner(commands.Cog):
             return "\n".join(content.split("\n")[1:-1])
         return content.strip("` \n")
 
-    @commands.is_owner()
+    @checks.is_owner()
     @commands.command(
         name="eval",
         description="Evaluate a code",
@@ -179,7 +179,7 @@ class Owner(commands.Cog):
                     )
                 )
 
-    @commands.is_owner()
+    @checks.is_owner()
     @commands.command(
         description="Execute code in bash.",
         usage="bash <command>",
@@ -196,7 +196,7 @@ class Owner(commands.Cog):
             )
         )
 
-    @commands.is_owner()
+    @checks.is_owner()
     @commands.command(
         description="Execute SQL.",
         usage="sql <query>",
@@ -230,7 +230,7 @@ class Owner(commands.Cog):
                 )
             )
 
-    @commands.is_owner()
+    @checks.is_owner()
     @commands.command(
         description="Get the bot logs. Default to 10 lines.",
         usage="botlogs [lines]",
