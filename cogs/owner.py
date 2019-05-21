@@ -257,6 +257,16 @@ class Owner(commands.Cog):
                 )
             )
 
+    @checks.is_owner()
+    @commands.command(
+        description="Make me say something.",
+        usage="echo <message>",
+        rest_is_raw=True,
+        hidden=True,
+    )
+    async def echo(self, ctx, *, content):
+        await ctx.send(content)
+
     @checks.is_admin()
     @commands.command(
         description="Get a list of servers with the specified name.",
