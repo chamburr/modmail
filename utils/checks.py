@@ -4,8 +4,14 @@ from discord.ext import commands
 from utils import tools
 
 
+def is_owner():
+    def predicate(ctx):
+        return ctx.author.id in ctx.bot.config.owners
+    return commands.check(predicate)
+
+
 def is_admin():
-    async def predicate(ctx):
+    def predicate(ctx):
         return ctx.author.id in ctx.bot.config.admins
     return commands.check(predicate)
 
