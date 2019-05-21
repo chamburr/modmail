@@ -136,6 +136,7 @@ class DirectMessageEvents(commands.Cog):
             if msg.author.id == self.bot.user.id and len(msg.embeds) > 0 \
                and msg.embeds[0].title in ["Message Received", "Message Sent"]:
                 guild = msg.embeds[0].footer.text.split()[-1]
+                break
         if not guild:
             return await message.channel.send(
                 embed=discord.Embed(
