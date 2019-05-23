@@ -159,7 +159,11 @@ class Premium(commands.Cog):
             return await ctx.send("You did not assign premium to that server.")
         servers = res[0].split(",")
         servers.remove(str(guild))
-        c.execute("UPDATE premium SET server=? WHERE user=?", (",".join(servers), ctx.author.id))
+        if len(servers) == 0:
+            servers = None
+        else:
+            servers = ",".join(servers)
+        c.execute("UPDATE premium SET server=? WHERE user=?", (servers, ctx.author.id))
         c.execute("UPDATE data SET welcome=?, goodbye=?, loggingplus=? WHERE guild=?", (None, None, None, guild))
         self.bot.conn.commit()
         await ctx.send(
