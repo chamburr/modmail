@@ -124,7 +124,7 @@ class Main(commands.Cog):
     @commands.bot_has_permissions(manage_channels=True)
     @commands.guild_only()
     @commands.command(
-        description="Close the channel.",
+        description="Anonymously close the channel.",
         usage="aclose [reason]",
         aliases=["anonclose", "aend", "anonend"],
     )
