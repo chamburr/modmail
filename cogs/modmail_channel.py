@@ -22,6 +22,9 @@ class ModMailEvents(commands.Cog):
         prefix = get_guild_prefix(self.bot, message)
         if message.content.startswith(prefix):
             return
+        await self.send_mail_mod(message, prefix)
+
+    async def send_mail_mod(self, message, prefix, anon: bool = False, msg: str = None):
         member = message.guild.get_member(int(message.channel.name))
         if member is None:
             return await message.channel.send(
@@ -35,13 +38,14 @@ class ModMailEvents(commands.Cog):
         try:
             embed = discord.Embed(
                 title="Message Received",
-                description=message.content,
+                description=message.content if anon is False else msg,
                 color=self.bot.mod_colour,
                 timestamp=datetime.datetime.utcnow(),
             )
             embed.set_author(
-                name=f"{message.author.name}#{message.author.discriminator}",
-                icon_url=message.author.avatar_url,
+                name=f"{message.author.name}#{message.author.discriminator}" if anon is False else "Anonymous#0000",
+                icon_url=message.author.avatar_url if anon is False else
+                "https://cdn.discordapp.com/embed/avatars/0.png",
             )
             embed.set_footer(text=f"{message.guild.name} | {message.guild.id}", icon_url=message.guild.icon_url)
             files = []

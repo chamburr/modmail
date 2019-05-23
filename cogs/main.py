@@ -1,26 +1,18 @@
 import io
+import copy
 import datetime
 import discord
 from discord.ext import commands
 
 from utils import checks
+from cogs.modmail_channel import ModMailEvents
 
 
 class Main(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
-    @checks.is_modmail_channel()
-    @checks.is_mod()
-    @checks.in_database()
-    @commands.bot_has_permissions(manage_channels=True)
-    @commands.guild_only()
-    @commands.command(
-        description="Close the channel.",
-        usage="close [reason]",
-        aliases=["end", "delete"],
-    )
-    async def close(self, ctx, *, reason: str = None):
+    async def close_channel(self, ctx, reason, anon: bool = False):
         try:
             await ctx.send(
                 embed=discord.Embed(
@@ -39,8 +31,9 @@ class Main(commands.Cog):
                 timestamp=datetime.datetime.utcnow(),
             )
             embed.set_author(
-                name=f"{ctx.author.name}#{ctx.author.discriminator}",
-                icon_url=ctx.author.avatar_url,
+                name=f"{ctx.author.name}#{ctx.author.discriminator}" if anon is False else "Anonymous#0000",
+                icon_url=ctx.author.avatar_url if anon is False else
+                "https://cdn.discordapp.com/embed/avatars/0.png",
             )
             embed.set_footer(text=f"{ctx.guild.name} | {ctx.guild.id}", icon_url=ctx.guild.icon_url)
             member = ctx.guild.get_member(int(ctx.channel.name))
@@ -98,6 +91,45 @@ class Main(commands.Cog):
                     color=self.bot.error_colour,
                 )
             )
+
+    @checks.is_modmail_channel()
+    @checks.is_mod()
+    @checks.in_database()
+    @commands.guild_only()
+    @commands.command(
+        description="Anonymously reply to the message.",
+        usage="areply <message>",
+        aliases=["anonreply"],
+    )
+    async def areply(self, ctx, *, message):
+        modmail = ModMailEvents(self.bot)
+        await modmail.send_mail_mod(ctx.message, ctx.prefix, True, message)
+
+    @checks.is_modmail_channel()
+    @checks.is_mod()
+    @checks.in_database()
+    @commands.bot_has_permissions(manage_channels=True)
+    @commands.guild_only()
+    @commands.command(
+        description="Close the channel.",
+        usage="close [reason]",
+        aliases=["end"],
+    )
+    async def close(self, ctx, *, reason: str = None):
+        await self.close_channel(ctx, reason)
+
+    @checks.is_modmail_channel()
+    @checks.is_mod()
+    @checks.in_database()
+    @commands.bot_has_permissions(manage_channels=True)
+    @commands.guild_only()
+    @commands.command(
+        description="Close the channel.",
+        usage="aclose [reason]",
+        aliases=["anonclose", "aend", "anonend"],
+    )
+    async def aclose(self, ctx, *, reason: str = None):
+        await self.close_channel(ctx, reason, True)
 
     @checks.is_mod()
     @checks.in_database()
