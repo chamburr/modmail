@@ -15,6 +15,10 @@ class DirectMessageEvents(commands.Cog, name="Direct Message"):
     async def send_mail(self, message, guild, to_send):
         def member_in_guild(guild2):
             return guild2.get_member(message.author.id) is not None
+
+        def channel_in_guild(channel2):
+            return channel2.name == str(message.author.id) and channel2.category_id in self.bot.all_category
+
         guild = self.bot.get_guild(int(guild))
         if guild is None:
             return await message.channel.send(
@@ -41,7 +45,7 @@ class DirectMessageEvents(commands.Cog, name="Direct Message"):
             )
         new_ticket = False
         try:
-            channel = next(filter(lambda x: x.name == str(message.author.id), guild.text_channels))
+            channel = next(filter(channel_in_guild, guild.text_channels))
         except StopIteration:
             try:
                 channel = await category.create_text_channel(str(message.author.id))
