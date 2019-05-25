@@ -159,7 +159,7 @@ class Events(commands.Cog):
            message.content.startswith(f"<@!{self.bot.user.id}>"):
             return await message.channel.send(
                 embed=discord.Embed(
-                    description=f"My prefix in this server is `{prefix}`. Please use the prefix instead. Run `{prefix} "
+                    description=f"My prefix in this server is `{prefix}`. Please use the prefix instead. Run `{prefix}"
                                 f"help` for more information.",
                     color=self.bot.primary_colour,
                 )
