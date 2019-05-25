@@ -1,3 +1,4 @@
+import aiohttp
 import sys
 import traceback
 import datetime
@@ -15,6 +16,7 @@ class ModMail(commands.AutoShardedBot):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.start_time = datetime.datetime.utcnow()
+        self.session = aiohttp.ClientSession(loop=self.loop)
 
     @property
     def conn(self):

@@ -1,3 +1,4 @@
+import asyncio
 import datetime
 import traceback
 import discord
@@ -9,6 +10,24 @@ from utils.tools import get_guild_prefix
 class Events(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
+        self.dbl_auth = {"Authorization": bot.config.dbl_token}
+        self.stats_updates = bot.loop.create_task(self.stats_updater())
+
+    async def stats_updater(self):
+        await self.bot.wait_until_ready()
+        while True:
+            await self.bot.session.post(
+                f"https://discordbots.org/api/bots/{self.bot.user.id}/stats",
+                data=self.get_dbl_payload(),
+                headers=self.dbl_auth,
+            )
+            await asyncio.sleep(1800)
+
+    def get_dbl_payload(self):
+        return {
+            "server_count": len(self.bot.guilds),
+            "shard_count": self.bot.shard_count,
+        }
 
     @commands.Cog.listener()
     async def on_ready(self):
