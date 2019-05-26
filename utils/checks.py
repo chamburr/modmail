@@ -6,13 +6,19 @@ from utils import tools
 
 def is_owner():
     def predicate(ctx):
-        return ctx.author.id in ctx.bot.config.owners
+        if ctx.author.id not in ctx.bot.config.owners:
+            raise commands.NotOwner()
+        else:
+            return True
     return commands.check(predicate)
 
 
 def is_admin():
     def predicate(ctx):
-        return ctx.author.id in ctx.bot.config.admins
+        if ctx.author.id not in ctx.bot.config.admins:
+            raise commands.NotOwner()
+        else:
+            return True
     return commands.check(predicate)
 
 
