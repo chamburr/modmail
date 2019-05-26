@@ -1,9 +1,11 @@
+import copy
 import discord
 import traceback
 import textwrap
 import io
 import subprocess
 
+from typing import Optional
 from contextlib import redirect_stdout
 from discord.ext import commands
 
@@ -259,6 +261,21 @@ class Owner(commands.Cog):
 
     @checks.is_owner()
     @commands.command(
+        description="Invoke the command as another user and optionally in another channel.",
+        usage="invoke [channel] <user> <command>",
+        hidden=True,
+    )
+    async def invoke(self, ctx, channel: Optional[discord.TextChannel], who: discord.User, *, command: str):
+        msg = copy.copy(ctx.message)
+        channel = channel or ctx.channel
+        msg.channel = channel
+        msg.author = channel.guild.get_member(who.id) or who
+        msg.content = ctx.prefix + command
+        new_ctx = await self.bot.get_context(msg, cls=type(ctx))
+        await self.bot.invoke(new_ctx)
+
+    @checks.is_owner()
+    @commands.command(
         description="Make me say something.",
         usage="echo <message>",
         rest_is_raw=True,
@@ -304,13 +321,13 @@ class Owner(commands.Cog):
     @checks.is_admin()
     @commands.command(
         description="Get a list of servers the bot shares with the user.",
-        usage="sharedservers <user ID>"
+        usage="sharedservers <user>"
     )
-    async def sharedservers(self, ctx, *, user: int):
+    async def sharedservers(self, ctx, *, user: discord.User):
         guilds = []
         for guild in self.bot.guilds:
-            if guild.get_member(user) is not None:
-                guilds.append(f"{guild.name} `{guild.id}`{' (Owner)' if guild.owner_id == user else ''}")
+            if guild.get_member(user.id) is not None:
+                guilds.append(f"{guild.name} `{guild.id}`{' (Owner)' if guild.owner_id == user.id else ''}")
         if len(guilds) == 0:
             await ctx.send(
                 embed=discord.Embed(
