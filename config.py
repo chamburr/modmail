@@ -5,6 +5,12 @@ token = "NTc1MjUyNjY5NDQzMjExMjY0.XNFSxw.vMA00KwiHxSOr_rJoFKRq9cv8l4"
 dbl_token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjU3NTI1MjY2OTQ0MzIxMTI2NCIsImJvdCI6dHJ1ZSwiaWF0IjoxNTU4" \
             "Nzg2MTY3fQ.CC7Bpq5OVke-BM1LCROzGWkJB-ay4FjxgnPepyvYfAw"
 
+# Bots on Discord token
+bod_token = "5958bd9bd8f6c5ed2f1382f9677144fe"
+
+# Whether the bot is for testing
+testing = False
+
 # The default prefix for commands
 default_prefix = "="
 

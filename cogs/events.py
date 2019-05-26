@@ -11,7 +11,9 @@ class Events(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         self.dbl_auth = {"Authorization": bot.config.dbl_token}
-        self.stats_updates = bot.loop.create_task(self.stats_updater())
+        self.bod_auth = {"Authorization": bot.config.bod_token}
+        if self.bot.config.testing is False:
+            self.stats_updates = bot.loop.create_task(self.stats_updater())
 
     async def stats_updater(self):
         await self.bot.wait_until_ready()
@@ -21,12 +23,22 @@ class Events(commands.Cog):
                 data=self.get_dbl_payload(),
                 headers=self.dbl_auth,
             )
+            await self.bot.session.post(
+                f"https://bots.ondiscord.xyz/bot-api/{self.bot.user.id}/guilds",
+                data=self.get_bod_payload(),
+                headers=self.bod_auth,
+            )
             await asyncio.sleep(1800)
 
     def get_dbl_payload(self):
         return {
             "server_count": len(self.bot.guilds),
             "shard_count": self.bot.shard_count,
+        }
+
+    def get_bod_payload(self):
+        return {
+            "guildCount": len(self.bot.guilds),
         }
 
     @commands.Cog.listener()
