@@ -24,7 +24,7 @@ class Events(commands.Cog):
                 headers=self.dbl_auth,
             )
             await self.bot.session.post(
-                f"https://bots.ondiscord.xyz/bot-api/{self.bot.user.id}/guilds",
+                f"https://bots.ondiscord.xyz/bot-api/bots/{self.bot.user.id}/guilds",
                 data=self.get_bod_payload(),
                 headers=self.bod_auth,
             )
