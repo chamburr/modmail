@@ -25,6 +25,14 @@ class ErrorHandler(commands.Cog):
                     color=self.bot.error_colour,
                 )
             )
+        elif isinstance(error, commands.PrivateMessageOnly):
+            await ctx.send(
+                embed=discord.Embed(
+                    title="Command Unavailable",
+                    description="This command can only be used in Direct Message.",
+                    color=self.bot.error_colour,
+                )
+            )
         elif isinstance(error, commands.MissingRequiredArgument) or isinstance(error, commands.BadArgument):
             await ctx.send(
                 embed=discord.Embed(
