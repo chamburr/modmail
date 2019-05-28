@@ -2,6 +2,8 @@ import asyncio
 import discord
 from discord.ext import commands
 
+from utils.tools import perm_format
+
 
 class Miscellaneous(commands.Cog):
     def __init__(self, bot):
@@ -15,7 +17,7 @@ class Miscellaneous(commands.Cog):
         )
         allowed, denied = [], []
         for name, value in permissions:
-            name = name.replace('_', ' ').replace('guild', 'server').title()
+            name = perm_format(name)
             if value:
                 allowed.append(name)
             else:
