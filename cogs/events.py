@@ -138,7 +138,7 @@ class Events(commands.Cog):
             title="Server Join",
             description=f"{guild.name} ({guild.id})",
             color=0x00FF00,
-            timestamp=datetime.datetime.now()
+            timestamp=datetime.datetime.utcnow()
         )
         await join_channel.send(embed=embed)
 
@@ -152,7 +152,7 @@ class Events(commands.Cog):
             title="Server Leave",
             description=f"{guild.name} ({guild.id})",
             color=0xFF0000,
-            timestamp=datetime.datetime.now()
+            timestamp=datetime.datetime.utcnow()
         )
         await join_channel.send(embed=embed)
 
