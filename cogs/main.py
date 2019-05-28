@@ -131,16 +131,6 @@ class Main(commands.Cog):
     async def aclose(self, ctx, *, reason: str = None):
         await self.close_channel(ctx, reason, True)
 
-    @checks.is_mod()
-    @checks.in_database()
-    @commands.guild_only()
-    @commands.command(
-        description="Open a ticket with a user.",
-        usage="open <user>",
-    )
-    async def open(self, ctx, *, user: discord.Member):
-        await ctx.send("WIP")
-
 
 def setup(bot):
     bot.add_cog(Main(bot))
