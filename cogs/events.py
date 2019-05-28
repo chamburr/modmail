@@ -160,23 +160,18 @@ class Events(commands.Cog):
     async def on_message(self, message):
         if message.author.bot:
             return
-        prefix = get_guild_prefix(self.bot, message)
-        if message.guild and message.content.startswith(prefix):
+        ctx = await self.bot.get_context(message)
+        if not ctx.command:
+            return
+        if message.guild:
             permissions = message.channel.permissions_for(message.guild.me)
             if permissions.send_messages is False:
                 return
-            elif permissions.send_messages is True and permissions.embed_links is False:
+            elif permissions.embed_links is False:
                 return await message.channel.send("The Embed Links permission is needed for basic commands to work.")
-        if message.content.startswith(f"<@{self.bot.user.id}>") or \
-           message.content.startswith(f"<@!{self.bot.user.id}>"):
-            return await message.channel.send(
-                embed=discord.Embed(
-                    description=f"My prefix in this server is `{prefix}`. Please use the prefix instead. Run `{prefix}"
-                                f"help` for more information.",
-                    color=self.bot.primary_colour,
-                )
-            )
-        await self.bot.process_commands(message)
+        if ctx.prefix == f"<@{self.bot.user.id}>" or ctx.prefix == f"<@!{self.bot.user.id}>":
+            ctx.prefix = get_guild_prefix(self.bot, message)
+        await self.bot.invoke(ctx)
 
 
 def setup(bot):

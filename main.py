@@ -1,6 +1,7 @@
 import asyncio
 import logging
 import sqlite3
+from discord.ext import commands
 
 import config
 from classes.bot import ModMail
@@ -17,7 +18,7 @@ logger.addHandler(handler)
 
 bot = ModMail(
     fetch_offline_members=True,
-    command_prefix=get_guild_prefix,
+    command_prefix=commands.when_mentioned_or(get_guild_prefix),
     case_insensitive=True,
     description="The one and only public ModMail Discord bot.",
     help_command=None,
