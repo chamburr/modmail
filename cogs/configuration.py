@@ -164,32 +164,42 @@ class Configuration(commands.Cog):
 
     @commands.guild_only()
     @commands.command(
-        description="Change the prefix.",
-        usage="prefix <new prefix>",
+        description="Change the prefix or view the current prefix.",
+        usage="prefix [new prefix]",
         aliases=["setprefix"],
     )
-    async def prefix(self, ctx, *, prefix: str):
-        if len(prefix) > 10:
+    async def prefix(self, ctx, *, prefix: str = None):
+        if prefix is None:
             return await ctx.send(
                 embed=discord.Embed(
-                    description="The chosen prefix is too long.",
+                    description=f"The prefix for this server is `{ctx.prefix}`.",
                     color=self.bot.primary_colour,
                 )
             )
-        if prefix == self.bot.config.default_prefix:
-            prefix = None
-        self.bot.get_data(ctx.guild.id)
-        c = self.bot.conn.cursor()
-        c.execute("UPDATE data SET prefix=? WHERE guild=?", (prefix, ctx.guild.id))
-        self.bot.conn.commit()
-        self.bot.all_prefix[ctx.guild.id] = prefix
-        await ctx.send(
-            embed=discord.Embed(
-                description="Successfully changed the prefix to "
-                            f"`{self.bot.config.default_prefix if prefix is None else prefix}`.",
-                color=self.bot.primary_colour,
+        if ctx.author.guild_permissions.administrator is False:
+            raise commands.MissingPermissions(["administrator"])
+        else:
+            if len(prefix) > 10:
+                return await ctx.send(
+                    embed=discord.Embed(
+                        description="The chosen prefix is too long.",
+                        color=self.bot.primary_colour,
+                    )
+                )
+            if prefix == self.bot.config.default_prefix:
+                prefix = None
+            self.bot.get_data(ctx.guild.id)
+            c = self.bot.conn.cursor()
+            c.execute("UPDATE data SET prefix=? WHERE guild=?", (prefix, ctx.guild.id))
+            self.bot.conn.commit()
+            self.bot.all_prefix[ctx.guild.id] = prefix
+            await ctx.send(
+                embed=discord.Embed(
+                    description="Successfully changed the prefix to "
+                                f"`{self.bot.config.default_prefix if prefix is None else prefix}`.",
+                    color=self.bot.primary_colour,
+                )
             )
-        )
 
     @commands.bot_has_permissions(
         manage_channels=True,
