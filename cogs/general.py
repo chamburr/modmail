@@ -164,7 +164,13 @@ class General(commands.Cog):
         aliases=["server"],
     )
     async def support(self, ctx):
-        await ctx.send("You can join the support server with the following link:\nhttps://discord.gg/wjWJwJB")
+        await ctx.send(
+            embed=discord.Embed(
+                title="Support Server",
+                description="You can join the support server with this link: https://discord.gg/wjWJwJB",
+                color=self.bot.primary_colour,
+            )
+        )
 
 
 def setup(bot):
