@@ -368,7 +368,7 @@ class Owner(commands.Cog):
                             color=self.bot.primary_colour,
                         )
                     )
-                except IndexError:
+                except (IndexError, discord.Forbidden):
                     try:
                         return await ctx.send(
                             embed=discord.Embed(
