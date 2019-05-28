@@ -16,9 +16,14 @@ handler.setFormatter(logging.Formatter("%(asctime)s:%(levelname)s:%(name)s: %(me
 logger.addHandler(handler)
 
 
+def _get_guild_prefix(bot2, message):
+    prefix = get_guild_prefix(bot2, message)
+    return commands.when_mentioned_or(prefix)(bot2, message)
+
+
 bot = ModMail(
     fetch_offline_members=True,
-    command_prefix=commands.when_mentioned_or(get_guild_prefix),
+    command_prefix=_get_guild_prefix,
     case_insensitive=True,
     description="The one and only public ModMail Discord bot.",
     help_command=None,
