@@ -169,7 +169,7 @@ class Events(commands.Cog):
                 return
             elif permissions.embed_links is False:
                 return await message.channel.send("The Embed Links permission is needed for basic commands to work.")
-        if ctx.prefix == f"<@{self.bot.user.id}>" or ctx.prefix == f"<@!{self.bot.user.id}>":
+        if ctx.prefix == f"<@{self.bot.user.id}> " or ctx.prefix == f"<@!{self.bot.user.id}> ":
             ctx.prefix = get_guild_prefix(self.bot, message)
         await self.bot.invoke(ctx)
 
