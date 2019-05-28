@@ -145,6 +145,19 @@ class General(commands.Cog):
         await ctx.send(embed=embed)
 
     @commands.command(
+        description="Get the link to vote for ModMail on DiscordBotList.",
+        usage="vote",
+    )
+    async def vote(self, ctx):
+        await ctx.send(
+            embed=discord.Embed(
+                title="Vote for ModMail",
+                description=f"Please vote for me here: https://discordbots.org/bot/575252669443211264. Thank you!",
+                color=self.bot.primary_colour,
+            )
+        )
+
+    @commands.command(
         description="Get a link to invite me.",
         usage="invite",
     )
