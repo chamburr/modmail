@@ -1,8 +1,9 @@
 import discord
 import traceback
 import sys
-
 from discord.ext import commands
+
+from utils.tools import perm_format
 
 
 class ErrorHandler(commands.Cog):
@@ -55,7 +56,7 @@ class ErrorHandler(commands.Cog):
                 embed=discord.Embed(
                     title="Permission Denied",
                     description="You do not have permission to use this command. "
-                                f"Permissions needed: {', '.join(error.missing_perms)}",
+                                f"Permissions needed: {', '.join([perm_format(p) for p in error.missing_perms])}",
                     color=self.bot.error_colour,
                 )
             )
@@ -63,7 +64,8 @@ class ErrorHandler(commands.Cog):
             await ctx.send(
                 embed=discord.Embed(
                     title="Bot Missing Permissions",
-                    description=f"I need the following permissions: {', '.join(error.missing_perms)}",
+                    description="Bot is missing permissions to perform that action. The following permissions are"
+                                f" needed: {', '.join([perm_format(p) for p in error.missing_perms])}",
                     color=self.bot.error_colour,
                 )
             )
