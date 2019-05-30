@@ -1,12 +1,14 @@
 import asyncio
 import logging
 import sqlite3
+import sentry_sdk
 from discord.ext import commands
 
 import config
 from classes.bot import ModMail
 from utils.tools import get_guild_prefix
 
+sentry_sdk.init("https://95aac4bfecc04935b60edfd375646919@sentry.io/1471399")
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("discord")

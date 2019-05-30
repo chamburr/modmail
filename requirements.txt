@@ -3,6 +3,7 @@ async-timeout==3.0.1
 attrs==18.2.0
 beautifulsoup4==4.6.3
 buttons==0.1.7
+certifi==2019.3.9
 chardet==3.0.4
 discord.py==1.1.1
 entrypoints==0.3
@@ -12,11 +13,14 @@ idna-ssl==1.1.0
 lxml==4.2.5
 mccabe==0.6.1
 multidict==4.5.1
+psutil==5.6.2
 py-stackexchange==2.2.7
 pycodestyle==2.5.0
 pyflakes==2.1.1
 PyYAML==3.13
+sentry-sdk==0.8.0
 six==1.11.0
 subprocess32==3.5.3
+urllib3==1.25.3
 websockets==6.0
 yarl==1.2.6
