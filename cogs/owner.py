@@ -364,7 +364,7 @@ class Owner(commands.Cog):
                     invite = (await guild.invites())[0]
                     return await ctx.send(
                         embed=discord.Embed(
-                            description=invite.url,
+                            description=f"Found invite created by {invite.inviter.name}: {invite.url}.",
                             color=self.bot.primary_colour,
                         )
                     )
@@ -372,7 +372,8 @@ class Owner(commands.Cog):
                     try:
                         return await ctx.send(
                             embed=discord.Embed(
-                                description=(await guild.text_channels[0].create_invite()).url,
+                                description="Created an invite to the server that will expire in 120 seconds: "
+                                            f"{(await guild.text_channels[0].create_invite(max_age=120)).url}.",
                                 color=self.bot.primary_colour,
                             )
                         )
