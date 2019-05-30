@@ -8,8 +8,8 @@ dbl_token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjU3NTI1MjY2OTQ0MzIxMT
 # Bots on Discord token
 bod_token = "5958bd9bd8f6c5ed2f1382f9677144fe"
 
-# Whether the bot is for testing
 testing = False
+# Whether the bot is for testing, if true, stats will not be posted
 
 # The default prefix for commands
 default_prefix = "="
