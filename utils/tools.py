@@ -24,6 +24,8 @@ def get_premium_slots(bot, user):
     member = guild.get_member(user)
     if not member:
         return False
+    elif user in bot.config.admins or user in bot.config.owners:
+        return 1000
     elif utils.get(member.roles, id=bot.config.premium_advanced) is not None:
         return 10
     elif utils.get(member.roles, id=bot.config.premium_plus) is not None:
