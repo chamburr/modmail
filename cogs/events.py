@@ -115,23 +115,6 @@ class Events(commands.Cog):
             pass
 
     @commands.Cog.listener()
-    async def on_error(self, event, *args, **kwargs):
-        error_channel = self.bot.get_channel(self.bot.config.error_channel)
-        embed = discord.Embed(
-            title='Event Error',
-            description=f"```py\n{traceback.format_exc()}```",
-            color=self.bot.error_colour,
-            timestamp=datetime.datetime.utcnow(),
-        )
-        embed.add_field(name='Event', value=event, inline=False)
-        args_str = ['```py']
-        for index, arg in enumerate(args):
-            args_str.append(f'[{index}]: {arg!r}')
-        args_str.append('```')
-        embed.add_field(name='Args', value='\n'.join(args_str), inline=False)
-        await error_channel.send(embed=embed)
-
-    @commands.Cog.listener()
     async def on_guild_join(self, guild):
         join_channel = self.bot.get_channel(self.bot.config.join_channel)
         embed = discord.Embed(
@@ -141,6 +124,8 @@ class Events(commands.Cog):
             timestamp=datetime.datetime.utcnow()
         )
         await join_channel.send(embed=embed)
+        if guild.id in self.bot.banned_guilds:
+            return await guild.leave()
 
     @commands.Cog.listener()
     async def on_guild_remove(self, guild):
@@ -164,11 +149,33 @@ class Events(commands.Cog):
         if not ctx.command:
             return
         if message.guild:
+            if message.guild.id in self.bot.banned_guilds:
+                return await message.guild.leave()
             permissions = message.channel.permissions_for(message.guild.me)
             if permissions.send_messages is False:
                 return
             elif permissions.embed_links is False:
                 return await message.channel.send("The Embed Links permission is needed for basic commands to work.")
+        if message.author.id in self.bot.banned_users:
+            return await ctx.send(
+                embed=discord.Embed(
+                    description="You have been banned from this bot.",
+                    color=self.bot.error_colour,
+                )
+            )
+        if ctx.command.cog_name in ["Owner", "Admin"]:
+            admin_channel = self.bot.get_channel(self.bot.config.admin_channel)
+            embed = discord.Embed(
+                title=ctx.command.name.title(),
+                description=ctx.message.content,
+                color=self.bot.primary_colour,
+                timestamp=datetime.datetime.utcnow(),
+            )
+            embed.set_author(
+                name=f"{ctx.author.name}#{ctx.author.discriminator} ({ctx.author.id})",
+                icon_url=ctx.author.avatar_url,
+            )
+            await admin_channel.send(embed=embed)
         if ctx.prefix == f"<@{self.bot.user.id}> " or ctx.prefix == f"<@!{self.bot.user.id}> ":
             ctx.prefix = get_guild_prefix(self.bot, message)
         await self.bot.invoke(ctx)
