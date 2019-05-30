@@ -25,11 +25,7 @@ owners = [
 
 # Bot admins that have access to admin commands
 admins = [
-    446290930723717120,  # CHamburr#2591
-    402753815046127627,  # Akaitsune#3426
-    458932042252419072,  # KnightOfTla#2075
-    415416051170541588,  # xXMareXx7700
-    98822055402688512,   # ZixeSea#1234
+    283862626520399872,  # lieuwe_berg#7122
 ]
 
 # Cogs to load on startup
