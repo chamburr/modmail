@@ -42,14 +42,14 @@ class General(commands.Cog):
 
         all_pages = []
         for index, cog_name in enumerate(self.bot.cogs):
-            if cog_name in ["Owner"]:
+            if cog_name in ["Owner", "Admin"]:
                 continue
             cog = self.bot.get_cog(cog_name)
             cog_commands = cog.get_commands()
             if len(cog_commands) == 0:
                 continue
             page = discord.Embed(
-                title=f"**{cog_name}**\n",
+                title=cog_name,
                 description=f"My prefix is `{ctx.prefix}`. Use `{ctx.prefix}"
                 "help <command>` for more information on a command.",
                 color=self.bot.primary_colour,
