@@ -92,7 +92,7 @@ class Miscellaneous(commands.Cog):
         embed.add_field(name="Icon", value=f"[Link]({guild.icon_url})" if guild.icon_url is not None else "None")
         embed.add_field(name="Channels", value=str(len(guild.text_channels) + len(guild.voice_channels)))
         embed.add_field(name="Members", value=guild.member_count)
-        embed.add_field(name="Roles", value=f"{len(roles)} roles")
+        embed.add_field(name="Roles", value=str(len(roles)))
         if guild.icon:
             embed.set_thumbnail(url=guild.icon_url)
         await ctx.send(embed=embed)
