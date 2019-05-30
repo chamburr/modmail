@@ -20,12 +20,13 @@ owner = 446290930723717120
 # Bot owners that have access to owner commands
 owners = [
     446290930723717120,  # CHamburr#2591
+    283862626520399872,  # lieuwe_berg#7122
     415416051170541588,  # xXMareXx#7700
 ]
 
 # Bot admins that have access to admin commands
 admins = [
-    283862626520399872,  # lieuwe_berg#7122
+
 ]
 
 # Cogs to load on startup
