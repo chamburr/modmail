@@ -159,7 +159,7 @@ class Session:
             return
         try:
             await self.page.clear_reactions()
-        except discord.NotFound:
+        except (discord.NotFound, discord.Forbidden):
             pass
         self._session_task.cancel()
 
@@ -167,7 +167,7 @@ class Session:
         for reaction in reactions:
             try:
                 await self.page.add_reaction(reaction)
-            except discord.NotFound:
+            except (discord.NotFound, discord.Forbidden):
                 pass
 
     def get_emoji_as_string(self, emoji):
