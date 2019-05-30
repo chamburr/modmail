@@ -68,6 +68,8 @@ class ModMail(commands.AutoShardedBot):
 
     all_prefix = {}
     all_category = []
+    banned_guilds = []
+    banned_users = []
 
     async def start_bot(self):
         c = self.conn.cursor()
@@ -77,6 +79,13 @@ class ModMail(commands.AutoShardedBot):
             self.all_prefix[row[0]] = row[1]
             if row[2] is not None:
                 self.all_category.append(row[2])
+        c.execute("SELECT id, type FROM banlist")
+        res = c.fetchall()
+        for row in res:
+            if row[1] == "user":
+                self.banned_users.append(row[0])
+            elif row[1] == "guild":
+                self.banned_guilds.append(row[0])
         for extension in self.config.initial_extensions:
             try:
                 self.load_extension(extension)
