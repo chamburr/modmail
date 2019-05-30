@@ -30,6 +30,7 @@ admins = [
 
 # Cogs to load on startup
 initial_extensions = [
+    "cogs.admin",
     "cogs.configuration",
     "cogs.direct_message",
     "cogs.error_handler",
@@ -45,7 +46,7 @@ initial_extensions = [
 # Channels to send logs
 join_channel = 576954178153480233
 event_channel = 576954202308214785
-error_channel = 578549440365854730
+admin_channel = 583617505046822935
 
 # This is where patron roles are at
 main_server = 576016832956334080
