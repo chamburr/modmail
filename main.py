@@ -39,6 +39,8 @@ bot = ModMail(
 #           "logging bigint, welcome text, goodbye text, loggingplus integer)")
 # c.execute("CREATE TABLE IF NOT EXISTS premium "
 #           "(user bigint NOT NULL PRIMARY KEY, server text)")
+# c.execute("CREATE TABLE IF NOT EXISTS banlist "
+#           "(id bigint NOT NULL PRIMARY KEY, type text)")
 # bot.conn.commit()
 
 
