@@ -286,6 +286,62 @@ class Owner(commands.Cog):
 
     @checks.is_owner()
     @commands.command(
+        description="Ban a user from the bot",
+        usage="banuser <user>",
+        hidden=True,
+    )
+    async def banuser(self, ctx, *, user: discord.User):
+        c = self.bot.conn.cursor()
+        c.execute("SELECT * FROM banlist WHERE id=? AND type=?", (user.id, "user"))
+        res = c.fetchone()
+        if not res:
+            c.execute("INSERT INTO banlist (id, type) VALUES (?, ?)", (user.id, "user"))
+            self.bot.conn.commit()
+            self.bot.banned_users.append(user.id)
+            await ctx.send(
+                embed=discord.Embed(
+                    description="Successfully banned that user from the bot.",
+                    color=self.bot.primary_colour,
+                )
+            )
+        else:
+            await ctx.send(
+                embed=discord.Embed(
+                    description="That user is already banned.",
+                    color=self.bot.error_colour,
+                )
+            )
+
+    @checks.is_owner()
+    @commands.command(
+        description="Unban a user from the bot",
+        usage="unbanuser <user>",
+        hidden=True,
+    )
+    async def unbanuser(self, ctx, *, user: discord.User):
+        c = self.bot.conn.cursor()
+        c.execute("SELECT * FROM banlist WHERE id=? AND type=?", (user.id, "user"))
+        res = c.fetchone()
+        if res:
+            c.execute("DELETE FROM banlist WHERE id=? AND type=?", (user.id, "user"))
+            self.bot.conn.commit()
+            self.bot.banned_users.remove(user.id)
+            await ctx.send(
+                embed=discord.Embed(
+                    description="Successfully unbanned that user from the bot.",
+                    color=self.bot.primary_colour,
+                )
+            )
+        else:
+            await ctx.send(
+                embed=discord.Embed(
+                    description="That user is not already banned.",
+                    color=self.bot.error_colour,
+                )
+            )
+
+    @checks.is_owner()
+    @commands.command(
         description="Make the bot leave a server.",
         usage="leaveserver <server ID>",
         hidden=True,
