@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf8">
+    <meta name="description" content="Finally a ModMail bot made for everyone.">
+    <meta name="author" content="CHamburr#2591">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="theme-color" content="#1e90ff">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://modmail.netlify.com">
+    <meta property="og:title" content="ModMail">
+    <meta property="og:description" content="Finally a ModMail bot made for everyone.">
+    <meta property="og:image" content="${require('images/icon.png')}">
+    <title>ModMail</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.8.1/css/all.css" integrity="sha384-50oBUHEmvpQ+1lW4y57PTFmhCaXp0ML5d60M1M7uH2+nqUivzIebhndOJK28anvf" crossorigin="anonymous">
+    <link rel="icon" href="images/icon.png" type="image/x-icon">
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="css/particles.css">
+    <script src="https://ajax.aspnetcdn.com/ajax/jQuery/jquery-3.4.0.min.js"></script>
+</head>
+<body>
+    <header>
+        <nav class="navbar navbar-expand-lg navbar-dark">
+            <div class="container" style="padding: 0 30px; margin: 0 auto; max-width: none;">
+                <a href="#" class="navbar-brand h1 mb-0">
+                    <img src="images/icon.png" width="40" height="40" alt="">
+                </a>
+                <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                    <ul class="navbar-nav mr-auto" style="font-weight: 500;">
+                        <li class="nav-item active">
+                            <a class="nav-link" href="#about">About</a>
+                        </li>
+                        <li class="nav-item active">
+                            <a class="nav-link" href="#features">Features</a>
+                        </li>
+                        <li class="nav-item active">
+                            <a class="nav-link" href="#getting-started">Getting Started</a>
+                        </li>
+                        <li class="nav-item active">
+                            <a class="nav-link" href="https://discordbots.org/bot/575252669443211264">Upvote</a>
+                        </li>
+                        <li class="nav-item active">
+                            <a class="nav-link" href="https://discord.gg/wjWJwJB">Support Server</a>
+                        </li>
+                    </ul>
+                    <a class="btn btn-outline-primary my-2 my-sm-0" href="https://discordapp.com/api/oauth2/authorize?client_id=575252669443211264&permissions=268823640&scope=bot">Invite Bot</a>
+                </div>
+            </div>
+        </nav>
+    </header>
+    <div style="width: 100%; height: 100vh; overflow: hidden; display: table;">
+        <div id="particles-js"></div>
+        <div style="padding-top: 5em; display: table-cell; vertical-align: middle;">
+            <div style="align-items: center; display: flex; flex-direction: column;">
+                <img src="images/icon.png" width="200vh" alt="Icon">
+		        <h1 style="margin: 0.5em 0">ModMail</h1>
+		        <h3 style="font-weight: 500; letter-spacing: 0.1em; line-height: 1.5em; text-align: center;">Finally a ModMail<br>bot made<br>for everyone.</h3>
+            </div>
+            <div style="text-align: center;">
+                <a class="btn btn-primary btn-lg" href="https://discordapp.com/api/oauth2/authorize?client_id=575252669443211264&permissions=268823640&scope=bot" style="display: inline-block; margin: 1em;"><i class="fas fa-plus"></i> Invite Bot</a>
+                <a class="btn btn-success btn-lg" href="https://discord.gg/wjWJwJB" style="display: inline-block; margin: 1em;"><i class="fas fa-question"></i> Support Server</a>
+            </div>
+        </div>
+    </div>
+    <hr>
+    <div class="container" style="padding: 20px 10%">
+        <a name="about"><h2>About</h2></a>
+        <p style="margin-top: 20px;">ModMail is designed to enable your server members to contact staff easily. When a user sends a direct message to the bot, a new channel is created in your server. Messages sent by the user will be displayed there and sending a message in that channel will also forward it to that user. This bot is different from the others as it is the one and only public ModMail bot. This means that it is ensured to be hosted 24/7 without you having to pay extra hosting fees.</p>
+    </div>
+    <hr>
+    <div class="container" style="padding: 20px 10%">
+        <a name="features"><h2>Features</h2></a>
+        <ul style="margin-top: 20px;">
+            <li>Hosted on a VPS, online 24/7.</li>
+            <li>Easy and interactive setup.</li>
+            <li>Simple to use, makes it easy for you and your server members.</li>
+            <li>Set a category to contain all the channels so everything is organised.</li>
+            <li>Set a role that is considered staff, who can reply to and close tickets.</li>
+            <li>Logging of new tickets and closed tickets.</li>
+            <li>Custom messages sent to the user on new tickets or closed tickets. (Premium)</li>
+            <li>Complete logging of all messages. (Premium)</li>
+        </ul>
+    </div>
+    <hr>
+    <div class="container" style="padding: 20px 10%">
+        <a name="getting-started"><h2>Getting Started</h2></a>
+        <p style="margin-top: 20px;">Follow these steps to get the bot all ready to serve your server!</p>
+        <ol>
+            <li>Invite the bot with the link above.</li>
+            <li>Run <code>=setup</code>, there will be an interactive guide.</li>
+            <li>Done! For a full list of commands, see <code>=help</code>.</li>
+        </ol>
+    </div>
+    <hr>
+    <div class="container" style="padding: 20px 10%">
+        <a href="https://discordbots.org/bot/575252669443211264">
+            <img src="https://discordbots.org/api/widget/575252669443211264.svg" alt="Statistics" style="display: block; margin-left: auto; margin-right: auto; width: 50vh;">
+        </a>
+    </div>
+    <div>
+        <a href="#" id="scroll-button">
+            <i class="fas fa-chevron-up fa-2x" style="color: white;"></i>
+        </a>
+    </div>
+    <div style="background-color: #23272a; margin-top: 20px; padding: 1em 0;">
+        <footer style="text-align: center;">
+            <p>©2019 CHamburr#2591</p>
+        </footer>
+    </div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+    <script src="http://cdn.jsdelivr.net/particles.js/2.0.0/particles.min.js"></script>
+    <script src="js/particles.js"></script>
+    <script>
+        $(window).scroll(function() {
+            if ($(window).scrollTop() > 300) $("#scroll-button").addClass("show");
+            else $("#scroll-button").removeClass("show");
+        });
+        $(document).ready(function() {
+            $("#scroll-button").click(function(e) {
+                e.preventDefault();
+                $("html, body").animate({scrollTop: 0}, "300");
+            });
+        });
+    </script>
+</body>
+</html>
