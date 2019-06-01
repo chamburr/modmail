@@ -23,14 +23,14 @@ class DirectMessageEvents(commands.Cog, name="Direct Message"):
         if guild is None:
             return await message.channel.send(
                 embed=discord.Embed(
-                    description="The guild was not found.",
+                    description="The server was not found.",
                     color=self.bot.error_colour,
                 )
             )
         if member_in_guild(guild) is False:
             return await message.channel.send(
                 embed=discord.Embed(
-                    description="You are not in that server.",
+                    description="You are not in that server, and the message is not sent.",
                     color=self.bot.error_colour,
                 )
             )
@@ -39,7 +39,7 @@ class DirectMessageEvents(commands.Cog, name="Direct Message"):
         if category is None:
             return await message.channel.send(
                 embed=discord.Embed(
-                    description="A ModMail category was not found.",
+                    description="A ModMail category is not found. The bot is not set up properly in the server.",
                     color=self.bot.error_colour,
                 )
             )
@@ -69,7 +69,8 @@ class DirectMessageEvents(commands.Cog, name="Direct Message"):
                 return await message.channel.send(
                     embed=discord.Embed(
                         description="A HTTPException error occurred. This is most likely because the server has "
-                                    "reached the maximum number of channels.",
+                                    "reached the maximum number of channels (500). Please join the support server "
+                                    "if you cannot figure out what went wrong.",
                         color=self.bot.error_colour,
                     )
                 )
@@ -144,8 +145,11 @@ class DirectMessageEvents(commands.Cog, name="Direct Message"):
         if not guild:
             return await message.channel.send(
                 embed=discord.Embed(
-                    description="The previous message was not found. Try sending the message with the command "
-                                f"`{prefix}new <message>` or `{prefix}send <server ID> <message>`.",
+                    description=f"Please use the command `{prefix}new <message>` or `{prefix}send <server ID> "
+                                "<message>` when you want to send a message to a new server. In future, you can send "
+                                "the message directly without using the command, and the message will be sent to the "
+                                "server of the latest message sent/received. The command should also be used when you "
+                                "want to contact another server. Join the support server if you need more help.",
                     color=self.bot.error_colour,
                 )
             )
