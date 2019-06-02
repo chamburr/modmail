@@ -1,3 +1,4 @@
+import json
 import asyncio
 import datetime
 import traceback
@@ -11,7 +12,7 @@ class Events(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         self.dbl_auth = {"Authorization": bot.config.dbl_token}
-        self.bod_auth = {"Authorization": bot.config.bod_token}
+        self.bod_auth = {"Authorization": bot.config.bod_token, "Content-Type": "application/json"}
         if self.bot.config.testing is False:
             self.stats_updates = bot.loop.create_task(self.stats_updater())
 
@@ -25,7 +26,7 @@ class Events(commands.Cog):
             )
             await self.bot.session.post(
                 f"https://bots.ondiscord.xyz/bot-api/bots/{self.bot.user.id}/guilds",
-                data=self.get_bod_payload(),
+                data=json.dumps(self.get_bod_payload()),
                 headers=self.bod_auth,
             )
             await asyncio.sleep(1800)
