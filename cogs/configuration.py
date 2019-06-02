@@ -153,7 +153,7 @@ class Configuration(commands.Cog):
         if modmail_log is True:
             logging_channel = await ctx.guild.create_text_channel(name="modmail-log", category=category)
         data = self.bot.get_data(ctx.guild.id)
-        if data[2] is not None:
+        if data[2] is not None and data[2] in self.bot.all_category:
             self.bot.all_category.remove(data[2])
         self.bot.all_category.append(category.id)
         c = self.bot.conn.cursor()
@@ -227,7 +227,7 @@ class Configuration(commands.Cog):
             return await ctx.send(
                 embed=discord.Embed(
                     description="The category name cannot be longer than 100 characters",
-                    color=self.bot.primary_colour,
+                    color=self.bot.error_colour,
                 )
             )
         data = self.bot.get_data(ctx.guild.id)
@@ -235,7 +235,7 @@ class Configuration(commands.Cog):
             return await ctx.send(
                 embed=discord.Embed(
                     description=f"A ModMail category already exists. Please delete that category to continue.",
-                    color=self.bot.primary_colour,
+                    color=self.bot.error_colour,
                 )
             )
         role = ctx.guild.get_role(data[3])
@@ -244,7 +244,7 @@ class Configuration(commands.Cog):
                 embed=discord.Embed(
                     description=f"A valid access role for this server is not set up. Use `{ctx.prefix}accessrole` "
                                 "to set the role first.",
-                    color=self.bot.primary_colour,
+                    color=self.bot.error_colour,
                 )
             )
         overwrites = {
@@ -259,7 +259,7 @@ class Configuration(commands.Cog):
             ctx.guild.default_role: discord.PermissionOverwrite(read_messages=False)
         }
         category = await ctx.guild.create_category_channel(name=name, overwrites=overwrites)
-        if data[2] is not None:
+        if data[2] is not None and data[2] in self.bot.all_category:
             self.bot.all_category.remove(data[2])
         self.bot.all_category.append(category.id)
         c = self.bot.conn.cursor()
