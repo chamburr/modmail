@@ -28,68 +28,77 @@ class Configuration(commands.Cog):
     async def setup(self, ctx):
         def check(msg):
             return msg.author.id == ctx.author.id and msg.channel.id == ctx.channel.id
-        await ctx.send(
-            embed=discord.Embed(
-                title="Step 1 of 3",
-                description="ModMail will create a channel when a user sends a message to the bot. Please enter a "
-                            "name for the category that will contain these channels. You may change this afterwards.",
-                color=self.bot.primary_colour,
-            )
-        )
         try:
+            await ctx.send(
+                embed=discord.Embed(
+                    title="Step 1 of 4",
+                    description="ModMail will create a channel when a user sends a message to the bot. Please enter a "
+                                "name for the category that will contain these channels. You may change this "
+                                "manually afterwards.",
+                    color=self.bot.primary_colour,
+                )
+            )
             category_name = await self.bot.wait_for("message", timeout=60, check=check)
             category_name = category_name.content
-        except asyncio.TimeoutError:
-            return await ctx.send(
+            if len(category_name) > 100:
+                return await ctx.send(
+                    embed=discord.Embed(
+                        description="The name of the category cannot be longer than 100 characters."
+                                    f"Please use `{ctx.prefix}setup` to try again.",
+                        color=self.bot.primary_colour,
+                    )
+                )
+            await ctx.send(
                 embed=discord.Embed(
-                    description=f"Time out. Please use `{ctx.prefix}setup` to try again.",
+                    title="Step 2 of 4",
+                    description="Please input a role which has access to the ModMail channels and commands. They will "
+                                "be able to reply to the users and close the tickets. You can either enter the role "
+                                "ID, mention the role, or enter the name of a role.",
                     color=self.bot.primary_colour,
                 )
             )
-        if len(category_name) > 100:
-            return await ctx.send(
-                embed=discord.Embed(
-                    description="The name of the category cannot be longer than 100 characters."
-                                f"Please use `{ctx.prefix}setup` to try again.",
-                    color=self.bot.primary_colour,
-                )
-            )
-        await ctx.send(
-            embed=discord.Embed(
-                title="Step 2 of 3",
-                description="Please input a role which has access to the ModMail channels and commands. They will be "
-                            "able to reply to the users and close the tickets. You can either enter the role ID, "
-                            "mention the role, or enter the name of a role.",
-                color=self.bot.primary_colour,
-            )
-        )
-        try:
             access_role = await self.bot.wait_for("message", timeout=60, check=check)
             access_role = await commands.RoleConverter().convert(ctx, access_role.content)
-        except asyncio.TimeoutError:
-            return await ctx.send(
+            if not access_role:
+                return await ctx.send(
+                    embed=discord.Embed(
+                        description=f"The provided role is invalid. Please use `{ctx.prefix}setup` to try again.",
+                        color=self.bot.primary_colour,
+                    )
+                )
+            await ctx.send(
                 embed=discord.Embed(
-                    description=f"Time out. Please use `{ctx.prefix}setup` to try again.",
+                    title="Step 3 of 4",
+                    description="Please input a role to mention when a ticket is opened. The role selected must be set "
+                                "to mentionable by everyone. You can either enter the role ID, mention the role, or "
+                                "enter the name of a role. You can also enter `here` and `everyone`. If you do not "
+                                "want any role to be mentioned, reply with `None`.",
                     color=self.bot.primary_colour,
                 )
             )
-        if not access_role:
-            return await ctx.send(
+            ping_role = await self.bot.wait_for("message", timeout=60, check=check)
+            if ping_role.content.lower() == "none":
+                ping_role = None
+            elif ping_role.content.lower() in ["here", "everyone"]:
+                ping_role = f"@{ping_role.content.lower()}"
+            else:
+                ping_role = await commands.RoleConverter().convert(ctx, ping_role.content)
+                if not ping_role:
+                    return await ctx.send(
+                        embed=discord.Embed(
+                            description=f"The provided role is invalid. Please use `{ctx.prefix}setup` to try again.",
+                            color=self.bot.primary_colour,
+                        )
+                    )
+            await ctx.send(
                 embed=discord.Embed(
-                    description=f"The provided role is invalid. Please use `{ctx.prefix}setup` to try again.",
+                    title="Step 4 of 4",
+                    description="Do you want a channel for ModMail logs as well? It will log the details whenever a "
+                                "ticket is created or closed. Please enter either `yes` or `no`. You can change the "
+                                "name of this channel manually afterwards.",
                     color=self.bot.primary_colour,
                 )
             )
-        await ctx.send(
-            embed=discord.Embed(
-                title="Step 3 of 3",
-                description="Do you want a channel for ModMail logs as well? It will log the details whenever a ticket "
-                            "is created or closed. Please enter either `yes` or `no`. You can change the name of this "
-                            "channel manually afterwards.",
-                color=self.bot.primary_colour,
-            )
-        )
-        try:
             modmail_log = await self.bot.wait_for("message", timeout=60, check=check)
             if modmail_log.content.lower() in ["yes", "y"]:
                 modmail_log = True
@@ -97,17 +106,17 @@ class Configuration(commands.Cog):
                 modmail_log = False
             else:
                 modmail_log = None
+            if modmail_log is None:
+                return await ctx.send(
+                    embed=discord.Embed(
+                        description=f"Answer with `yes` or `no` only. Please use `{ctx.prefix}setup` to try again.",
+                        color=self.bot.primary_colour,
+                    )
+                )
         except asyncio.TimeoutError:
             return await ctx.send(
                 embed=discord.Embed(
                     description=f"Time out. Please use `{ctx.prefix}setup` to try again.",
-                    color=self.bot.primary_colour,
-                )
-            )
-        if modmail_log is None:
-            return await ctx.send(
-                embed=discord.Embed(
-                    description=f"Answer with `yes` or `no` only. Please use `{ctx.prefix}setup` to try again.",
                     color=self.bot.primary_colour,
                 )
             )
@@ -148,10 +157,11 @@ class Configuration(commands.Cog):
             self.bot.all_category.remove(data[2])
         self.bot.all_category.append(category.id)
         c = self.bot.conn.cursor()
-        c.execute("UPDATE data SET category=?, accessrole=?, logging=? WHERE guild=?", (
+        c.execute("UPDATE data SET category=?, accessrole=?, logging=?, pingrole=? WHERE guild=?", (
             category.id,
             access_role.id,
             logging_channel.id if logging_channel is not None else None,
+            str(ping_role.id) if ping_role is not None and ping_role not in ["@here", "@everyone"] else ping_role,
             ctx.guild.id,
         ))
         self.bot.conn.commit()
@@ -277,6 +287,40 @@ class Configuration(commands.Cog):
         await ctx.send(
             embed=discord.Embed(
                 description=f"The role has been updated successfully to <@&{role.id}>",
+                color=self.bot.primary_colour,
+            )
+        )
+
+    @checks.in_database()
+    @commands.has_permissions(administrator=True)
+    @commands.guild_only()
+    @commands.command(
+        description="Update the role that will be mentioned when a ticket is opened.",
+        aliases=["mentionrole"],
+        usage="pingrole <role>",
+    )
+    async def pingrole(self, ctx, *, role):
+        c = self.bot.conn.cursor()
+        if role.lower() == "none":
+            role = None
+        elif role.lower() in ["here", "everyone"]:
+            role = f"@{role.lower()}"
+        else:
+            role = await commands.RoleConverter().convert(ctx, role)
+            if role is None:
+                return await ctx.send(
+                    embed=discord.Embed(
+                        description="The role is not found. Please try again.",
+                        color=self.bot.error_colour,
+                    )
+                )
+            else:
+                role = role.id
+        c.execute("UPDATE data SET pingrole=? WHERE guild=?", (role, ctx.guild.id))
+        self.bot.conn.commit()
+        await ctx.send(
+            embed=discord.Embed(
+                description=f"The role has been updated successfully.",
                 color=self.bot.primary_colour,
             )
         )

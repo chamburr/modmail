@@ -90,7 +90,11 @@ class DirectMessageEvents(commands.Cog, name="Direct Message"):
                     text=f"{message.author.name}#{message.author.discriminator} | {message.author.id}",
                     icon_url=message.author.avatar_url,
                 )
-                await channel.send(embed=embed)
+                await channel.send(
+                    content=f"<@&{data[8]}>" if data[8] is not None and data[8] not in
+                            ["@here", "@everyone"] else data[8],
+                    embed=embed,
+                )
                 if data[5] is not None:
                     embed = discord.Embed(
                         title="Custom Greeting Message",
