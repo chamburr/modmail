@@ -262,10 +262,6 @@ class Configuration(commands.Cog):
             )
         )
 
-    @commands.bot_has_permissions(
-        manage_channels=True,
-        manage_roles=True,
-    )
     @checks.in_database()
     @commands.has_permissions(administrator=True)
     @commands.guild_only()
