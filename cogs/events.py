@@ -13,6 +13,7 @@ class Events(commands.Cog):
         self.bot = bot
         self.dbl_auth = {"Authorization": bot.config.dbl_token}
         self.bod_auth = {"Authorization": bot.config.bod_token, "Content-Type": "application/json"}
+        self.dboats_auth = {"Authorization": bot.config.dboats_token, "Content-Type": "application/json"}
         if self.bot.config.testing is False:
             self.stats_updates = bot.loop.create_task(self.stats_updater())
 
@@ -29,6 +30,11 @@ class Events(commands.Cog):
                 data=json.dumps(self.get_bod_payload()),
                 headers=self.bod_auth,
             )
+            await self.bot.session.post(
+                f"https://discord.boats/api/bot/{self.bot.user.id}",
+                data=json.dumps(self.get_dboats_payload()),
+                headers=self.dboats_auth,
+            )
             await asyncio.sleep(1800)
 
     def get_dbl_payload(self):
@@ -40,6 +46,11 @@ class Events(commands.Cog):
     def get_bod_payload(self):
         return {
             "guildCount": len(self.bot.guilds),
+        }
+
+    def get_dboats_payload(self):
+        return {
+            "server_count": len(self.bot.guilds),
         }
 
     @commands.Cog.listener()

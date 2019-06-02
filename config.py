@@ -8,8 +8,12 @@ dbl_token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjU3NTI1MjY2OTQ0MzIxMT
 # Bots on Discord token
 bod_token = "5958bd9bd8f6c5ed2f1382f9677144fe"
 
-testing = False
+# Discord Boats token
+dboats_token = "3R3wVyex2PDTr55FF679A1E18tAozi8Mj9GQ9Ggv1xvF6gQ23lzuOGvCBpztri3FK396rBw6CMHiLHaO0UTKUI7jiCyCihePQk5" \
+               "84Eci6lQpsE6s86lxTxjUjkOA6wkiPiuI2i95xbQJCdFZF8mgK8dz7Z9"
+
 # Whether the bot is for testing, if true, stats will not be posted
+testing = False
 
 # The default prefix for commands
 default_prefix = "="
