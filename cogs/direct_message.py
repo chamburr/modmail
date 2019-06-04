@@ -149,7 +149,7 @@ class DirectMessageEvents(commands.Cog, name="Direct Message"):
         if message.content.startswith(prefix):
             return
         guild = False
-        async for msg in message.channel.history(limit=10):
+        async for msg in message.channel.history(limit=30):
             if msg.author.id == self.bot.user.id and len(msg.embeds) > 0 \
                and msg.embeds[0].title in ["Message Received", "Message Sent"]:
                 guild = msg.embeds[0].footer.text.split()[-1]
