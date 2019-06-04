@@ -175,7 +175,8 @@ class Events(commands.Cog):
                     color=self.bot.error_colour,
                 )
             )
-        if ctx.command.cog_name in ["Owner", "Admin"]:
+        if ctx.command.cog_name in ["Owner", "Admin"] and \
+           (ctx.author.id in ctx.bot.config.admins or ctx.author.id in ctx.bot.config.owners):
             admin_channel = self.bot.get_channel(self.bot.config.admin_channel)
             embed = discord.Embed(
                 title=ctx.command.name.title(),
