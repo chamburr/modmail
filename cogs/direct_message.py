@@ -307,6 +307,10 @@ class DirectMessageEvents(commands.Cog, name="Direct Message"):
                 color=self.bot.error_colour,
             )
         )
+
+    @commands.dm_only()
+    @commands.command(
+        description="Shortcut to send message to a server.",
         usage="send <server ID> <message>",
     )
     async def send(self, ctx, guild: int, *, message: str):
