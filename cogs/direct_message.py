@@ -295,7 +295,18 @@ class DirectMessageEvents(commands.Cog, name="Direct Message"):
 
     @commands.dm_only()
     @commands.command(
-        description="Shortcut for the `new` command.",
+        description="Deprecated. Please send the message without the command instead.",
+        usage="new <message>",
+        aliases=["create", "switch", "change"],
+    )
+    async def new(self, ctx):
+        await ctx.send(
+            embed=discord.Embed(
+                description="This command is deprecated. Please send the message without the command instead. "
+                            "You will be prompted with an option to change the server.",
+                color=self.bot.error_colour,
+            )
+        )
         usage="send <server ID> <message>",
     )
     async def send(self, ctx, guild: int, *, message: str):
