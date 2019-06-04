@@ -141,6 +141,11 @@ class DirectMessageEvents(commands.Cog, name="Direct Message"):
                 )
             )
 
+    async def remove_reactions(self, message):
+        message = await message.channel.fetch_message(message.id)
+        for reaction in message.reactions:
+            await reaction.remove(self.bot.user)
+
     @commands.Cog.listener()
     async def on_message(self, message):
         if message.author.bot or not isinstance(message.channel, discord.DMChannel):
@@ -148,38 +153,65 @@ class DirectMessageEvents(commands.Cog, name="Direct Message"):
         prefix = self.bot.config.default_prefix
         if message.content.startswith(prefix):
             return
-        guild = False
+        guild = None
         async for msg in message.channel.history(limit=30):
             if msg.author.id == self.bot.user.id and len(msg.embeds) > 0 \
                and msg.embeds[0].title in ["Message Received", "Message Sent"]:
                 guild = msg.embeds[0].footer.text.split()[-1]
                 break
-        if not guild:
-            return await message.channel.send(
-                embed=discord.Embed(
-                    description=f"Please use the command `{prefix}new <message>` or `{prefix}send <server ID> "
-                                "<message>` when you want to send a message to a new server. In future, you can send "
-                                "the message directly without using the command, and the message will be sent to the "
-                                "server of the latest message sent/received. The command should also be used when you "
-                                "want to contact another server. Join the support server if you need more help.",
-                    color=self.bot.error_colour,
-                )
-            )
-        else:
-            await self.send_mail(message, int(guild), message.content)
+        guild = self.bot.get_guild(int(guild))
+        msg = None
+        if guild:
+            embed = discord.Embed(
+                title="Confirmation",
+                description=f"You're sending this message to **{guild.name}** (ID: {guild.id}). React with ✅ to "
+                "confirm.\nWant to send to another server instead? React with 🔁.",
+                color=self.bot.primary_colour,
 
-    @commands.dm_only()
-    @commands.command(
-        description="Create a new ticket or send to another server.",
-        usage="new <message>",
-        aliases=["create", "switch", "change"],
-    )
-    async def new(self, ctx, *, message: str):
+            )
+            embed.set_footer(text="To cancel this request, react with ❌.")
+            msg = await message.channel.send(embed=embed)
+            await msg.add_reaction("✅")
+            await msg.add_reaction("🔁")
+            await msg.add_reaction("❌")
+
+            def reaction_check(reaction2, user2):
+                return str(reaction2) in ["✅", "🔁", "❌"] and user2.id == message.author.id and \
+                       reaction2.message.id == msg.id
+
+            try:
+                reaction, user = await self.bot.wait_for("reaction_add", check=reaction_check, timeout=60)
+            except asyncio.TimeoutError:
+                await self.remove_reactions(msg)
+                return await msg.edit(
+                    embed=discord.Embed(
+                        description="Time out. You did not choose anything.",
+                        color=self.bot.error_colour,
+                    )
+                )
+            if str(reaction) == "✅":
+                await msg.delete()
+                return await self.send_mail(message, guild.id, message.content)
+            elif str(reaction) == "🔁":
+                await self.remove_reactions(msg)
+            elif str(reaction) == "❌":
+                await self.remove_reactions(msg)
+                await msg.edit(
+                    embed=discord.Embed(
+                        description="Request cancelled successfully.",
+                        color=self.bot.primary_colour,
+                    )
+                )
+                await asyncio.sleep(5)
+                await msg.delete()
+                return
+
         def member_in_guild(guild2):
-            return guild2.get_member(ctx.author.id) is not None
+            return guild2.get_member(message.author.id) is not None
 
         def channel_in_guild(channel2):
-            return channel2.name == str(ctx.author.id) and channel2.category_id in self.bot.all_category
+            return channel2.name == str(message.author.id) and channel2.category_id in self.bot.all_category
+
         guilds = filter(member_in_guild, self.bot.guilds)
         guild_list = {}
         for guild in guilds:
@@ -191,14 +223,13 @@ class DirectMessageEvents(commands.Cog, name="Direct Message"):
                 guild_list[str(guild.id)] = (guild.name, False)
             else:
                 guild_list[str(guild.id)] = (guild.name, True)
-        prefix = self.bot.config.default_prefix
         embeds = []
         current_embed = None
         for guild, value in guild_list.items():
             if not current_embed:
                 current_embed = discord.Embed(
-                    title="Choose Server",
-                    description="Select and confirm the server you want this message to be sent to.\n Tip: You can "
+                    title="Select Server",
+                    description="Select the server you want this message to be sent to.\n Tip: You can "
                                 f"also use `{prefix}send <server ID> <message>`.",
                     color=self.bot.primary_colour,
                 )
@@ -212,7 +243,10 @@ class DirectMessageEvents(commands.Cog, name="Direct Message"):
                 current_embed = None
         if current_embed is not None:
             embeds.append(current_embed)
-        msg = await ctx.send(embed=embeds[0])
+        if msg:
+            await msg.edit(embed=embeds[0])
+        else:
+            msg = await message.channel.send(embed=embeds[0])
         reactions = ["1⃣", "2⃣", "3⃣", "4⃣", "5⃣", "6⃣", "7⃣", "8⃣", "9⃣", "🔟", "◀", "▶"]
 
         async def add_reactions(length):
@@ -222,10 +256,7 @@ class DirectMessageEvents(commands.Cog, name="Direct Message"):
                 await msg.add_reaction(reactions[index])
 
         def reaction_check(reaction2, user2):
-            if str(reaction2) in reactions and user2.id == ctx.author.id and reaction2.message.id == msg.id:
-                return True
-            else:
-                return False
+            return str(reaction2) in reactions and user2.id == message.author.id and reaction2.message.id == msg.id
 
         await add_reactions(len(embeds[0].fields))
         page_index = 0
@@ -251,7 +282,8 @@ class DirectMessageEvents(commands.Cog, name="Direct Message"):
                 elif reactions.index(str(reaction)) >= 0:
                     chosen = reactions.index(str(reaction))
         except asyncio.TimeoutError:
-            return await ctx.send(
+            await self.remove_reactions(msg)
+            return await msg.edit(
                 embed=discord.Embed(
                     description="Time out. You did not choose anything.",
                     color=self.bot.error_colour,
@@ -259,7 +291,7 @@ class DirectMessageEvents(commands.Cog, name="Direct Message"):
             )
         await msg.delete()
         guild = embeds[page_index].fields[chosen].value.split()[-1]
-        await self.send_mail(ctx.message, guild, message)
+        await self.send_mail(message, guild, message.content)
 
     @commands.dm_only()
     @commands.command(
