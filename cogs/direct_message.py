@@ -65,6 +65,14 @@ class DirectMessageEvents(commands.Cog, name="Direct Message"):
                         await log_channel.send(embed=embed)
                     except discord.Forbidden:
                         pass
+            except discord.Forbidden:
+                return await message.channel.send(
+                    embed=discord.Embed(
+                        description="The bot is missing permissions to create a channel. Please contact an admin on "
+                                    "the server.",
+                        color=self.bot.error_colour,
+                    )
+                )
             except discord.HTTPException:
                 return await message.channel.send(
                     embed=discord.Embed(
