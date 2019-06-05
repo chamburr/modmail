@@ -304,7 +304,7 @@ class DirectMessageEvents(commands.Cog, name="Direct Message"):
 
     @commands.dm_only()
     @commands.command(
-        description="Deprecated. Please send the message without the command instead.",
+        description="Create a new ticket or send to another server.",
         usage="new <message>",
         aliases=["create", "switch", "change"],
     )
