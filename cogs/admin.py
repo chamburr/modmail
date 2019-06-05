@@ -60,7 +60,7 @@ class Admin(commands.Cog):
         guild_list = []
         for guild in guilds:
             entry = f"{guild.name} `{guild.id}`"
-            perms = guild.permissions_for(user)
+            perms = guild.get_member(user.id).guild_permissions
             if guild.owner_id == user.id:
                 entry = entry + " (Owner)"
             elif perms.administrator is True:
