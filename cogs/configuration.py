@@ -334,26 +334,39 @@ class Configuration(commands.Cog):
     @commands.command(
         description="Toggle between enable and disable for ModMail logs.",
         aliases=["logging", "modmaillogs"],
-        usage="logging <enable/disable>",
+        usage="logging",
     )
-    async def logs(self, ctx, *, action: str):
-        if action.lower() == "enable":
-            data = self.bot.get_data(ctx.guild.id)
-            if ctx.guild.get_channel(data[4]) is not None:
+    async def logs(self, ctx):
+        data = self.bot.get_data(ctx.guild.id)
+        channel = ctx.guild.get_channel(data[4])
+        if channel is not None:
+            try:
+                await channel.delete()
+            except discord.Forbidden:
                 return await ctx.send(
                     embed=discord.Embed(
-                        description="ModMail logging is already enabled. Delete that channel"
-                                    "and reuse this command to create a new one.",
-                        color=self.bot.primary_colour,
+                        description="Missing permissions to delete the channel.",
+                        color=self.bot.error_colour,
                     )
                 )
+        if data[4] is not None:
+            c = self.bot.conn.cursor()
+            c.execute("UPDATE data SET logging=? WHERE guild=?", (None, ctx.guild.id))
+            self.bot.conn.commit()
+            await ctx.send(
+                embed=discord.Embed(
+                    description="ModMail logs are disabled.",
+                    color=self.bot.primary_colour,
+                )
+            )
+        else:
             category = ctx.guild.get_channel(data[2])
             if category is None:
                 return await ctx.send(
                     embed=discord.Embed(
                         description=f"Your server does not have a ModMail category yet. Use either `{ctx.prefix}setup` "
                         f"or `{ctx.prefix}category` to create the category first.",
-                        color=self.bot.primary_colour,
+                        color=self.bot.error_colour,
                     )
                 )
             channel = await ctx.guild.create_text_channel(name="modmail-log", category=category)
@@ -363,37 +376,6 @@ class Configuration(commands.Cog):
             await ctx.send(
                 embed=discord.Embed(
                     description="The channel has been created successfully.",
-                    color=self.bot.primary_colour,
-                )
-            )
-        elif action.lower() == "disable":
-            data = self.bot.get_data(ctx.guild.id)
-            if data[4] is None:
-                return await ctx.send(
-                    embed=discord.Embed(
-                        description="ModMail logs are already disabled.",
-                        color=self.bot.primary_colour,
-                    )
-                )
-            channel = ctx.guild.get_channel(data[4])
-            if channel:
-                try:
-                    await channel.delete()
-                except discord.Forbidden:
-                    pass
-            c = self.bot.conn.cursor()
-            c.execute("UPDATE data SET logging=? WHERE guild=?", (None, ctx.guild.id))
-            self.bot.conn.commit()
-            await ctx.send(
-                embed=discord.Embed(
-                    description="ModMail logs are now disabled.",
-                    color=self.bot.primary_colour,
-                )
-            )
-        else:
-            await ctx.send(
-                embed=discord.Embed(
-                    description=f"Please use `{ctx.prefix}logs <enable/disable>` instead.",
                     color=self.bot.primary_colour,
                 )
             )
