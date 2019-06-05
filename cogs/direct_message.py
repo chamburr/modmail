@@ -308,14 +308,10 @@ class DirectMessageEvents(commands.Cog, name="Direct Message"):
         usage="new <message>",
         aliases=["create", "switch", "change"],
     )
-    async def new(self, ctx):
-        await ctx.send(
-            embed=discord.Embed(
-                description="This command is deprecated. Please send the message without the command instead. "
-                            "You will be prompted with an option to change the server.",
-                color=self.bot.error_colour,
-            )
-        )
+    async def new(self, ctx, *, message):
+        msg = copy.copy(ctx.message)
+        msg.content = message
+        await self.select_guild(msg, ctx.prefix)
 
     @commands.dm_only()
     @commands.command(
