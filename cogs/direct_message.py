@@ -362,7 +362,7 @@ class DirectMessageEvents(commands.Cog, name="Direct Message"):
     @commands.command(
         description="Enable or disable the confirmation message.", usage="confirmation"
     )
-    async def confirmation(self, ctx, action):
+    async def confirmation(self, ctx):
         data = get_user_settings(self.bot, ctx.author.id)
         c = self.bot.conn.cursor()
         if data is None or data[1] is None:
