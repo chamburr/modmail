@@ -10,15 +10,20 @@ def is_owner():
             raise commands.NotOwner()
         else:
             return True
+
     return commands.check(predicate)
 
 
 def is_admin():
     def predicate(ctx):
-        if ctx.author.id not in ctx.bot.config.admins and ctx.author.id not in ctx.bot.config.owners:
+        if (
+            ctx.author.id not in ctx.bot.config.admins
+            and ctx.author.id not in ctx.bot.config.owners
+        ):
             raise commands.NotOwner()
         else:
             return True
+
     return commands.check(predicate)
 
 
@@ -35,6 +40,7 @@ def in_database():
                 )
             )
         return True if res is not None else False
+
     return commands.check(predicate)
 
 
@@ -54,13 +60,14 @@ def is_premium():
             await ctx.send(
                 embed=discord.Embed(
                     description="This server does not have premium. Want to get premium? More information "
-                                f"is available with the `{ctx.prefix}premium` command.",
+                    f"is available with the `{ctx.prefix}premium` command.",
                     color=ctx.bot.error_colour,
                 )
             )
             return False
         else:
             return True
+
     return commands.check(predicate)
 
 
@@ -75,24 +82,31 @@ def is_patron():
                 await ctx.send(
                     embed=discord.Embed(
                         description="This command requires you to be a patron. Want to become a patron? More "
-                                    f"information is available with the `{ctx.prefix}premium` command.",
+                        f"information is available with the `{ctx.prefix}premium` command.",
                         color=ctx.bot.error_colour,
                     )
                 )
                 return False
             else:
-                c.execute("INSERT INTO premium (user, server) VALUES (?, ?)", (ctx.author.id, None))
+                c.execute(
+                    "INSERT INTO premium (user, server) VALUES (?, ?)",
+                    (ctx.author.id, None),
+                )
                 ctx.bot.conn.commit()
                 return True
         else:
             return True
+
     return commands.check(predicate)
 
 
 def is_modmail_channel():
     async def predicate(ctx):
-        if not ctx.channel.category_id or ctx.channel.category_id not in ctx.bot.all_category or \
-           not ctx.channel.name.isdigit():
+        if (
+            not ctx.channel.category_id
+            or ctx.channel.category_id not in ctx.bot.all_category
+            or not ctx.channel.name.isdigit()
+        ):
             await ctx.send(
                 embed=discord.Embed(
                     description="This channel is not a ModMail channel.",
@@ -102,6 +116,7 @@ def is_modmail_channel():
             return False
         else:
             return True
+
     return commands.check(predicate)
 
 
@@ -118,4 +133,5 @@ def is_mod():
             return False
         else:
             return True
+
     return commands.check(predicate)

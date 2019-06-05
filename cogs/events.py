@@ -12,8 +12,14 @@ class Events(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         self.dbl_auth = {"Authorization": bot.config.dbl_token}
-        self.bod_auth = {"Authorization": bot.config.bod_token, "Content-Type": "application/json"}
-        self.dboats_auth = {"Authorization": bot.config.dboats_token, "Content-Type": "application/json"}
+        self.bod_auth = {
+            "Authorization": bot.config.bod_token,
+            "Content-Type": "application/json",
+        }
+        self.dboats_auth = {
+            "Authorization": bot.config.dboats_token,
+            "Content-Type": "application/json",
+        }
         if self.bot.config.testing is False:
             self.stats_updates = bot.loop.create_task(self.stats_updater())
 
@@ -44,29 +50,25 @@ class Events(commands.Cog):
         }
 
     def get_bod_payload(self):
-        return {
-            "guildCount": len(self.bot.guilds),
-        }
+        return {"guildCount": len(self.bot.guilds)}
 
     def get_dboats_payload(self):
-        return {
-            "server_count": len(self.bot.guilds),
-        }
+        return {"server_count": len(self.bot.guilds)}
 
     @commands.Cog.listener()
     async def on_ready(self):
         print(f"{self.bot.user.name}#{self.bot.user.discriminator} is online!")
-        print('--------')
+        print("--------")
         await self.bot.wait_until_ready()
         await self.bot.change_presence(
-            activity=discord.Game(name=f"DM to Contact Staff | {self.bot.config.default_prefix}help")
+            activity=discord.Game(
+                name=f"DM to Contact Staff | {self.bot.config.default_prefix}help"
+            )
         )
         event_channel = self.bot.get_channel(self.bot.config.event_channel)
         await event_channel.send(
             embed=discord.Embed(
-                title="Bot Ready",
-                color=0x00FF00,
-                timestamp=datetime.datetime.utcnow(),
+                title="Bot Ready", color=0x00FF00, timestamp=datetime.datetime.utcnow()
             )
         )
 
@@ -133,7 +135,7 @@ class Events(commands.Cog):
             title="Server Join",
             description=f"{guild.name} ({guild.id})",
             color=0x00FF00,
-            timestamp=datetime.datetime.utcnow()
+            timestamp=datetime.datetime.utcnow(),
         )
         await join_channel.send(embed=embed)
         if guild.id in self.bot.banned_guilds:
@@ -149,7 +151,7 @@ class Events(commands.Cog):
             title="Server Leave",
             description=f"{guild.name} ({guild.id})",
             color=0xFF0000,
-            timestamp=datetime.datetime.utcnow()
+            timestamp=datetime.datetime.utcnow(),
         )
         await join_channel.send(embed=embed)
 
@@ -167,7 +169,9 @@ class Events(commands.Cog):
             if permissions.send_messages is False:
                 return
             elif permissions.embed_links is False:
-                return await message.channel.send("The Embed Links permission is needed for basic commands to work.")
+                return await message.channel.send(
+                    "The Embed Links permission is needed for basic commands to work."
+                )
         if message.author.id in self.bot.banned_users:
             return await ctx.send(
                 embed=discord.Embed(
@@ -175,8 +179,10 @@ class Events(commands.Cog):
                     color=self.bot.error_colour,
                 )
             )
-        if ctx.command.cog_name in ["Owner", "Admin"] and \
-           (ctx.author.id in ctx.bot.config.admins or ctx.author.id in ctx.bot.config.owners):
+        if ctx.command.cog_name in ["Owner", "Admin"] and (
+            ctx.author.id in ctx.bot.config.admins
+            or ctx.author.id in ctx.bot.config.owners
+        ):
             admin_channel = self.bot.get_channel(self.bot.config.admin_channel)
             embed = discord.Embed(
                 title=ctx.command.name.title(),
@@ -189,7 +195,10 @@ class Events(commands.Cog):
                 icon_url=ctx.author.avatar_url,
             )
             await admin_channel.send(embed=embed)
-        if ctx.prefix == f"<@{self.bot.user.id}> " or ctx.prefix == f"<@!{self.bot.user.id}> ":
+        if (
+            ctx.prefix == f"<@{self.bot.user.id}> "
+            or ctx.prefix == f"<@!{self.bot.user.id}> "
+        ):
             ctx.prefix = get_guild_prefix(self.bot, message)
         await self.bot.invoke(ctx)
 

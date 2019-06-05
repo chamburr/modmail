@@ -44,4 +44,4 @@ def get_premium_slots(bot, user):
 
 
 def perm_format(perm):
-    return perm.replace('_', ' ').replace('guild', 'server').title()
+    return perm.replace("_", " ").replace("guild", "server").title()

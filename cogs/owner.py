@@ -18,11 +18,7 @@ class Owner(commands.Cog):
         self._last_result = None
 
     @checks.is_owner()
-    @commands.command(
-        description="Load a module.",
-        usage="load <cog>",
-        hidden=True,
-    )
+    @commands.command(description="Load a module.", usage="load <cog>", hidden=True)
     async def load(self, ctx, *, cog: str):
         try:
             self.bot.load_extension(cog)
@@ -42,11 +38,7 @@ class Owner(commands.Cog):
             )
 
     @checks.is_owner()
-    @commands.command(
-        description="Unload a module.",
-        usage="unload <cog>",
-        hidden=True,
-    )
+    @commands.command(description="Unload a module.", usage="unload <cog>", hidden=True)
     async def unload(self, ctx, *, cog: str):
         try:
             self.bot.unload_extension(cog)
@@ -66,11 +58,7 @@ class Owner(commands.Cog):
             )
 
     @checks.is_owner()
-    @commands.command(
-        description="Reload a module.",
-        usage="reload <cog>",
-        hidden=True,
-    )
+    @commands.command(description="Reload a module.", usage="reload <cog>", hidden=True)
     async def reload(self, ctx, *, cog: str):
         try:
             self.bot.unload_extension(cog)
@@ -91,16 +79,11 @@ class Owner(commands.Cog):
             )
 
     @commands.is_owner()
-    @commands.command(
-        description="Restart the bot.",
-        usage="restart",
-        hidden=True,
-    )
+    @commands.command(description="Restart the bot.", usage="restart", hidden=True)
     async def restart(self, ctx):
         await ctx.send(
             embed=discord.Embed(
-                description="Restarting...",
-                color=self.bot.primary_colour,
+                description="Restarting...", color=self.bot.primary_colour
             )
         )
         await self.bot.logout()
@@ -112,10 +95,7 @@ class Owner(commands.Cog):
 
     @checks.is_owner()
     @commands.command(
-        name="eval",
-        description="Evaluate a code",
-        usage="eval <code>",
-        hidden=True,
+        name="eval", description="Evaluate a code", usage="eval <code>", hidden=True
     )
     async def _eval(self, ctx, *, body: str):
         env = {
@@ -183,9 +163,7 @@ class Owner(commands.Cog):
 
     @checks.is_owner()
     @commands.command(
-        description="Execute code in bash.",
-        usage="bash <command>",
-        hidden=True,
+        description="Execute code in bash.", usage="bash <command>", hidden=True
     )
     async def bash(self, ctx, *, command_to_run: str):
         output = subprocess.check_output(
@@ -193,17 +171,12 @@ class Owner(commands.Cog):
         ).decode("utf-8")
         await ctx.send(
             embed=discord.Embed(
-                description=f"```py\n{output}\n```",
-                color=self.bot.primary_colour,
+                description=f"```py\n{output}\n```", color=self.bot.primary_colour
             )
         )
 
     @checks.is_owner()
-    @commands.command(
-        description="Execute SQL.",
-        usage="sql <query>",
-        hidden=True,
-    )
+    @commands.command(description="Execute SQL.", usage="sql <query>", hidden=True)
     async def sql(self, ctx, *, query: str):
         c = self.bot.conn.cursor()
         try:
@@ -220,15 +193,13 @@ class Owner(commands.Cog):
         if res:
             await ctx.send(
                 embed=discord.Embed(
-                    description=f"```{res}```",
-                    color=self.bot.primary_colour,
+                    description=f"```{res}```", color=self.bot.primary_colour
                 )
             )
         else:
             await ctx.send(
                 embed=discord.Embed(
-                    description="No results to fetch.",
-                    color=self.bot.primary_colour,
+                    description="No results to fetch.", color=self.bot.primary_colour
                 )
             )
 
@@ -243,12 +214,11 @@ class Owner(commands.Cog):
             content = file.readlines()
         if lines > len(content):
             lines = len(content)
-        content = "\n".join(content[(len(content) - lines):])
+        content = "\n".join(content[(len(content) - lines) :])
         try:
             await ctx.send(
                 embed=discord.Embed(
-                    description=f"```{content}```",
-                    color=self.bot.primary_colour,
+                    description=f"```{content}```", color=self.bot.primary_colour
                 )
             )
         except discord.HTTPException:
@@ -265,7 +235,14 @@ class Owner(commands.Cog):
         usage="invoke [channel] <user> <command>",
         hidden=True,
     )
-    async def invoke(self, ctx, channel: Optional[discord.TextChannel], who: discord.User, *, command: str):
+    async def invoke(
+        self,
+        ctx,
+        channel: Optional[discord.TextChannel],
+        who: discord.User,
+        *,
+        command: str,
+    ):
         msg = copy.copy(ctx.message)
         channel = channel or ctx.channel
         msg.channel = channel
@@ -286,9 +263,7 @@ class Owner(commands.Cog):
 
     @checks.is_owner()
     @commands.command(
-        description="Ban a user from the bot",
-        usage="banuser <user>",
-        hidden=True,
+        description="Ban a user from the bot", usage="banuser <user>", hidden=True
     )
     async def banuser(self, ctx, *, user: discord.User):
         c = self.bot.conn.cursor()
@@ -314,9 +289,7 @@ class Owner(commands.Cog):
 
     @checks.is_owner()
     @commands.command(
-        description="Unban a user from the bot",
-        usage="unbanuser <user>",
-        hidden=True,
+        description="Unban a user from the bot", usage="unbanuser <user>", hidden=True
     )
     async def unbanuser(self, ctx, *, user: discord.User):
         c = self.bot.conn.cursor()
@@ -351,8 +324,7 @@ class Owner(commands.Cog):
         if not guild:
             return await ctx.send(
                 embed=discord.Embed(
-                    description="That server is not found",
-                    color=self.bot.error_colour,
+                    description="That server is not found", color=self.bot.error_colour
                 )
             )
         else:
@@ -374,8 +346,7 @@ class Owner(commands.Cog):
         if not self.bot.get_guild(guild):
             return await ctx.send(
                 embed=discord.Embed(
-                    description="That server is not found",
-                    color=self.bot.error_colour,
+                    description="That server is not found", color=self.bot.error_colour
                 )
             )
         c = self.bot.conn.cursor()

@@ -18,20 +18,20 @@ class Premium(commands.Cog):
         embed = discord.Embed(
             title="Premium",
             description="Purchasing premium is the best way you can show support to us. As hosting this bot for "
-                        "all the servers and users costs much money, your few dollars donated will help us a lot "
-                        "in keeping the bot running. You will also get access to the premium features listed below.",
+            "all the servers and users costs much money, your few dollars donated will help us a lot "
+            "in keeping the bot running. You will also get access to the premium features listed below.",
             color=self.bot.primary_colour,
         )
         embed.add_field(
             name="Premium Features",
             value="- Priority support.\n- Custom message on new or closed ticket.\n"
-                  "- Advanced logging that includes chat history.\n- More features released in future.",
+            "- Advanced logging that includes chat history.\n- More features released in future.",
             inline=False,
         )
         embed.add_field(
             name="Get Premium",
             value="We use Donate Bot to manage premium. You will need to join our support server with the link in "
-                  f"`{ctx.prefix}support`. Then type `donate` in the support server to get the link to buy premium.",
+            f"`{ctx.prefix}support`. Then type `donate` in the support server to get the link to buy premium.",
             inline=False,
         )
         embed.add_field(
@@ -43,8 +43,7 @@ class Premium(commands.Cog):
 
     @checks.is_premium()
     @commands.command(
-        description="Get the premium status of this server.",
-        usage="premiumstatus",
+        description="Get the premium status of this server.", usage="premiumstatus"
     )
     async def premiumstatus(self, ctx):
         c = self.bot.conn.cursor()
@@ -65,7 +64,7 @@ class Premium(commands.Cog):
     @checks.is_patron()
     @commands.command(
         description="Get a list of servers you assigned premium to.",
-        usage="premiumservers"
+        usage="premiumservers",
     )
     async def premiumservers(self, ctx):
         c = self.bot.conn.cursor()
@@ -88,16 +87,12 @@ class Premium(commands.Cog):
             else:
                 to_send += f"\n{self.bot.get_guild(int(server)).name} `{server}`"
         await ctx.send(
-            embed=discord.Embed(
-                description=to_send,
-                color=self.bot.primary_colour,
-            )
+            embed=discord.Embed(description=to_send, color=self.bot.primary_colour)
         )
 
     @checks.is_patron()
     @commands.command(
-        description="Assign premium slot to a server.",
-        usage="premiumassign <server>"
+        description="Assign premium slot to a server.", usage="premiumassign <server>"
     )
     async def premiumassign(self, ctx, *, guild: int):
         if self.bot.get_guild(guild) is None:
@@ -137,7 +132,10 @@ class Premium(commands.Cog):
             )
         servers = [] if servers[0] is None else servers[0].split(",")
         servers.append(str(guild))
-        c.execute("UPDATE premium SET server=? WHERE user=?", (",".join(servers), ctx.author.id))
+        c.execute(
+            "UPDATE premium SET server=? WHERE user=?",
+            (",".join(servers), ctx.author.id),
+        )
         self.bot.conn.commit()
         await ctx.send(
             embed=discord.Embed(
@@ -148,8 +146,7 @@ class Premium(commands.Cog):
 
     @checks.is_patron()
     @commands.command(
-        description="Remove premium slot to a server.",
-        usage="premiumremove <server>"
+        description="Remove premium slot to a server.", usage="premiumremove <server>"
     )
     async def premiumremove(self, ctx, *, guild: int):
         c = self.bot.conn.cursor()
@@ -164,7 +161,10 @@ class Premium(commands.Cog):
         else:
             servers = ",".join(servers)
         c.execute("UPDATE premium SET server=? WHERE user=?", (servers, ctx.author.id))
-        c.execute("UPDATE data SET welcome=?, goodbye=?, loggingplus=? WHERE guild=?", (None, None, None, guild))
+        c.execute(
+            "UPDATE data SET welcome=?, goodbye=?, loggingplus=? WHERE guild=?",
+            (None, None, None, guild),
+        )
         self.bot.conn.commit()
         await ctx.send(
             embed=discord.Embed(

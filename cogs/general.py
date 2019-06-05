@@ -31,10 +31,14 @@ class General(commands.Cog):
                 description=command.description,
                 color=self.bot.primary_colour,
             )
-            usage = "\n".join([ctx.prefix + x.strip() for x in command.usage.split('\n')])
+            usage = "\n".join(
+                [ctx.prefix + x.strip() for x in command.usage.split("\n")]
+            )
             embed.add_field(name="Usage", value=f"```{usage}```", inline=False)
             if len(command.aliases) > 1:
-                embed.add_field(name="Aliases", value=f"`{'`, `'.join(command.aliases)}`")
+                embed.add_field(
+                    name="Aliases", value=f"`{'`, `'.join(command.aliases)}`"
+                )
             elif len(command.aliases) > 0:
                 embed.add_field(name="Alias", value=f"`{command.aliases[0]}`")
             await ctx.send(embed=embed)
@@ -54,7 +58,10 @@ class General(commands.Cog):
                 "help <command>` for more information on a command.",
                 color=self.bot.primary_colour,
             )
-            page.set_author(name=f"{self.bot.user.name} Help Menu", icon_url=self.bot.user.avatar_url)
+            page.set_author(
+                name=f"{self.bot.user.name} Help Menu",
+                icon_url=self.bot.user.avatar_url,
+            )
             page.set_thumbnail(url=self.bot.user.avatar_url)
             page.set_footer(text="Use the reactions to flip pages.")
             for cmd in cog_commands:
@@ -62,18 +69,11 @@ class General(commands.Cog):
             all_pages.append(page)
 
         paginator = Paginator(
-            length=1,
-            entries=all_pages,
-            use_defaults=True,
-            embed=True,
-            timeout=120,
+            length=1, entries=all_pages, use_defaults=True, embed=True, timeout=120
         )
         await paginator.start(ctx)
 
-    @commands.command(
-        description="Pong! Get my latency.",
-        usgae="ping",
-    )
+    @commands.command(description="Pong! Get my latency.", usage="ping")
     async def ping(self, ctx):
         await ctx.send(
             embed=discord.Embed(
@@ -90,13 +90,13 @@ class General(commands.Cog):
 
         if not brief:
             if days:
-                fmt = '{d} days, {h} hours, {m} minutes, and {s} seconds'
+                fmt = "{d} days, {h} hours, {m} minutes, and {s} seconds"
             else:
-                fmt = '{h} hours, {m} minutes, and {s} seconds'
+                fmt = "{h} hours, {m} minutes, and {s} seconds"
         else:
-            fmt = '{h}h {m}m {s}s'
+            fmt = "{h}h {m}m {s}s"
             if days:
-                fmt = '{d}d ' + fmt
+                fmt = "{d}d " + fmt
         return fmt.format(d=days, h=hours, m=minutes, s=seconds)
 
     @commands.command(
@@ -122,13 +122,15 @@ class General(commands.Cog):
                 total_online += 1
 
         embed = discord.Embed(
-            title=f"{self.bot.user.name} Statistics",
-            color=self.bot.primary_colour,
+            title=f"{self.bot.user.name} Statistics", color=self.bot.primary_colour
         )
         embed.add_field(name="Owner", value="CHamburr#2591")
         embed.add_field(name="Bot Version", value=self.bot.version)
         embed.add_field(name="Uptime", value=self.get_bot_uptime(brief=True))
-        embed.add_field(name="Shards", value=f"{f'{ctx.guild.shard_id}/' if ctx.guild else ''}{self.bot.shard_count}")
+        embed.add_field(
+            name="Shards",
+            value=f"{f'{ctx.guild.shard_id}/' if ctx.guild else ''}{self.bot.shard_count}",
+        )
         embed.add_field(name="Servers", value=str(guilds))
         embed.add_field(name="Channels", value=str(channels))
         embed.add_field(name="Users", value=str(total_members))
@@ -145,8 +147,7 @@ class General(commands.Cog):
         await ctx.send(embed=embed)
 
     @commands.command(
-        description="Get the link to vote for ModMail on DiscordBotList.",
-        usage="vote",
+        description="Get the link to vote for ModMail on DiscordBotList.", usage="vote"
     )
     async def vote(self, ctx):
         await ctx.send(
@@ -157,16 +158,13 @@ class General(commands.Cog):
             )
         )
 
-    @commands.command(
-        description="Get a link to invite me.",
-        usage="invite",
-    )
+    @commands.command(description="Get a link to invite me.", usage="invite")
     async def invite(self, ctx):
         await ctx.send(
             embed=discord.Embed(
                 title="Invite Me!",
                 description=f"https://discordapp.com/api/oauth2/authorize?client_id={self.bot.user.id}"
-                            "&permissions=268823640&scope=bot",
+                "&permissions=268823640&scope=bot",
                 color=self.bot.primary_colour,
             )
         )

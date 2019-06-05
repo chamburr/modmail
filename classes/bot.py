@@ -9,7 +9,7 @@ from discord.ext import commands
 import config
 import utils
 
-conn = sqlite3.connect('data.sqlite')
+conn = sqlite3.connect("data.sqlite")
 
 
 class ModMail(commands.AutoShardedBot):
@@ -59,8 +59,10 @@ class ModMail(commands.AutoShardedBot):
         c.execute("SELECT * FROM data WHERE guild=?", (guild,))
         res = c.fetchone()
         if not res:
-            c.execute("INSERT INTO data VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
-                      (guild, None, None, None, None, None, None, None, None))
+            c.execute(
+                "INSERT INTO data VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                (guild, None, None, None, None, None, None, None, None),
+            )
             self.conn.commit()
             return self.get_data(guild)
         else:

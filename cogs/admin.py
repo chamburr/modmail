@@ -22,16 +22,14 @@ class Admin(commands.Cog):
         if len(guilds) == 0:
             await ctx.send(
                 embed=discord.Embed(
-                    description="No such guild was found.",
-                    color=self.bot.error_colour,
+                    description="No such guild was found.", color=self.bot.error_colour
                 )
             )
         else:
             try:
                 await ctx.send(
                     embed=discord.Embed(
-                        description="\n".join(guilds),
-                        color=self.bot.primary_colour,
+                        description="\n".join(guilds), color=self.bot.primary_colour
                     )
                 )
             except discord.HTTPException:
@@ -45,7 +43,7 @@ class Admin(commands.Cog):
     @checks.is_admin()
     @commands.command(
         description="Get a list of servers the bot shares with the user.",
-        usage="sharedservers <user>"
+        usage="sharedservers <user>",
     )
     async def sharedservers(self, ctx, *, user):
         try:
@@ -53,11 +51,12 @@ class Admin(commands.Cog):
         except commands.errors.BadArgument:
             return await ctx.send(
                 embed=discord.Embed(
-                    description="No such user was found.",
-                    color=self.bot.error_colour,
+                    description="No such user was found.", color=self.bot.error_colour
                 )
             )
-        guilds = [guild for guild in self.bot.guilds if guild.get_member(user.id) is not None]
+        guilds = [
+            guild for guild in self.bot.guilds if guild.get_member(user.id) is not None
+        ]
         guild_list = []
         for guild in guilds:
             entry = f"{guild.name} `{guild.id}`"
@@ -66,14 +65,17 @@ class Admin(commands.Cog):
                 entry = entry + " (Owner)"
             elif perms.administrator is True:
                 entry = entry + " (Admin)"
-            elif perms.manage_guild is True or perms.kick_members is True or perms.ban_members is True:
+            elif (
+                perms.manage_guild is True
+                or perms.kick_members is True
+                or perms.ban_members is True
+            ):
                 entry = entry + " (Mod)"
             guild_list.append(entry)
         try:
             await ctx.send(
                 embed=discord.Embed(
-                    description="\n".join(guild_list),
-                    color=self.bot.primary_colour,
+                    description="\n".join(guild_list), color=self.bot.primary_colour
                 )
             )
         except discord.HTTPException:
@@ -106,7 +108,7 @@ class Admin(commands.Cog):
                         return await ctx.send(
                             embed=discord.Embed(
                                 description="Created an invite to the server that will expire in 120 seconds: "
-                                            f"{(await guild.text_channels[0].create_invite(max_age=120)).url}.",
+                                f"{(await guild.text_channels[0].create_invite(max_age=120)).url}.",
                                 color=self.bot.primary_colour,
                             )
                         )
@@ -119,8 +121,7 @@ class Admin(commands.Cog):
                         )
         await ctx.send(
             embed=discord.Embed(
-                description="No such guild was found.",
-                color=self.bot.primary_colour,
+                description="No such guild was found.", color=self.bot.primary_colour
             )
         )
 

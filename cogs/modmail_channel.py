@@ -14,10 +14,15 @@ class ModMailEvents(commands.Cog):
     async def on_message(self, message):
         if message.author.bot or not message.guild or not message.channel.category_id:
             return
-        if message.channel.category_id not in self.bot.all_category or not message.channel.name.isdigit():
+        if (
+            message.channel.category_id not in self.bot.all_category
+            or not message.channel.name.isdigit()
+        ):
             return
-        if message.channel.permissions_for(message.guild.me).send_messages is False or \
-           message.channel.permissions_for(message.guild.me).embed_links is False:
+        if (
+            message.channel.permissions_for(message.guild.me).send_messages is False
+            or message.channel.permissions_for(message.guild.me).embed_links is False
+        ):
             return
         prefix = get_guild_prefix(self.bot, message)
         if message.content.startswith(prefix):
@@ -31,7 +36,7 @@ class ModMailEvents(commands.Cog):
                 embed=discord.Embed(
                     title="Member Not Found",
                     description="The user might have left the server. "
-                                f"Use `{prefix}close [reason]` to close this channel.",
+                    f"Use `{prefix}close [reason]` to close this channel.",
                     color=self.bot.error_colour,
                 )
             )
@@ -43,11 +48,17 @@ class ModMailEvents(commands.Cog):
                 timestamp=datetime.datetime.utcnow(),
             )
             embed.set_author(
-                name=f"{message.author.name}#{message.author.discriminator}" if anon is False else "Anonymous#0000",
-                icon_url=message.author.avatar_url if anon is False else
-                "https://cdn.discordapp.com/embed/avatars/0.png",
+                name=f"{message.author.name}#{message.author.discriminator}"
+                if anon is False
+                else "Anonymous#0000",
+                icon_url=message.author.avatar_url
+                if anon is False
+                else "https://cdn.discordapp.com/embed/avatars/0.png",
             )
-            embed.set_footer(text=f"{message.guild.name} | {message.guild.id}", icon_url=message.guild.icon_url)
+            embed.set_footer(
+                text=f"{message.guild.name} | {message.guild.id}",
+                icon_url=message.guild.icon_url,
+            )
             files = []
             for file in message.attachments:
                 saved_file = io.BytesIO()
@@ -55,7 +66,10 @@ class ModMailEvents(commands.Cog):
                 files.append(discord.File(saved_file, file.filename))
             await member.send(embed=embed, files=files)
             embed.title = "Message Sent"
-            embed.set_footer(text=f"{member.name}#{member.discriminator} | {member.id}", icon_url=member.avatar_url)
+            embed.set_footer(
+                text=f"{member.name}#{member.discriminator} | {member.id}",
+                icon_url=member.avatar_url,
+            )
             for file in files:
                 file.reset()
             await message.channel.send(embed=embed, files=files)

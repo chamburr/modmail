@@ -5,19 +5,19 @@ from discord.ext import commands
 from functools import partial
 from typing import Union
 
-__all__ = ('Session', 'Paginator', 'button', 'inverse_button',)
+__all__ = ("Session", "Paginator", "button", "inverse_button")
 
 
 class Button:
-    __slots__ = ('_callback', '_inverse_callback', 'emoji', 'position', 'try_remove')
+    __slots__ = ("_callback", "_inverse_callback", "emoji", "position", "try_remove")
 
     def __init__(self, **kwargs):
-        self._callback = kwargs.get('callback')
-        self._inverse_callback = kwargs.get('inverse_callback')
+        self._callback = kwargs.get("callback")
+        self._inverse_callback = kwargs.get("inverse_callback")
 
-        self.emoji = kwargs.get('emoji')
-        self.position = kwargs.get('position')
-        self.try_remove = kwargs.get('try_remove', True)
+        self.emoji = kwargs.get("emoji")
+        self.position = kwargs.get("position")
+        self.try_remove = kwargs.get("try_remove", True)
 
 
 class Session:
@@ -48,7 +48,7 @@ class Session:
 
     def _gather_buttons(self):
         for _, member in inspect.getmembers(self):
-            if hasattr(member, '__button__'):
+            if hasattr(member, "__button__"):
                 button = member.__button__
 
                 sorted_ = self.sort_buttons(buttons=self._buttons)
@@ -100,10 +100,20 @@ class Session:
 
     async def _session_loop(self, ctx):
         while True:
-            _add = asyncio.ensure_future(ctx.bot.wait_for('raw_reaction_add', check=lambda _: self.check(_)(ctx)))
-            _remove = asyncio.ensure_future(ctx.bot.wait_for('raw_reaction_remove', check=lambda _: self.check(_)(ctx)))
+            _add = asyncio.ensure_future(
+                ctx.bot.wait_for("raw_reaction_add", check=lambda _: self.check(_)(ctx))
+            )
+            _remove = asyncio.ensure_future(
+                ctx.bot.wait_for(
+                    "raw_reaction_remove", check=lambda _: self.check(_)(ctx)
+                )
+            )
 
-            done, pending = await asyncio.wait((_add, _remove), return_when=asyncio.FIRST_COMPLETED, timeout=self.timeout)
+            done, pending = await asyncio.wait(
+                (_add, _remove),
+                return_when=asyncio.FIRST_COMPLETED,
+                timeout=self.timeout,
+            )
 
             for future in pending:
                 future.cancel()
@@ -127,13 +137,19 @@ class Session:
 
             if ctx.guild is not None and self._try_remove and button.try_remove:
                 try:
-                    await self.page.remove_reaction(payload.emoji, ctx.guild.get_member(payload.user_id))
+                    await self.page.remove_reaction(
+                        payload.emoji, ctx.guild.get_member(payload.user_id)
+                    )
                 except discord.HTTPException:
                     pass
 
             member = ctx.guild.get_member(payload.user_id) if ctx.guild else ctx.author
 
-            if action and button in self._defaults.values() or button in self._default_stop.values():
+            if (
+                action
+                and button in self._defaults.values()
+                or button in self._default_stop.values()
+            ):
                 await button._callback(ctx, member)
             elif action and button._callback:
                 await button._callback(self, ctx, member)
@@ -180,7 +196,9 @@ class Session:
         def inner(ctx):
             if emoji not in self.buttons.keys():
                 return False
-            elif payload.user_id == ctx.bot.user.id or payload.message_id != self.page.id:
+            elif (
+                payload.user_id == ctx.bot.user.id or payload.message_id != self.page.id
+            ):
                 return False
             elif payload.user_id != ctx.author.id:
                 return False
@@ -220,17 +238,43 @@ class Paginator(Session):
         Only available when embed=True. The thumbnail URL to set for the embeded pages.
     """
 
-    def __init__(self, *, length: int = 10, entries: list = None,
-                 extra_pages: list = None, prefix: str = '', suffix: str = '', format: str = '',
-                 use_defaults: bool = True, embed: bool = True,
-                 joiner: str = '\n', timeout: int = 180):
+    def __init__(
+        self,
+        *,
+        length: int = 10,
+        entries: list = None,
+        extra_pages: list = None,
+        prefix: str = "",
+        suffix: str = "",
+        format: str = "",
+        use_defaults: bool = True,
+        embed: bool = True,
+        joiner: str = "\n",
+        timeout: int = 180,
+    ):
         super().__init__()
-        self._defaults = {(0, '⏮'): Button(emoji='⏮', position=0, callback=partial(self._default_indexer, 'start')),
-                          (1, '◀'): Button(emoji='◀', position=1, callback=partial(self._default_indexer, -1)),
-                          (2, '⏹'): Button(emoji='⏹', position=2, callback=partial(self._default_indexer, 'stop')),
-                          (3, '▶'): Button(emoji='▶', position=3, callback=partial(self._default_indexer, +1)),
-                          (4, '⏭'): Button(emoji='⏭', position=4, callback=partial(self._default_indexer, 'end'))}
-        self._default_stop = {(0, '⏹'): Button(emoji='⏹', position=0, callback=partial(self._default_indexer, 'stop'))}
+        self._defaults = {
+            (0, "⏮"): Button(
+                emoji="⏮", position=0, callback=partial(self._default_indexer, "start")
+            ),
+            (1, "◀"): Button(
+                emoji="◀", position=1, callback=partial(self._default_indexer, -1)
+            ),
+            (2, "⏹"): Button(
+                emoji="⏹", position=2, callback=partial(self._default_indexer, "stop")
+            ),
+            (3, "▶"): Button(
+                emoji="▶", position=3, callback=partial(self._default_indexer, +1)
+            ),
+            (4, "⏭"): Button(
+                emoji="⏭", position=4, callback=partial(self._default_indexer, "end")
+            ),
+        }
+        self._default_stop = {
+            (0, "⏹"): Button(
+                emoji="⏹", position=0, callback=partial(self._default_indexer, "stop")
+            )
+        }
 
         self.buttons = {}
 
@@ -255,23 +299,25 @@ class Paginator(Session):
     def chunker(self):
         """Create chunks of our entries for pagination."""
         for x in range(0, len(self.entries), self.length):
-            yield self.entries[x:x + self.length]
+            yield self.entries[x : x + self.length]
 
     def formatting(self, entry: str):
         """Format our entries, with the given options."""
-        return f'{self.prefix}{self.format}{entry}{self.format[::-1]}{self.suffix}'
+        return f"{self.prefix}{self.format}{entry}{self.format[::-1]}{self.suffix}"
 
     async def start(self, ctx: commands.Context, page=None):
         """Start our Paginator session."""
         if not self.use_defaults:
             if not self._buttons:
-                raise AttributeError('Session has no buttons.')
+                raise AttributeError("Session has no buttons.")
 
         await self._paginate(ctx)
 
     async def _paginate(self, ctx: commands.Context):
         if not self.entries and not self.extra_pages:
-            raise AttributeError('You must provide at least one entry or page for pagination.')  # ^^
+            raise AttributeError(
+                "You must provide at least one entry or page for pagination."
+            )  # ^^
 
         for index, chunk in enumerate(self.entries):
             if not self.use_embed:
@@ -283,7 +329,9 @@ class Paginator(Session):
                 else:
                     embed.set_footer(
                         text=f"{embed.footer.text} (Page {index + 1}/{len(self.entries)})",
-                        icon_url=embed.footer.icon_url if embed.footer.icon_url is not None else discord.Embed.Empty,
+                        icon_url=embed.footer.icon_url
+                        if embed.footer.icon_url is not None
+                        else discord.Embed.Empty,
                     )
                 self._pages.append(embed)
 
@@ -314,12 +362,12 @@ class Paginator(Session):
     async def _default_indexer(self, control, ctx, member):
         previous = self._index
 
-        if control == 'stop':
+        if control == "stop":
             return await self.cancel(ctx)
 
-        if control == 'end':
+        if control == "end":
             self._index = len(self._pages) - 1
-        elif control == 'start':
+        elif control == "start":
             self._index = 0
         else:
             self._index += control
@@ -353,15 +401,17 @@ def button(emoji: str, *, try_remove=True, position: int = 666):
 
     def deco(func):
         if not asyncio.iscoroutinefunction(func):
-            raise TypeError('Button callback must be a coroutine.')
+            raise TypeError("Button callback must be a coroutine.")
 
-        if hasattr(func, '__button__'):
+        if hasattr(func, "__button__"):
             button = func.__button__
             button._callback = func
 
             return func
 
-        func.__button__ = Button(emoji=emoji, callback=func, position=position, try_remove=try_remove)
+        func.__button__ = Button(
+            emoji=emoji, callback=func, position=position, try_remove=try_remove
+        )
         return func
 
     return deco
@@ -385,15 +435,17 @@ def inverse_button(emoji: str = None, *, try_remove=False, position: int = 666):
 
     def deco(func):
         if not asyncio.iscoroutinefunction(func):
-            raise TypeError('Button callback must be a coroutine.')
+            raise TypeError("Button callback must be a coroutine.")
 
-        if hasattr(func, '__button__'):
+        if hasattr(func, "__button__"):
             button = func.__button__
             button._inverse_callback = func
 
             return func
 
-        func.__button__ = Button(emoji=emoji, inverse_callback=func, position=position, try_remove=try_remove)
+        func.__button__ = Button(
+            emoji=emoji, inverse_callback=func, position=position, try_remove=try_remove
+        )
         return func
 
     return deco
