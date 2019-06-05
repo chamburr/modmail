@@ -70,4 +70,4 @@ mod_colour = 0xFF4500
 error_colour = 0xFF0000
 
 # Version of bot
-__version__ = "1.0.2"
+__version__ = "1.1.0"
