@@ -19,6 +19,13 @@ def get_guild_prefix(bot, message):
             return bot.config.default_prefix
 
 
+def get_user_settings(bot, user):
+    c = bot.conn.cursor()
+    c.excute("SELECT * FROM usersettings WHERE user=?", (user,))
+    res = c.fetchone()
+    return res
+
+
 def get_premium_slots(bot, user):
     guild = bot.get_guild(bot.config.main_server)
     member = guild.get_member(user)
