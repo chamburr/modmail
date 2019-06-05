@@ -1,10 +1,12 @@
 import io
+import copy
 import asyncio
 import datetime
 import discord
 from discord.ext import commands
 
 from utils.tools import get_guild_prefix
+from utils.tools import get_user_settings
 
 
 class DirectMessageEvents(commands.Cog, name="Direct Message"):
@@ -141,71 +143,7 @@ class DirectMessageEvents(commands.Cog, name="Direct Message"):
                 )
             )
 
-    async def remove_reactions(self, message):
-        message = await message.channel.fetch_message(message.id)
-        for reaction in message.reactions:
-            await reaction.remove(self.bot.user)
-
-    @commands.Cog.listener()
-    async def on_message(self, message):
-        if message.author.bot or not isinstance(message.channel, discord.DMChannel):
-            return
-        prefix = self.bot.config.default_prefix
-        if message.content.startswith(prefix):
-            return
-        guild = None
-        async for msg in message.channel.history(limit=30):
-            if msg.author.id == self.bot.user.id and len(msg.embeds) > 0 \
-               and msg.embeds[0].title in ["Message Received", "Message Sent"]:
-                guild = msg.embeds[0].footer.text.split()[-1]
-                break
-        guild = self.bot.get_guild(int(guild))
-        msg = None
-        if guild:
-            embed = discord.Embed(
-                title="Confirmation",
-                description=f"You're sending this message to **{guild.name}** (ID: {guild.id}). React with ✅ to "
-                "confirm.\nWant to send to another server instead? React with 🔁.",
-                color=self.bot.primary_colour,
-
-            )
-            embed.set_footer(text="To cancel this request, react with ❌.")
-            msg = await message.channel.send(embed=embed)
-            await msg.add_reaction("✅")
-            await msg.add_reaction("🔁")
-            await msg.add_reaction("❌")
-
-            def reaction_check(reaction2, user2):
-                return str(reaction2) in ["✅", "🔁", "❌"] and user2.id == message.author.id and \
-                       reaction2.message.id == msg.id
-
-            try:
-                reaction, user = await self.bot.wait_for("reaction_add", check=reaction_check, timeout=60)
-            except asyncio.TimeoutError:
-                await self.remove_reactions(msg)
-                return await msg.edit(
-                    embed=discord.Embed(
-                        description="Time out. You did not choose anything.",
-                        color=self.bot.error_colour,
-                    )
-                )
-            if str(reaction) == "✅":
-                await msg.delete()
-                return await self.send_mail(message, guild.id, message.content)
-            elif str(reaction) == "🔁":
-                await self.remove_reactions(msg)
-            elif str(reaction) == "❌":
-                await self.remove_reactions(msg)
-                await msg.edit(
-                    embed=discord.Embed(
-                        description="Request cancelled successfully.",
-                        color=self.bot.primary_colour,
-                    )
-                )
-                await asyncio.sleep(5)
-                await msg.delete()
-                return
-
+    async def select_guild(self, message, prefix, msg=None):
         def member_in_guild(guild2):
             return guild2.get_member(message.author.id) is not None
 
@@ -293,6 +231,77 @@ class DirectMessageEvents(commands.Cog, name="Direct Message"):
         guild = embeds[page_index].fields[chosen].value.split()[-1]
         await self.send_mail(message, guild, message.content)
 
+    async def remove_reactions(self, message):
+        message = await message.channel.fetch_message(message.id)
+        for reaction in message.reactions:
+            await reaction.remove(self.bot.user)
+
+    @commands.Cog.listener()
+    async def on_message(self, message):
+        if message.author.bot or not isinstance(message.channel, discord.DMChannel):
+            return
+        prefix = self.bot.config.default_prefix
+        if message.content.startswith(prefix):
+            return
+        guild = None
+        async for msg in message.channel.history(limit=30):
+            if msg.author.id == self.bot.user.id and len(msg.embeds) > 0 \
+               and msg.embeds[0].title in ["Message Received", "Message Sent"]:
+                guild = msg.embeds[0].footer.text.split()[-1]
+                break
+        guild = self.bot.get_guild(int(guild))
+        msg = None
+        confirmation = get_user_settings(self.bot, message.author.id)
+        confirmation = True if confirmation is None or confirmation[1] == 1 else False
+        if guild and confirmation is False:
+            await self.send_mail(message, guild.id, message.content)
+        elif guild and confirmation is True:
+            embed = discord.Embed(
+                title="Confirmation",
+                description=f"You're sending this message to **{guild.name}** (ID: {guild.id}). React with ✅ to "
+                "confirm.\nWant to send to another server instead? React with 🔁.",
+                color=self.bot.primary_colour,
+
+            )
+            embed.set_footer(text="To cancel this request, react with ❌.")
+            msg = await message.channel.send(embed=embed)
+            await msg.add_reaction("✅")
+            await msg.add_reaction("🔁")
+            await msg.add_reaction("❌")
+
+            def reaction_check(reaction2, user2):
+                return str(reaction2) in ["✅", "🔁", "❌"] and user2.id == message.author.id and \
+                       reaction2.message.id == msg.id
+
+            try:
+                reaction, user = await self.bot.wait_for("reaction_add", check=reaction_check, timeout=60)
+            except asyncio.TimeoutError:
+                await self.remove_reactions(msg)
+                return await msg.edit(
+                    embed=discord.Embed(
+                        description="Time out. You did not choose anything.",
+                        color=self.bot.error_colour,
+                    )
+                )
+            if str(reaction) == "✅":
+                await msg.delete()
+                await self.send_mail(message, guild.id, message.content)
+            elif str(reaction) == "🔁":
+                await self.remove_reactions(msg)
+                await self.select_guild(message, prefix, msg)
+            elif str(reaction) == "❌":
+                await self.remove_reactions(msg)
+                await msg.edit(
+                    embed=discord.Embed(
+                        description="Request cancelled successfully.",
+                        color=self.bot.primary_colour,
+                    )
+                )
+                await asyncio.sleep(5)
+                await msg.delete()
+        else:
+            await self.select_guild(message, prefix)
+
     @commands.dm_only()
     @commands.command(
         description="Deprecated. Please send the message without the command instead.",
@@ -315,6 +324,35 @@ class DirectMessageEvents(commands.Cog, name="Direct Message"):
     )
     async def send(self, ctx, guild: int, *, message: str):
         await self.send_mail(ctx.message, guild, message)
+
+    @commands.dm_only()
+    @commands.command(
+        description="Enable or disable the confirmation message.",
+        usage="confirmation"
+    )
+    async def confirmation(self, ctx, action):
+        data = get_user_settings(self.bot, ctx.author.id)
+        c = self.bot.conn.cursor()
+        if data is None or data[1] is None:
+            if data is None:
+                c.execute("INSERT INTO usersettings (user, confirmation) VALUES (?, ?)", (ctx.author.id, 1))
+            elif data[1] is None:
+                c.execute("UPDATE usersettings SET confirmation=? WHERE user=?", (1, ctx.author.id))
+            await ctx.send(
+                embed=discord.Embed(
+                    description="Confirmation messages are disabled.",
+                    color=self.bot.primary_colour,
+                )
+            )
+        else:
+            c.execute("UPDATE usersettings SET confirmation=? WHERE user=?", (None, ctx.author.id))
+            await ctx.send(
+                embed=discord.Embed(
+                    description="Confirmation messages are enabled.",
+                    color=self.bot.primary_colour,
+                )
+            )
+        self.bot.conn.commit()
 
 
 def setup(bot):
