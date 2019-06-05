@@ -21,7 +21,7 @@ def get_guild_prefix(bot, message):
 
 def get_user_settings(bot, user):
     c = bot.conn.cursor()
-    c.excute("SELECT * FROM usersettings WHERE user=?", (user,))
+    c.execute("SELECT * FROM usersettings WHERE user=?", (user,))
     res = c.fetchone()
     return res
 
