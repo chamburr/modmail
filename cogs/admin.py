@@ -47,33 +47,42 @@ class Admin(commands.Cog):
         description="Get a list of servers the bot shares with the user.",
         usage="sharedservers <user>"
     )
-    async def sharedservers(self, ctx, *, user: discord.User):
-        guilds = []
-        for guild in self.bot.guilds:
-            if guild.get_member(user.id) is not None:
-                guilds.append(f"{guild.name} `{guild.id}`{' (Owner)' if guild.owner_id == user.id else ''}")
-        if len(guilds) == 0:
-            await ctx.send(
+    async def sharedservers(self, ctx, *, user):
+        try:
+            user = await commands.UserConverter().convert(ctx, user)
+        except commands.errors.BadArgument:
+            return await ctx.send(
                 embed=discord.Embed(
-                    description="No such guild was found.",
+                    description="No such user was found.",
                     color=self.bot.error_colour,
                 )
             )
-        else:
-            try:
-                await ctx.send(
-                    embed=discord.Embed(
-                        description="\n".join(guilds),
-                        color=self.bot.primary_colour,
-                    )
+        guilds = [guild for guild in self.bot.guilds if guild.get_member(user.id) is not None]
+        guild_list = []
+        for guild in guilds:
+            entry = f"{guild.name} `{guild.id}`"
+            perms = guild.permissions_for(user)
+            if guild.owner_id == user.id:
+                entry = entry + " (Owner)"
+            elif perms.administrator is True:
+                entry = entry + " (Admin)"
+            elif perms.manage_guild is True or perms.kick_members is True or perms.ban_members is True:
+                entry = entry + " (Mod)"
+            guild_list.append(entry)
+        try:
+            await ctx.send(
+                embed=discord.Embed(
+                    description="\n".join(guild_list),
+                    color=self.bot.primary_colour,
                 )
-            except discord.HTTPException:
-                await ctx.send(
-                    embed=discord.Embed(
-                        description="The message is too long to be sent.",
-                        color=self.bot.error_colour,
-                    )
+            )
+        except discord.HTTPException:
+            await ctx.send(
+                embed=discord.Embed(
+                    description="The message is too long to be sent.",
+                    color=self.bot.error_colour,
                 )
+            )
 
     @checks.is_admin()
     @commands.command(
