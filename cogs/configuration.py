@@ -388,7 +388,7 @@ class Configuration(commands.Cog):
         description="Set a super cool greeting message that is sent when a new ticket is opened.",
         usage="greetingmessage [text]",
     )
-    async def greetingmessage(self, ctx, *, text = None):
+    async def greetingmessage(self, ctx, *, text=None):
         c = self.bot.conn.cursor()
         c.execute("UPDATE data SET welcome=? WHERE guild=?", (text, ctx.guild.id))
         self.bot.conn.commit()
