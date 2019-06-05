@@ -259,11 +259,12 @@ class DirectMessageEvents(commands.Cog, name="Direct Message"):
             embed = discord.Embed(
                 title="Confirmation",
                 description=f"You're sending this message to **{guild.name}** (ID: {guild.id}). React with ✅ to "
-                "confirm.\nWant to send to another server instead? React with 🔁.",
+                            "confirm.\nWant to send to another server instead? React with 🔁.\nTo cancel this request, "
+                            "react with ❌.",
                 color=self.bot.primary_colour,
 
             )
-            embed.set_footer(text="To cancel this request, react with ❌.")
+            embed.set_footer(text=f"Tip: You can disable confirmation messages with the {prefix}confirmation command.")
             msg = await message.channel.send(embed=embed)
             await msg.add_reaction("✅")
             await msg.add_reaction("🔁")
