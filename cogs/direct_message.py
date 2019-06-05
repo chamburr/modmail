@@ -278,11 +278,11 @@ class DirectMessageEvents(commands.Cog, name="Direct Message"):
                 and msg.embeds[0].title in ["Message Received", "Message Sent"]
             ):
                 guild = msg.embeds[0].footer.text.split()[-1]
+                guild = self.bot.get_guild(int(guild))
                 break
-        guild = self.bot.get_guild(int(guild))
         msg = None
         confirmation = get_user_settings(self.bot, message.author.id)
-        confirmation = True if confirmation is None or confirmation[1] == 1 else False
+        confirmation = True if confirmation is None or confirmation[1] is None else False
         if guild and confirmation is False:
             await self.send_mail(message, guild.id, message.content)
         elif guild and confirmation is True:
