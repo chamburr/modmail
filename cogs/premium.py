@@ -64,9 +64,10 @@ class Premium(commands.Cog):
     @checks.is_patron()
     @commands.command(
         description="Get a list of servers you assigned premium to.",
-        usage="premiumservers",
+        usage="premiumlist",
+        aliases=["premiumservers"],
     )
-    async def premiumservers(self, ctx):
+    async def premiumlist(self, ctx):
         c = self.bot.conn.cursor()
         c.execute("SELECT server FROM premium WHERE user=?", (ctx.author.id,))
         res = c.fetchone()
