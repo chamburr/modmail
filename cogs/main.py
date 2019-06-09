@@ -1,5 +1,4 @@
 import io
-import copy
 import datetime
 import discord
 from discord.ext import commands
@@ -11,6 +10,19 @@ from cogs.modmail_channel import ModMailEvents
 class Main(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
+
+    @checks.is_modmail_channel()
+    @checks.in_database()
+    @checks.is_mod()
+    @commands.guild_only()
+    @commands.command(
+        description="Anonymously reply to the message.",
+        usage="areply <message>",
+        aliases=["anonreply"],
+    )
+    async def areply(self, ctx, *, message):
+        modmail = ModMailEvents(self.bot)
+        await modmail.send_mail_mod(ctx.message, ctx.prefix, True, message)
 
     async def close_channel(self, ctx, reason, anon: bool = False):
         try:
@@ -113,21 +125,8 @@ class Main(commands.Cog):
             )
 
     @checks.is_modmail_channel()
-    @checks.is_mod()
     @checks.in_database()
-    @commands.guild_only()
-    @commands.command(
-        description="Anonymously reply to the message.",
-        usage="areply <message>",
-        aliases=["anonreply"],
-    )
-    async def areply(self, ctx, *, message):
-        modmail = ModMailEvents(self.bot)
-        await modmail.send_mail_mod(ctx.message, ctx.prefix, True, message)
-
-    @checks.is_modmail_channel()
     @checks.is_mod()
-    @checks.in_database()
     @commands.bot_has_permissions(manage_channels=True)
     @commands.guild_only()
     @commands.command(
@@ -137,8 +136,8 @@ class Main(commands.Cog):
         await self.close_channel(ctx, reason)
 
     @checks.is_modmail_channel()
-    @checks.is_mod()
     @checks.in_database()
+    @checks.is_mod()
     @commands.bot_has_permissions(manage_channels=True)
     @commands.guild_only()
     @commands.command(
