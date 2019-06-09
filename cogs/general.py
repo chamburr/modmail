@@ -42,8 +42,49 @@ class General(commands.Cog):
                 embed.add_field(name="Alias", value=f"`{command.aliases[0]}`")
             await ctx.send(embed=embed)
             return
-
         all_pages = []
+        page = discord.Embed(
+            title=f"{self.bot.user.name} Help Menu",
+            description='*"Finally a ModMail bot made for everyone."*\n\nThank you for using ModMail! If you are an '
+            "ordinary user and wants to contact the staff, all that you need to do is to direct message me. You can "
+            "also invite me to your server with the link below, or join our support server should you need further "
+            f"help.\n\nDon't forget to check out our partners with the `{ctx.prefix}partners` command!",
+            color=self.bot.primary_colour,
+        )
+        page.set_thumbnail(url=self.bot.user.avatar_url)
+        page.set_footer(text="Use the reactions to flip pages.")
+        page.add_field(
+            name="Invite",
+            value=f"https://discordapp.com/api/oauth2/authorize?client_id={self.bot.user.id}"
+            "&permissions=268823640&scope=bot",
+            inline=False,
+        )
+        page.add_field(
+            name="Support Server", value="https://discord.gg/wjWJwJB", inline=False
+        )
+        all_pages.append(page)
+        page = discord.Embed(
+            title=f"{self.bot.user.name} Help Menu", color=self.bot.primary_colour
+        )
+        page.set_thumbnail(url=self.bot.user.avatar_url)
+        page.set_footer(text="Use the reactions to flip pages.")
+        page.add_field(
+            name="About ModMail",
+            value="ModMail is designed to enable your server members to contact staff easily. When a user sends a "
+            "direct message to the bot, a new channel is created in your server. Messages sent by the user will be "
+            "displayed there and sending a message in that channel will also forward it to that user. This bot is "
+            "different from the others as it is the one and only public ModMail bot. This means that it is ensured "
+            "to be hosted 24/7 without you having to pay extra hosting fees.",
+            inline=False,
+        )
+        page.add_field(
+            name="Getting Started",
+            value="Follow these steps to get the bot all ready to serve your server!\n\n1. Invite the bot with the "
+            "link below.\n2. Run `=setup`, there will be an interactive guide.\n3. Done! For a full list of commands, "
+            "see `=help`.",
+            inline=False,
+        )
+        all_pages.append(page)
         for index, cog_name in enumerate(self.bot.cogs):
             if cog_name in ["Owner", "Admin"]:
                 continue
