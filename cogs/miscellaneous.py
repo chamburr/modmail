@@ -1,4 +1,3 @@
-import asyncio
 import discord
 from discord.ext import commands
 
@@ -32,6 +31,7 @@ class Miscellaneous(commands.Cog):
     @commands.command(
         description="Shows a member's permission in a channel when specified.",
         usage="permissions [member] [channel]",
+        aliases=["perms"],
     )
     async def permissions(
         self, ctx, member: discord.Member = None, channel: discord.TextChannel = None
@@ -46,6 +46,7 @@ class Miscellaneous(commands.Cog):
     @commands.command(
         description="Shows the bot's permissions in the current or specified channel.",
         usage="botpermissions [channel]",
+        aliases=["botperms"],
     )
     async def botpermissions(self, ctx, *, channel: discord.TextChannel = None):
         channel = channel or ctx.channel
@@ -56,6 +57,7 @@ class Miscellaneous(commands.Cog):
     @commands.command(
         description="Shows some information about yourself or the member you specified.",
         usage="userinfo [member]",
+        aliases=["whois"],
     )
     async def userinfo(self, ctx, *, member: discord.Member = None):
         if member is None:
@@ -86,7 +88,9 @@ class Miscellaneous(commands.Cog):
 
     @commands.guild_only()
     @commands.command(
-        description="Get some information about this server.", usage="serverinfo"
+        description="Get some information about this server.",
+        usage="serverinfo",
+        aliases=["guildinfo"],
     )
     async def serverinfo(self, ctx):
         guild = ctx.guild
