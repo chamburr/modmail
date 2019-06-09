@@ -35,7 +35,7 @@ def in_database():
         if res is None or res[2] is None or res[3] is None:
             await ctx.send(
                 embed=discord.Embed(
-                    description=f"Your server is not in the database yet. Use `{ctx.prefix}setup` first.",
+                    description=f"Your server has not been set up yet. Use `{ctx.prefix}setup` first.",
                     color=ctx.bot.error_colour,
                 )
             )
