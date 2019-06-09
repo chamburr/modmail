@@ -123,7 +123,10 @@ def is_modmail_channel():
 def is_mod():
     async def predicate(ctx):
         role = ctx.guild.get_role(ctx.bot.get_data(ctx.guild.id)[3])
-        if role not in ctx.author.roles:
+        if (
+            role not in ctx.author.roles
+            and ctx.author.guild_permissions.administrator is False
+        ):
             await ctx.send(
                 embed=discord.Embed(
                     description=f"This command can only be used by members with the <@&{role.id}> role.",
