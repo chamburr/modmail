@@ -1,6 +1,5 @@
 import psutil
 import platform
-import datetime
 import discord
 from discord.ext import commands
 from utils.paginator import Paginator
@@ -67,7 +66,6 @@ class General(commands.Cog):
             for cmd in cog_commands:
                 page.add_field(name=cmd.name, value=cmd.description, inline=False)
             all_pages.append(page)
-
         paginator = Paginator(
             length=1, entries=all_pages, use_defaults=True, embed=True, timeout=120
         )

@@ -282,7 +282,9 @@ class DirectMessageEvents(commands.Cog, name="Direct Message"):
                 break
         msg = None
         confirmation = get_user_settings(self.bot, message.author.id)
-        confirmation = True if confirmation is None or confirmation[1] is None else False
+        confirmation = (
+            True if confirmation is None or confirmation[1] is None else False
+        )
         if guild and confirmation is False:
             await self.send_mail(message, guild.id, message.content)
         elif guild and confirmation is True:

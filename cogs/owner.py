@@ -107,14 +107,10 @@ class Owner(commands.Cog):
             "message": ctx.message,
             "_": self._last_result,
         }
-
         env.update(globals())
-
         body = self.cleanup_code(body)
         stdout = io.StringIO()
-
         to_compile = f'async def func():\n{textwrap.indent(body, "  ")}'
-
         try:
             exec(to_compile, env)
         except Exception as e:
@@ -124,7 +120,6 @@ class Owner(commands.Cog):
                     color=self.bot.primary_colour,
                 )
             )
-
         func = env["func"]
         try:
             with redirect_stdout(stdout):
@@ -143,7 +138,6 @@ class Owner(commands.Cog):
                 await ctx.message.add_reaction("✅")
             except discord.Forbidden:
                 pass
-
             if ret is None:
                 if value:
                     await ctx.send(
