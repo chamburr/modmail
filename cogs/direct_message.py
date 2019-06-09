@@ -343,7 +343,7 @@ class DirectMessageEvents(commands.Cog, name="Direct Message"):
 
     @commands.dm_only()
     @commands.command(
-        description="Create a new ticket or send to another server.",
+        description="Send message to another server, useful when confirmation messages are disabled.",
         usage="new <message>",
         aliases=["create", "switch", "change"],
     )
