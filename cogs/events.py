@@ -21,6 +21,8 @@ class Events(commands.Cog):
         }
         if self.bot.config.testing is False:
             self.stats_updates = bot.loop.create_task(self.stats_updater())
+        self.activity_index = 0
+        self.activity_updates = bot.loop.create_task(self.activity_updater())
 
     async def stats_updater(self):
         await self.bot.wait_until_ready()
@@ -54,16 +56,25 @@ class Events(commands.Cog):
     def get_dboats_payload(self):
         return {"server_count": len(self.bot.guilds)}
 
+    async def activity_updater(self):
+        await self.bot.wait_until_ready()
+        while True:
+            if self.activity_index + 1 >= len(self.bot.config.activity):
+                self.activity_index = 0
+            else:
+                self.activity_index = self.activity_index + 1
+            await self.bot.change_presence(
+                activity=discord.Game(
+                    name=self.bot.config.activity[self.activity_index]
+                )
+            )
+            await asyncio.sleep(10)
+
     @commands.Cog.listener()
     async def on_ready(self):
         print(f"{self.bot.user.name}#{self.bot.user.discriminator} is online!")
         print("--------")
         await self.bot.wait_until_ready()
-        await self.bot.change_presence(
-            activity=discord.Game(
-                name=f"DM to Contact Staff | {self.bot.config.default_prefix}help"
-            )
-        )
         event_channel = self.bot.get_channel(self.bot.config.event_channel)
         await event_channel.send(
             embed=discord.Embed(
