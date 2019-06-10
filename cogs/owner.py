@@ -7,9 +7,10 @@ import subprocess
 
 from typing import Optional
 from contextlib import redirect_stdout
+from importlib import reload as importlib_reload
 from discord.ext import commands
 
-import utils.checks as checks
+from utils import checks
 
 
 class Owner(commands.Cog):
@@ -74,6 +75,26 @@ class Owner(commands.Cog):
             await ctx.send(
                 embed=discord.Embed(
                     description="Successfully reloaded the module.",
+                    color=self.bot.primary_colour,
+                )
+            )
+
+    @checks.is_owner()
+    @commands.command(description="Reload the configurations.", usage="reloadconf", hidden=True)
+    async def reloadconf(self, ctx):
+        try:
+            importlib_reload(self.bot.config)
+        except Exception as e:
+            await ctx.send(
+                embed=discord.Embed(
+                    description=f"ERROR: {type(e).__name__} - {e}",
+                    color=self.bot.error_colour,
+                )
+            )
+        else:
+            await ctx.send(
+                embed=discord.Embed(
+                    description="Successfully reloaded the configurations.",
                     color=self.bot.primary_colour,
                 )
             )
