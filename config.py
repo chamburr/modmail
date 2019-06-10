@@ -22,6 +22,12 @@ testing = False
 # The default prefix for commands
 default_prefix = "="
 
+# Status of the bot
+activity = [
+    f"DM to Contact Staff | {default_prefix}help",
+    f"🎉 1K SERVERS GIVEAWAY 🎉 -> {default_prefix}support | {default_prefix}help",
+]
+
 # The very very main bot owner
 owner = 446290930723717120
 
