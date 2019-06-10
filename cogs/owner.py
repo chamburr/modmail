@@ -26,7 +26,7 @@ class Owner(commands.Cog):
             await ctx.send(
                 embed=discord.Embed(
                     description=f"ERROR: {type(e).__name__} - {e}",
-                    color=self.bot.primary_colour,
+                    color=self.bot.error_colour,
                 )
             )
         else:
@@ -46,7 +46,7 @@ class Owner(commands.Cog):
             await ctx.send(
                 embed=discord.Embed(
                     description=f"ERROR: {type(e).__name__} - {e}",
-                    color=self.bot.primary_colour,
+                    color=self.bot.error_colour,
                 )
             )
         else:
@@ -67,7 +67,7 @@ class Owner(commands.Cog):
             await ctx.send(
                 embed=discord.Embed(
                     description=f"ERROR: {type(e).__name__} - {e}",
-                    color=self.bot.primary_colour,
+                    color=self.bot.error_colour,
                 )
             )
         else:
@@ -129,7 +129,7 @@ class Owner(commands.Cog):
             await ctx.send(
                 embed=discord.Embed(
                     description=f"```py\n{value}{traceback.format_exc()}\n```",
-                    color=self.bot.primary_colour,
+                    color=self.bot.error_colour,
                 )
             )
         else:
@@ -181,7 +181,7 @@ class Owner(commands.Cog):
             return await ctx.send(
                 embed=discord.Embed(
                     description=f"```py\n{traceback.format_exc()}```",
-                    color=self.bot.primary_colour,
+                    color=self.bot.error_colour,
                 )
             )
         if res:
