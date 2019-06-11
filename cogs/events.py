@@ -23,6 +23,7 @@ class Events(commands.Cog):
             self.stats_updates = bot.loop.create_task(self.stats_updater())
         self.activity_index = 0
         self.activity_updates = bot.loop.create_task(self.activity_updater())
+        self.bot_stats_updates = bot.loop.create_task(self.bot_stats_updater())
 
     async def stats_updater(self):
         await self.bot.wait_until_ready()
@@ -68,6 +69,16 @@ class Events(commands.Cog):
                     name=self.bot.config.activity[self.activity_index]
                 )
             )
+            await asyncio.sleep(10)
+
+    async def bot_stats_updater(self):
+        while True:
+            c = self.bot.conn.cursor()
+            c.execute(
+                "UPDATE stats SET commands=?, messages=?, tickets=?",
+                (self.bot.total_commands, self.bot.total_messages, self.bot.total_tickets),
+            )
+            self.bot.conn.commit()
             await asyncio.sleep(10)
 
     @commands.Cog.listener()
@@ -172,6 +183,7 @@ class Events(commands.Cog):
         ctx = await self.bot.get_context(message)
         if not ctx.command:
             return
+        self.bot.total_commands += 1
         if message.guild:
             if message.guild.id in self.bot.banned_guilds:
                 return await message.guild.leave()

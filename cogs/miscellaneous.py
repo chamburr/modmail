@@ -118,6 +118,22 @@ class Miscellaneous(commands.Cog):
             embed.set_thumbnail(url=guild.icon_url)
         await ctx.send(embed=embed)
 
+    @commands.command(
+        description="Usage statistics of the bot.",
+        usage="usagestats",
+        hidden=True,
+    )
+    async def usagestats(self, ctx):
+        embed = discord.Embed(
+            title="Usage Statistics",
+            description="Bot usage statistics since 12 June 2019.",
+            color=self.bot.primary_colour,
+        )
+        embed.add_field(name="Total commands", value=self.bot.total_commands, inline=False)
+        embed.add_field(name="Total messages", value=self.bot.total_messages, inline=False)
+        embed.add_field(name="Total tickets", value=self.bot.total_tickets, inline=False)
+        await ctx.send(embed=embed)
+
 
 def setup(bot):
     bot.add_cog(Miscellaneous(bot))

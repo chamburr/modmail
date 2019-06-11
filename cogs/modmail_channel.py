@@ -30,6 +30,7 @@ class ModMailEvents(commands.Cog):
         await self.send_mail_mod(message, prefix)
 
     async def send_mail_mod(self, message, prefix, anon: bool = False, msg: str = None):
+        self.bot.total_messages += 1
         member = message.guild.get_member(int(message.channel.name))
         if member is None:
             return await message.channel.send(

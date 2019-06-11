@@ -72,6 +72,9 @@ class ModMail(commands.AutoShardedBot):
     all_category = []
     banned_guilds = []
     banned_users = []
+    total_commands = 0
+    total_messages = 0
+    total_tickets = 0
 
     async def start_bot(self):
         c = self.conn.cursor()
@@ -88,6 +91,11 @@ class ModMail(commands.AutoShardedBot):
                 self.banned_users.append(row[0])
             elif row[1] == "guild":
                 self.banned_guilds.append(row[0])
+        c.execute("SELECT commands, messages, tickets FROM stats")
+        res = c.fetchone()
+        self.total_commands = res[0]
+        self.total_messages = res[1]
+        self.total_tickets = res[2]
         for extension in self.config.initial_extensions:
             try:
                 self.load_extension(extension)
