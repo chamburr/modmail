@@ -11,7 +11,7 @@ from utils.tools import get_guild_prefix
 sentry_sdk.init("https://95aac4bfecc04935b60edfd375646919@sentry.io/1471399")
 
 logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger("discord")
+logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 handler = logging.FileHandler(filename="discord.log", encoding="utf-8", mode="w")
 handler.setFormatter(

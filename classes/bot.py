@@ -1,6 +1,7 @@
 import aiohttp
 import sys
 import traceback
+import logging
 import datetime
 import discord
 import sqlite3
@@ -10,6 +11,7 @@ import config
 import utils
 
 conn = sqlite3.connect("data.sqlite")
+log = logging.getLogger(__name__)
 
 
 class ModMail(commands.AutoShardedBot):
@@ -100,6 +102,6 @@ class ModMail(commands.AutoShardedBot):
             try:
                 self.load_extension(extension)
             except Exception:
-                print(f"Failed to load extension {extension}.", file=sys.stderr)
-                traceback.print_exc()
+                log.error(f"Failed to load extension {extension}.", file=sys.stderr)
+                log.error(traceback.print_exc())
         await self.start(self.config.token)

@@ -1,10 +1,13 @@
 import json
 import asyncio
 import datetime
+import logging
 import discord
 from discord.ext import commands
 
 from utils.tools import get_guild_prefix
+
+log = logging.getLogger(__name__)
 
 
 class Events(commands.Cog):
@@ -83,8 +86,8 @@ class Events(commands.Cog):
 
     @commands.Cog.listener()
     async def on_ready(self):
-        print(f"{self.bot.user.name}#{self.bot.user.discriminator} is online!")
-        print("--------")
+        log.info(f"{self.bot.user.name}#{self.bot.user.discriminator} is online!")
+        log.info("--------")
         await self.bot.wait_until_ready()
         event_channel = self.bot.get_channel(self.bot.config.event_channel)
         await event_channel.send(

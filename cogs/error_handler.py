@@ -1,9 +1,12 @@
 import discord
+import logging
 import traceback
 import sys
 from discord.ext import commands
 
 from utils.tools import perm_format
+
+log = logging.getLogger(__name__)
 
 
 class ErrorHandler(commands.Cog):
@@ -83,9 +86,9 @@ class ErrorHandler(commands.Cog):
                 )
             )
         elif isinstance(error, commands.CommandInvokeError):
-            print("In {}:".format(ctx.command.name), file=sys.stderr)
-            traceback.print_tb(error.original.__traceback__)
-            print(
+            log.error("In {}:".format(ctx.command.name), file=sys.stderr)
+            log.error(traceback.print_tb(error.original.__traceback__))
+            log.error(
                 "{0}: {1}".format(error.original.__class__.__name__, error.original),
                 file=sys.stderr,
             )

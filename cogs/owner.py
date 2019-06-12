@@ -1,5 +1,6 @@
 import copy
 import discord
+import logging
 import traceback
 import textwrap
 import io
@@ -11,6 +12,8 @@ from importlib import reload as importlib_reload
 from discord.ext import commands
 
 from utils import checks
+
+log = logging.getLogger(__name__)
 
 
 class Owner(commands.Cog):
