@@ -187,16 +187,64 @@ class General(commands.Cog):
         await ctx.send(embed=embed)
 
     @commands.command(
-        description="Get the link to vote for ModMail on DiscordBotList.", usage="vote"
+        description="Check out all the amazing stuff we have partnered with.",
+        usage="partners",
+        aliases=["partner"],
     )
-    async def vote(self, ctx):
-        await ctx.send(
-            embed=discord.Embed(
-                title="Vote for ModMail",
-                description=f"Please vote for me here: https://discordbots.org/bot/575252669443211264. Thank you!",
-                color=self.bot.primary_colour,
-            )
+    async def partners(self, ctx):
+        all_pages = []
+        page = discord.Embed(
+            title="Discord Boats",
+            description="Discord Boats (https://discord.boats/) is a growing directory of Discord bots to enhance your "
+            "server - Find the perfect bot for your needs and add it to your server easily, quickly and for free.",
+            color=self.bot.primary_colour,
         )
+        page.add_field(name="Link", value="https://discord.gg/tfQqub6")
+        page.set_thumbnail(url="https://discord.boats/logo.bg.png")
+        all_pages.append(page)
+        page = discord.Embed(
+            title="CH's amburr",
+            description="CH's amburr is my personal community server. It is a fun and friendly place where you can "
+            "talk about everything cool.",
+            color=self.bot.primary_colour,
+        )
+        page.add_field(name="Link", value="https://discord.gg/TYe3U4w")
+        page.set_thumbnail(
+            url="https://cdn.discordapp.com/icons/447732123340767232/5a1064a156540e36e22a38abc527c737.png"
+        )
+        all_pages.append(page)
+        page = discord.Embed(
+            title="Member Count",
+            description="Member Count is another bot that I am actively developing on. It shows stats on your server "
+            "using channel names.",
+            color=self.bot.primary_colour,
+        )
+        page.add_field(name="Link", value="https://discordbots.org/bot/membercount")
+        page.set_thumbnail(
+            url="https://cdn.discordapp.com/avatars/432533456807919639/6b2a1311b54a1d3b3cec1fb67ef94ed7.png"
+        )
+        all_pages.append(page)
+        page = discord.Embed(
+            title="Custom Bot Development",
+            description="This is also my server, and this is where you can request for bots for your server. "
+            "Nothing on this world is free btw.",
+            color=self.bot.primary_colour,
+        )
+        page.add_field(name="Link", value="https://discord.gg/JNQhDDM")
+        page.set_thumbnail(
+            url="https://cdn.discordapp.com/icons/572935145347350548/2408500f84def61a514c6c2108b53c96.png",
+        )
+        all_pages.append(page)
+        for embed in all_pages:
+            embed.set_author(
+                name=f"{self.bot.user.name} partners",
+                icon_url=self.bot.user.avatar_url,
+            )
+            embed.set_footer(text="Use the reactions to flip pages.")
+        paginator = Paginator(
+            length=1, entries=all_pages, use_defaults=True, embed=True, timeout=120
+        )
+        await paginator.start(ctx)
 
     @commands.command(description="Get a link to invite me.", usage="invite")
     async def invite(self, ctx):
@@ -219,6 +267,18 @@ class General(commands.Cog):
             embed=discord.Embed(
                 title="Support Server",
                 description="You can join the support server with this link: https://discord.gg/wjWJwJB",
+                color=self.bot.primary_colour,
+            )
+        )
+
+    @commands.command(
+        description="Get the link to vote for ModMail", usage="vote"
+    )
+    async def vote(self, ctx):
+        await ctx.send(
+            embed=discord.Embed(
+                title="Vote",
+                description=f"Please vote for me here: https://discordbots.org/bot/575252669443211264. Thank you!",
                 color=self.bot.primary_colour,
             )
         )
