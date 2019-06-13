@@ -80,17 +80,21 @@ class ErrorHandler(commands.Cog):
         elif isinstance(error, discord.HTTPException):
             await ctx.send(
                 embed=discord.Embed(
-                    title="Unknown Error",
+                    title="Unknown HTTP Exception",
                     description=f"```{error.text}````",
                     color=self.bot.error_colour,
                 )
             )
         elif isinstance(error, commands.CommandInvokeError):
-            log.error("In {}:".format(ctx.command.name), file=sys.stderr)
+            log.error("In {}:".format(ctx.command.name))
             log.error(traceback.print_tb(error.original.__traceback__))
-            log.error(
-                "{0}: {1}".format(error.original.__class__.__name__, error.original),
-                file=sys.stderr,
+            log.error("{0}: {1}".format(error.original.__class__.__name__, error.original))
+            await ctx.send(
+                embed=discord.Embed(
+                    title="Unknown Error",
+                    description="Please report this in the support server.",
+                    color=self.bot.error_colour,
+                )
             )
 
 
