@@ -65,7 +65,7 @@ class Premium(commands.Cog):
     @commands.command(
         description="Get a list of servers you assigned premium to.",
         usage="premiumlist",
-        aliases=["premiumservers"],
+        aliases=["premiumservers", "premiumguilds"],
     )
     async def premiumlist(self, ctx):
         c = self.bot.conn.cursor()
