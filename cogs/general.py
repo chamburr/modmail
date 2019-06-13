@@ -232,13 +232,12 @@ class General(commands.Cog):
         )
         page.add_field(name="Link", value="https://discord.gg/JNQhDDM")
         page.set_thumbnail(
-            url="https://cdn.discordapp.com/icons/572935145347350548/2408500f84def61a514c6c2108b53c96.png",
+            url="https://cdn.discordapp.com/icons/572935145347350548/2408500f84def61a514c6c2108b53c96.png"
         )
         all_pages.append(page)
         for embed in all_pages:
             embed.set_author(
-                name=f"{self.bot.user.name} partners",
-                icon_url=self.bot.user.avatar_url,
+                name=f"{self.bot.user.name} partners", icon_url=self.bot.user.avatar_url
             )
             embed.set_footer(text="Use the reactions to flip pages.")
         paginator = Paginator(
@@ -271,9 +270,7 @@ class General(commands.Cog):
             )
         )
 
-    @commands.command(
-        description="Get the link to vote for ModMail", usage="vote"
-    )
+    @commands.command(description="Get the link to vote for ModMail", usage="vote")
     async def vote(self, ctx):
         await ctx.send(
             embed=discord.Embed(
