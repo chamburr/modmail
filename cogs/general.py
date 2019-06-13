@@ -140,7 +140,7 @@ class General(commands.Cog):
         return fmt.format(d=days, h=hours, m=minutes, s=seconds)
 
     @commands.command(
-        description="Get some super cool statistics about me.",
+        description="See some super cool statistics about me.",
         usage="stats",
         aliases=["statistics", "info"],
     )
