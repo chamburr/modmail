@@ -105,7 +105,8 @@ class General(commands.Cog):
             page.set_thumbnail(url=self.bot.user.avatar_url)
             page.set_footer(text="Use the reactions to flip pages.")
             for cmd in cog_commands:
-                page.add_field(name=cmd.name, value=cmd.description, inline=False)
+                if cmd.hidden is False:
+                    page.add_field(name=cmd.name, value=cmd.description, inline=False)
             all_pages.append(page)
         paginator = Paginator(
             length=1, entries=all_pages, use_defaults=True, embed=True, timeout=120
