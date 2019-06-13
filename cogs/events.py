@@ -18,6 +18,10 @@ class Events(commands.Cog):
             "Authorization": bot.config.bod_token,
             "Content-Type": "application/json",
         }
+        self.bfd_auth = {
+            "Authorization": bot.config.bfd_token,
+            "Content-Type": "application/json",
+        }
         self.dboats_auth = {
             "Authorization": bot.config.dboats_token,
             "Content-Type": "application/json",
@@ -42,6 +46,11 @@ class Events(commands.Cog):
                 headers=self.bod_auth,
             )
             await self.bot.session.post(
+                f"https://botsfordiscord.com/api/bot/{self.bot.user.id}",
+                data=json.dumps(self.get_bfd_payload()),
+                headers=self.bfd_auth,
+            )
+            await self.bot.session.post(
                 f"https://discord.boats/api/bot/{self.bot.user.id}",
                 data=json.dumps(self.get_dboats_payload()),
                 headers=self.dboats_auth,
@@ -56,6 +65,9 @@ class Events(commands.Cog):
 
     def get_bod_payload(self):
         return {"guildCount": len(self.bot.guilds)}
+
+    def get_bfd_payload(self):
+        return {"server_count": len(self.bot.guilds)}
 
     def get_dboats_payload(self):
         return {"server_count": len(self.bot.guilds)}

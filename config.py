@@ -10,6 +10,12 @@ dbl_token = (
 # Bots on Discord token
 bod_token = "5958bd9bd8f6c5ed2f1382f9677144fe"
 
+# Bots for Discord token
+bfd_token = (
+    "7dcb5040ab773ab2d58653df0abc3d6f6a0ba2617769ebd85205cdb00661ba37e8ade6f59d56111925f7c83f0396"
+    "8fa742afa6eeae0d8a5ee83169db6904f31f"
+)
+
 # Discord Boats token
 dboats_token = (
     "3R3wVyex2PDTr55FF679A1E18tAozi8Mj9GQ9Ggv1xvF6gQ23lzuOGvCBpztri3FK396rBw6CMHiLHaO0UTKUI7jiCyCihePQk5"
