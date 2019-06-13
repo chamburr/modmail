@@ -83,7 +83,9 @@ class Owner(commands.Cog):
             )
 
     @checks.is_owner()
-    @commands.command(description="Reload the configurations.", usage="reloadconf", hidden=True)
+    @commands.command(
+        description="Reload the configurations.", usage="reloadconf", hidden=True
+    )
     async def reloadconf(self, ctx):
         try:
             importlib_reload(self.bot.config)

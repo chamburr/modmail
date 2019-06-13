@@ -119,9 +119,7 @@ class Miscellaneous(commands.Cog):
         await ctx.send(embed=embed)
 
     @commands.command(
-        description="Usage statistics of the bot.",
-        usage="usagestats",
-        hidden=True,
+        description="Usage statistics of the bot.", usage="usagestats", hidden=True
     )
     async def usagestats(self, ctx):
         embed = discord.Embed(
@@ -129,9 +127,15 @@ class Miscellaneous(commands.Cog):
             description="Bot usage statistics since 12 June 2019.",
             color=self.bot.primary_colour,
         )
-        embed.add_field(name="Total commands", value=self.bot.total_commands, inline=False)
-        embed.add_field(name="Total messages", value=self.bot.total_messages, inline=False)
-        embed.add_field(name="Total tickets", value=self.bot.total_tickets, inline=False)
+        embed.add_field(
+            name="Total commands", value=self.bot.total_commands, inline=False
+        )
+        embed.add_field(
+            name="Total messages", value=self.bot.total_messages, inline=False
+        )
+        embed.add_field(
+            name="Total tickets", value=self.bot.total_tickets, inline=False
+        )
         await ctx.send(embed=embed)
 
 

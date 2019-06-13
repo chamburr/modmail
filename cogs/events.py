@@ -79,7 +79,11 @@ class Events(commands.Cog):
             c = self.bot.conn.cursor()
             c.execute(
                 "UPDATE stats SET commands=?, messages=?, tickets=?",
-                (self.bot.total_commands, self.bot.total_messages, self.bot.total_tickets),
+                (
+                    self.bot.total_commands,
+                    self.bot.total_messages,
+                    self.bot.total_tickets,
+                ),
             )
             self.bot.conn.commit()
             await asyncio.sleep(10)
