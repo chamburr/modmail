@@ -84,7 +84,7 @@ class Events(commands.Cog):
                     name=self.bot.config.activity[self.activity_index]
                 )
             )
-            await asyncio.sleep(10)
+            await asyncio.sleep(12)
 
     async def bot_stats_updater(self):
         while True:
