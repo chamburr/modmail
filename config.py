@@ -31,7 +31,6 @@ default_prefix = "="
 # Status of the bot
 activity = [
     f"DM to Contact Staff | {default_prefix}help",
-    f"🎉 1K SERVERS GIVEAWAY 🎉 -> {default_prefix}support | {default_prefix}help",
 ]
 
 # The very very main bot owner
