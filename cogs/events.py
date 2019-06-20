@@ -177,6 +177,7 @@ class Events(commands.Cog):
             color=0x00FF00,
             timestamp=datetime.datetime.utcnow(),
         )
+        embed.set_footer(text=f"{len(self.bot.guilds)} servers")
         await join_channel.send(embed=embed)
         if guild.id in self.bot.banned_guilds:
             return await guild.leave()
@@ -193,6 +194,7 @@ class Events(commands.Cog):
             color=0xFF0000,
             timestamp=datetime.datetime.utcnow(),
         )
+        embed.set_footer(text=f"{len(self.bot.guilds)} servers")
         await join_channel.send(embed=embed)
 
     @commands.Cog.listener()
