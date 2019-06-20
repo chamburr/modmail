@@ -77,10 +77,18 @@ class Main(commands.Cog):
                 channel = ctx.guild.get_channel(data[4])
                 if channel is not None:
                     try:
-                        embed.set_footer(
-                            text=f"{member.name}#{member.discriminator} | {member.id}",
-                            icon_url=member.avatar_url,
-                        )
+                        if member is None:
+                            member = await self.bot.fetch_user(int(ctx.channel.name))
+                        if member is not None:
+                            embed.set_footer(
+                                text=f"{member.name}#{member.discriminator} | {member.id}",
+                                icon_url=member.avatar_url,
+                            )
+                        else:
+                            embed.set_footer(
+                                text=f"Unknown#0000 | 000000000000000000",
+                                icon_url="https://cdn.discordapp.com/embed/avatars/0.png",
+                            )
                         if data[7] == 1:
                             history = ""
                             for m in messages:
