@@ -138,7 +138,7 @@ class Main(commands.Cog):
     @commands.bot_has_permissions(manage_channels=True)
     @commands.guild_only()
     @commands.command(
-        description="Close the channel.", usage="close [reason]", aliases=["end"]
+        description="Close the channel.", usage="close [reason]"
     )
     async def close(self, ctx, *, reason: str = None):
         await self.close_channel(ctx, reason)
@@ -151,7 +151,7 @@ class Main(commands.Cog):
     @commands.command(
         description="Anonymously close the channel.",
         usage="aclose [reason]",
-        aliases=["anonclose", "aend", "anonend"],
+        aliases=["anonclose"],
     )
     async def aclose(self, ctx, *, reason: str = None):
         await self.close_channel(ctx, reason, True)
