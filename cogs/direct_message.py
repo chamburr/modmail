@@ -46,7 +46,14 @@ class DirectMessageEvents(commands.Cog, name="Direct Message"):
             return await message.channel.send(
                 embed=discord.Embed(
                     description="A ModMail category is not found. The bot is not set up properly in the server.",
-                    color=self.bot.error_colour,
+                    colour=self.bot.error_colour,
+                )
+            )
+        if data[9] is not None and str(message.author.id) in data[9].split(","):
+            return await message.channel.send(
+                embed=discord.Embed(
+                    description="That server has blacklisted you from sending a message there.",
+                    colour=self.bot.error_colour,
                 )
             )
         new_ticket = False

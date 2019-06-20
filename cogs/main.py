@@ -211,5 +211,91 @@ class Main(commands.Cog):
         except discord.HTTPException:
             pass
 
+    @checks.in_database()
+    @checks.is_mod()
+    @commands.guild_only()
+    @commands.command(
+        description="Blacklist a user from sending messages to this server.",
+        usage="blacklist <member>",
+        aliases=["block"],
+    )
+    async def blacklist(self, ctx, *, member: discord.Member):
+        blacklist = self.bot.get_data(ctx.guild.id)[9]
+        if blacklist is None:
+            blacklist = []
+        else:
+            blacklist = blacklist.split(",")
+        if str(member.id) in blacklist:
+            return await ctx.send(
+                embed=discord.Embed(
+                    description="The user is already blacklisted.",
+                    colour=self.bot.error_colour,
+                )
+            )
+        blacklist.append(str(member.id))
+        blacklist = ",".join(blacklist)
+        c = self.bot.conn.cursor()
+        c.execute("UPDATE data SET blacklist=? WHERE guild=?", (blacklist, ctx.guild.id))
+        self.bot.conn.commit()
+        await ctx.send(
+            embed=discord.Embed(
+                description="The user is blacklisted successfully.",
+                colour=self.bot.primary_colour,
+            )
+        )
+
+    @checks.in_database()
+    @checks.is_mod()
+    @commands.guild_only()
+    @commands.command(
+        description="Whitelist a user from sending messages to this server.",
+        usage="whitelist <member>",
+        aliases=["unblock"],
+    )
+    async def whitelist(self, ctx, *, member: discord.Member):
+        blacklist = self.bot.get_data(ctx.guild.id)[9]
+        if blacklist is None:
+            blacklist = []
+        else:
+            blacklist = blacklist.split(",")
+        if str(member.id) not in blacklist:
+            return await ctx.send(
+                embed=discord.Embed(
+                    description="The user is not blacklisted.",
+                    colour=self.bot.error_colour,
+                )
+            )
+        blacklist.remove(str(member.id))
+        if len(blacklist) == 0:
+            blacklist = None
+        c = self.bot.conn.cursor()
+        c.execute("UPDATE data SET blacklist=? WHERE guild=?", (blacklist, ctx.guild.id))
+        self.bot.conn.commit()
+        await ctx.send(
+            embed=discord.Embed(
+                description="The user is whitelisted successfully.",
+                colour=self.bot.primary_colour,
+            )
+        )
+
+    @checks.in_database()
+    @checks.is_mod()
+    @commands.guild_only()
+    @commands.command(
+        description="Remove all users from the blacklist.",
+        usage="blacklistclear"
+    )
+    async def blacklistclear(self, ctx):
+        c = self.bot.conn.cursor()
+        c.execute("UPDATE data SET blacklist=? WHERE guild=?", (None, ctx.guild.id))
+        self.bot.conn.commit()
+        await ctx.send(
+            embed=discord.Embed(
+                description="The blacklist is cleared successfully.",
+                colour=self.bot.primary_colour,
+            )
+        )
+
+
 def setup(bot):
     bot.add_cog(Main(bot))

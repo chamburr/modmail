@@ -38,6 +38,15 @@ class ModMailEvents(commands.Cog):
 
     async def send_mail_mod(self, message, prefix, anon: bool = False, msg: str = None):
         self.bot.total_messages += 1
+        data = self.bot.get_data(message.guild.id)
+        if data[9] is not None and message.channel.name in data[9].split(","):
+            return await message.channel.send(
+                embed=discord.Embed(
+                    description="That user is blacklisted from sending a message here. You need to whitelist them "
+                    "before you can send them a message.",
+                    colour=self.bot.error_colour,
+                )
+            )
         member = message.guild.get_member(int(message.channel.name))
         if member is None:
             return await message.channel.send(
