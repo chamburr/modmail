@@ -310,13 +310,11 @@ class Configuration(commands.Cog):
     @commands.command(
         description="Update the role that will be mentioned when a ticket is opened.",
         aliases=["mentionrole"],
-        usage="pingrole <role>",
+        usage="pingrole [role]",
     )
-    async def pingrole(self, ctx, *, role):
+    async def pingrole(self, ctx, *, role=None):
         c = self.bot.conn.cursor()
-        if role.lower() == "none":
-            role = None
-        elif role.lower() in ["here", "everyone"]:
+        if role.lower() in ["here", "everyone"]:
             role = f"@{role.lower()}"
         else:
             role = await commands.RoleConverter().convert(ctx, role)
