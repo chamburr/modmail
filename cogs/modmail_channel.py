@@ -27,6 +27,13 @@ class ModMailEvents(commands.Cog):
         prefix = get_guild_prefix(self.bot, message)
         if message.content.startswith(prefix):
             return
+        if message.author.id in self.bot.banned_users:
+            return await message.channel.send(
+                embed=discord.Embed(
+                    description="You are banned from this bot.",
+                    colour=self.bot.error_colour,
+                )
+            )
         await self.send_mail_mod(message, prefix)
 
     async def send_mail_mod(self, message, prefix, anon: bool = False, msg: str = None):

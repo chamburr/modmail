@@ -273,6 +273,13 @@ class DirectMessageEvents(commands.Cog, name="Direct Message"):
         prefix = self.bot.config.default_prefix
         if message.content.startswith(prefix):
             return
+        if message.author.id in self.bot.banned_users:
+            return await message.channel.send(
+                embed=discord.Embed(
+                    description="You are banned from this bot.",
+                    colour=self.bot.error_colour,
+                )
+            )
         guild = None
         async for msg in message.channel.history(limit=30):
             if (
