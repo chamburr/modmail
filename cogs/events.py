@@ -98,7 +98,7 @@ class Events(commands.Cog):
                 ),
             )
             self.bot.conn.commit()
-            await asyncio.sleep(10)
+            await asyncio.sleep(12)
 
     @commands.Cog.listener()
     async def on_ready(self):
@@ -174,9 +174,10 @@ class Events(commands.Cog):
         embed = discord.Embed(
             title="Server Join",
             description=f"{guild.name} ({guild.id})",
-            color=0x00FF00,
+            colour=0x00FF00,
             timestamp=datetime.datetime.utcnow(),
         )
+        embed.set_footer(text=f"{len(self.bot.guilds)} servers")
         await join_channel.send(embed=embed)
         if guild.id in self.bot.banned_guilds:
             return await guild.leave()
@@ -190,9 +191,10 @@ class Events(commands.Cog):
         embed = discord.Embed(
             title="Server Leave",
             description=f"{guild.name} ({guild.id})",
-            color=0xFF0000,
+            colour=0xFF0000,
             timestamp=datetime.datetime.utcnow(),
         )
+        embed.set_footer(text=f"{len(self.bot.guilds)} servers")
         await join_channel.send(embed=embed)
 
     @commands.Cog.listener()
