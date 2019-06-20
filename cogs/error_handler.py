@@ -86,10 +86,9 @@ class ErrorHandler(commands.Cog):
                 )
             )
         elif isinstance(error, commands.CommandInvokeError):
-            log.error("In {}:".format(ctx.command.name))
-            log.error(traceback.print_tb(error.original.__traceback__))
             log.error(
-                "{0}: {1}".format(error.original.__class__.__name__, error.original)
+                f"{error.original.__class__.__name__}: {error.original} (In {ctx.command.name})\n"
+                f"Traceback:\n{traceback.print_tb(error.original.__traceback__)}"
             )
             await ctx.send(
                 embed=discord.Embed(
