@@ -108,7 +108,7 @@ class Events(commands.Cog):
         event_channel = self.bot.get_channel(self.bot.config.event_channel)
         await event_channel.send(
             embed=discord.Embed(
-                title="Bot Ready", color=0x00FF00, timestamp=datetime.datetime.utcnow()
+                title="Bot Ready", colour=0x00FF00, timestamp=datetime.datetime.utcnow()
             )
         )
 
@@ -119,7 +119,7 @@ class Events(commands.Cog):
             await event_channel.send(
                 embed=discord.Embed(
                     title=f"Shard {shard} Ready",
-                    color=0x00FF00,
+                    colour=0x00FF00,
                     timestamp=datetime.datetime.utcnow(),
                 )
             )
@@ -133,7 +133,7 @@ class Events(commands.Cog):
             await event_channel.send(
                 embed=discord.Embed(
                     title=f"Shard Connected",
-                    color=0x00FF00,
+                    colour=0x00FF00,
                     timestamp=datetime.datetime.utcnow(),
                 )
             )
@@ -147,7 +147,7 @@ class Events(commands.Cog):
             await event_channel.send(
                 embed=discord.Embed(
                     title=f"Shard Disconnected",
-                    color=0xFF0000,
+                    colour=0xFF0000,
                     timestamp=datetime.datetime.utcnow(),
                 )
             )
@@ -161,7 +161,7 @@ class Events(commands.Cog):
             await event_channel.send(
                 embed=discord.Embed(
                     title=f"Shard Resumed",
-                    color=self.bot.config.primary_colour,
+                    colour=self.bot.config.primary_colour,
                     timestamp=datetime.datetime.utcnow(),
                 )
             )
@@ -216,8 +216,8 @@ class Events(commands.Cog):
         if message.author.id in self.bot.banned_users:
             return await ctx.send(
                 embed=discord.Embed(
-                    description="You have been banned from this bot.",
-                    color=self.bot.error_colour,
+                    description="You are banned from this bot.",
+                    colour=self.bot.error_colour,
                 )
             )
         if ctx.command.cog_name in ["Owner", "Admin"] and (
@@ -228,7 +228,7 @@ class Events(commands.Cog):
             embed = discord.Embed(
                 title=ctx.command.name.title(),
                 description=ctx.message.content,
-                color=self.bot.primary_colour,
+                colour=self.bot.primary_colour,
                 timestamp=datetime.datetime.utcnow(),
             )
             embed.set_author(

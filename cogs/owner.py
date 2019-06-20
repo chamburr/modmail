@@ -30,14 +30,14 @@ class Owner(commands.Cog):
             await ctx.send(
                 embed=discord.Embed(
                     description=f"ERROR: {type(e).__name__} - {e}",
-                    color=self.bot.error_colour,
+                    colour=self.bot.error_colour,
                 )
             )
         else:
             await ctx.send(
                 embed=discord.Embed(
                     description="Successfully loaded the module.",
-                    color=self.bot.primary_colour,
+                    colour=self.bot.primary_colour,
                 )
             )
 
@@ -50,14 +50,14 @@ class Owner(commands.Cog):
             await ctx.send(
                 embed=discord.Embed(
                     description=f"ERROR: {type(e).__name__} - {e}",
-                    color=self.bot.error_colour,
+                    colour=self.bot.error_colour,
                 )
             )
         else:
             await ctx.send(
                 embed=discord.Embed(
                     description="Successfully unloaded the module.",
-                    color=self.bot.primary_colour,
+                    colour=self.bot.primary_colour,
                 )
             )
 
@@ -71,14 +71,14 @@ class Owner(commands.Cog):
             await ctx.send(
                 embed=discord.Embed(
                     description=f"ERROR: {type(e).__name__} - {e}",
-                    color=self.bot.error_colour,
+                    colour=self.bot.error_colour,
                 )
             )
         else:
             await ctx.send(
                 embed=discord.Embed(
                     description="Successfully reloaded the module.",
-                    color=self.bot.primary_colour,
+                    colour=self.bot.primary_colour,
                 )
             )
 
@@ -93,14 +93,14 @@ class Owner(commands.Cog):
             await ctx.send(
                 embed=discord.Embed(
                     description=f"ERROR: {type(e).__name__} - {e}",
-                    color=self.bot.error_colour,
+                    colour=self.bot.error_colour,
                 )
             )
         else:
             await ctx.send(
                 embed=discord.Embed(
                     description="Successfully reloaded the configurations.",
-                    color=self.bot.primary_colour,
+                    colour=self.bot.primary_colour,
                 )
             )
 
@@ -109,7 +109,7 @@ class Owner(commands.Cog):
     async def restart(self, ctx):
         await ctx.send(
             embed=discord.Embed(
-                description="Restarting...", color=self.bot.primary_colour
+                description="Restarting...", colour=self.bot.primary_colour
             )
         )
         await self.bot.logout()
@@ -143,7 +143,7 @@ class Owner(commands.Cog):
             return await ctx.send(
                 embed=discord.Embed(
                     description=f"```py\n{e.__class__.__name__}: {e}\n```",
-                    color=self.bot.primary_colour,
+                    colour=self.bot.primary_colour,
                 )
             )
         func = env["func"]
@@ -155,7 +155,7 @@ class Owner(commands.Cog):
             await ctx.send(
                 embed=discord.Embed(
                     description=f"```py\n{value}{traceback.format_exc()}\n```",
-                    color=self.bot.error_colour,
+                    colour=self.bot.error_colour,
                 )
             )
         else:
@@ -169,7 +169,7 @@ class Owner(commands.Cog):
                     await ctx.send(
                         embed=discord.Embed(
                             descrption=f"```py\n{value}\n```",
-                            color=self.bot.primary_colour,
+                            colour=self.bot.primary_colour,
                         )
                     )
             else:
@@ -177,7 +177,7 @@ class Owner(commands.Cog):
                 await ctx.send(
                     embed=discord.Embed(
                         description=f"```py\n{value}{ret}\n```",
-                        color=self.bot.primary_colour,
+                        colour=self.bot.primary_colour,
                     )
                 )
 
@@ -191,7 +191,7 @@ class Owner(commands.Cog):
         ).decode("utf-8")
         await ctx.send(
             embed=discord.Embed(
-                description=f"```py\n{output}\n```", color=self.bot.primary_colour
+                description=f"```py\n{output}\n```", colour=self.bot.primary_colour
             )
         )
 
@@ -207,19 +207,19 @@ class Owner(commands.Cog):
             return await ctx.send(
                 embed=discord.Embed(
                     description=f"```py\n{traceback.format_exc()}```",
-                    color=self.bot.error_colour,
+                    colour=self.bot.error_colour,
                 )
             )
         if res:
             await ctx.send(
                 embed=discord.Embed(
-                    description=f"```{res}```", color=self.bot.primary_colour
+                    description=f"```{res}```", colour=self.bot.primary_colour
                 )
             )
         else:
             await ctx.send(
                 embed=discord.Embed(
-                    description="No results to fetch.", color=self.bot.primary_colour
+                    description="No results to fetch.", colour=self.bot.primary_colour
                 )
             )
 
@@ -238,14 +238,14 @@ class Owner(commands.Cog):
         try:
             await ctx.send(
                 embed=discord.Embed(
-                    description=f"```{content}```", color=self.bot.primary_colour
+                    description=f"```{content}```", colour=self.bot.primary_colour
                 )
             )
         except discord.HTTPException:
             await ctx.send(
                 embed=discord.Embed(
                     description="The message is too long to be sent.",
-                    color=self.bot.error_colour,
+                    colour=self.bot.error_colour,
                 )
             )
 
@@ -296,14 +296,14 @@ class Owner(commands.Cog):
             await ctx.send(
                 embed=discord.Embed(
                     description="Successfully banned that user from the bot.",
-                    color=self.bot.primary_colour,
+                    colour=self.bot.primary_colour,
                 )
             )
         else:
             await ctx.send(
                 embed=discord.Embed(
                     description="That user is already banned.",
-                    color=self.bot.error_colour,
+                    colour=self.bot.error_colour,
                 )
             )
 
@@ -322,14 +322,14 @@ class Owner(commands.Cog):
             await ctx.send(
                 embed=discord.Embed(
                     description="Successfully unbanned that user from the bot.",
-                    color=self.bot.primary_colour,
+                    colour=self.bot.primary_colour,
                 )
             )
         else:
             await ctx.send(
                 embed=discord.Embed(
                     description="That user is not already banned.",
-                    color=self.bot.error_colour,
+                    colour=self.bot.error_colour,
                 )
             )
 
@@ -344,7 +344,7 @@ class Owner(commands.Cog):
         if not guild:
             return await ctx.send(
                 embed=discord.Embed(
-                    description="That server is not found", color=self.bot.error_colour
+                    description="That server is not found", colour=self.bot.error_colour
                 )
             )
         else:
@@ -352,7 +352,7 @@ class Owner(commands.Cog):
             await ctx.send(
                 embed=discord.Embed(
                     description="The bot has left that server.",
-                    color=self.bot.primary_colour,
+                    colour=self.bot.primary_colour,
                 )
             )
 
@@ -366,7 +366,7 @@ class Owner(commands.Cog):
         if not self.bot.get_guild(guild):
             return await ctx.send(
                 embed=discord.Embed(
-                    description="That server is not found", color=self.bot.error_colour
+                    description="That server is not found", colour=self.bot.error_colour
                 )
             )
         c = self.bot.conn.cursor()
@@ -379,14 +379,14 @@ class Owner(commands.Cog):
             await ctx.send(
                 embed=discord.Embed(
                     description="Successfully banned that server from the bot.",
-                    color=self.bot.primary_colour,
+                    colour=self.bot.primary_colour,
                 )
             )
         else:
             await ctx.send(
                 embed=discord.Embed(
                     description="That server is already banned.",
-                    color=self.bot.error_colour,
+                    colour=self.bot.error_colour,
                 )
             )
 
@@ -407,14 +407,14 @@ class Owner(commands.Cog):
             await ctx.send(
                 embed=discord.Embed(
                     description="Successfully unbanned that server from the bot.",
-                    color=self.bot.primary_colour,
+                    colour=self.bot.primary_colour,
                 )
             )
         else:
             await ctx.send(
                 embed=discord.Embed(
                     description="That server is not already banned.",
-                    color=self.bot.error_colour,
+                    colour=self.bot.error_colour,
                 )
             )
 

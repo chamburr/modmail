@@ -29,7 +29,7 @@ class ErrorHandler(commands.Cog):
                 embed=discord.Embed(
                     title="Command Unavailable",
                     description="This command cannot be used in Direct Message.",
-                    color=self.bot.error_colour,
+                    colour=self.bot.error_colour,
                 )
             )
         elif isinstance(error, commands.PrivateMessageOnly):
@@ -37,7 +37,7 @@ class ErrorHandler(commands.Cog):
                 embed=discord.Embed(
                     title="Command Unavailable",
                     description="This command can only be used in Direct Message.",
-                    color=self.bot.error_colour,
+                    colour=self.bot.error_colour,
                 )
             )
         elif isinstance(error, commands.MissingRequiredArgument) or isinstance(
@@ -48,7 +48,7 @@ class ErrorHandler(commands.Cog):
                     title="Invalid Arguments",
                     description=f"Please try using `{ctx.prefix}help` or join the support server with "
                     f"`{ctx.prefix}support` if you don't know what went wrong.",
-                    color=self.bot.error_colour,
+                    colour=self.bot.error_colour,
                 )
             )
         elif isinstance(error, commands.NotOwner):
@@ -56,7 +56,7 @@ class ErrorHandler(commands.Cog):
                 embed=discord.Embed(
                     title="Permission Denied",
                     description="You do not have permission to use this command.",
-                    color=self.bot.error_colour,
+                    colour=self.bot.error_colour,
                 )
             )
         elif isinstance(error, commands.MissingPermissions):
@@ -65,7 +65,7 @@ class ErrorHandler(commands.Cog):
                     title="Permission Denied",
                     description="You do not have permission to use this command. "
                     f"Permissions needed: {', '.join([perm_format(p) for p in error.missing_perms])}",
-                    color=self.bot.error_colour,
+                    colour=self.bot.error_colour,
                 )
             )
         elif isinstance(error, commands.BotMissingPermissions):
@@ -74,7 +74,7 @@ class ErrorHandler(commands.Cog):
                     title="Bot Missing Permissions",
                     description="Bot is missing permissions to perform that action. The following permissions are"
                     f" needed: {', '.join([perm_format(p) for p in error.missing_perms])}",
-                    color=self.bot.error_colour,
+                    colour=self.bot.error_colour,
                 )
             )
         elif isinstance(error, discord.HTTPException):
@@ -82,7 +82,7 @@ class ErrorHandler(commands.Cog):
                 embed=discord.Embed(
                     title="Unknown HTTP Exception",
                     description=f"```{error.text}````",
-                    color=self.bot.error_colour,
+                    colour=self.bot.error_colour,
                 )
             )
         elif isinstance(error, commands.CommandInvokeError):
@@ -95,7 +95,7 @@ class ErrorHandler(commands.Cog):
                 embed=discord.Embed(
                     title="Unknown Error",
                     description="Please report this in the support server.",
-                    color=self.bot.error_colour,
+                    colour=self.bot.error_colour,
                 )
             )
 

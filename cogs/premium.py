@@ -20,7 +20,7 @@ class Premium(commands.Cog):
             description="Purchasing premium is the best way you can show support to us. As hosting this bot for "
             "all the servers and users costs much money, your few dollars donated will help us a lot "
             "in keeping the bot running. You will also get access to the premium features listed below.",
-            color=self.bot.primary_colour,
+            colour=self.bot.primary_colour,
         )
         embed.add_field(
             name="Premium Features",
@@ -57,7 +57,7 @@ class Premium(commands.Cog):
                 return await ctx.send(
                     embed=discord.Embed(
                         description=f"This server has premium. Offered by: <@{row[0]}>.",
-                        color=self.bot.primary_colour,
+                        colour=self.bot.primary_colour,
                     )
                 )
 
@@ -77,7 +77,7 @@ class Premium(commands.Cog):
             return await ctx.send(
                 embed=discord.Embed(
                     description="You did not assign premium to any server currently.",
-                    color=self.bot.primary_colour,
+                    colour=self.bot.primary_colour,
                 )
             )
         servers = res[0].split(",")
@@ -88,7 +88,7 @@ class Premium(commands.Cog):
             else:
                 to_send += f"\n{self.bot.get_guild(int(server)).name} `{server}`"
         await ctx.send(
-            embed=discord.Embed(description=to_send, color=self.bot.primary_colour)
+            embed=discord.Embed(description=to_send, colour=self.bot.primary_colour)
         )
 
     @checks.is_patron()
@@ -100,7 +100,7 @@ class Premium(commands.Cog):
             return await ctx.send(
                 embed=discord.Embed(
                     description="The server ID you provided is invalid.",
-                    color=self.bot.error_colour,
+                    colour=self.bot.error_colour,
                 )
             )
         c = self.bot.conn.cursor()
@@ -117,7 +117,7 @@ class Premium(commands.Cog):
             return await ctx.send(
                 embed=discord.Embed(
                     description="That server already has premium.",
-                    color=self.bot.error_colour,
+                    colour=self.bot.error_colour,
                 )
             )
         slots = tools.get_premium_slots(self.bot, ctx.author.id)
@@ -128,7 +128,7 @@ class Premium(commands.Cog):
             return await ctx.send(
                 embed=discord.Embed(
                     description="You have reached the maximum number of slots that can be assigned.",
-                    color=self.bot.error_colour,
+                    colour=self.bot.error_colour,
                 )
             )
         servers = [] if servers[0] is None else servers[0].split(",")
@@ -141,7 +141,7 @@ class Premium(commands.Cog):
         await ctx.send(
             embed=discord.Embed(
                 description="That server now has premium.",
-                color=self.bot.primary_colour,
+                colour=self.bot.primary_colour,
             )
         )
 
@@ -170,7 +170,7 @@ class Premium(commands.Cog):
         await ctx.send(
             embed=discord.Embed(
                 description="That server no longer has premium.",
-                color=self.bot.primary_colour,
+                colour=self.bot.primary_colour,
             )
         )
 

@@ -36,7 +36,7 @@ class Configuration(commands.Cog):
                     description="ModMail will create a channel when a user sends a message to the bot. Please enter a "
                     "name for the category that will contain these channels. You may change this "
                     "manually afterwards.",
-                    color=self.bot.primary_colour,
+                    colour=self.bot.primary_colour,
                 )
             )
             category_name = await self.bot.wait_for("message", timeout=60, check=check)
@@ -46,7 +46,7 @@ class Configuration(commands.Cog):
                     embed=discord.Embed(
                         description="The name of the category cannot be longer than 100 characters."
                         f"Please use `{ctx.prefix}setup` to try again.",
-                        color=self.bot.primary_colour,
+                        colour=self.bot.primary_colour,
                     )
                 )
             await ctx.send(
@@ -55,7 +55,7 @@ class Configuration(commands.Cog):
                     description="Please input a role which has access to the ModMail channels and commands. They will "
                     "be able to reply to the users and close the tickets. You can either enter the role "
                     "ID, mention the role, or enter the name of a role.",
-                    color=self.bot.primary_colour,
+                    colour=self.bot.primary_colour,
                 )
             )
             access_role = await self.bot.wait_for("message", timeout=60, check=check)
@@ -66,7 +66,7 @@ class Configuration(commands.Cog):
                 return await ctx.send(
                     embed=discord.Embed(
                         description=f"The provided role is invalid. Please use `{ctx.prefix}setup` to try again.",
-                        color=self.bot.primary_colour,
+                        colour=self.bot.primary_colour,
                     )
                 )
             await ctx.send(
@@ -76,7 +76,7 @@ class Configuration(commands.Cog):
                     "to mentionable by everyone. You can either enter the role ID, mention the role, or "
                     "enter the name of a role. You can also enter `here` and `everyone`. If you do not "
                     "want any role to be mentioned, reply with `None`.",
-                    color=self.bot.primary_colour,
+                    colour=self.bot.primary_colour,
                 )
             )
             ping_role = await self.bot.wait_for("message", timeout=60, check=check)
@@ -92,7 +92,7 @@ class Configuration(commands.Cog):
                     return await ctx.send(
                         embed=discord.Embed(
                             description=f"The provided role is invalid. Please use `{ctx.prefix}setup` to try again.",
-                            color=self.bot.primary_colour,
+                            colour=self.bot.primary_colour,
                         )
                     )
             await ctx.send(
@@ -101,7 +101,7 @@ class Configuration(commands.Cog):
                     description="Do you want a channel for ModMail logs as well? It will log the details whenever a "
                     "ticket is created or closed. Please enter either `yes` or `no`. You can change the "
                     "name of this channel manually afterwards.",
-                    color=self.bot.primary_colour,
+                    colour=self.bot.primary_colour,
                 )
             )
             modmail_log = await self.bot.wait_for("message", timeout=60, check=check)
@@ -115,14 +115,14 @@ class Configuration(commands.Cog):
                 return await ctx.send(
                     embed=discord.Embed(
                         description=f"Answer with `yes` or `no` only. Please use `{ctx.prefix}setup` to try again.",
-                        color=self.bot.primary_colour,
+                        colour=self.bot.primary_colour,
                     )
                 )
         except asyncio.TimeoutError:
             return await ctx.send(
                 embed=discord.Embed(
                     description=f"Time out. Please use `{ctx.prefix}setup` to try again.",
-                    color=self.bot.primary_colour,
+                    colour=self.bot.primary_colour,
                 )
             )
         await ctx.send(
@@ -133,12 +133,12 @@ class Configuration(commands.Cog):
                 "a ticket is created and closed, advanced logs that includes all the messages sent and "
                 "received, as well as priority support in our support server.\n\nFor more information "
                 f"on premium, see `{ctx.prefix}premium` or join our support server.",
-                color=self.bot.primary_colour,
+                colour=self.bot.primary_colour,
             )
         )
         m = await ctx.send(
             embed=discord.Embed(
-                description="Setting up...", color=self.bot.primary_colour
+                description="Setting up...", colour=self.bot.primary_colour
             )
         )
         overwrites = {
@@ -180,7 +180,7 @@ class Configuration(commands.Cog):
         self.bot.conn.commit()
         await m.edit(
             embed=discord.Embed(
-                description="Everything has been set up!", color=self.bot.primary_colour
+                description="Everything has been set up!", colour=self.bot.primary_colour
             )
         )
 
@@ -195,7 +195,7 @@ class Configuration(commands.Cog):
             return await ctx.send(
                 embed=discord.Embed(
                     description=f"The prefix for this server is `{ctx.prefix}`.",
-                    color=self.bot.primary_colour,
+                    colour=self.bot.primary_colour,
                 )
             )
         if ctx.author.guild_permissions.administrator is False:
@@ -205,7 +205,7 @@ class Configuration(commands.Cog):
                 return await ctx.send(
                     embed=discord.Embed(
                         description="The chosen prefix is too long.",
-                        color=self.bot.primary_colour,
+                        colour=self.bot.primary_colour,
                     )
                 )
             if prefix == self.bot.config.default_prefix:
@@ -219,7 +219,7 @@ class Configuration(commands.Cog):
                 embed=discord.Embed(
                     description="Successfully changed the prefix to "
                     f"`{self.bot.config.default_prefix if prefix is None else prefix}`.",
-                    color=self.bot.primary_colour,
+                    colour=self.bot.primary_colour,
                 )
             )
 
@@ -236,7 +236,7 @@ class Configuration(commands.Cog):
             return await ctx.send(
                 embed=discord.Embed(
                     description="The category name cannot be longer than 100 characters",
-                    color=self.bot.error_colour,
+                    colour=self.bot.error_colour,
                 )
             )
         data = self.bot.get_data(ctx.guild.id)
@@ -244,7 +244,7 @@ class Configuration(commands.Cog):
             return await ctx.send(
                 embed=discord.Embed(
                     description=f"A ModMail category already exists. Please delete that category to continue.",
-                    color=self.bot.error_colour,
+                    colour=self.bot.error_colour,
                 )
             )
         role = ctx.guild.get_role(data[3])
@@ -253,7 +253,7 @@ class Configuration(commands.Cog):
                 embed=discord.Embed(
                     description=f"A valid access role for this server is not set up. Use `{ctx.prefix}accessrole` "
                     "to set the role first.",
-                    color=self.bot.error_colour,
+                    colour=self.bot.error_colour,
                 )
             )
         overwrites = {
@@ -281,7 +281,7 @@ class Configuration(commands.Cog):
         await ctx.send(
             embed=discord.Embed(
                 description="Successfully created the category.",
-                color=self.bot.primary_colour,
+                colour=self.bot.primary_colour,
             )
         )
 
@@ -299,8 +299,8 @@ class Configuration(commands.Cog):
         self.bot.conn.commit()
         await ctx.send(
             embed=discord.Embed(
-                description=f"The role has been updated successfully to <@&{role.id}>",
-                color=self.bot.primary_colour,
+                description=f"The role is updated successfully to <@&{role.id}>.",
+                colour=self.bot.primary_colour,
             )
         )
 
@@ -324,7 +324,7 @@ class Configuration(commands.Cog):
                 return await ctx.send(
                     embed=discord.Embed(
                         description="The role is not found. Please try again.",
-                        color=self.bot.error_colour,
+                        colour=self.bot.error_colour,
                     )
                 )
             else:
@@ -333,8 +333,8 @@ class Configuration(commands.Cog):
         self.bot.conn.commit()
         await ctx.send(
             embed=discord.Embed(
-                description=f"The role has been updated successfully.",
-                color=self.bot.primary_colour,
+                description=f"The role is updated successfully.",
+                colour=self.bot.primary_colour,
             )
         )
 
@@ -345,7 +345,7 @@ class Configuration(commands.Cog):
     @commands.command(
         description="Toggle between enable and disable for ModMail logs.",
         aliases=["logging", "modmaillogs"],
-        usage="logging",
+        usage="logs",
     )
     async def logs(self, ctx):
         data = self.bot.get_data(ctx.guild.id)
@@ -357,7 +357,7 @@ class Configuration(commands.Cog):
                 return await ctx.send(
                     embed=discord.Embed(
                         description="Missing permissions to delete the channel.",
-                        color=self.bot.error_colour,
+                        colour=self.bot.error_colour,
                     )
                 )
         if data[4] is not None:
@@ -367,7 +367,7 @@ class Configuration(commands.Cog):
             await ctx.send(
                 embed=discord.Embed(
                     description="ModMail logs are disabled.",
-                    color=self.bot.primary_colour,
+                    colour=self.bot.primary_colour,
                 )
             )
         else:
@@ -377,7 +377,7 @@ class Configuration(commands.Cog):
                     embed=discord.Embed(
                         description=f"Your server does not have a ModMail category yet. Use either `{ctx.prefix}setup` "
                         f"or `{ctx.prefix}category` to create the category first.",
-                        color=self.bot.error_colour,
+                        colour=self.bot.error_colour,
                     )
                 )
             channel = await ctx.guild.create_text_channel(
@@ -390,8 +390,8 @@ class Configuration(commands.Cog):
             self.bot.conn.commit()
             await ctx.send(
                 embed=discord.Embed(
-                    description="The channel has been created successfully.",
-                    color=self.bot.primary_colour,
+                    description="The channel is created successfully.",
+                    colour=self.bot.primary_colour,
                 )
             )
 
@@ -410,7 +410,7 @@ class Configuration(commands.Cog):
         await ctx.send(
             embed=discord.Embed(
                 description="The greeting message is set successfully",
-                color=self.bot.primary_colour,
+                colour=self.bot.primary_colour,
             )
         )
 
@@ -429,7 +429,7 @@ class Configuration(commands.Cog):
         await ctx.send(
             embed=discord.Embed(
                 description="The close message is set successfully",
-                color=self.bot.primary_colour,
+                colour=self.bot.primary_colour,
             )
         )
 
@@ -449,7 +449,7 @@ class Configuration(commands.Cog):
             await ctx.send(
                 embed=discord.Embed(
                     description="Advanced logging is enabled.",
-                    color=self.bot.primary_colour,
+                    colour=self.bot.primary_colour,
                 )
             )
         else:
@@ -459,7 +459,7 @@ class Configuration(commands.Cog):
             await ctx.send(
                 embed=discord.Embed(
                     description="Advanced logging is disabled.",
-                    color=self.bot.primary_colour,
+                    colour=self.bot.primary_colour,
                 )
             )
         self.bot.conn.commit()

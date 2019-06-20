@@ -12,7 +12,7 @@ class Miscellaneous(commands.Cog):
         permissions = channel.permissions_for(member)
         embed = discord.Embed(
             title=f"Permissions for {member.name}#{member.discriminator}",
-            color=self.bot.primary_colour,
+            colour=self.bot.primary_colour,
         )
         allowed, denied = [], []
         for name, value in permissions:
@@ -64,7 +64,7 @@ class Miscellaneous(commands.Cog):
             member = ctx.author
         embed = discord.Embed(
             title=f"User Information for {member.name}#{member.discriminator}",
-            color=self.bot.primary_colour,
+            colour=self.bot.primary_colour,
         )
         roles = [role.name for role in member.roles]
         embed.add_field(name="Status", value=str(member.status).title())
@@ -95,7 +95,7 @@ class Miscellaneous(commands.Cog):
     async def serverinfo(self, ctx):
         guild = ctx.guild
         roles = [role.name for role in guild.roles]
-        embed = discord.Embed(title="Server Information", color=self.bot.primary_colour)
+        embed = discord.Embed(title="Server Information", colour=self.bot.primary_colour)
         embed.add_field(name="Name", value=guild.name)
         embed.add_field(name="ID", value=guild.id)
         embed.add_field(

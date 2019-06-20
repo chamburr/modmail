@@ -28,7 +28,7 @@ class Main(commands.Cog):
         try:
             await ctx.send(
                 embed=discord.Embed(
-                    description="Closing channel...", color=self.bot.primary_colour
+                    description="Closing channel...", colour=self.bot.primary_colour
                 )
             )
             data = self.bot.get_data(ctx.guild.id)
@@ -40,7 +40,7 @@ class Main(commands.Cog):
                 description=(
                     reason if reason is not None else "No reason was provided."
                 ),
-                color=self.bot.error_colour,
+                colour=self.bot.error_colour,
                 timestamp=datetime.datetime.utcnow(),
             )
             embed.set_author(
@@ -62,7 +62,7 @@ class Main(commands.Cog):
                         embed2 = discord.Embed(
                             title="Custom Close Message",
                             description=data[6],
-                            color=self.bot.mod_colour,
+                            colour=self.bot.mod_colour,
                             timestamp=datetime.datetime.utcnow(),
                         )
                         embed2.set_footer(
@@ -120,7 +120,7 @@ class Main(commands.Cog):
             await ctx.send(
                 embed=discord.Embed(
                     description="Missing permissions to delete this channel.",
-                    color=self.bot.error_colour,
+                    colour=self.bot.error_colour,
                 )
             )
 

@@ -38,14 +38,14 @@ class ModMailEvents(commands.Cog):
                     title="Member Not Found",
                     description="The user might have left the server. "
                     f"Use `{prefix}close [reason]` to close this channel.",
-                    color=self.bot.error_colour,
+                    colour=self.bot.error_colour,
                 )
             )
         try:
             embed = discord.Embed(
                 title="Message Received",
                 description=message.content if anon is False else msg,
-                color=self.bot.mod_colour,
+                colour=self.bot.mod_colour,
                 timestamp=datetime.datetime.utcnow(),
             )
             embed.set_author(
@@ -79,7 +79,7 @@ class ModMailEvents(commands.Cog):
                 embed=discord.Embed(
                     title="Failed",
                     description="The message could not be sent. The user might have disabled Direct Messages.",
-                    color=self.bot.error_colour,
+                    colour=self.bot.error_colour,
                 )
             )
         try:

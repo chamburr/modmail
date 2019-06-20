@@ -30,14 +30,14 @@ class DirectMessageEvents(commands.Cog, name="Direct Message"):
         if guild is None:
             return await message.channel.send(
                 embed=discord.Embed(
-                    description="The server was not found.", color=self.bot.error_colour
+                    description="The server was not found.", colour=self.bot.error_colour
                 )
             )
         if member_in_guild(guild) is False:
             return await message.channel.send(
                 embed=discord.Embed(
                     description="You are not in that server, and the message is not sent.",
-                    color=self.bot.error_colour,
+                    colour=self.bot.error_colour,
                 )
             )
         data = self.bot.get_data(guild.id)
@@ -62,7 +62,7 @@ class DirectMessageEvents(commands.Cog, name="Direct Message"):
                     try:
                         embed = discord.Embed(
                             title="New Ticket",
-                            color=self.bot.user_colour,
+                            colour=self.bot.user_colour,
                             timestamp=datetime.datetime.utcnow(),
                         )
                         embed.set_footer(
@@ -77,7 +77,7 @@ class DirectMessageEvents(commands.Cog, name="Direct Message"):
                     embed=discord.Embed(
                         description="The bot is missing permissions to create a channel. Please contact an admin on "
                         "the server.",
-                        color=self.bot.error_colour,
+                        colour=self.bot.error_colour,
                     )
                 )
             except discord.HTTPException:
@@ -86,7 +86,7 @@ class DirectMessageEvents(commands.Cog, name="Direct Message"):
                         description="A HTTPException error occurred. This is most likely because the server has "
                         "reached the maximum number of channels (500). Please join the support server "
                         "if you cannot figure out what went wrong.",
-                        color=self.bot.error_colour,
+                        colour=self.bot.error_colour,
                     )
                 )
         try:
@@ -98,7 +98,7 @@ class DirectMessageEvents(commands.Cog, name="Direct Message"):
                     description="Type a message in this channel to reply. Messages starting with the server prefix "
                     f"`{prefix}` are ignored, and can be used for staff discussion. Use the command "
                     f"`{prefix}close [reason]` to close this ticket.",
-                    color=self.bot.primary_colour,
+                    colour=self.bot.primary_colour,
                     timestamp=datetime.datetime.utcnow(),
                 )
                 embed.set_footer(
@@ -115,7 +115,7 @@ class DirectMessageEvents(commands.Cog, name="Direct Message"):
                     embed = discord.Embed(
                         title="Custom Greeting Message",
                         description=data[5],
-                        color=self.bot.mod_colour,
+                        colour=self.bot.mod_colour,
                         timestamp=datetime.datetime.utcnow(),
                     )
                     embed.set_footer(
@@ -125,7 +125,7 @@ class DirectMessageEvents(commands.Cog, name="Direct Message"):
             embed = discord.Embed(
                 title="Message Received",
                 description=to_send,
-                color=self.bot.user_colour,
+                colour=self.bot.user_colour,
                 timestamp=datetime.datetime.utcnow(),
             )
             embed.set_footer(
@@ -147,7 +147,7 @@ class DirectMessageEvents(commands.Cog, name="Direct Message"):
             return await message.channel.send(
                 embed=discord.Embed(
                     description="No permission to send message in the channel. Please contact an admin on the server.",
-                    color=self.bot.error_colour,
+                    colour=self.bot.error_colour,
                 )
             )
 
@@ -180,7 +180,7 @@ class DirectMessageEvents(commands.Cog, name="Direct Message"):
                     title="Select Server",
                     description="Select the server you want this message to be sent to.\n Tip: You can "
                     f"also use `{prefix}send <server ID> <message>`.",
-                    color=self.bot.primary_colour,
+                    colour=self.bot.primary_colour,
                 )
                 current_embed.set_footer(text="Use the reactions to flip pages.")
             current_embed.add_field(
@@ -254,7 +254,7 @@ class DirectMessageEvents(commands.Cog, name="Direct Message"):
             return await msg.edit(
                 embed=discord.Embed(
                     description="Time out. You did not choose anything.",
-                    color=self.bot.error_colour,
+                    colour=self.bot.error_colour,
                 )
             )
         await msg.delete()
@@ -296,7 +296,7 @@ class DirectMessageEvents(commands.Cog, name="Direct Message"):
                 description=f"You're sending this message to **{guild.name}** (ID: {guild.id}). React with ✅ to "
                 "confirm.\nWant to send to another server instead? React with 🔁.\nTo cancel this request, "
                 "react with ❌.",
-                color=self.bot.primary_colour,
+                colour=self.bot.primary_colour,
             )
             embed.set_footer(
                 text=f"Tip: You can disable confirmation messages with the {prefix}confirmation command."
@@ -322,7 +322,7 @@ class DirectMessageEvents(commands.Cog, name="Direct Message"):
                 return await msg.edit(
                     embed=discord.Embed(
                         description="Time out. You did not choose anything.",
-                        color=self.bot.error_colour,
+                        colour=self.bot.error_colour,
                     )
                 )
             if str(reaction) == "✅":
@@ -336,7 +336,7 @@ class DirectMessageEvents(commands.Cog, name="Direct Message"):
                 await msg.edit(
                     embed=discord.Embed(
                         description="Request cancelled successfully.",
-                        color=self.bot.primary_colour,
+                        colour=self.bot.primary_colour,
                     )
                 )
                 await asyncio.sleep(5)
@@ -384,7 +384,7 @@ class DirectMessageEvents(commands.Cog, name="Direct Message"):
             await ctx.send(
                 embed=discord.Embed(
                     description="Confirmation messages are disabled.",
-                    color=self.bot.primary_colour,
+                    colour=self.bot.primary_colour,
                 )
             )
         else:
@@ -395,7 +395,7 @@ class DirectMessageEvents(commands.Cog, name="Direct Message"):
             await ctx.send(
                 embed=discord.Embed(
                     description="Confirmation messages are enabled.",
-                    color=self.bot.primary_colour,
+                    colour=self.bot.primary_colour,
                 )
             )
         self.bot.conn.commit()

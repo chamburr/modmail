@@ -22,13 +22,13 @@ class General(commands.Cog):
                 return await ctx.send(
                     embed=discord.Embed(
                         description=f"That command does not exist. Use `{ctx.prefix}help` to see all the commands.",
-                        color=self.bot.primary_colour,
+                        colour=self.bot.primary_colour,
                     )
                 )
             embed = discord.Embed(
                 title=command.name,
                 description=command.description,
-                color=self.bot.primary_colour,
+                colour=self.bot.primary_colour,
             )
             usage = "\n".join(
                 [ctx.prefix + x.strip() for x in command.usage.split("\n")]
@@ -49,7 +49,7 @@ class General(commands.Cog):
             "ordinary user and wants to contact the staff, all that you need to do is to direct message me. You can "
             "also invite me to your server with the link below, or join our support server should you need further "
             f"help.\n\nDon't forget to check out our partners with the `{ctx.prefix}partners` command!",
-            color=self.bot.primary_colour,
+            colour=self.bot.primary_colour,
         )
         page.set_thumbnail(url=self.bot.user.avatar_url)
         page.set_footer(text="Use the reactions to flip pages.")
@@ -64,7 +64,7 @@ class General(commands.Cog):
         )
         all_pages.append(page)
         page = discord.Embed(
-            title=f"{self.bot.user.name} Help Menu", color=self.bot.primary_colour
+            title=f"{self.bot.user.name} Help Menu", colour=self.bot.primary_colour
         )
         page.set_thumbnail(url=self.bot.user.avatar_url)
         page.set_footer(text="Use the reactions to flip pages.")
@@ -96,7 +96,7 @@ class General(commands.Cog):
                 title=cog_name,
                 description=f"My prefix is `{ctx.prefix}`. Use `{ctx.prefix}"
                 "help <command>` for more information on a command.",
-                color=self.bot.primary_colour,
+                colour=self.bot.primary_colour,
             )
             page.set_author(
                 name=f"{self.bot.user.name} Help Menu",
@@ -119,7 +119,7 @@ class General(commands.Cog):
             embed=discord.Embed(
                 title="Pong!",
                 description=f"My current latency is {round(self.bot.latency * 1000, 2)}ms.",
-                color=self.bot.primary_colour,
+                colour=self.bot.primary_colour,
             )
         )
 
@@ -162,7 +162,7 @@ class General(commands.Cog):
                 total_online += 1
 
         embed = discord.Embed(
-            title=f"{self.bot.user.name} Statistics", color=self.bot.primary_colour
+            title=f"{self.bot.user.name} Statistics", colour=self.bot.primary_colour
         )
         embed.add_field(name="Owner", value="CHamburr#2591")
         embed.add_field(name="Bot Version", value=self.bot.version)
@@ -197,7 +197,7 @@ class General(commands.Cog):
             title="Discord Boats",
             description="Discord Boats (https://discord.boats/) is a growing directory of Discord bots to enhance your "
             "server - Find the perfect bot for your needs and add it to your server easily, quickly and for free.",
-            color=self.bot.primary_colour,
+            colour=self.bot.primary_colour,
         )
         page.add_field(name="Link", value="https://discord.gg/tfQqub6")
         page.set_thumbnail(url="https://discord.boats/logo.bg.png")
@@ -206,7 +206,7 @@ class General(commands.Cog):
             title="CH's amburr",
             description="CH's amburr is my personal community server. It is a fun and friendly place where you can "
             "talk about everything cool.",
-            color=self.bot.primary_colour,
+            colour=self.bot.primary_colour,
         )
         page.add_field(name="Link", value="https://discord.gg/TYe3U4w")
         page.set_thumbnail(
@@ -217,7 +217,7 @@ class General(commands.Cog):
             title="Member Count",
             description="Member Count is another bot that I am actively developing on. It shows stats on your server "
             "using channel names.",
-            color=self.bot.primary_colour,
+            colour=self.bot.primary_colour,
         )
         page.add_field(name="Link", value="https://discordbots.org/bot/membercount")
         page.set_thumbnail(
@@ -228,7 +228,7 @@ class General(commands.Cog):
             title="Custom Bot Development",
             description="This is also my server, and this is where you can request for bots for your server. "
             "Nothing on this world is free btw.",
-            color=self.bot.primary_colour,
+            colour=self.bot.primary_colour,
         )
         page.add_field(name="Link", value="https://discord.gg/JNQhDDM")
         page.set_thumbnail(
@@ -252,7 +252,7 @@ class General(commands.Cog):
                 title="Invite Me!",
                 description=f"https://discordapp.com/api/oauth2/authorize?client_id={self.bot.user.id}"
                 "&permissions=268823640&scope=bot",
-                color=self.bot.primary_colour,
+                colour=self.bot.primary_colour,
             )
         )
 
@@ -266,7 +266,7 @@ class General(commands.Cog):
             embed=discord.Embed(
                 title="Support Server",
                 description="You can join the support server with this link: https://discord.gg/wjWJwJB",
-                color=self.bot.primary_colour,
+                colour=self.bot.primary_colour,
             )
         )
 
@@ -276,7 +276,7 @@ class General(commands.Cog):
             embed=discord.Embed(
                 title="Vote",
                 description=f"Please vote for me here: https://discordbots.org/bot/575252669443211264. Thank you!",
-                color=self.bot.primary_colour,
+                colour=self.bot.primary_colour,
             )
         )
 
@@ -287,7 +287,7 @@ class General(commands.Cog):
         embed = discord.Embed(
             title="Usage Statistics",
             description="Bot usage statistics since 12 June 2019.",
-            color=self.bot.primary_colour,
+            colour=self.bot.primary_colour,
         )
         embed.add_field(
             name="Total commands", value=self.bot.total_commands, inline=False
