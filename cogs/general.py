@@ -300,6 +300,25 @@ class General(commands.Cog):
         )
         await ctx.send(embed=embed)
 
+    @commands.command(
+        description="Get the top 15 servers using this bot.",
+        aliases=["topguilds"],
+        usage="topservers",
+        hidden=True
+    )
+    async def topservers(self, ctx):
+        guilds = sorted(self.bot.guilds, key=lambda x: x.member_count, reverse=True)[:15]
+        top_guilds = []
+        for index, guild in enumerate(guilds):
+            top_guilds.append(f"#{str(index + 1)} {guild.name} ({guild.member_count} members)")
+        await ctx.send(
+            embed=discord.Embed(
+                title="Top 15 Servers",
+                description="\n".join(top_guilds),
+                colour=self.bot.primary_colour,
+            )
+        )
+
 
 def setup(bot):
     bot.add_cog(General(bot))
