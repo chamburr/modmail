@@ -1,4 +1,5 @@
 import io
+import copy
 import datetime
 import discord
 from discord.ext import commands
@@ -156,6 +157,59 @@ class Main(commands.Cog):
     async def aclose(self, ctx, *, reason: str = None):
         await self.close_channel(ctx, reason, True)
 
+    @checks.in_database()
+    @checks.is_mod()
+    @commands.bot_has_permissions(manage_channels=True)
+    @commands.guild_only()
+    @commands.command(
+        description="Close all of the channel.", usage="closeall [reason]"
+    )
+    async def closeall(self, ctx, *, reason: str = None):
+        category = self.bot.get_data(ctx.guild.id)[2]
+        category = ctx.guild.get_channel(category)
+        if category:
+            for channel in category.text_channels:
+                if channel.name.isdigit() is True:
+                    msg = copy.copy(ctx.message)
+                    msg.channel = channel
+                    new_ctx = await self.bot.get_context(msg, cls=type(ctx))
+                    await self.close_channel(new_ctx, reason)
+        try:
+            await ctx.send(
+                embed=discord.Embed(
+                    description="All channels are successfully closed.",
+                    colour=self.bot.primary_colour,
+                )
+            )
+        except discord.HTTPException:
+            pass
+
+    @checks.in_database()
+    @checks.is_mod()
+    @commands.bot_has_permissions(manage_channels=True)
+    @commands.guild_only()
+    @commands.command(
+        description="Anonymously close all of the channel.", usage="acloseall [reason]", aliases=["anoncloseall"]
+    )
+    async def acloseall(self, ctx, *, reason: str = None):
+        category = self.bot.get_data(ctx.guild.id)[2]
+        category = ctx.guild.get_channel(category)
+        if category:
+            for channel in category.text_channels:
+                if channel.name.isdigit() is True:
+                    msg = copy.copy(ctx.message)
+                    msg.channel = channel
+                    new_ctx = await self.bot.get_context(msg, cls=type(ctx))
+                    await self.close_channel(new_ctx, reason, True)
+        try:
+            await ctx.send(
+                embed=discord.Embed(
+                    description="All channels are successfully closed anonymously.",
+                    colour=self.bot.primary_colour,
+                )
+            )
+        except discord.HTTPException:
+            pass
 
 def setup(bot):
     bot.add_cog(Main(bot))
