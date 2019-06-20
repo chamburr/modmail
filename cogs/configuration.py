@@ -9,6 +9,19 @@ class Configuration(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
+    def get_overwrites(self, role, ctx):
+        return {
+            role: discord.PermissionOverwrite(
+                read_messages=True,
+                read_message_history=True,
+                send_messages=True,
+                embed_links=True,
+                attach_files=True,
+                add_reactions=True,
+            ),
+            ctx.guild.default_role: discord.PermissionOverwrite(read_messages=False),
+        }
+
     @commands.bot_has_permissions(
         manage_channels=True,
         manage_roles=True,
@@ -141,17 +154,7 @@ class Configuration(commands.Cog):
                 description="Setting up...", colour=self.bot.primary_colour
             )
         )
-        overwrites = {
-            access_role: discord.PermissionOverwrite(
-                read_messages=True,
-                read_message_history=True,
-                send_messages=True,
-                embed_links=True,
-                attach_files=True,
-                add_reactions=True,
-            ),
-            ctx.guild.default_role: discord.PermissionOverwrite(read_messages=False),
-        }
+        overwrites = self.get_overwrites(access_role, ctx)
         category = await ctx.guild.create_category_channel(
             name=category_name, overwrites=overwrites
         )
@@ -256,17 +259,7 @@ class Configuration(commands.Cog):
                     colour=self.bot.error_colour,
                 )
             )
-        overwrites = {
-            role: discord.PermissionOverwrite(
-                read_messages=True,
-                read_message_history=True,
-                send_messages=True,
-                embed_links=True,
-                attach_files=True,
-                add_reactions=True,
-            ),
-            ctx.guild.default_role: discord.PermissionOverwrite(read_messages=False),
-        }
+        overwrites = self.get_overwrites(role, ctx)
         category = await ctx.guild.create_category_channel(
             name=name, overwrites=overwrites
         )
@@ -285,6 +278,7 @@ class Configuration(commands.Cog):
             )
         )
 
+    @commands.bot_has_permissions(manage_channels=True, manage_roles=True)
     @checks.in_database()
     @commands.has_permissions(administrator=True)
     @commands.guild_only()
@@ -297,6 +291,21 @@ class Configuration(commands.Cog):
         c = self.bot.conn.cursor()
         c.execute("UPDATE data SET accessrole=? WHERE guild=?", (role.id, ctx.guild.id))
         self.bot.conn.commit()
+        overwrites = self.get_overwrites(role, ctx)
+        category = self.bot.get_data(ctx.guild.id)[2]
+        category = ctx.guild.get_channel(category)
+        if category:
+            try:
+                await category.set_permissions(overwrite=overwrites)
+            except discord.Forbidden:
+                return await ctx.send(
+                    embed=discord.Embed(
+                        description=f"The role is updated successfully to <@&{role.id}>.\nThe permissions for "
+                        "the category failed to be changed. Please give me the correct permissions and try running "
+                        "this commands again or do this manually.",
+                        colour=self.bot.error_colour,
+                    )
+                )
         await ctx.send(
             embed=discord.Embed(
                 description=f"The role is updated successfully to <@&{role.id}>.",
