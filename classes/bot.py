@@ -62,8 +62,8 @@ class ModMail(commands.AutoShardedBot):
         res = c.fetchone()
         if not res:
             c.execute(
-                "INSERT INTO data VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
-                (guild, None, None, None, None, None, None, None, None),
+                "INSERT INTO data VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                (guild, None, None, None, None, None, None, None, None, None),
             )
             self.conn.commit()
             return self.get_data(guild)
