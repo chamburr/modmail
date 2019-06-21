@@ -296,7 +296,8 @@ class Configuration(commands.Cog):
         category = ctx.guild.get_channel(category)
         if category:
             try:
-                await category.set_permissions(overwrite=overwrites)
+                await category.set_permissions(role, overwrites[role])
+                await category.set_permissions(ctx.guild.default_role, overwrites[ctx.guild.default_role])
             except discord.Forbidden:
                 return await ctx.send(
                     embed=discord.Embed(
