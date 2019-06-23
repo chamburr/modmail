@@ -43,14 +43,17 @@ class ErrorHandler(commands.Cog):
         elif isinstance(error, commands.MissingRequiredArgument) or isinstance(
             error, commands.BadArgument
         ):
-            await ctx.send(
-                embed=discord.Embed(
-                    title="Invalid Arguments",
-                    description=f"Please try using `{ctx.prefix}help` or join the support server with "
-                    f"`{ctx.prefix}support` if you don't know what went wrong.",
-                    colour=self.bot.error_colour,
-                )
+            embed = discord.Embed(
+                title="Invalid Arguments",
+                description=f"Please check the usage below or join the support server with "
+                f"`{ctx.prefix}support` if you don't know what went wrong.",
+                colour=self.bot.error_colour,
             )
+            usage = "\n".join(
+                [ctx.prefix + x.strip() for x in ctx.command.usage.split("\n")]
+            )
+            embed.add_field(name="Usage", value=f"```{usage}```")
+            await ctx.send(embed=embed)
         elif isinstance(error, commands.NotOwner):
             await ctx.send(
                 embed=discord.Embed(
@@ -81,7 +84,7 @@ class ErrorHandler(commands.Cog):
             await ctx.send(
                 embed=discord.Embed(
                     title="Unknown HTTP Exception",
-                    description=f"```{error.text}````",
+                    description=f"Please report this in the support server.\n```{error.text}````",
                     colour=self.bot.error_colour,
                 )
             )
@@ -93,7 +96,8 @@ class ErrorHandler(commands.Cog):
             await ctx.send(
                 embed=discord.Embed(
                     title="Unknown Error",
-                    description="Please report this in the support server.",
+                    description=f"Please report this in the support server.\n```{error.original.__class__.__name__}: "
+                    f"{error.original}```",
                     colour=self.bot.error_colour,
                 )
             )
