@@ -1,5 +1,5 @@
 # Bot's token
-token = "NTc1MjUyNjY5NDQzMjExMjY0.XNFSxw.vMA00KwiHxSOr_rJoFKRq9cv8l4"
+token = "NTc1MjUyNjY5NDQzMjExMjY0.XRWLqQ.Uvmk1GqQeHpNAHu8irHfGvwljqM"
 
 # DiscordBotList token
 dbl_token = (
