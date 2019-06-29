@@ -397,7 +397,8 @@ class DirectMessageEvents(commands.Cog, name="Direct Message"):
                 )
             await ctx.send(
                 embed=discord.Embed(
-                    description="Confirmation messages are disabled.",
+                    description="Confirmation messages are disabled. To send messages to another server, "
+                    f"either use `{ctx.prefix}new <message>` or `{ctx.prefix}send <server ID> <message>`.",
                     colour=self.bot.primary_colour,
                 )
             )
