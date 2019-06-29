@@ -186,14 +186,22 @@ class Owner(commands.Cog):
         description="Execute code in bash.", usage="bash <command>", hidden=True
     )
     async def bash(self, ctx, *, command_to_run: str):
-        output = subprocess.check_output(
-            command_to_run.split(), stderr=subprocess.STDOUT
-        ).decode("utf-8")
-        await ctx.send(
-            embed=discord.Embed(
-                description=f"```py\n{output}\n```", colour=self.bot.primary_colour
+        try:
+            output = subprocess.check_output(
+                command_to_run.split(), stderr=subprocess.STDOUT
+            ).decode("utf-8")
+            await ctx.send(
+                embed=discord.Embed(
+                    description=f"```py\n{output}\n```", colour=self.bot.primary_colour
+                )
             )
-        )
+        except Exception as e:
+            await ctx.send(
+                embed=discord.Embed(
+                    description=f"```py\n{str(e)}\n```",
+                    colour=self.bot.error_colour,
+                )
+            )
 
     @checks.is_owner()
     @commands.command(description="Execute SQL.", usage="sql <query>", hidden=True)
