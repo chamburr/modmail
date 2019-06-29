@@ -195,10 +195,10 @@ class Owner(commands.Cog):
                     description=f"```py\n{output}\n```", colour=self.bot.primary_colour
                 )
             )
-        except Exception as e:
+        except Exception as error:
             await ctx.send(
                 embed=discord.Embed(
-                    description=f"```py\n{str(e)}\n```",
+                    description=f"```py\n{error.original.__class__.__name__}: {error.original}\n```",
                     colour=self.bot.error_colour,
                 )
             )
