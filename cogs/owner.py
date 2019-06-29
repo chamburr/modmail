@@ -198,7 +198,7 @@ class Owner(commands.Cog):
         except Exception as error:
             await ctx.send(
                 embed=discord.Embed(
-                    description=f"```py\n{error.original.__class__.__name__}: {error.original}\n```",
+                    description=f"```py\n{error.__class__.__name__}: {error}\n```",
                     colour=self.bot.error_colour,
                 )
             )
