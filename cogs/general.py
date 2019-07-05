@@ -203,6 +203,17 @@ class General(commands.Cog):
         page.set_thumbnail(url="https://discord.boats/logo.bg.png")
         all_pages.append(page)
         page = discord.Embed(
+            title="Underlords",
+            description="Underlords Discord server acts as a secondary platform to r/Underlords where users can have "
+            "casual chit-chat, give suggestions, share tactics and discuss everything related to Underlords.",
+            colour=self.bot.primary_colour,
+        )
+        page.add_field(name="Link", value="https://discord.gg/bGYpqDA")
+        page.set_thumbnail(
+            url="https://cdn.discordapp.com/icons/580534040692654101/a_fb290e4d585eb0c4cf951a00212b5836.gif"
+        )
+        all_pages.append(page)
+        page = discord.Embed(
             title="CH's amburr",
             description="CH's amburr is my personal community server. It is a fun and friendly place where you can "
             "talk about everything cool.",
