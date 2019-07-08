@@ -30,8 +30,8 @@ class Premium(commands.Cog):
         )
         embed.add_field(
             name="Get Premium",
-            value="We use Donate Bot to manage premium. You will need to join our support server with the link in "
-            f"`{ctx.prefix}support`. Then type `donate` in the support server to get the link to buy premium.",
+            value="We use Upgrade.Chat to manage premium. You will need to join our support server with the link "
+            f"in `{ctx.prefix}support`. Then type `donate` in the support server to get the link to buy premium.",
             inline=False,
         )
         embed.add_field(
