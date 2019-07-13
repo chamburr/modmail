@@ -16,8 +16,8 @@ bot.on("message", async message => {
     if (!message) return;
 
     if (message.author.id === "543974987795791872" && message.embeds[0]) {
-        message.delete();
         if (message.embeds[0].fields[0] && message.embeds[0].fields[0].name.startsWith("You are purchasing a role from:")) {
+            message.delete();
             let link = message.embeds[0].fields[0].value.match(regex)[0];
             let embed = new Discord.RichEmbed()
             embed.setTitle("Donation Link");
@@ -25,6 +25,9 @@ bot.on("message", async message => {
             embed.setColor(0x1E90FF);
             embed.setFooter(message.embeds[0].title.replace("This Link is only for: @", "This link is only meant for @") + ".");
             message.channel.send(embed);
+        }
+        else if (message.channel.id !== "576763592221786128") {
+            message.delete();
         }
     }
 });
