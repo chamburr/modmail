@@ -326,19 +326,20 @@ class Configuration(commands.Cog):
     )
     async def pingrole(self, ctx, *, role=None):
         c = self.bot.conn.cursor()
-        if role.lower() in ["here", "everyone"]:
-            role = f"@{role.lower()}"
-        else:
-            role = await commands.RoleConverter().convert(ctx, role)
-            if role is None:
-                return await ctx.send(
-                    embed=discord.Embed(
-                        description="The role is not found. Please try again.",
-                        colour=self.bot.error_colour,
-                    )
-                )
+        if role is not None:
+            if role.lower() in ["here", "everyone"]:
+                role = f"@{role.lower()}"
             else:
-                role = role.id
+                role = await commands.RoleConverter().convert(ctx, role)
+                if role is None:
+                    return await ctx.send(
+                        embed=discord.Embed(
+                            description="The role is not found. Please try again.",
+                            colour=self.bot.error_colour,
+                        )
+                    )
+                else:
+                    role = role.id
         c.execute("UPDATE data SET pingrole=? WHERE guild=?", (role, ctx.guild.id))
         self.bot.conn.commit()
         await ctx.send(
