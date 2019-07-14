@@ -32,7 +32,7 @@ default_prefix = "="
 activity = [
     f"DM to Contact Staff | {default_prefix}help",
     f"Invite Me - modmail.netlify.com | {default_prefix}help",
-    f"Premium Discount Code - GxiYRkEHTU | {default_prefix}help",
+    f"🎉 2000 Servers 🎉 | {default_prefix}help",
 ]
 
 # The very very main bot owner
