@@ -194,13 +194,16 @@ class General(commands.Cog):
     async def partners(self, ctx):
         all_pages = []
         page = discord.Embed(
-            title="Discord Boats",
-            description="Discord Boats (https://discord.boats/) is a growing directory of Discord bots to enhance your "
-            "server - Find the perfect bot for your needs and add it to your server easily, quickly and for free.",
+            title="Upgrade.Chat",
+            description="Upgrade.Chat (https://upgrade.chat/) is a STRIPE VERIFIED Partner Bot that allows server "
+            "owners to sell roles and subscriptions via Discord. Want to make money with your Discord server? "
+            "Invite Upgrade.Chat now!",
             colour=self.bot.primary_colour,
         )
-        page.add_field(name="Link", value="https://discord.gg/tfQqub6")
-        page.set_thumbnail(url="https://discord.boats/logo.bg.png")
+        page.add_field(name="Link", value="https://discord.gg/ktDKa9W")
+        page.set_thumbnail(
+            url="https://cdn.discordapp.com/avatars/543974987795791872/6e20cfecaba51762a511c39f68a73de5.png"
+        )
         all_pages.append(page)
         page = discord.Embed(
             title="Underlords",
