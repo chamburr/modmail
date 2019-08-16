@@ -32,7 +32,7 @@ default_prefix = "="
 activity = [
     f"DM to Contact Staff | {default_prefix}help",
     f"Invite Me - modmail.netlify.com | {default_prefix}help",
-    f"🎉 3000 Servers 🎉 | {default_prefix}help",
+    #  f"🎉 3000 Servers 🎉 | {default_prefix}help",
 ]
 
 # The very very main bot owner
@@ -47,7 +47,6 @@ owners = [
 
 # Bot admins that have access to admin commands
 admins = [
-    379956316275343372,  # BONΛFIDE BOSS#0008
     360885861908480010,  # John Michalopoulos#4264
     145673712127967232,  # OfficialAzure#0001
 ]
