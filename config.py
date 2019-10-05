@@ -43,6 +43,7 @@ owners = [
     446290930723717120,  # CHamburr#2591
     283862626520399872,  # lieuwe_berg#7122
     543967162352533505,  # Upgrade.Chat#9561
+    415416051170541588,  # Mare#0001
 ]
 
 # Bot admins that have access to admin commands
