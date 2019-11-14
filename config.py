@@ -31,7 +31,7 @@ default_prefix = "="
 # Status of the bot
 activity = [
     f"DM to Contact Staff | {default_prefix}help",
-    f"Invite Me - modmail.netlify.com | {default_prefix}help",
+    # f"Invite Me - modmail.netlify.com | {default_prefix}help",
     # f"🎉 5000 Servers 🎉 | {default_prefix}help",
 ]
 
