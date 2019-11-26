@@ -268,6 +268,8 @@ class Main(commands.Cog):
         blacklist.remove(str(member.id))
         if len(blacklist) == 0:
             blacklist = None
+        else:
+            blacklist = ",".join(blacklist)
         c = self.bot.conn.cursor()
         c.execute("UPDATE data SET blacklist=? WHERE guild=?", (blacklist, ctx.guild.id))
         self.bot.conn.commit()
