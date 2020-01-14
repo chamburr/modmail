@@ -105,3 +105,8 @@ venv.bak/
 
 # mypy
 .mypy_cache/
+
+# Custom
+config.py
+data.sqlite
+discord.log
