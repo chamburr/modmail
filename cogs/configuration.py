@@ -179,10 +179,11 @@ class Configuration(commands.Cog):
                 )
             )
         overwrites = {ctx.guild.default_role: self.default_role_permission}
-        for role in [ctx.guild.get_role(role) for role in data[3].split(",")]:
-            if role is None:
-                continue
-            overwrites[role] = self.role_permission
+        if data[3]:
+            for role in [ctx.guild.get_role(role) for role in data[3].split(",")]:
+                if role is None:
+                    continue
+                overwrites[role] = self.role_permission
         category = await ctx.guild.create_category_channel(name=name, overwrites=overwrites)
         if data[2] and data[2] in self.bot.all_category:
             self.bot.all_category.remove(data[2])
