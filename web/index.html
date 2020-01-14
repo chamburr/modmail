@@ -13,7 +13,7 @@
     <meta property="og:image" content="https://modmail.netlify.com/images/icon.png">
     <title>ModMail</title>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
-    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.8.1/css/all.css" integrity="sha384-50oBUHEmvpQ+1lW4y57PTFmhCaXp0ML5d60M1M7uH2+nqUivzIebhndOJK28anvf" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.12.0/css/all.css" integrity="sha384-REHJTs1r2ErKBuJB0fCK99gCYsVjwxHrSU0N7I1zl9vZbggVJXRMsv/sLlOAGb4M" crossorigin="anonymous">
     <link rel="icon" href="images/icon.png" type="image/x-icon">
     <link rel="stylesheet" href="css/styles.css">
     <link rel="stylesheet" href="css/particles.css">
@@ -41,7 +41,7 @@
                             <a class="nav-link" href="#getting-started">Getting Started</a>
                         </li>
                         <li class="nav-item active">
-                            <a class="nav-link" href="https://discordbots.org/bot/575252669443211264">Upvote</a>
+                            <a class="nav-link" href="https://github.com/CHamburr/modmail">GitHub Repository</a>
                         </li>
                         <li class="nav-item active">
                             <a class="nav-link" href="https://discord.gg/wjWJwJB">Support Server</a>
@@ -58,31 +58,30 @@
             <div style="align-items: center; display: flex; flex-direction: column;">
                 <img src="images/icon.png" width="200vh" alt="Icon">
 		        <h1 style="margin: 0.5em 0;">ModMail</h1>
-		        <h3 style="font-weight: 500; letter-spacing: 0.1em; line-height: 1.5em; text-align: center;">Finally a ModMail<br>bot made<br>for everyone.</h3>
+		        <h3 style="font-weight: 500; letter-spacing: 0.1em; line-height: 1.5em; text-align: center;">A feature-rich Discord bot<br>for easy communication<br>between server staff and users.</h3>
             </div>
             <div style="text-align: center;">
-                <a class="btn btn-primary btn-lg" href="https://discordapp.com/api/oauth2/authorize?client_id=575252669443211264&permissions=268823640&scope=bot" style="display: inline-block; margin: 1em;"><i class="fas fa-plus"></i> Invite Bot</a>
-                <a class="btn btn-success btn-lg" href="https://discord.gg/wjWJwJB" style="display: inline-block; margin: 1em;"><i class="fas fa-question"></i> Support Server</a>
+                <a class="btn btn-primary btn-lg" href="https://discordapp.com/api/oauth2/authorize?client_id=575252669443211264&permissions=268823640&scope=bot" style="display: inline-block; margin: 0.5em;"><i class="fas fa-plus"></i> Invite Bot</a>
+                <a class="btn btn-success btn-lg" href="https://discord.gg/wjWJwJB" style="display: inline-block; margin: 0.5em;"><i class="fas fa-question"></i> Support Server</a>
+                <br>
+                <a class="btn btn-info btn-lg" href="https://github.com/CHamburr/modmail" style="display: inline-block; margin: 0.5em;"><i class="fab fa-github"></i> GitHub Repository</a>
             </div>
         </div>
     </div>
     <hr>
     <div class="container" style="padding: 20px 10%;">
         <a id="about"><h2>About</h2></a>
-        <p style="margin-top: 20px;">ModMail is designed to enable your server members to contact staff easily. When a user sends a direct message to the bot, a new channel is created in your server. Messages sent by the user will be displayed there and sending a message in that channel will also forward it to that user. This bot is different from the others as it is the one and only public ModMail bot. This means that it is ensured to be hosted 24/7 without you having to pay extra hosting fees.</p>
+        <p style="margin-top: 20px;">ModMail is a feature-rich Discord bot designed to enable your server members to contact staff easily. A new channel is created whenever a user messages the bot, and the channel will serve as a shared inbox for seamless communication between staff and the user.</p>
     </div>
     <hr>
     <div class="container" style="padding: 20px 10%;">
         <a id="features"><h2>Features</h2></a>
         <ul style="margin-top: 20px;">
-            <li>Hosted on a VPS, online 24/7.</li>
-            <li>Easy and interactive setup.</li>
-            <li>Simple to use, makes it easy for you and your server members.</li>
-            <li>Set a category to contain all the channels so everything is organised.</li>
-            <li>Set a role that is considered staff, who can reply to and close tickets.</li>
-            <li>Logging of new tickets and closed tickets.</li>
-            <li>Custom messages sent to the user on new tickets or closed tickets. (Premium)</li>
-            <li>Complete logging of all messages. (Premium)</li>
+            <li>Extremely easy interactive setup.</li>
+            <li>Fancy, but organised design for you and server members.</li>
+            <li>Highly configurable, adjust things to your liking.</li>
+            <li>Advanced ticket logging, includes conversation history.</li>
+            <li>And much more...</li>
         </ul>
     </div>
     <hr>
@@ -90,9 +89,9 @@
         <a id="getting-started"><h2>Getting Started</h2></a>
         <p style="margin-top: 20px;">Follow these steps to get the bot all ready to serve your server!</p>
         <ol>
-            <li>Invite the bot with the link above.</li>
+            <li>Invite the bot with <a href="https://discordapp.com/api/oauth2/authorize?client_id={self.bot.user.id}&permissions=268823640&scope=bot">this link</a>.</li>
             <li>Run <code>=setup</code>, there will be an interactive guide.</li>
-            <li>Done! For a full list of commands, see <code>=help</code>.</li>
+            <li>All done! For a full list of commands, see <code>=help</code>.</li>
         </ol>
     </div>
     <hr>
@@ -101,13 +100,13 @@
         <div class="row" style="margin-top: 20px;">
             <div class="col-12 col-md-6 col-lg-4" style="margin: 0.5em 0; padding: 0 0.5em;">
                 <div class="card bg-dark" style="height: 100%;">
-                    <img src="https://cdn.discordapp.com/icons/580534040692654101/a_fb290e4d585eb0c4cf951a00212b5836.gif" class="card-img-top" alt="Logo">
+                    <img src="https://cdn.discordapp.com/icons/580534040692654101/a_4fbbfc05cf814bc2e959ed2e6b0932a7.gif" class="card-img-top" alt="Logo">
                     <div class="card-body">
                         <h5 class="card-title" style="text-align: center;">Underlords</h5>
                         <br>
                         <p>Underlords Discord server acts as a secondary platform to r/Underlords where users can have casual chit-chat, give suggestions, share tactics and discuss everything related to Underlords.</p>
                         <br>
-                        <a class="btn btn-secondary" href="https://discord.gg/bGYpqDA">Learn More</a>
+                        <a class="btn btn-secondary" href="https://discord.gg/underlords">Learn More</a>
                     </div>
                 </div>
             </div>
@@ -135,18 +134,6 @@
                     </div>
                 </div>
             </div>
-            <div class="col-12 col-md-6 col-lg-4" style="margin: 0.5em 0; padding: 0 0.5em;">
-                <div class="card bg-dark" style="height: 100%;">
-                    <img src="https://cdn.discordapp.com/icons/572935145347350548/2408500f84def61a514c6c2108b53c96.png" class="card-img-top" alt="Logo">
-                    <div class="card-body">
-                        <h5 class="card-title" style="text-align: center;">Custom Bot Development</h5>
-                        <br>
-                        <p>This is also my server, and this is where you can request for bots for your server. Nothing on this world is free btw.</p>
-                        <br>
-                        <a class="btn btn-secondary" href="https://discord.gg/JNQhDDM">Learn More</a>
-                    </div>
-                </div>
-            </div>
         </div>
     </div>
     <hr>
@@ -160,7 +147,12 @@
             </div>
             <div class="col-12 col-md-6 col-lg-4" style="margin: 0.5em 0; padding: 0 0.5em;">
                 <a href="https://botsfordiscord.com/bots/575252669443211264">
-                    <img src="https://botsfordiscord.com/api/bot/575252669443211264/widget?theme=dark" alt="Bots For Discord" style="width: 100%;">
+                    <img src="https://botsfordiscord.com/api/bot/575252669443211264/widget?theme=dark" alt="Bots for Discord" style="width: 100%;">
+                </a>
+            </div>
+            <div class="col-12 col-md-6 col-lg-4" style="margin: 0.5em 0; padding: 0 0.5em;">
+                <a href="https://bots.ondiscord.xyz/bots/575252669443211264">
+                    <img src="https://bots.ondiscord.xyz/bots/575252669443211264/embed?theme=dark" alt="Bots on Discord">
                 </a>
             </div>
         </div>
@@ -172,7 +164,7 @@
     </div>
     <div style="background-color: #23272a; margin-top: 20px; padding: 1em 0;">
         <footer style="text-align: center;">
-            <p>©2019 CHamburr#2591</p>
+            <p>©2019-2020 CHamburr#2591</p>
         </footer>
     </div>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
