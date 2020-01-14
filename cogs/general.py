@@ -65,7 +65,7 @@ class General(commands.Cog):
         page.add_field(
             name="Getting Started",
             value="Follow these steps to get the bot all ready to serve your server!\n1. Invite the bot with "
-            f"[this link](https://discordapp.com/api/oauth2/authorize?client_id={self.bot.user.id}
+            f"[this link](https://discordapp.com/api/oauth2/authorize?client_id={self.bot.user.id}"
             f"&permissions=268823640&scope=bot)\n2. Run `{ctx.prefix}setup`, there will be an interactive guide.\n"
             f"3. All done! For a full list of commands, see `{ctx.prefix}help`.",
             inline=False,
