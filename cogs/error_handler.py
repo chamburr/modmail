@@ -40,18 +40,14 @@ class ErrorHandler(commands.Cog):
                     colour=self.bot.error_colour,
                 )
             )
-        elif isinstance(error, commands.MissingRequiredArgument) or isinstance(
-            error, commands.BadArgument
-        ):
+        elif isinstance(error, commands.MissingRequiredArgument) or isinstance(error, commands.BadArgument):
             embed = discord.Embed(
                 title="Invalid Arguments",
                 description=f"Please check the usage below or join the support server with "
                 f"`{ctx.prefix}support` if you don't know what went wrong.",
                 colour=self.bot.error_colour,
             )
-            usage = "\n".join(
-                [ctx.prefix + x.strip() for x in ctx.command.usage.split("\n")]
-            )
+            usage = "\n".join([ctx.prefix + x.strip() for x in ctx.command.usage.split("\n")])
             embed.add_field(name="Usage", value=f"```{usage}```")
             await ctx.send(embed=embed)
         elif isinstance(error, commands.NotOwner):

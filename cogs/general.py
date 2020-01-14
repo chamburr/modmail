@@ -25,19 +25,11 @@ class General(commands.Cog):
                         colour=self.bot.primary_colour,
                     )
                 )
-            embed = discord.Embed(
-                title=command.name,
-                description=command.description,
-                colour=self.bot.primary_colour,
-            )
-            usage = "\n".join(
-                [ctx.prefix + x.strip() for x in command.usage.split("\n")]
-            )
+            embed = discord.Embed(title=command.name, description=command.description, colour=self.bot.primary_colour)
+            usage = "\n".join([ctx.prefix + x.strip() for x in command.usage.split("\n")])
             embed.add_field(name="Usage", value=f"```{usage}```", inline=False)
             if len(command.aliases) > 1:
-                embed.add_field(
-                    name="Aliases", value=f"`{'`, `'.join(command.aliases)}`"
-                )
+                embed.add_field(name="Aliases", value=f"`{'`, `'.join(command.aliases)}`")
             elif len(command.aliases) > 0:
                 embed.add_field(name="Alias", value=f"`{command.aliases[0]}`")
             await ctx.send(embed=embed)
@@ -45,8 +37,7 @@ class General(commands.Cog):
         all_pages = []
         page = discord.Embed(
             title=f"{self.bot.user.name} Help Menu",
-            description='*"Finally a ModMail bot made for everyone."*\n\nThank you for using ModMail! If you are an '
-            "ordinary user and wants to contact the staff, all that you need to do is to direct message me. You can "
+            description="Thank you for using ModMail! Please direct message me if you wish to contact staff. You can "
             "also invite me to your server with the link below, or join our support server should you need further "
             f"help.\n\nDon't forget to check out our partners with the `{ctx.prefix}partners` command!",
             colour=self.bot.primary_colour,
@@ -59,33 +50,28 @@ class General(commands.Cog):
             "&permissions=268823640&scope=bot",
             inline=False,
         )
-        page.add_field(
-            name="Support Server", value="https://discord.gg/wjWJwJB", inline=False
-        )
+        page.add_field(name="Support Server", value="https://discord.gg/wjWJwJB", inline=False)
         all_pages.append(page)
-        page = discord.Embed(
-            title=f"{self.bot.user.name} Help Menu", colour=self.bot.primary_colour
-        )
+        page = discord.Embed(title=f"{self.bot.user.name} Help Menu", colour=self.bot.primary_colour)
         page.set_thumbnail(url=self.bot.user.avatar_url)
         page.set_footer(text="Use the reactions to flip pages.")
         page.add_field(
             name="About ModMail",
-            value="ModMail is designed to enable your server members to contact staff easily. When a user sends a "
-            "direct message to the bot, a new channel is created in your server. Messages sent by the user will be "
-            "displayed there and sending a message in that channel will also forward it to that user. This bot is "
-            "different from the others as it is the one and only public ModMail bot. This means that it is ensured "
-            "to be hosted 24/7 without you having to pay extra hosting fees.",
+            value="ModMail is a feature-rich Discord bot designed to enable your server members to contact staff "
+            "easily. A new channel is created whenever a user messages the bot, and the channel will serve as a shared "
+            "inbox for seamless communication between staff and the user.",
             inline=False,
         )
         page.add_field(
             name="Getting Started",
-            value="Follow these steps to get the bot all ready to serve your server!\n\n1. Invite the bot with the "
-            "link below.\n2. Run `=setup`, there will be an interactive guide.\n3. Done! For a full list of commands, "
-            "see `=help`.",
+            value="Follow these steps to get the bot all ready to serve your server!\n1. Invite the bot with "
+            f"[this link](https://discordapp.com/api/oauth2/authorize?client_id={self.bot.user.id}
+            f"&permissions=268823640&scope=bot)\n2. Run `{ctx.prefix}setup`, there will be an interactive guide.\n"
+            f"3. All done! For a full list of commands, see `{ctx.prefix}help`.",
             inline=False,
         )
         all_pages.append(page)
-        for index, cog_name in enumerate(self.bot.cogs):
+        for _, cog_name in enumerate(self.bot.cogs):
             if cog_name in ["Owner", "Admin"]:
                 continue
             cog = self.bot.get_cog(cog_name)
@@ -99,8 +85,7 @@ class General(commands.Cog):
                 colour=self.bot.primary_colour,
             )
             page.set_author(
-                name=f"{self.bot.user.name} Help Menu",
-                icon_url=self.bot.user.avatar_url,
+                name=f"{self.bot.user.name} Help Menu", icon_url=self.bot.user.avatar_url,
             )
             page.set_thumbnail(url=self.bot.user.avatar_url)
             page.set_footer(text="Use the reactions to flip pages.")
@@ -108,9 +93,7 @@ class General(commands.Cog):
                 if cmd.hidden is False:
                     page.add_field(name=cmd.name, value=cmd.description, inline=False)
             all_pages.append(page)
-        paginator = Paginator(
-            length=1, entries=all_pages, use_defaults=True, embed=True, timeout=120
-        )
+        paginator = Paginator(length=1, entries=all_pages, use_defaults=True, embed=True, timeout=120)
         await paginator.start(ctx)
 
     @commands.command(description="Pong! Get my latency.", usage="ping")
@@ -140,9 +123,7 @@ class General(commands.Cog):
         return fmt.format(d=days, h=hours, m=minutes, s=seconds)
 
     @commands.command(
-        description="See some super cool statistics about me.",
-        usage="stats",
-        aliases=["statistics", "info"],
+        description="See some super cool statistics about me.", usage="stats", aliases=["statistics", "info"],
     )
     async def stats(self, ctx):
         guilds = 0
@@ -161,15 +142,12 @@ class General(commands.Cog):
             if member.status is not offline:
                 total_online += 1
 
-        embed = discord.Embed(
-            title=f"{self.bot.user.name} Statistics", colour=self.bot.primary_colour
-        )
+        embed = discord.Embed(title=f"{self.bot.user.name} Statistics", colour=self.bot.primary_colour)
         embed.add_field(name="Owner", value="CHamburr#2591")
         embed.add_field(name="Bot Version", value=self.bot.version)
         embed.add_field(name="Uptime", value=self.get_bot_uptime(brief=True))
         embed.add_field(
-            name="Shards",
-            value=f"{f'{ctx.guild.shard_id}/' if ctx.guild else ''}{self.bot.shard_count}",
+            name="Shards", value=f"{f'{ctx.guild.shard_id}/' if ctx.guild else ''}{self.bot.shard_count}",
         )
         embed.add_field(name="Servers", value=str(guilds))
         embed.add_field(name="Channels", value=str(channels))
@@ -181,15 +159,12 @@ class General(commands.Cog):
         embed.add_field(name="discord.py Version", value=discord.__version__)
         embed.set_thumbnail(url=self.bot.user.avatar_url)
         embed.set_footer(
-            text=f"Made with ❤ using discord.py",
-            icon_url="https://www.python.org/static/opengraph-icon-200x200.png",
+            text=f"Made with ❤ using discord.py", icon_url="https://www.python.org/static/opengraph-icon-200x200.png",
         )
         await ctx.send(embed=embed)
 
     @commands.command(
-        description="Check out all the amazing stuff we have partnered with.",
-        usage="partners",
-        aliases=["partner"],
+        description="Check out all the amazing stuff we have partnered with.", usage="partners", aliases=["partner"],
     )
     async def partners(self, ctx):
         all_pages = []
@@ -238,13 +213,9 @@ class General(commands.Cog):
         )
         all_pages.append(page)
         for embed in all_pages:
-            embed.set_author(
-                name=f"{self.bot.user.name} partners", icon_url=self.bot.user.avatar_url
-            )
+            embed.set_author(name=f"{self.bot.user.name} partners", icon_url=self.bot.user.avatar_url)
             embed.set_footer(text="Use the reactions to flip pages.")
-        paginator = Paginator(
-            length=1, entries=all_pages, use_defaults=True, embed=True, timeout=120
-        )
+        paginator = Paginator(length=1, entries=all_pages, use_defaults=True, embed=True, timeout=120)
         await paginator.start(ctx)
 
     @commands.command(description="Get a link to invite me.", usage="invite")
@@ -259,9 +230,7 @@ class General(commands.Cog):
         )
 
     @commands.command(
-        description="Get a link to my support server.",
-        usage="support",
-        aliases=["server"],
+        description="Get a link to my support server.", usage="support", aliases=["server"],
     )
     async def support(self, ctx):
         await ctx.send(
@@ -282,31 +251,20 @@ class General(commands.Cog):
             )
         )
 
-    @commands.command(
-        description="Usage statistics of the bot.", usage="usagestats", hidden=True
-    )
+    @commands.command(description="Usage statistics of the bot.", usage="usagestats", hidden=True)
     async def usagestats(self, ctx):
         embed = discord.Embed(
             title="Usage Statistics",
             description="Bot usage statistics since 12 June 2019.",
             colour=self.bot.primary_colour,
         )
-        embed.add_field(
-            name="Total commands", value=self.bot.total_commands, inline=False
-        )
-        embed.add_field(
-            name="Total messages", value=self.bot.total_messages, inline=False
-        )
-        embed.add_field(
-            name="Total tickets", value=self.bot.total_tickets, inline=False
-        )
+        embed.add_field(name="Total commands", value=self.bot.total_commands, inline=False)
+        embed.add_field(name="Total messages", value=self.bot.total_messages, inline=False)
+        embed.add_field(name="Total tickets", value=self.bot.total_tickets, inline=False)
         await ctx.send(embed=embed)
 
     @commands.command(
-        description="Get the top 15 servers using this bot.",
-        aliases=["topguilds"],
-        usage="topservers",
-        hidden=True
+        description="Get the top 15 servers using this bot.", aliases=["topguilds"], usage="topservers", hidden=True
     )
     async def topservers(self, ctx):
         guilds = sorted(self.bot.guilds, key=lambda x: x.member_count, reverse=True)[:15]
@@ -315,9 +273,7 @@ class General(commands.Cog):
             top_guilds.append(f"#{str(index + 1)} {guild.name} ({guild.member_count} members)")
         await ctx.send(
             embed=discord.Embed(
-                title="Top 15 Servers",
-                description="\n".join(top_guilds),
-                colour=self.bot.primary_colour,
+                title="Top 15 Servers", description="\n".join(top_guilds), colour=self.bot.primary_colour,
             )
         )
 

@@ -10,9 +10,7 @@ class Admin(commands.Cog):
 
     @checks.is_admin()
     @commands.command(
-        description="Get a list of servers with the specified name.",
-        usage="findserver <name>",
-        hidden=True,
+        description="Get a list of servers with the specified name.", usage="findserver <name>", hidden=True,
     )
     async def findserver(self, ctx, *, name: str):
         guilds = []
@@ -20,43 +18,29 @@ class Admin(commands.Cog):
             if guild.name.lower().count(name.lower()) > 0:
                 guilds.append(f"{guild.name} `{guild.id}`")
         if len(guilds) == 0:
-            await ctx.send(
-                embed=discord.Embed(
-                    description="No such guild was found.", colour=self.bot.error_colour
-                )
-            )
+            await ctx.send(embed=discord.Embed(description="No such guild was found.", colour=self.bot.error_colour))
         else:
             try:
-                await ctx.send(
-                    embed=discord.Embed(
-                        description="\n".join(guilds), colour=self.bot.primary_colour
-                    )
-                )
+                await ctx.send(embed=discord.Embed(description="\n".join(guilds), colour=self.bot.primary_colour))
             except discord.HTTPException:
                 await ctx.send(
                     embed=discord.Embed(
-                        description="The message is too long to be sent.",
-                        colour=self.bot.error_colour,
+                        description="The message is too long to be sent.", colour=self.bot.error_colour,
                     )
                 )
 
     @checks.is_admin()
     @commands.command(
-        description="Get a list of servers the bot shares with the user.",
-        usage="sharedservers <user>",
+        description="Get a list of servers the bot shares with the user.", usage="sharedservers <user>",
     )
     async def sharedservers(self, ctx, *, user):
         try:
             user = await commands.UserConverter().convert(ctx, user)
         except commands.errors.BadArgument:
             return await ctx.send(
-                embed=discord.Embed(
-                    description="No such user was found.", colour=self.bot.error_colour
-                )
+                embed=discord.Embed(description="No such user was found.", colour=self.bot.error_colour)
             )
-        guilds = [
-            guild for guild in self.bot.guilds if guild.get_member(user.id) is not None
-        ]
+        guilds = [guild for guild in self.bot.guilds if guild.get_member(user.id)]
         guild_list = []
         for guild in guilds:
             entry = f"{guild.name} `{guild.id}`"
@@ -65,32 +49,19 @@ class Admin(commands.Cog):
                 entry = entry + " (Owner)"
             elif perms.administrator is True:
                 entry = entry + " (Admin)"
-            elif (
-                perms.manage_guild is True
-                or perms.kick_members is True
-                or perms.ban_members is True
-            ):
+            elif perms.manage_guild is True or perms.kick_members is True or perms.ban_members is True:
                 entry = entry + " (Mod)"
             guild_list.append(entry)
         try:
-            await ctx.send(
-                embed=discord.Embed(
-                    description="\n".join(guild_list), colour=self.bot.primary_colour
-                )
-            )
+            await ctx.send(embed=discord.Embed(description="\n".join(guild_list), colour=self.bot.primary_colour))
         except discord.HTTPException:
             await ctx.send(
-                embed=discord.Embed(
-                    description="The message is too long to be sent.",
-                    colour=self.bot.error_colour,
-                )
+                embed=discord.Embed(description="The message is too long to be sent.", colour=self.bot.error_colour)
             )
 
     @checks.is_admin()
     @commands.command(
-        description="Create an invite to the specified server.",
-        usage="createinvite <server ID>",
-        hidden=True,
+        description="Create an invite to the specified server.", usage="createinvite <server ID>", hidden=True,
     )
     async def createinvite(self, ctx, *, guild_id: int):
         for guild in self.bot.guilds:
@@ -115,15 +86,10 @@ class Admin(commands.Cog):
                     except discord.Forbidden:
                         return await ctx.send(
                             embed=discord.Embed(
-                                description="No permissions to create an invite link.",
-                                colour=self.bot.primary_colour,
+                                description="No permissions to create an invite link.", colour=self.bot.primary_colour,
                             )
                         )
-        await ctx.send(
-            embed=discord.Embed(
-                description="No such guild was found.", colour=self.bot.primary_colour
-            )
-        )
+        await ctx.send(embed=discord.Embed(description="No such guild was found.", colour=self.bot.primary_colour))
 
 
 def setup(bot):

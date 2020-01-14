@@ -100,19 +100,11 @@ class Session:
 
     async def _session_loop(self, ctx):
         while True:
-            _add = asyncio.ensure_future(
-                ctx.bot.wait_for("raw_reaction_add", check=lambda _: self.check(_)(ctx))
-            )
-            _remove = asyncio.ensure_future(
-                ctx.bot.wait_for(
-                    "raw_reaction_remove", check=lambda _: self.check(_)(ctx)
-                )
-            )
+            _add = asyncio.ensure_future(ctx.bot.wait_for("raw_reaction_add", check=lambda _: self.check(_)(ctx)))
+            _remove = asyncio.ensure_future(ctx.bot.wait_for("raw_reaction_remove", check=lambda _: self.check(_)(ctx)))
 
             done, pending = await asyncio.wait(
-                (_add, _remove),
-                return_when=asyncio.FIRST_COMPLETED,
-                timeout=self.timeout,
+                (_add, _remove), return_when=asyncio.FIRST_COMPLETED, timeout=self.timeout,
             )
 
             for future in pending:
@@ -135,21 +127,15 @@ class Session:
             emoji = self.get_emoji_as_string(payload.emoji)
             button = self.buttons[emoji]
 
-            if ctx.guild is not None and self._try_remove and button.try_remove:
+            if ctx.guild and self._try_remove and button.try_remove:
                 try:
-                    await self.page.remove_reaction(
-                        payload.emoji, ctx.guild.get_member(payload.user_id)
-                    )
+                    await self.page.remove_reaction(payload.emoji, ctx.guild.get_member(payload.user_id))
                 except discord.HTTPException:
                     pass
 
             member = ctx.guild.get_member(payload.user_id) if ctx.guild else ctx.author
 
-            if (
-                action
-                and button in self._defaults.values()
-                or button in self._default_stop.values()
-            ):
+            if action and button in self._defaults.values() or button in self._default_stop.values():
                 await button._callback(ctx, member)
             elif action and button._callback:
                 await button._callback(self, ctx, member)
@@ -196,9 +182,7 @@ class Session:
         def inner(ctx):
             if emoji not in self.buttons.keys():
                 return False
-            elif (
-                payload.user_id == ctx.bot.user.id or payload.message_id != self.page.id
-            ):
+            elif payload.user_id == ctx.bot.user.id or payload.message_id != self.page.id:
                 return False
             elif payload.user_id != ctx.author.id:
                 return False
@@ -254,27 +238,13 @@ class Paginator(Session):
     ):
         super().__init__()
         self._defaults = {
-            (0, "⏮"): Button(
-                emoji="⏮", position=0, callback=partial(self._default_indexer, "start")
-            ),
-            (1, "◀"): Button(
-                emoji="◀", position=1, callback=partial(self._default_indexer, -1)
-            ),
-            (2, "⏹"): Button(
-                emoji="⏹", position=2, callback=partial(self._default_indexer, "stop")
-            ),
-            (3, "▶"): Button(
-                emoji="▶", position=3, callback=partial(self._default_indexer, +1)
-            ),
-            (4, "⏭"): Button(
-                emoji="⏭", position=4, callback=partial(self._default_indexer, "end")
-            ),
+            (0, "⏮"): Button(emoji="⏮", position=0, callback=partial(self._default_indexer, "start")),
+            (1, "◀"): Button(emoji="◀", position=1, callback=partial(self._default_indexer, -1)),
+            (2, "⏹"): Button(emoji="⏹", position=2, callback=partial(self._default_indexer, "stop")),
+            (3, "▶"): Button(emoji="▶", position=3, callback=partial(self._default_indexer, +1)),
+            (4, "⏭"): Button(emoji="⏭", position=4, callback=partial(self._default_indexer, "end")),
         }
-        self._default_stop = {
-            (0, "⏹"): Button(
-                emoji="⏹", position=0, callback=partial(self._default_indexer, "stop")
-            )
-        }
+        self._default_stop = {(0, "⏹"): Button(emoji="⏹", position=0, callback=partial(self._default_indexer, "stop"))}
 
         self.buttons = {}
 
@@ -315,9 +285,7 @@ class Paginator(Session):
 
     async def _paginate(self, ctx: commands.Context):
         if not self.entries and not self.extra_pages:
-            raise AttributeError(
-                "You must provide at least one entry or page for pagination."
-            )  # ^^
+            raise AttributeError("You must provide at least one entry or page for pagination.")  # ^^
 
         for index, chunk in enumerate(self.entries):
             if not self.use_embed:
@@ -329,9 +297,7 @@ class Paginator(Session):
                 else:
                     embed.set_footer(
                         text=f"{embed.footer.text} (Page {index + 1}/{len(self.entries)})",
-                        icon_url=embed.footer.icon_url
-                        if embed.footer.icon_url is not None
-                        else discord.Embed.Empty,
+                        icon_url=embed.footer.icon_url if embed.footer.icon_url else discord.Embed.Empty,
                     )
                 self._pages.append(embed)
 
@@ -409,9 +375,7 @@ def button(emoji: str, *, try_remove=True, position: int = 666):
 
             return func
 
-        func.__button__ = Button(
-            emoji=emoji, callback=func, position=position, try_remove=try_remove
-        )
+        func.__button__ = Button(emoji=emoji, callback=func, position=position, try_remove=try_remove)
         return func
 
     return deco
@@ -443,9 +407,7 @@ def inverse_button(emoji: str = None, *, try_remove=False, position: int = 666):
 
             return func
 
-        func.__button__ = Button(
-            emoji=emoji, inverse_callback=func, position=position, try_remove=try_remove
-        )
+        func.__button__ = Button(emoji=emoji, inverse_callback=func, position=position, try_remove=try_remove)
         return func
 
     return deco

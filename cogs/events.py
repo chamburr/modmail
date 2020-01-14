@@ -79,11 +79,7 @@ class Events(commands.Cog):
                 self.activity_index = 0
             else:
                 self.activity_index = self.activity_index + 1
-            await self.bot.change_presence(
-                activity=discord.Game(
-                    name=self.bot.config.activity[self.activity_index]
-                )
-            )
+            await self.bot.change_presence(activity=discord.Game(name=self.bot.config.activity[self.activity_index]))
             await asyncio.sleep(12)
 
     async def bot_stats_updater(self):
@@ -91,11 +87,7 @@ class Events(commands.Cog):
             c = self.bot.conn.cursor()
             c.execute(
                 "UPDATE stats SET commands=?, messages=?, tickets=?",
-                (
-                    self.bot.total_commands,
-                    self.bot.total_messages,
-                    self.bot.total_tickets,
-                ),
+                (self.bot.total_commands, self.bot.total_messages, self.bot.total_tickets),
             )
             self.bot.conn.commit()
             await asyncio.sleep(12)
@@ -107,9 +99,7 @@ class Events(commands.Cog):
         await self.bot.wait_until_ready()
         event_channel = self.bot.get_channel(self.bot.config.event_channel)
         await event_channel.send(
-            embed=discord.Embed(
-                title="Bot Ready", colour=0x00FF00, timestamp=datetime.datetime.utcnow()
-            )
+            embed=discord.Embed(title="Bot Ready", colour=0x00FF00, timestamp=datetime.datetime.utcnow())
         )
 
     @commands.Cog.listener()
@@ -118,9 +108,7 @@ class Events(commands.Cog):
             event_channel = self.bot.get_channel(self.bot.config.event_channel)
             await event_channel.send(
                 embed=discord.Embed(
-                    title=f"Shard {shard} Ready",
-                    colour=0x00FF00,
-                    timestamp=datetime.datetime.utcnow(),
+                    title=f"Shard {shard} Ready", colour=0x00FF00, timestamp=datetime.datetime.utcnow(),
                 )
             )
         except Exception:
@@ -131,11 +119,7 @@ class Events(commands.Cog):
         try:
             event_channel = self.bot.get_channel(self.bot.config.event_channel)
             await event_channel.send(
-                embed=discord.Embed(
-                    title=f"Shard Connected",
-                    colour=0x00FF00,
-                    timestamp=datetime.datetime.utcnow(),
-                )
+                embed=discord.Embed(title=f"Shard Connected", colour=0x00FF00, timestamp=datetime.datetime.utcnow())
             )
         except Exception:
             pass
@@ -145,11 +129,7 @@ class Events(commands.Cog):
         try:
             event_channel = self.bot.get_channel(self.bot.config.event_channel)
             await event_channel.send(
-                embed=discord.Embed(
-                    title=f"Shard Disconnected",
-                    colour=0xFF0000,
-                    timestamp=datetime.datetime.utcnow(),
-                )
+                embed=discord.Embed(title=f"Shard Disconnected", colour=0xFF0000, timestamp=datetime.datetime.utcnow())
             )
         except Exception:
             pass
@@ -160,9 +140,7 @@ class Events(commands.Cog):
             event_channel = self.bot.get_channel(self.bot.config.event_channel)
             await event_channel.send(
                 embed=discord.Embed(
-                    title=f"Shard Resumed",
-                    colour=self.bot.config.primary_colour,
-                    timestamp=datetime.datetime.utcnow(),
+                    title=f"Shard Resumed", colour=self.bot.config.primary_colour, timestamp=datetime.datetime.utcnow()
                 )
             )
         except Exception:
@@ -212,19 +190,13 @@ class Events(commands.Cog):
             if permissions.send_messages is False:
                 return
             elif permissions.embed_links is False:
-                return await message.channel.send(
-                    "The Embed Links permission is needed for basic commands to work."
-                )
+                return await message.channel.send("The Embed Links permission is needed for basic commands to work.")
         if message.author.id in self.bot.banned_users:
             return await ctx.send(
-                embed=discord.Embed(
-                    description="You are banned from this bot.",
-                    colour=self.bot.error_colour,
-                )
+                embed=discord.Embed(description="You are banned from this bot.", colour=self.bot.error_colour)
             )
         if ctx.command.cog_name in ["Owner", "Admin"] and (
-            ctx.author.id in ctx.bot.config.admins
-            or ctx.author.id in ctx.bot.config.owners
+            ctx.author.id in ctx.bot.config.admins or ctx.author.id in ctx.bot.config.owners
         ):
             admin_channel = self.bot.get_channel(self.bot.config.admin_channel)
             embed = discord.Embed(
@@ -234,14 +206,10 @@ class Events(commands.Cog):
                 timestamp=datetime.datetime.utcnow(),
             )
             embed.set_author(
-                name=f"{ctx.author.name}#{ctx.author.discriminator} ({ctx.author.id})",
-                icon_url=ctx.author.avatar_url,
+                name=f"{ctx.author.name}#{ctx.author.discriminator} ({ctx.author.id})", icon_url=ctx.author.avatar_url
             )
             await admin_channel.send(embed=embed)
-        if (
-            ctx.prefix == f"<@{self.bot.user.id}> "
-            or ctx.prefix == f"<@!{self.bot.user.id}> "
-        ):
+        if ctx.prefix == f"<@{self.bot.user.id}> " or ctx.prefix == f"<@!{self.bot.user.id}> ":
             ctx.prefix = get_guild_prefix(self.bot, message)
         await self.bot.invoke(ctx)
 

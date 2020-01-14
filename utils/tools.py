@@ -11,7 +11,7 @@ def get_guild_prefix(bot, message):
         c = bot.conn.cursor()
         c.execute("SELECT prefix FROM data WHERE guild=?", (message.guild.id,))
         prefix = c.fetchone()
-        if prefix is not None and prefix[0] is not None:
+        if prefix and prefix[0]:
             bot.all_prefix[message.guild.id] = prefix[0]
             return prefix[0]
         else:
@@ -33,14 +33,18 @@ def get_premium_slots(bot, user):
         return False
     elif user in bot.config.admins or user in bot.config.owners:
         return 1000
-    elif utils.get(member.roles, id=bot.config.premium_advanced) is not None:
-        return 10
-    elif utils.get(member.roles, id=bot.config.premium_plus) is not None:
+    elif utils.get(member.roles, id=bot.config.premium5):
         return 5
-    elif utils.get(member.roles, id=bot.config.premium) is not None:
-        return 2
+    elif utils.get(member.roles, id=bot.config.premium3):
+        return 3
+    elif utils.get(member.roles, id=bot.config.premium1):
+        return 1
     else:
         return False
+
+
+def get_modmail_user(channel):
+    return int(channel.topic.replace("ModMail Channel ", "").split(" ")[0])
 
 
 def perm_format(perm):

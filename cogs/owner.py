@@ -28,17 +28,11 @@ class Owner(commands.Cog):
             self.bot.load_extension(cog)
         except Exception as e:
             await ctx.send(
-                embed=discord.Embed(
-                    description=f"ERROR: {type(e).__name__} - {e}",
-                    colour=self.bot.error_colour,
-                )
+                embed=discord.Embed(description=f"ERROR: {type(e).__name__} - {e}", colour=self.bot.error_colour)
             )
         else:
             await ctx.send(
-                embed=discord.Embed(
-                    description="Successfully loaded the module.",
-                    colour=self.bot.primary_colour,
-                )
+                embed=discord.Embed(description="Successfully loaded the module.", colour=self.bot.primary_colour)
             )
 
     @checks.is_owner()
@@ -48,17 +42,11 @@ class Owner(commands.Cog):
             self.bot.unload_extension(cog)
         except Exception as e:
             await ctx.send(
-                embed=discord.Embed(
-                    description=f"ERROR: {type(e).__name__} - {e}",
-                    colour=self.bot.error_colour,
-                )
+                embed=discord.Embed(description=f"ERROR: {type(e).__name__} - {e}", colour=self.bot.error_colour)
             )
         else:
             await ctx.send(
-                embed=discord.Embed(
-                    description="Successfully unloaded the module.",
-                    colour=self.bot.primary_colour,
-                )
+                embed=discord.Embed(description="Successfully unloaded the module.", colour=self.bot.primary_colour)
             )
 
     @checks.is_owner()
@@ -69,49 +57,33 @@ class Owner(commands.Cog):
             self.bot.load_extension(cog)
         except Exception as e:
             await ctx.send(
-                embed=discord.Embed(
-                    description=f"ERROR: {type(e).__name__} - {e}",
-                    colour=self.bot.error_colour,
-                )
+                embed=discord.Embed(description=f"ERROR: {type(e).__name__} - {e}", colour=self.bot.error_colour)
             )
         else:
             await ctx.send(
-                embed=discord.Embed(
-                    description="Successfully reloaded the module.",
-                    colour=self.bot.primary_colour,
-                )
+                embed=discord.Embed(description="Successfully reloaded the module.", colour=self.bot.primary_colour)
             )
 
     @checks.is_owner()
-    @commands.command(
-        description="Reload the configurations.", usage="reloadconf", hidden=True
-    )
+    @commands.command(description="Reload the configurations.", usage="reloadconf", hidden=True)
     async def reloadconf(self, ctx):
         try:
             importlib_reload(self.bot.config)
         except Exception as e:
             await ctx.send(
-                embed=discord.Embed(
-                    description=f"ERROR: {type(e).__name__} - {e}",
-                    colour=self.bot.error_colour,
-                )
+                embed=discord.Embed(description=f"ERROR: {type(e).__name__} - {e}", colour=self.bot.error_colour)
             )
         else:
             await ctx.send(
                 embed=discord.Embed(
-                    description="Successfully reloaded the configurations.",
-                    colour=self.bot.primary_colour,
+                    description="Successfully reloaded the configurations.", colour=self.bot.primary_colour,
                 )
             )
 
     @commands.is_owner()
     @commands.command(description="Restart the bot.", usage="restart", hidden=True)
     async def restart(self, ctx):
-        await ctx.send(
-            embed=discord.Embed(
-                description="Restarting...", colour=self.bot.primary_colour
-            )
-        )
+        await ctx.send(embed=discord.Embed(description="Restarting...", colour=self.bot.primary_colour))
         await self.bot.logout()
 
     def cleanup_code(self, content):
@@ -120,9 +92,7 @@ class Owner(commands.Cog):
         return content.strip("` \n")
 
     @checks.is_owner()
-    @commands.command(
-        name="eval", description="Evaluate a code", usage="eval <code>", hidden=True
-    )
+    @commands.command(name="eval", description="Evaluate a code", usage="eval <code>", hidden=True)
     async def _eval(self, ctx, *, body: str):
         env = {
             "bot": self.bot,
@@ -142,8 +112,7 @@ class Owner(commands.Cog):
         except Exception as e:
             return await ctx.send(
                 embed=discord.Embed(
-                    description=f"```py\n{e.__class__.__name__}: {e}\n```",
-                    colour=self.bot.primary_colour,
+                    description=f"```py\n{e.__class__.__name__}: {e}\n```", colour=self.bot.primary_colour,
                 )
             )
         func = env["func"]
@@ -154,8 +123,7 @@ class Owner(commands.Cog):
             value = stdout.getvalue()
             await ctx.send(
                 embed=discord.Embed(
-                    description=f"```py\n{value}{traceback.format_exc()}\n```",
-                    colour=self.bot.error_colour,
+                    description=f"```py\n{value}{traceback.format_exc()}\n```", colour=self.bot.error_colour,
                 )
             )
         else:
@@ -167,39 +135,24 @@ class Owner(commands.Cog):
             if ret is None:
                 if value:
                     await ctx.send(
-                        embed=discord.Embed(
-                            descrption=f"```py\n{value}\n```",
-                            colour=self.bot.primary_colour,
-                        )
+                        embed=discord.Embed(descrption=f"```py\n{value}\n```", colour=self.bot.primary_colour)
                     )
             else:
                 self._last_result = ret
                 await ctx.send(
-                    embed=discord.Embed(
-                        description=f"```py\n{value}{ret}\n```",
-                        colour=self.bot.primary_colour,
-                    )
+                    embed=discord.Embed(description=f"```py\n{value}{ret}\n```", colour=self.bot.primary_colour)
                 )
 
     @checks.is_owner()
-    @commands.command(
-        description="Execute code in bash.", usage="bash <command>", hidden=True
-    )
+    @commands.command(description="Execute code in bash.", usage="bash <command>", hidden=True)
     async def bash(self, ctx, *, command_to_run: str):
         try:
-            output = subprocess.check_output(
-                command_to_run.split(), stderr=subprocess.STDOUT
-            ).decode("utf-8")
-            await ctx.send(
-                embed=discord.Embed(
-                    description=f"```py\n{output}\n```", colour=self.bot.primary_colour
-                )
-            )
+            output = subprocess.check_output(command_to_run.split(), stderr=subprocess.STDOUT).decode("utf-8")
+            await ctx.send(embed=discord.Embed(description=f"```py\n{output}\n```", colour=self.bot.primary_colour))
         except Exception as error:
             await ctx.send(
                 embed=discord.Embed(
-                    description=f"```py\n{error.__class__.__name__}: {error}\n```",
-                    colour=self.bot.error_colour,
+                    description=f"```py\n{error.__class__.__name__}: {error}\n```", colour=self.bot.error_colour,
                 )
             )
 
@@ -213,29 +166,16 @@ class Owner(commands.Cog):
             self.bot.conn.commit()
         except Exception:
             return await ctx.send(
-                embed=discord.Embed(
-                    description=f"```py\n{traceback.format_exc()}```",
-                    colour=self.bot.error_colour,
-                )
+                embed=discord.Embed(description=f"```py\n{traceback.format_exc()}```", colour=self.bot.error_colour)
             )
         if res:
-            await ctx.send(
-                embed=discord.Embed(
-                    description=f"```{res}```", colour=self.bot.primary_colour
-                )
-            )
+            await ctx.send(embed=discord.Embed(description=f"```{res}```", colour=self.bot.primary_colour))
         else:
-            await ctx.send(
-                embed=discord.Embed(
-                    description="No results to fetch.", colour=self.bot.primary_colour
-                )
-            )
+            await ctx.send(embed=discord.Embed(description="No results to fetch.", colour=self.bot.primary_colour))
 
     @checks.is_owner()
     @commands.command(
-        description="Get the bot logs. Default to 10 lines.",
-        usage="botlogs [lines]",
-        hideen=True,
+        description="Get the bot logs. Default to 10 lines.", usage="botlogs [lines]", hideen=True,
     )
     async def botlogs(self, ctx, *, lines: int = 10):
         with open("discord.log", "r") as file:
@@ -244,17 +184,10 @@ class Owner(commands.Cog):
             lines = len(content)
         content = "\n".join(content[(len(content) - lines) :])
         try:
-            await ctx.send(
-                embed=discord.Embed(
-                    description=f"```{content}```", colour=self.bot.primary_colour
-                )
-            )
+            await ctx.send(embed=discord.Embed(description=f"```{content}```", colour=self.bot.primary_colour))
         except discord.HTTPException:
             await ctx.send(
-                embed=discord.Embed(
-                    description="The message is too long to be sent.",
-                    colour=self.bot.error_colour,
-                )
+                embed=discord.Embed(description="The message is too long to be sent.", colour=self.bot.error_colour)
             )
 
     @checks.is_owner()
@@ -263,36 +196,43 @@ class Owner(commands.Cog):
         usage="invoke [channel] <user> <command>",
         hidden=True,
     )
-    async def invoke(
-        self,
-        ctx,
-        channel: Optional[discord.TextChannel],
-        who: discord.User,
-        *,
-        command: str,
-    ):
+    async def invoke(self, ctx, channel: Optional[discord.TextChannel], user: discord.User, *, command: str):
         msg = copy.copy(ctx.message)
         channel = channel or ctx.channel
         msg.channel = channel
-        msg.author = channel.guild.get_member(who.id) or who
+        msg.author = channel.guild.get_member(user.id) or user
         msg.content = ctx.prefix + command
         new_ctx = await self.bot.get_context(msg, cls=type(ctx))
         await self.bot.invoke(new_ctx)
 
     @checks.is_owner()
     @commands.command(
-        description="Make me say something.",
-        usage="echo <message>",
-        rest_is_raw=True,
-        hidden=True,
+        description="Remove a user's premium.", usage="wipepremium <user>", hidden=True,
+    )
+    async def wipepremium(self, ctx, *, user: discord.User):
+        c = self.bot.conn.cursor()
+        c.execute("SELECT * FROM premium WHERE user=?", (user.id,))
+        res = c.fetchone()
+        for guild in res[1].split(","):
+            c.execute("UPDATE data SET welcome=?, goodbye=?, loggingplus=? WHERE guild=?", (None, None, None, guild))
+            self.bot.conn.commit()
+        c.execute("DELETE FROM premium WHERE user=?", (user.id,))
+        self.bot.conn.commit()
+        await ctx.send(
+            embed=discord.Embed(
+                description="Successfully removed that user's premium.", colour=self.bot.primary_colour,
+            )
+        )
+
+    @checks.is_owner()
+    @commands.command(
+        description="Make me say something.", usage="echo <message>", rest_is_raw=True, hidden=True,
     )
     async def echo(self, ctx, *, content):
         await ctx.send(content)
 
     @checks.is_owner()
-    @commands.command(
-        description="Ban a user from the bot", usage="banuser <user>", hidden=True
-    )
+    @commands.command(description="Ban a user from the bot", usage="banuser <user>", hidden=True)
     async def banuser(self, ctx, *, user: discord.User):
         c = self.bot.conn.cursor()
         c.execute("SELECT * FROM banlist WHERE id=? AND type=?", (user.id, "user"))
@@ -303,22 +243,16 @@ class Owner(commands.Cog):
             self.bot.banned_users.append(user.id)
             await ctx.send(
                 embed=discord.Embed(
-                    description="Successfully banned that user from the bot.",
-                    colour=self.bot.primary_colour,
+                    description="Successfully banned that user from the bot.", colour=self.bot.primary_colour,
                 )
             )
         else:
             await ctx.send(
-                embed=discord.Embed(
-                    description="That user is already banned.",
-                    colour=self.bot.error_colour,
-                )
+                embed=discord.Embed(description="That user is already banned.", colour=self.bot.error_colour)
             )
 
     @checks.is_owner()
-    @commands.command(
-        description="Unban a user from the bot", usage="unbanuser <user>", hidden=True
-    )
+    @commands.command(description="Unban a user from the bot", usage="unbanuser <user>", hidden=True)
     async def unbanuser(self, ctx, *, user: discord.User):
         c = self.bot.conn.cursor()
         c.execute("SELECT * FROM banlist WHERE id=? AND type=?", (user.id, "user"))
@@ -329,53 +263,38 @@ class Owner(commands.Cog):
             self.bot.banned_users.remove(user.id)
             await ctx.send(
                 embed=discord.Embed(
-                    description="Successfully unbanned that user from the bot.",
-                    colour=self.bot.primary_colour,
+                    description="Successfully unbanned that user from the bot.", colour=self.bot.primary_colour,
                 )
             )
         else:
             await ctx.send(
-                embed=discord.Embed(
-                    description="That user is not already banned.",
-                    colour=self.bot.error_colour,
-                )
+                embed=discord.Embed(description="That user is not already banned.", colour=self.bot.error_colour)
             )
 
     @checks.is_owner()
     @commands.command(
-        description="Make the bot leave a server.",
-        usage="leaveserver <server ID>",
-        hidden=True,
+        description="Make the bot leave a server.", usage="leaveserver <server ID>", hidden=True,
     )
     async def leaveserver(self, ctx, *, guild: int):
         guild = self.bot.get_guild(guild)
         if not guild:
             return await ctx.send(
-                embed=discord.Embed(
-                    description="That server is not found", colour=self.bot.error_colour
-                )
+                embed=discord.Embed(description="That server is not found", colour=self.bot.error_colour)
             )
         else:
             await guild.leave()
             await ctx.send(
-                embed=discord.Embed(
-                    description="The bot has left that server.",
-                    colour=self.bot.primary_colour,
-                )
+                embed=discord.Embed(description="The bot has left that server.", colour=self.bot.primary_colour)
             )
 
     @checks.is_owner()
     @commands.command(
-        description="Ban a server from the bot",
-        usage="banserver <server ID>",
-        hidden=True,
+        description="Ban a server from the bot", usage="banserver <server ID>", hidden=True,
     )
     async def banserver(self, ctx, *, guild: int):
         if not self.bot.get_guild(guild):
             return await ctx.send(
-                embed=discord.Embed(
-                    description="That server is not found", colour=self.bot.error_colour
-                )
+                embed=discord.Embed(description="That server is not found", colour=self.bot.error_colour)
             )
         c = self.bot.conn.cursor()
         c.execute("SELECT * FROM banlist WHERE id=? AND type=?", (guild, "guild"))
@@ -386,23 +305,17 @@ class Owner(commands.Cog):
             self.bot.banned_guilds.append(guild)
             await ctx.send(
                 embed=discord.Embed(
-                    description="Successfully banned that server from the bot.",
-                    colour=self.bot.primary_colour,
+                    description="Successfully banned that server from the bot.", colour=self.bot.primary_colour,
                 )
             )
         else:
             await ctx.send(
-                embed=discord.Embed(
-                    description="That server is already banned.",
-                    colour=self.bot.error_colour,
-                )
+                embed=discord.Embed(description="That server is already banned.", colour=self.bot.error_colour)
             )
 
     @checks.is_owner()
     @commands.command(
-        description="Unban a server from the bot",
-        usage="unbanserver <server ID>",
-        hidden=True,
+        description="Unban a server from the bot", usage="unbanserver <server ID>", hidden=True,
     )
     async def unbanserver(self, ctx, *, guild: int):
         c = self.bot.conn.cursor()
@@ -414,16 +327,12 @@ class Owner(commands.Cog):
             self.bot.banned_guilds.remove(guild)
             await ctx.send(
                 embed=discord.Embed(
-                    description="Successfully unbanned that server from the bot.",
-                    colour=self.bot.primary_colour,
+                    description="Successfully unbanned that server from the bot.", colour=self.bot.primary_colour,
                 )
             )
         else:
             await ctx.send(
-                embed=discord.Embed(
-                    description="That server is not already banned.",
-                    colour=self.bot.error_colour,
-                )
+                embed=discord.Embed(description="That server is not already banned.", colour=self.bot.error_colour)
             )
 
 

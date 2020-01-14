@@ -10,9 +10,7 @@ class Premium(commands.Cog):
         self.bot = bot
 
     @commands.command(
-        description="Get some information about ModMail premium.",
-        usage="premium",
-        aliases=["donate", "patron"],
+        description="Get some information about ModMail premium.", usage="premium", aliases=["donate", "patron"],
     )
     async def premium(self, ctx):
         embed = discord.Embed(
@@ -30,21 +28,13 @@ class Premium(commands.Cog):
         )
         embed.add_field(
             name="Get Premium",
-            value="We use Upgrade.Chat to manage premium. You will need to join our support server with the link "
-            f"in `{ctx.prefix}support`. Then type `donate` in the support server to get the link to buy premium.",
-            inline=False,
-        )
-        embed.add_field(
-            name="Thank You",
-            value="I (CHamburr#2591) would like to show my utmost appreciation to you in supporting the bot!",
+            value="Please join our support server and type `donate` over there for more information.",
             inline=False,
         )
         await ctx.send(embed=embed)
 
     @checks.is_premium()
-    @commands.command(
-        description="Get the premium status of this server.", usage="premiumstatus"
-    )
+    @commands.command(description="Get the premium status of this server.", usage="premiumstatus")
     async def premiumstatus(self, ctx):
         c = self.bot.conn.cursor()
         c.execute("SELECT * FROM premium")
@@ -76,8 +66,7 @@ class Premium(commands.Cog):
         if res[0] is None:
             return await ctx.send(
                 embed=discord.Embed(
-                    description="You did not assign premium to any server currently.",
-                    colour=self.bot.primary_colour,
+                    description="You did not assign premium to any server currently.", colour=self.bot.primary_colour,
                 )
             )
         servers = res[0].split(",")
@@ -87,21 +76,14 @@ class Premium(commands.Cog):
                 to_send += f"\nUnknown server `{server}`"
             else:
                 to_send += f"\n{self.bot.get_guild(int(server)).name} `{server}`"
-        await ctx.send(
-            embed=discord.Embed(description=to_send, colour=self.bot.primary_colour)
-        )
+        await ctx.send(embed=discord.Embed(description=to_send, colour=self.bot.primary_colour))
 
     @checks.is_patron()
-    @commands.command(
-        description="Assign premium slot to a server.", usage="premiumassign <server>"
-    )
+    @commands.command(description="Assign premium slot to a server.", usage="premiumassign <server>")
     async def premiumassign(self, ctx, *, guild: int):
         if self.bot.get_guild(guild) is None:
             return await ctx.send(
-                embed=discord.Embed(
-                    description="The server ID you provided is invalid.",
-                    colour=self.bot.error_colour,
-                )
+                embed=discord.Embed(description="The server ID you provided is invalid.", colour=self.bot.error_colour)
             )
         c = self.bot.conn.cursor()
         c.execute("SELECT server FROM premium")
@@ -115,10 +97,7 @@ class Premium(commands.Cog):
                 all_premium.append(server)
         if str(guild) in all_premium:
             return await ctx.send(
-                embed=discord.Embed(
-                    description="That server already has premium.",
-                    colour=self.bot.error_colour,
-                )
+                embed=discord.Embed(description="That server already has premium.", colour=self.bot.error_colour)
             )
         slots = tools.get_premium_slots(self.bot, ctx.author.id)
         c.execute("SELECT server FROM premium WHERE user=?", (ctx.author.id,))
@@ -134,21 +113,13 @@ class Premium(commands.Cog):
         servers = [] if servers[0] is None else servers[0].split(",")
         servers.append(str(guild))
         c.execute(
-            "UPDATE premium SET server=? WHERE user=?",
-            (",".join(servers), ctx.author.id),
+            "UPDATE premium SET server=? WHERE user=?", (",".join(servers), ctx.author.id),
         )
         self.bot.conn.commit()
-        await ctx.send(
-            embed=discord.Embed(
-                description="That server now has premium.",
-                colour=self.bot.primary_colour,
-            )
-        )
+        await ctx.send(embed=discord.Embed(description="That server now has premium.", colour=self.bot.primary_colour))
 
     @checks.is_patron()
-    @commands.command(
-        description="Remove premium slot to a server.", usage="premiumremove <server>"
-    )
+    @commands.command(description="Remove premium slot to a server.", usage="premiumremove <server>")
     async def premiumremove(self, ctx, *, guild: int):
         c = self.bot.conn.cursor()
         c.execute("SELECT server FROM premium WHERE user=?", (ctx.author.id,))
@@ -162,16 +133,10 @@ class Premium(commands.Cog):
         else:
             servers = ",".join(servers)
         c.execute("UPDATE premium SET server=? WHERE user=?", (servers, ctx.author.id))
-        c.execute(
-            "UPDATE data SET welcome=?, goodbye=?, loggingplus=? WHERE guild=?",
-            (None, None, None, guild),
-        )
+        c.execute("UPDATE data SET welcome=?, goodbye=?, loggingplus=? WHERE guild=?", (None, None, None, guild))
         self.bot.conn.commit()
         await ctx.send(
-            embed=discord.Embed(
-                description="That server no longer has premium.",
-                colour=self.bot.primary_colour,
-            )
+            embed=discord.Embed(description="That server no longer has premium.", colour=self.bot.primary_colour)
         )
 
 

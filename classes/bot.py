@@ -8,7 +8,6 @@ import sqlite3
 from discord.ext import commands
 
 import config
-import utils
 
 conn = sqlite3.connect("data.sqlite")
 log = logging.getLogger(__name__)
@@ -52,10 +51,6 @@ class ModMail(commands.AutoShardedBot):
     def error_colour(self):
         return config.error_colour
 
-    @property
-    def utils(self):
-        return utils
-
     def get_data(self, guild):
         c = self.conn.cursor()
         c.execute("SELECT * FROM data WHERE guild=?", (guild,))
@@ -84,7 +79,7 @@ class ModMail(commands.AutoShardedBot):
         res = c.fetchall()
         for row in res:
             self.all_prefix[row[0]] = row[1]
-            if row[2] is not None:
+            if row[2]:
                 self.all_category.append(row[2])
         c.execute("SELECT id, type FROM banlist")
         res = c.fetchall()
