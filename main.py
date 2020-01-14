@@ -31,6 +31,7 @@ bot = ModMail(
     description="The one and only public ModMail Discord bot.",
     help_command=None,
     owner_id=config.owner,
+    heartbeat_timeout=300,
 )
 
 c = bot.conn.cursor()
