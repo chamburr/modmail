@@ -35,19 +35,19 @@ activity = [
     # f"🎉 5000 Servers 🎉 | {default_prefix}help",
 ]
 
-# The very very main bot owner
+# The main bot owner
 owner = 446290930723717120
 
 # Bot owners that have access to owner commands
 owners = [
     446290930723717120,  # CHamburr#2591
-    283862626520399872,  # lieuwe_berg#7122
-    415416051170541588,  # Mare#0001
 ]
 
 # Bot admins that have access to admin commands
 admins = [
     145673712127967232,  # OfficialAzure#0001
+    283862626520399872,  # lieuwe_berg#7122
+    415416051170541588,  # Mare#0001
 ]
 
 # Cogs to load on startup
