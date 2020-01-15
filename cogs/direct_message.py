@@ -49,6 +49,7 @@ class DirectMessageEvents(commands.Cog, name="Direct Message"):
             channel for channel in guild.text_channels if is_modmail_channel2(self.bot, channel, message.author.id)
         ]
         channel = None
+        new_ticket = False
         if len(channels) > 0:
             channel = channels[0]
         if not channel:
@@ -64,6 +65,7 @@ class DirectMessageEvents(commands.Cog, name="Direct Message"):
                 channel = await category.create_text_channel(
                     name, topic=f"ModMail Channel {message.author.id} (Please do not change this)"
                 )
+                new_ticket = True
                 log_channel = guild.get_channel(data[4])
                 if log_channel:
                     try:
@@ -95,7 +97,7 @@ class DirectMessageEvents(commands.Cog, name="Direct Message"):
                     )
                 )
         try:
-            if not channel:
+            if new_ticket is True:
                 self.guild = guild
                 prefix = tools.get_guild_prefix(self.bot, self)
                 embed = discord.Embed(
@@ -219,7 +221,7 @@ class DirectMessageEvents(commands.Cog, name="Direct Message"):
         chosen = -1
         try:
             while chosen < 0:
-                reaction, user = await self.bot.wait_for("reaction_add", check=reaction_check, timeout=60)
+                reaction, _ = await self.bot.wait_for("reaction_add", check=reaction_check, timeout=60)
                 if str(reaction) == "◀":
                     if page_index != 0:
                         page_index = page_index - 1
@@ -299,7 +301,7 @@ class DirectMessageEvents(commands.Cog, name="Direct Message"):
                 )
 
             try:
-                reaction, user = await self.bot.wait_for("reaction_add", check=reaction_check, timeout=60)
+                reaction, _ = await self.bot.wait_for("reaction_add", check=reaction_check, timeout=60)
             except asyncio.TimeoutError:
                 await self.remove_reactions(msg)
                 return await msg.edit(

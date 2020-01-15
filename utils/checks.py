@@ -127,7 +127,7 @@ def is_mod():
         if roles:
             for role in roles.split(","):
                 role = ctx.guild.get_role(role)
-                if role == None:
+                if role is None:
                     continue
                 if role in ctx.author.roles:
                     has_role = True
