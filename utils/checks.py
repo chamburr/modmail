@@ -126,7 +126,7 @@ def is_mod():
         roles = ctx.bot.get_data(ctx.guild.id)[3]
         if roles:
             for role in roles.split(","):
-                role = ctx.guild.get_role(role)
+                role = ctx.guild.get_role(int(role))
                 if role is None:
                     continue
                 if role in ctx.author.roles:
