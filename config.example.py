@@ -4,6 +4,9 @@ token = ""
 # DiscordBotList token
 dbl_token = ""
 
+# Discord Bots token
+dbots_token = ""
+
 # Bots on Discord token
 bod_token = ""
 
