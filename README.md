@@ -6,74 +6,25 @@
 
 A feature-rich Discord bot for easy communication between server staff and users.
 
-Check out [modmail.netlify.com](https://modmail.netlify.com) or visit our [Discord server](https://discord.gg/wjWJwJB) to learn more.
+Check out our [website](https://modmail.netlify.com) or visit our [Discord server](https://discord.gg/wjWJwJB) to learn more.
 
 ## Contributing
 
-First off, thanks for taking your time to contribute! There are many ways you can contribute to this project, for example:
+Want to contribute? Awesome! There are many ways you can contribute to this project, for example:
 
 - [Submitting bugs and feature requests](https://github.com/CHamburr/modmail/issues)
 - [Reviewing changes](https://github.com/CHamburr/modmail/issues)
-- [Sponsoring the project](https://discord.gg/wjWJwJB) (Please let CHamburr#2591 know on Discord)
+- Sponsoring the project (Please let CHamburr#2591 know on Discord)
 
-If you wish to help us fix issues or contribute directly to the code base, please see the [contributing guidelines](https://github.com/CHamburr/modmail/blob/master/CONTRIBUTING.md). You can also find the self-hosting guide below.
+If you wish to help us fix issues or contribute directly to the code base, please see [contributing document](https://github.com/CHamburr/modmail/blob/master/CONTRIBUTING.md) for development and self-hosting guidelines.
 
-## Self-Hosting
+## Issue Tracker
 
-You can run your own instance of ModMail only for testing purposes. This guide requires you to have some basic knowledge about command line, Python, and Discord bots.
+The issue tracker here is only for bug reports and feature requests. Please do not use it to ask a question. Instead, ask it on our [Discord server](https://discord.gg/wjWJwJB) or message CHamburr#2591 directly.
 
-### Prerequisites
+## Code of Conduct
 
-In order to run ModMail, you will need to install the following tools.
-
-- [Git](https://git-scm.com)
-- [Python 3](https://www.python.org/downloads/)
-
-### Getting the Sources
-
-Please fork this repository so that you can make pull requests. Then, clone your fork.
-
-```sh
-git clone https://github.com/<github-username>/modmail.git
-```
-
-Sometimes you may want to merge changes from the upstream repository to your fork.
-
-```sh
-git checkout master
-git pull https://github.com/CHamburr/modmail.git master
-```
-
-### Preparing to Run
-
-#### Configuration
-
-Configuration is done through a `config.py` file. You should make a copy of `config.example.py` and rename it to `config.py`. All fields must be filled in, except for bot list tokens and the Sentry URL only if you have `testing` set to `False`.
-
-#### Installing Modules
-
-ModMail utilises [discord.py](https://github.com/Rapptz/discord.py) and several other modules to function properly. The list of modules can be found in `requirements.txt` and you can install them with the following command.
-
-```sh
-pip3 install -r requirements.txt
-```
-
-### Running the Bot
-
-Congratulations! You have set up everything and you can finally have the bot up and running. Use the following command to run.
-
-```sh
-py main.py
-```
-
-### Having Issues?
-
-If you meet any issues while running the bot, please feel free to ask in our Discord server! However, before you do so, you should definitely ask your best friend Google.
-
-## Links
-
-- [Website](https://modmail.netlify.com)
-- [Discord Server](https://discord.gg/wjWJwJB)
+This project is governed by [Contributor Covenant Code of Conduct](https://github.com/CHamburr/modmail/blob/master/CODE_OF_CONDUCT.md). By participating, you are expected to uphold this code.
 
 ## License
 
