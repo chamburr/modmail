@@ -13,7 +13,7 @@ bot.on("message", async message => {
     if (["donate", "premium", "purchase"].includes(message.content.toLowerCase())) {
         let embed = new Discord.RichEmbed()
         embed.setTitle("Donation Link");
-        embed.setDescription(`To purchase ModMail Premium, please go to [this link](${"https://https://donatebot.io/checkout/576016832956334080?buyer=" + message.author.id}). Thank you.`);
+        embed.setDescription(`To purchase ModMail Premium, please go to [this link](${"https://donatebot.io/checkout/576016832956334080?buyer=" + message.author.id}). Thank you.`);
         embed.setColor(0x1E90FF);
         embed.setFooter(`This link is only meant for ${message.author.tag}`);
         message.channel.send(embed);
