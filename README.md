@@ -6,7 +6,11 @@
 
 A feature-rich Discord bot for easy communication between server staff and users.
 
-Check out our [website](https://modmail.netlify.com) or visit our [Discord server](https://discord.gg/wjWJwJB) to learn more.
+![Screenshot](https://modmail.netlify.com/images/screenshot.png)
+
+A new channel is created whenever a user messages the bot, and the channel will serve as a shared inbox for seamless communication between staff and the user.
+
+To learn more, check out our [website](https://modmail.netlify.com) or visit our [Discord server](https://discord.gg/wjWJwJB).
 
 ## Contributing
 
@@ -17,8 +21,6 @@ Want to contribute? Awesome! There are many ways you can contribute to this proj
 - Sponsoring the project (Please let CHamburr#2591 know on Discord)
 
 If you wish to help us fix issues or contribute directly to the code base, please see [contributing document](https://github.com/CHamburr/modmail/blob/master/CONTRIBUTING.md) for development and self-hosting guidelines.
-
-## Issue Tracker
 
 The issue tracker here is only for bug reports and feature requests. Please do not use it to ask a question. Instead, ask it on our [Discord server](https://discord.gg/wjWJwJB) or message CHamburr#2591 directly.
 
