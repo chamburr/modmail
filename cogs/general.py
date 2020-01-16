@@ -11,7 +11,7 @@ class General(commands.Cog):
 
     @commands.bot_has_permissions(add_reactions=True)
     @commands.command(
-        description="Shows the help menu of all commands, or a specific command when specified.",
+        description="Shows the help menu or information for a specific command when specified.",
         usage="help [command]",
         aliases=["h", "commands"],
     )
@@ -164,7 +164,7 @@ class General(commands.Cog):
         await ctx.send(embed=embed)
 
     @commands.command(
-        description="Check out all the amazing stuff we have partnered with.", usage="partners", aliases=["partner"],
+        description="See the amazing stuff we have partnered with.", usage="partners", aliases=["partner"],
     )
     async def partners(self, ctx):
         all_pages = []
@@ -241,7 +241,7 @@ class General(commands.Cog):
             )
         )
 
-    @commands.command(description="Get the link to vote for ModMail", usage="vote")
+    @commands.command(description="Get the link to vote for ModMail.", usage="vote")
     async def vote(self, ctx):
         await ctx.send(
             embed=discord.Embed(

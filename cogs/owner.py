@@ -93,7 +93,7 @@ class Owner(commands.Cog):
         await self.bot.logout()
 
     @checks.is_owner()
-    @commands.command(name="eval", description="Evaluate a code", usage="eval <code>", hidden=True)
+    @commands.command(name="eval", description="Evaluate code", usage="eval <code>", hidden=True)
     async def _eval(self, ctx, *, body: str):
         env = {
             "bot": self.bot,

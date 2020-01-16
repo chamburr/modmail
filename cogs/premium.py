@@ -119,7 +119,7 @@ class Premium(commands.Cog):
         await ctx.send(embed=discord.Embed(description="That server now has premium.", colour=self.bot.primary_colour))
 
     @checks.is_patron()
-    @commands.command(description="Remove premium slot to a server.", usage="premiumremove <server>")
+    @commands.command(description="Remove premium slot from a server.", usage="premiumremove <server>")
     async def premiumremove(self, ctx, *, guild: int):
         c = self.bot.conn.cursor()
         c.execute("SELECT server FROM premium WHERE user=?", (ctx.author.id,))

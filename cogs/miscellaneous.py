@@ -28,7 +28,7 @@ class Miscellaneous(commands.Cog):
     @commands.has_permissions(administrator=True)
     @commands.guild_only()
     @commands.command(
-        description="Shows a member's permission in a channel when specified.",
+        description="Show a member's permission in a channel when specified.",
         usage="permissions [member] [channel]",
         aliases=["perms"],
     )
@@ -41,7 +41,7 @@ class Miscellaneous(commands.Cog):
     @commands.has_permissions(administrator=True)
     @commands.guild_only()
     @commands.command(
-        description="Shows the bot's permissions in the current or specified channel.",
+        description="Show the bot's permissions in the current or specified channel.",
         usage="botpermissions [channel]",
         aliases=["botperms"],
     )
@@ -52,7 +52,7 @@ class Miscellaneous(commands.Cog):
 
     @commands.guild_only()
     @commands.command(
-        description="Shows some information about yourself or the member you specified.",
+        description="Show some information about yourself or the member specified.",
         usage="userinfo [member]",
         aliases=["whois"],
     )

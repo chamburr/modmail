@@ -353,7 +353,7 @@ class Configuration(commands.Cog):
     @commands.has_permissions(administrator=True)
     @commands.guild_only()
     @commands.command(
-        description="Toggle advanced logging which includes all messages.", usage="loggingplus",
+        description="Toggle advanced logging which includes messages sent and received.", usage="loggingplus",
     )
     async def loggingplus(self, ctx):
         data = self.bot.get_data(ctx.guild.id)

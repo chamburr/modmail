@@ -17,7 +17,7 @@ class Main(commands.Cog):
     @checks.in_database()
     @checks.is_mod()
     @commands.guild_only()
-    @commands.command(description="Anonymously reply to the message.", usage="areply <message>")
+    @commands.command(description="Reply to the ticket anonymously.", usage="areply <message>")
     async def areply(self, ctx, *, message):
         modmail = ModMailEvents(self.bot)
         await modmail.send_mail_mod(ctx.message, ctx.prefix, True, message)
@@ -123,7 +123,7 @@ class Main(commands.Cog):
     @checks.is_mod()
     @commands.bot_has_permissions(manage_channels=True)
     @commands.guild_only()
-    @commands.command(description="Anonymously close the channel.", usage="aclose [reason]")
+    @commands.command(description="Close the channel anonymously.", usage="aclose [reason]")
     async def aclose(self, ctx, *, reason: str = None):
         await self.close_channel(ctx, reason, True)
 
@@ -155,7 +155,7 @@ class Main(commands.Cog):
     @checks.is_mod()
     @commands.bot_has_permissions(manage_channels=True)
     @commands.guild_only()
-    @commands.command(description="Anonymously close all of the channel.", usage="acloseall [reason]")
+    @commands.command(description="Close all of the channel anonymously.", usage="acloseall [reason]")
     async def acloseall(self, ctx, *, reason: str = None):
         category = self.bot.get_data(ctx.guild.id)[2]
         category = ctx.guild.get_channel(category)
@@ -179,7 +179,7 @@ class Main(commands.Cog):
     @checks.is_mod()
     @commands.guild_only()
     @commands.command(
-        description="Blacklist a user from sending messages to this server.",
+        description="Blacklist a user from creating tickers.",
         usage="blacklist <member>",
         aliases=["block"],
     )
@@ -206,7 +206,7 @@ class Main(commands.Cog):
     @checks.is_mod()
     @commands.guild_only()
     @commands.command(
-        description="Whitelist a user from sending messages to this server.",
+        description="Whitelist a user from creating tickets.",
         usage="whitelist <member>",
         aliases=["unblock"],
     )
