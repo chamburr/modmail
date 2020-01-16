@@ -116,9 +116,10 @@ class Configuration(commands.Cog):
         self.bot.conn.commit()
         await m.edit(
             embed=discord.Embed(
-                description="Everything has been set up! Next up, you can give your staff access to ModMail "
-                f"commands using `{ctx.prefix}accessrole <roles>`, or test it out by direct messaging the "
-                f"the bot. Check out more information and configurations with `{ctx.prefix}help`.",
+                description="Everything has been set up! Next up, you can give your staff access to ModMail commands"
+                f"using `{ctx.prefix}accessrole [roles]` (by default, any user with the administrator permission has "
+                "full access). You can also test things out by direct messaging me. Check out more information and "
+                f"configurations with `{ctx.prefix}help`.",
                 colour=self.bot.primary_colour,
             )
         )

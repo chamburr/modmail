@@ -255,7 +255,7 @@ class General(commands.Cog):
     async def usagestats(self, ctx):
         embed = discord.Embed(
             title="Usage Statistics",
-            description="Bot usage statistics since 12 June 2019.",
+            description="Bot usage statistics since 1 January 2020.",
             colour=self.bot.primary_colour,
         )
         embed.add_field(name="Total commands", value=self.bot.total_commands, inline=False)
