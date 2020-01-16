@@ -3,7 +3,6 @@ import sys
 import traceback
 import logging
 import datetime
-import discord
 import sqlite3
 from discord.ext import commands
 

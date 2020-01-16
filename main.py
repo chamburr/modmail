@@ -1,6 +1,5 @@
 import asyncio
 import logging
-import sqlite3
 import sentry_sdk
 from discord.ext import commands
 

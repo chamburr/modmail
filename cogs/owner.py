@@ -16,6 +16,12 @@ from utils import checks
 log = logging.getLogger(__name__)
 
 
+def cleanup_code(content):
+        if content.startswith("```") and content.endswith("```"):
+            return "\n".join(content.split("\n")[1:-1])
+        return content.strip("` \n")
+
+
 class Owner(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
@@ -86,11 +92,6 @@ class Owner(commands.Cog):
         await ctx.send(embed=discord.Embed(description="Restarting...", colour=self.bot.primary_colour))
         await self.bot.logout()
 
-    def cleanup_code(self, content):
-        if content.startswith("```") and content.endswith("```"):
-            return "\n".join(content.split("\n")[1:-1])
-        return content.strip("` \n")
-
     @checks.is_owner()
     @commands.command(name="eval", description="Evaluate a code", usage="eval <code>", hidden=True)
     async def _eval(self, ctx, *, body: str):
@@ -104,7 +105,7 @@ class Owner(commands.Cog):
             "_": self._last_result,
         }
         env.update(globals())
-        body = self.cleanup_code(body)
+        body = cleanup_code(body)
         stdout = io.StringIO()
         to_compile = f'async def func():\n{textwrap.indent(body, "  ")}'
         try:

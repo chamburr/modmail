@@ -1,7 +1,6 @@
 import discord
 import logging
 import traceback
-import sys
 from discord.ext import commands
 
 from utils.tools import perm_format

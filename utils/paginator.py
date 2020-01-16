@@ -3,7 +3,6 @@ import discord
 import inspect
 from discord.ext import commands
 from functools import partial
-from typing import Union
 
 __all__ = ("Session", "Paginator", "button", "inverse_button")
 
@@ -18,6 +17,10 @@ class Button:
         self.emoji = kwargs.get("emoji")
         self.position = kwargs.get("position")
         self.try_remove = kwargs.get("try_remove", True)
+
+
+def get_emoji_as_string(emoji):
+        return f'{emoji.name}{":" + str(emoji.id) if emoji.is_custom_emoji() else ""}'
 
 
 class Session:
@@ -124,7 +127,7 @@ class Session:
             except Exception:
                 return ctx.bot.loop.create_task(self.cancel(ctx))
 
-            emoji = self.get_emoji_as_string(payload.emoji)
+            emoji = get_emoji_as_string(payload.emoji)
             button = self.buttons[emoji]
 
             if ctx.guild and self._try_remove and button.try_remove:
@@ -172,12 +175,9 @@ class Session:
             except (discord.NotFound, discord.Forbidden):
                 pass
 
-    def get_emoji_as_string(self, emoji):
-        return f'{emoji.name}{":" + str(emoji.id) if emoji.is_custom_emoji() else ""}'
-
     def check(self, payload):
         """Check which takes in a raw_reaction payload. This may be overwritten."""
-        emoji = self.get_emoji_as_string(payload.emoji)
+        emoji = get_emoji_as_string(payload.emoji)
 
         def inner(ctx):
             if emoji not in self.buttons.keys():
@@ -205,7 +205,7 @@ class Paginator(Session):
         The formatting prefix to apply to our entries.
     suffix: Optional[str]
         The formatting suffix to apply to our entries.
-    format: Optional[str]
+    _format: Optional[str]
         The format string to wrap around our entries. This should be the first half of the format only,
         E.g to wrap **Entry**, we would only provide **.
     colour: discord.Colour
@@ -230,7 +230,7 @@ class Paginator(Session):
         extra_pages: list = None,
         prefix: str = "",
         suffix: str = "",
-        format: str = "",
+        _format: str = "",
         use_defaults: bool = True,
         embed: bool = True,
         joiner: str = "\n",
@@ -261,7 +261,7 @@ class Paginator(Session):
 
         self.prefix = prefix
         self.suffix = suffix
-        self.format = format
+        self.format = _format
         self.joiner = joiner
         self.use_defaults = use_defaults
         self.use_embed = embed
