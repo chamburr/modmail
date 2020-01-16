@@ -17,12 +17,13 @@ To learn more, check out our [website](https://modmail.netlify.com) or visit our
 Want to contribute? Awesome! There are many ways you can contribute to this project, for example:
 
 - [Submitting bugs and feature requests](https://github.com/CHamburr/modmail/issues)
-- [Reviewing changes](https://github.com/CHamburr/modmail/issues)
+- [Reviewing changes](https://github.com/CHamburr/modmail/pulls)
+- [Contribute directly to the code base](https://github.com/CHamburr/modmail/pulls)
 - Sponsoring the project (Please let CHamburr#2591 know on Discord)
 
-If you wish to help us fix issues or contribute directly to the code base, please see [contributing guidelines](https://github.com/CHamburr/modmail/blob/master/CONTRIBUTING.md). You can also find a self-hosting guide below.
+For more information on contributing, please see the [contributing guidelines](https://github.com/CHamburr/modmail/blob/master/CONTRIBUTING.md).
 
-The issue tracker here is only for bug reports and feature requests. Please do not use it to ask a question. Instead, ask it on our [Discord server](https://discord.gg/wjWJwJB) or message CHamburr#2591 directly.
+The issue tracker here is only for bug reports and feature requests. Please do not use it to ask a question. Instead, ask it on our [Discord server](https://discord.gg/wjWJwJB).
 
 ## Self-Hosting
 
