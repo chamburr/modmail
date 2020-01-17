@@ -249,8 +249,8 @@ class Configuration(commands.Cog):
     async def pingrole(self, ctx, *, role=None):
         c = self.bot.conn.cursor()
         if role:
-            if role.lower().replace("@", "") in ["here", "everyone"]:
-                role = f"@{role.lower()}"
+            if role.lower().replace("@", "", 1) in ["here", "everyone"]:
+                role = f"@{role.lower().replace('@', '', 1)}"
             else:
                 role = await commands.RoleConverter().convert(ctx, role)
                 if role is None:
