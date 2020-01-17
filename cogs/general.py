@@ -169,12 +169,24 @@ class General(commands.Cog):
     async def partners(self, ctx):
         all_pages = []
         page = discord.Embed(
+            title="Sea of Thieves",
+            description="One of the longest running and largest community-run Sea of Thieves Discord servers. "
+            "A great and most of all welcoming place to chat about Sea of Thieves and maybe find a few crew mates "
+            "along the way.",
+            colour=self.bot.primary_colour,
+        )
+        page.add_field(name="Link", value="https://discord.gg/seaofthievescommunity")
+        page.set_thumbnail(
+            url="https://cdn.discordapp.com/icons/209815380946845697/f298c64717cede4589a1503d12d40fb0.png"
+        )
+        all_pages.append(page)
+        page = discord.Embed(
             title="Underlords",
             description="Underlords Discord server acts as a secondary platform to r/Underlords where users can have "
             "casual chit-chat, give suggestions, share tactics and discuss everything related to Underlords.",
             colour=self.bot.primary_colour,
         )
-        page.add_field(name="Link", value="https://discord.gg/bGYpqDA")
+        page.add_field(name="Link", value="https://discord.gg/underlords")
         page.set_thumbnail(
             url="https://cdn.discordapp.com/icons/580534040692654101/a_fb290e4d585eb0c4cf951a00212b5836.gif"
         )
