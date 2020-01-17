@@ -88,7 +88,7 @@ class Owner(commands.Cog):
 
     @checks.is_owner()
     @commands.command(description="Reload the tools.", usage="reloadtools", hidden=True)
-    async def reloadconf(self, ctx):
+    async def reloadtools(self, ctx):
         try:
             importlib_reload(self.bot.tools)
         except Exception as e:

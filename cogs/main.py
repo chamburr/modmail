@@ -88,7 +88,7 @@ class Main(commands.Cog):
                                 description = m.embeds[0].description
                                 for attachment in [
                                     field.value for field in m.embeds[0].fields if field.name.startswith("Attachment ")
-                                ]
+                                ]:
                                     if not description:
                                         description = f"(Attachment: {attachment})"
                                     else:
