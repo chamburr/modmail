@@ -87,11 +87,13 @@ class Main(commands.Cog):
                                 else:
                                     author = f"{m.embeds[0].author.name} (Staff)"
                                 description = m.embeds[0].description
-                                if len(m.attachments) != 0:
+                                for attachment in [
+                                    field.value for field in m.embeds[0].fields if field.name.startswith("Attachment ")
+                                ]
                                     if not description:
-                                        description = f"({len(m.attachments)} attachment(s) not shown)"
+                                        description = f"(Attachment: {attachment})"
                                     else:
-                                        description = description + f" ({len(m.attachments)} attachment(s) not shown)"
+                                        description = description + f" (Attachment: {attachment})"
                                 history = (
                                     f"[{str(m.created_at.replace(microsecond=0))}] {author}: "
                                     f"{description}\n" + history

@@ -64,19 +64,21 @@ class ModMailEvents(commands.Cog):
                 if anon is False
                 else "https://cdn.discordapp.com/embed/avatars/0.png",
             )
-            embed.set_footer(
-                text=f"{message.guild.name} | {message.guild.id}", icon_url=message.guild.icon_url,
-            )
+            embed.set_footer(text=f"{message.guild.name} | {message.guild.id}", icon_url=message.guild.icon_url)
             files = []
             for file in message.attachments:
                 saved_file = io.BytesIO()
                 await file.save(saved_file)
                 files.append(discord.File(saved_file, file.filename))
-            await member.send(embed=embed, files=files)
+            message2 = await member.send(embed=embed, files=files)
             embed.title = "Message Sent"
-            embed.set_footer(
-                text=f"{member.name}#{member.discriminator} | {member.id}", icon_url=member.avatar_url,
-            )
+            embed.set_footer(text=f"{member.name}#{member.discriminator} | {member.id}", icon_url=member.avatar_url)
+            for count, attachment in enumerate([attachment.url for attachment in message2.attachments], start=1):
+                embed.add_field(
+                    name=f"Attachment {count}",
+                    value=attachment,
+                    inline=False
+                )
             for file in files:
                 file.reset()
             await message.channel.send(embed=embed, files=files)

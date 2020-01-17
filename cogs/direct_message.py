@@ -126,26 +126,32 @@ class DirectMessageEvents(commands.Cog, name="Direct Message"):
                     embed.set_footer(text=f"{guild.name} | {guild.id}", icon_url=guild.icon_url)
                     await message.channel.send(embed=embed)
             embed = discord.Embed(
-                title="Message Received",
+                title="Message Sent",
                 description=to_send,
                 colour=self.bot.user_colour,
                 timestamp=datetime.datetime.utcnow(),
             )
-            embed.set_footer(
-                text=f"{message.author.name}#{message.author.discriminator} | {message.author.id}",
-                icon_url=message.author.avatar_url,
-            )
+            embed.set_footer(text=f"{guild.name} | {guild.id}", icon_url=guild.icon_url)
             files = []
             for file in message.attachments:
                 saved_file = io.BytesIO()
                 await file.save(saved_file)
                 files.append(discord.File(saved_file, file.filename))
-            await channel.send(embed=embed, files=files)
-            embed.title = "Message Sent"
-            embed.set_footer(text=f"{guild.name} | {guild.id}", icon_url=guild.icon_url)
+            message2 = await message.channel.send(embed=embed, files=files)
+            embed.title = "Message Received"
+            embed.set_footer(
+                text=f"{message.author.name}#{message.author.discriminator} | {message.author.id}",
+                icon_url=message.author.avatar_url,
+            )
+            for count, attachment in enumerate([attachment.url for attachment in message2.attachments], start=1):
+                embed.add_field(
+                    name=f"Attachment {count}",
+                    value=attachment,
+                    inline=False
+                )
             for file in files:
                 file.reset()
-            await message.channel.send(embed=embed, files=files)
+            await channel.send(embed=embed, files=files)
         except discord.Forbidden:
             return await message.channel.send(
                 embed=discord.Embed(
