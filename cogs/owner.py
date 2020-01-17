@@ -214,9 +214,10 @@ class Owner(commands.Cog):
         c = self.bot.conn.cursor()
         c.execute("SELECT * FROM premium WHERE user=?", (user.id,))
         res = c.fetchone()
-        for guild in res[1].split(","):
-            c.execute("UPDATE data SET welcome=?, goodbye=?, loggingplus=? WHERE guild=?", (None, None, None, guild))
-            self.bot.conn.commit()
+        if res[1]:
+            for guild in res[1].split(","):
+                c.execute("UPDATE data SET welcome=?, goodbye=?, loggingplus=? WHERE guild=?", (None, None, None, guild))
+                self.bot.conn.commit()
         c.execute("DELETE FROM premium WHERE user=?", (user.id,))
         self.bot.conn.commit()
         await ctx.send(
