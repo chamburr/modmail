@@ -74,7 +74,6 @@ class Main(commands.Cog):
                                 icon_url="https://cdn.discordapp.com/embed/avatars/0.png",
                             )
                         if data[7] == 1:
-                            files = []  # sending files container
                             history = ""
                             for m in messages:
                                 if (
@@ -89,22 +88,19 @@ class Main(commands.Cog):
                                     author = f"{m.embeds[0].author.name} (Staff)"
                                 description = m.embeds[0].description
                                 if len(m.attachments) != 0:
+                                    attachurls = f"({len(m.attachments)} attachment(s) shown below)\n"
                                     for file in m.attachments:  # add each attachment to payload
-                                        saved_file = io.BytesIO()
-                                        await file.save(saved_file)
-                                        files.append(discord.File(saved_file, file.filename))
+                                        attachurls += f"- {file.url}\n"
                                     if not description:
-                                        description = f"({len(m.attachments)} attachment(s) not shown)"
-                                    else:
-                                        description = description + f" ({len(m.attachments)} attachment(s) not shown)"
+                                        description = ""
+                                    description = description + attachurls
                                 history = (
                                     f"[{str(m.created_at.replace(microsecond=0))}] {author}: "
                                     f"{description}\n" + history
                                 )
                             history = io.BytesIO(history.encode())
                             file = discord.File(history, f"modmail_log_{tools.get_modmail_user(ctx.channel)}.txt")
-                            files.insert(0, file)  # log.txt at top of stack
-                            return await channel.send(embed=embed, files=files)
+                            return await channel.send(embed=embed, file=file)
                         await channel.send(embed=embed)
                     except discord.Forbidden:
                         pass
