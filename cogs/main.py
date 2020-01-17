@@ -74,7 +74,6 @@ class Main(commands.Cog):
                                 icon_url="https://cdn.discordapp.com/embed/avatars/0.png",
                             )
                         if data[7] == 1:
-                            files = []  # sending files container
                             history = ""
                             for m in messages:
                                 if (
@@ -89,10 +88,6 @@ class Main(commands.Cog):
                                     author = f"{m.embeds[0].author.name} (Staff)"
                                 description = m.embeds[0].description
                                 if len(m.attachments) != 0:
-                                    for file in m.attachments:  # add each attachment to payload
-                                        saved_file = io.BytesIO()
-                                        await file.save(saved_file)
-                                        files.append(discord.File(saved_file, file.filename))
                                     if not description:
                                         description = f"({len(m.attachments)} attachment(s) not shown)"
                                     else:
@@ -103,8 +98,7 @@ class Main(commands.Cog):
                                 )
                             history = io.BytesIO(history.encode())
                             file = discord.File(history, f"modmail_log_{tools.get_modmail_user(ctx.channel)}.txt")
-                            files.insert(0, file)  # log.txt at top of stack
-                            return await channel.send(embed=embed, files=files)
+                            return await channel.send(embed=embed, file=file)
                         await channel.send(embed=embed)
                     except discord.Forbidden:
                         pass
