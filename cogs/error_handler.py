@@ -3,8 +3,6 @@ import logging
 import traceback
 from discord.ext import commands
 
-from utils.tools import perm_format
-
 log = logging.getLogger(__name__)
 
 
@@ -62,7 +60,7 @@ class ErrorHandler(commands.Cog):
                 embed=discord.Embed(
                     title="Permission Denied",
                     description="You do not have permission to use this command. "
-                    f"Permissions needed: {', '.join([perm_format(p) for p in error.missing_perms])}",
+                    f"Permissions needed: {', '.join([self.bot.tools.perm_format(p) for p in error.missing_perms])}",
                     colour=self.bot.error_colour,
                 )
             )
@@ -71,7 +69,7 @@ class ErrorHandler(commands.Cog):
                 embed=discord.Embed(
                     title="Bot Missing Permissions",
                     description="Bot is missing permissions to perform that action. The following permissions are"
-                    f" needed: {', '.join([perm_format(p) for p in error.missing_perms])}",
+                    f" needed: {', '.join([self.bot.tools.perm_format(p) for p in error.missing_perms])}",
                     colour=self.bot.error_colour,
                 )
             )

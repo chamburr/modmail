@@ -3,8 +3,7 @@ import datetime
 import discord
 from discord.ext import commands
 
-from utils.checks import is_modmail_channel2
-from utils import tools
+from utils import checks
 
 
 class ModMailEvents(commands.Cog):
@@ -15,14 +14,14 @@ class ModMailEvents(commands.Cog):
     async def on_message(self, message):
         if message.author.bot or not message.guild or not message.channel.category_id:
             return
-        if not is_modmail_channel2(self.bot, message.channel):
+        if not checks.is_modmail_channel2(self.bot, message.channel):
             return
         if (
             message.channel.permissions_for(message.guild.me).send_messages is False
             or message.channel.permissions_for(message.guild.me).embed_links is False
         ):
             return
-        prefix = tools.get_guild_prefix(self.bot, message)
+        prefix = self.bot.tools.get_guild_prefix(self.bot, message)
         if message.content.startswith(prefix):
             return
         if message.author.id in self.bot.banned_users:
@@ -34,7 +33,7 @@ class ModMailEvents(commands.Cog):
     async def send_mail_mod(self, message, prefix, anon: bool = False, msg: str = None):
         self.bot.total_messages += 1
         data = self.bot.get_data(message.guild.id)
-        if data[9] and tools.get_modmail_user(message.channel) in data[9].split(","):
+        if data[9] and self.bot.tools.get_modmail_user(message.channel) in data[9].split(","):
             return await message.channel.send(
                 embed=discord.Embed(
                     description="That user is blacklisted from sending a message here. You need to whitelist them "
@@ -42,7 +41,7 @@ class ModMailEvents(commands.Cog):
                     colour=self.bot.error_colour,
                 )
             )
-        member = message.guild.get_member(tools.get_modmail_user(message.channel))
+        member = message.guild.get_member(self.bot.tools.get_modmail_user(message.channel))
         if member is None:
             return await message.channel.send(
                 embed=discord.Embed(

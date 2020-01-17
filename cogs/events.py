@@ -5,8 +5,6 @@ import logging
 import discord
 from discord.ext import commands
 
-from utils.tools import get_guild_prefix
-
 log = logging.getLogger(__name__)
 
 
@@ -193,7 +191,7 @@ class Events(commands.Cog):
                 embed=discord.Embed(description="You are banned from this bot.", colour=self.bot.error_colour)
             )
         if ctx.command.cog_name in ["Owner", "Admin"] and (
-            ctx.author.id in ctx.bot.config.admins or ctx.author.id in ctx.bot.config.owners
+            ctx.author.id in self.bot.config.admins or ctx.author.id in self.bot.config.owners
         ):
             admin_channel = self.bot.get_channel(self.bot.config.admin_channel)
             embed = discord.Embed(
@@ -207,7 +205,7 @@ class Events(commands.Cog):
             )
             await admin_channel.send(embed=embed)
         if ctx.prefix == f"<@{self.bot.user.id}> " or ctx.prefix == f"<@!{self.bot.user.id}> ":
-            ctx.prefix = get_guild_prefix(self.bot, message)
+            ctx.prefix = self.bot.tools.get_guild_prefix(self.bot, message)
         await self.bot.invoke(ctx)
 
 

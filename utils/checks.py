@@ -1,8 +1,6 @@
 import discord
 from discord.ext import commands
 
-from utils import tools
-
 
 def is_owner():
     def predicate(ctx):
@@ -74,7 +72,7 @@ def is_patron():
         c.execute("SELECT user FROM premium WHERE user=?", (ctx.author.id,))
         res = c.fetchone()
         if res is None:
-            slots = tools.get_premium_slots(ctx.bot, ctx.author.id)
+            slots = ctx.bot.tools.get_premium_slots(ctx.bot, ctx.author.id)
             if slots is False:
                 await ctx.send(
                     embed=discord.Embed(

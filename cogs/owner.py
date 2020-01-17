@@ -86,6 +86,22 @@ class Owner(commands.Cog):
                 )
             )
 
+    @checks.is_owner()
+    @commands.command(description="Reload the tools.", usage="reloadtools", hidden=True)
+    async def reloadconf(self, ctx):
+        try:
+            importlib_reload(self.bot.tools)
+        except Exception as e:
+            await ctx.send(
+                embed=discord.Embed(description=f"ERROR: {type(e).__name__} - {e}", colour=self.bot.error_colour)
+            )
+        else:
+            await ctx.send(
+                embed=discord.Embed(
+                    description="Successfully reloaded the tools.", colour=self.bot.primary_colour,
+                )
+            )
+
     @commands.is_owner()
     @commands.command(description="Restart the bot.", usage="restart", hidden=True)
     async def restart(self, ctx):
@@ -175,9 +191,7 @@ class Owner(commands.Cog):
             await ctx.send(embed=discord.Embed(description="No results to fetch.", colour=self.bot.primary_colour))
 
     @checks.is_owner()
-    @commands.command(
-        description="Get the bot logs. Default to 10 lines.", usage="botlogs [lines]", hideen=True,
-    )
+    @commands.command(description="Get the bot logs. Default to 10 lines.", usage="botlogs [lines]", hidden=True)
     async def botlogs(self, ctx, *, lines: int = 10):
         with open("discord.log", "r") as file:
             content = file.readlines()
@@ -207,9 +221,7 @@ class Owner(commands.Cog):
         await self.bot.invoke(new_ctx)
 
     @checks.is_owner()
-    @commands.command(
-        description="Remove a user's premium.", usage="wipepremium <user>", hidden=True,
-    )
+    @commands.command(description="Remove a user's premium.", usage="wipepremium <user>", hidden=True)
     async def wipepremium(self, ctx, *, user: discord.User):
         c = self.bot.conn.cursor()
         c.execute("SELECT * FROM premium WHERE user=?", (user.id,))
@@ -227,9 +239,7 @@ class Owner(commands.Cog):
         )
 
     @checks.is_owner()
-    @commands.command(
-        description="Make me say something.", usage="echo <message>", rest_is_raw=True, hidden=True,
-    )
+    @commands.command(description="Make me say something.", usage="echo <message>", rest_is_raw=True, hidden=True)
     async def echo(self, ctx, *, content):
         await ctx.send(content)
 
@@ -274,9 +284,7 @@ class Owner(commands.Cog):
             )
 
     @checks.is_owner()
-    @commands.command(
-        description="Make the bot leave a server.", usage="leaveserver <server ID>", hidden=True,
-    )
+    @commands.command(description="Make the bot leave a server.", usage="leaveserver <server ID>", hidden=True)
     async def leaveserver(self, ctx, *, guild: int):
         guild = self.bot.get_guild(guild)
         if not guild:
@@ -290,9 +298,7 @@ class Owner(commands.Cog):
             )
 
     @checks.is_owner()
-    @commands.command(
-        description="Ban a server from the bot", usage="banserver <server ID>", hidden=True,
-    )
+    @commands.command(description="Ban a server from the bot", usage="banserver <server ID>", hidden=True)
     async def banserver(self, ctx, *, guild: int):
         if not self.bot.get_guild(guild):
             return await ctx.send(
@@ -316,9 +322,7 @@ class Owner(commands.Cog):
             )
 
     @checks.is_owner()
-    @commands.command(
-        description="Unban a server from the bot", usage="unbanserver <server ID>", hidden=True,
-    )
+    @commands.command(description="Unban a server from the bot", usage="unbanserver <server ID>", hidden=True)
     async def unbanserver(self, ctx, *, guild: int):
         c = self.bot.conn.cursor()
         c.execute("SELECT * FROM banlist WHERE id=? AND type=?", (guild, "guild"))

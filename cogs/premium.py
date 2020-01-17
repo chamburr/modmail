@@ -2,7 +2,6 @@ import discord
 from discord.ext import commands
 
 from utils import checks
-from utils import tools
 
 
 class Premium(commands.Cog):
@@ -79,7 +78,7 @@ class Premium(commands.Cog):
         await ctx.send(embed=discord.Embed(description=to_send, colour=self.bot.primary_colour))
 
     @checks.is_patron()
-    @commands.command(description="Assign premium slot to a server.", usage="premiumassign <server>")
+    @commands.command(description="Assign premium slot to a server.", usage="premiumassign <server ID>")
     async def premiumassign(self, ctx, *, guild: int):
         if self.bot.get_guild(guild) is None:
             return await ctx.send(
@@ -99,7 +98,7 @@ class Premium(commands.Cog):
             return await ctx.send(
                 embed=discord.Embed(description="That server already has premium.", colour=self.bot.error_colour)
             )
-        slots = tools.get_premium_slots(self.bot, ctx.author.id)
+        slots = self.bot.tools.get_premium_slots(self.bot, ctx.author.id)
         c.execute("SELECT server FROM premium WHERE user=?", (ctx.author.id,))
         servers = c.fetchone()
         assigned_slots = 0 if servers[0] is None else len(servers[0].split(","))
@@ -119,7 +118,7 @@ class Premium(commands.Cog):
         await ctx.send(embed=discord.Embed(description="That server now has premium.", colour=self.bot.primary_colour))
 
     @checks.is_patron()
-    @commands.command(description="Remove premium slot from a server.", usage="premiumremove <server>")
+    @commands.command(description="Remove premium slot from a server.", usage="premiumremove <server ID>")
     async def premiumremove(self, ctx, *, guild: int):
         c = self.bot.conn.cursor()
         c.execute("SELECT server FROM premium WHERE user=?", (ctx.author.id,))

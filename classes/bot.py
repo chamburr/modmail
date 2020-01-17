@@ -7,6 +7,7 @@ import sqlite3
 from discord.ext import commands
 
 import config
+from utils import tools
 
 conn = sqlite3.connect("data.sqlite")
 log = logging.getLogger(__name__)
@@ -35,20 +36,24 @@ class ModMail(commands.AutoShardedBot):
         return config
 
     @property
+    def tools(self):
+        return tools
+
+    @property
     def primary_colour(self):
-        return config.primary_colour
+        return self.config.primary_colour
 
     @property
     def user_colour(self):
-        return config.user_colour
+        return self.config.user_colour
 
     @property
     def mod_colour(self):
-        return config.mod_colour
+        return self.config.mod_colour
 
     @property
     def error_colour(self):
-        return config.error_colour
+        return self.config.error_colour
 
     def get_data(self, guild):
         c = self.conn.cursor()

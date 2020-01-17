@@ -6,8 +6,8 @@ import string
 import discord
 from discord.ext import commands
 
-from utils import tools
-from utils.checks import is_modmail_channel2
+
+from utils import checks
 
 
 class DirectMessageEvents(commands.Cog, name="Direct Message"):
@@ -46,7 +46,7 @@ class DirectMessageEvents(commands.Cog, name="Direct Message"):
                 )
             )
         channels = [
-            channel for channel in guild.text_channels if is_modmail_channel2(self.bot, channel, message.author.id)
+            channel for channel in guild.text_channels if checks.is_modmail_channel2(self.bot, channel, message.author.id)
         ]
         channel = None
         new_ticket = False
@@ -99,7 +99,7 @@ class DirectMessageEvents(commands.Cog, name="Direct Message"):
         try:
             if new_ticket is True:
                 self.guild = guild
-                prefix = tools.get_guild_prefix(self.bot, self)
+                prefix = self.bot.tools.get_guild_prefix(self.bot, self)
                 embed = discord.Embed(
                     title="New Ticket",
                     description="Type a message in this channel to reply. Messages starting with the server prefix "
@@ -119,7 +119,7 @@ class DirectMessageEvents(commands.Cog, name="Direct Message"):
                 if data[5]:
                     embed = discord.Embed(
                         title="Custom Greeting Message",
-                        description=tools.tag_format(data[5], message.author),
+                        description=self.bot.tools.tag_format(data[5], message.author),
                         colour=self.bot.mod_colour,
                         timestamp=datetime.datetime.utcnow(),
                     )
@@ -165,7 +165,8 @@ class DirectMessageEvents(commands.Cog, name="Direct Message"):
         guild_list = {}
         for guild in guilds:
             channels = [
-                channel for channel in guild.text_channels if is_modmail_channel2(self.bot, channel, message.author.id)
+                channel for channel in guild.text_channels
+                if checks.is_modmail_channel2(self.bot, channel, message.author.id)
             ]
             channel = None
             if len(channels) > 0:
@@ -281,7 +282,7 @@ class DirectMessageEvents(commands.Cog, name="Direct Message"):
                 guild = self.bot.get_guild(int(guild))
                 break
         msg = None
-        confirmation = tools.get_user_settings(self.bot, message.author.id)
+        confirmation = self.bot.tools.get_user_settings(self.bot, message.author.id)
         confirmation = True if confirmation is None or confirmation[1] is None else False
         if guild and confirmation is False:
             await self.send_mail(message, guild.id, message.content)
@@ -352,7 +353,7 @@ class DirectMessageEvents(commands.Cog, name="Direct Message"):
     @commands.dm_only()
     @commands.command(description="Enable or disable the confirmation message.", usage="confirmation")
     async def confirmation(self, ctx):
-        data = tools.get_user_settings(self.bot, ctx.author.id)
+        data = self.bot.tools.get_user_settings(self.bot, ctx.author.id)
         c = self.bot.conn.cursor()
         if data is None or data[1] is None:
             if data is None:

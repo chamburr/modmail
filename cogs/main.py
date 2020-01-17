@@ -5,7 +5,6 @@ import discord
 from discord.ext import commands
 
 from utils import checks
-from utils import tools
 from cogs.modmail_channel import ModMailEvents
 
 
@@ -40,14 +39,14 @@ class Main(commands.Cog):
                 icon_url=ctx.author.avatar_url if anon is False else "https://cdn.discordapp.com/embed/avatars/0.png",
             )
             embed.set_footer(text=f"{ctx.guild.name} | {ctx.guild.id}", icon_url=ctx.guild.icon_url)
-            member = ctx.guild.get_member(tools.get_modmail_user(ctx.channel))
+            member = ctx.guild.get_member(self.bot.tools.get_modmail_user(ctx.channel))
             if member:
                 try:
                     data = self.bot.get_data(ctx.guild.id)
                     if data[6]:
                         embed2 = discord.Embed(
                             title="Custom Close Message",
-                            description=tools.tag_format(data[6], member),
+                            description=self.bot.tools.tag_format(data[6], member),
                             colour=self.bot.mod_colour,
                             timestamp=datetime.datetime.utcnow(),
                         )
@@ -63,7 +62,7 @@ class Main(commands.Cog):
                 if channel:
                     try:
                         if member is None:
-                            member = await self.bot.fetch_user(tools.get_modmail_user(ctx.channel))
+                            member = await self.bot.fetch_user(self.bot.tools.get_modmail_user(ctx.channel))
                         if member:
                             embed.set_footer(
                                 text=f"{member.name}#{member.discriminator} | {member.id}", icon_url=member.avatar_url,
@@ -99,7 +98,9 @@ class Main(commands.Cog):
                                     f"{description}\n" + history
                                 )
                             history = io.BytesIO(history.encode())
-                            file = discord.File(history, f"modmail_log_{tools.get_modmail_user(ctx.channel)}.txt")
+                            file = discord.File(
+                                history, f"modmail_log_{self.bot.tools.get_modmail_user(ctx.channel)}.txt"
+                            )
                             return await channel.send(embed=embed, file=file)
                         await channel.send(embed=embed)
                     except discord.Forbidden:

@@ -1,8 +1,6 @@
 import discord
 from discord.ext import commands
 
-from utils.tools import perm_format
-
 
 class Miscellaneous(commands.Cog):
     def __init__(self, bot):
@@ -15,7 +13,7 @@ class Miscellaneous(commands.Cog):
         )
         allowed, denied = [], []
         for name, value in permissions:
-            name = perm_format(name)
+            name = self.bot.tools.perm_format(name)
             if value:
                 allowed.append(name)
             else:

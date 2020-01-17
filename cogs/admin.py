@@ -1,7 +1,7 @@
 import discord
 from discord.ext import commands
 
-import utils.checks as checks
+import utils import checks
 
 
 class Admin(commands.Cog):
