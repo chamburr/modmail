@@ -45,9 +45,17 @@ class Main(commands.Cog):
                 try:
                     data = self.bot.get_data(ctx.guild.id)
                     if data[6]:
+                        desc = data[6]
+                        flags = {  # declare number/id replacements first to prevent noise with username
+                            "{userid}":      f"{member.id}",
+                            "{usermention}": f"<@{member.id}>",
+                            "{username}":    f"{member.name}"
+                        }
+                        for flag, val in flags.items():
+                            desc = desc.replace(flag, val)
                         embed2 = discord.Embed(
-                            title="Custom Close Message",
-                            description=data[6],
+                            title="Close Message",
+                            description=desc,
                             colour=self.bot.mod_colour,
                             timestamp=datetime.datetime.utcnow(),
                         )

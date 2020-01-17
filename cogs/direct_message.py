@@ -117,9 +117,17 @@ class DirectMessageEvents(commands.Cog, name="Direct Message"):
                     embed=embed,
                 )
                 if data[5]:
+                    desc = data[5]
+                    flags = {  # declare number/id replacements first to prevent noise with username
+                        "{userid}":      f"{message.author.id}",
+                        "{usermention}": f"<@{message.author.id}>",
+                        "{username}":    f"{message.author.name}"
+                    }
+                    for flag, val in flags.items():
+                        desc = desc.replace(flag, val)
                     embed = discord.Embed(
-                        title="Custom Greeting Message",
-                        description=data[5],
+                        title="New Ticket",
+                        description=desc,
                         colour=self.bot.mod_colour,
                         timestamp=datetime.datetime.utcnow(),
                     )
@@ -232,7 +240,7 @@ class DirectMessageEvents(commands.Cog, name="Direct Message"):
                         page_index = page_index + 1
                         await msg.edit(embed=embeds[page_index])
                         if len(embeds[page_index].fields) != 10:
-                            to_remove = reactions[len(embeds[page_index].fields) : -2]
+                            to_remove = reactions[len(embeds[page_index].fields): -2]
                             msg = await msg.channel.fetch_message(msg.id)
                             for this_reaction in msg.reactions:
                                 if str(this_reaction) in to_remove:
