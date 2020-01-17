@@ -30,9 +30,7 @@ class Configuration(commands.Cog):
     )
     @commands.has_permissions(administrator=True)
     @commands.guild_only()
-    @commands.command(
-        description="Set up ModMail with an interactive guide.", usage="setup",
-    )
+    @commands.command(description="Set up ModMail with an interactive guide.", usage="setup")
     async def setup(self, ctx):
         def check(msg):
             return msg.author.id == ctx.author.id and msg.channel.id == ctx.channel.id
@@ -80,7 +78,7 @@ class Configuration(commands.Cog):
         except asyncio.TimeoutError:
             return await ctx.send(
                 embed=discord.Embed(
-                    description=f"Time out. Please use `{ctx.prefix}setup` to try again.", colour=self.bot.error_colour,
+                    description=f"Time out. Please use `{ctx.prefix}setup` to try again.", colour=self.bot.error_colour
                 )
             )
         await ctx.send(
@@ -126,7 +124,7 @@ class Configuration(commands.Cog):
 
     @commands.guild_only()
     @commands.command(
-        description="Change the prefix or view the current prefix.", usage="prefix [new prefix]", aliases=["setprefix"],
+        description="Change the prefix or view the current prefix.", usage="prefix [new prefix]", aliases=["setprefix"]
     )
     async def prefix(self, ctx, *, prefix: str = None):
         if prefix is None:
@@ -161,9 +159,7 @@ class Configuration(commands.Cog):
     @checks.in_database()
     @commands.has_permissions(administrator=True)
     @commands.guild_only()
-    @commands.command(
-        description="Re-create the category for the ModMail channels.", usage="category [name]",
-    )
+    @commands.command(description="Re-create the category for the ModMail channels.", usage="category [name]")
     async def category(self, ctx, *, name: str = "ModMail"):
         if len(name) > 100:
             return await ctx.send(
@@ -275,7 +271,7 @@ class Configuration(commands.Cog):
     @commands.guild_only()
     @commands.command(
         description="Toggle between enable and disable for ModMail logs.",
-        aliases=["logging", "modmaillogs"],
+        aliases=["logging"],
         usage="logs",
     )
     async def logs(self, ctx):
@@ -320,7 +316,8 @@ class Configuration(commands.Cog):
     @commands.has_permissions(administrator=True)
     @commands.guild_only()
     @commands.command(
-        description="Set or clear the message that is sent when a new ticket is opened.",
+        description="Set or clear the message that is sent when a new ticket is opened. Tags `{username}`, "
+        "`{usertag}`, `{userid}` and `{usermention}` can be used.",
         usage="greetingmessage [text]",
     )
     async def greetingmessage(self, ctx, *, text=None):
@@ -338,7 +335,9 @@ class Configuration(commands.Cog):
     @commands.has_permissions(administrator=True)
     @commands.guild_only()
     @commands.command(
-        description="Set or clear the message that is sent when a ticket is closed.", usage="closemessage [text]",
+        description="Set or clear the message that is sent when a ticket is closed. Tags `{username}`, "
+        "`{usertag}`, `{userid}` and `{usermention}` can be used.",
+        usage="closemessage [text]"
     )
     async def closemessage(self, ctx, *, text=None):
         c = self.bot.conn.cursor()
@@ -353,7 +352,7 @@ class Configuration(commands.Cog):
     @commands.has_permissions(administrator=True)
     @commands.guild_only()
     @commands.command(
-        description="Toggle advanced logging which includes messages sent and received.", usage="loggingplus",
+        description="Toggle advanced logging which includes messages sent and received.", usage="loggingplus"
     )
     async def loggingplus(self, ctx):
         data = self.bot.get_data(ctx.guild.id)

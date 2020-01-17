@@ -119,7 +119,7 @@ class DirectMessageEvents(commands.Cog, name="Direct Message"):
                 if data[5]:
                     embed = discord.Embed(
                         title="Custom Greeting Message",
-                        description=data[5],
+                        description=tools.tag_format(data[5], message.author),
                         colour=self.bot.mod_colour,
                         timestamp=datetime.datetime.utcnow(),
                     )

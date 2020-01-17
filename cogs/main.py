@@ -47,7 +47,7 @@ class Main(commands.Cog):
                     if data[6]:
                         embed2 = discord.Embed(
                             title="Custom Close Message",
-                            description=data[6],
+                            description=tools.tag_format(data[6], member),
                             colour=self.bot.mod_colour,
                             timestamp=datetime.datetime.utcnow(),
                         )

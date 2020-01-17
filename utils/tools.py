@@ -49,3 +49,22 @@ def get_modmail_user(channel):
 
 def perm_format(perm):
     return perm.replace("_", " ").replace("guild", "server").title()
+
+
+def shorten_message(message):
+    if len(message) > 2048:
+        return message[:2045] + "..."
+    else:
+        return message
+
+
+def tag_format(message, author):
+    tags = {
+        "{username}": author.name,
+        "{usertag}": author.discriminator,
+        "{userid}": str(author.id),
+        "{usermention}": author.mention,
+    }
+    for tag, val in tags.items():
+        message = message.replace(tag, val)
+    return shorten_message(message)
