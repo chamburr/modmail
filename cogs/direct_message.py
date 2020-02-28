@@ -22,7 +22,7 @@ class DirectMessageEvents(commands.Cog, name="Direct Message"):
             return await message.channel.send(
                 embed=discord.Embed(description="The server was not found.", colour=self.bot.error_colour)
             )
-        if guild.get_member(message.author.id) is False:
+        if guild.get_member(message.author.id) is None:
             return await message.channel.send(
                 embed=discord.Embed(
                     description="You are not in that server, and the message is not sent.",
