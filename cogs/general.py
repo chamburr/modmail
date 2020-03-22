@@ -170,6 +170,18 @@ class General(commands.Cog):
     async def partners(self, ctx):
         all_pages = []
         page = discord.Embed(
+            title="DOOM",
+            description="Hell’s armies have invaded Earth. Become the Slayer in an epic single-player campaign to "
+            "conquer demons across dimensions and stop the final destruction of humanity. The only thing they "
+            "fear... is you. RAZE HELL in DOOM Eternal!",
+            colour=self.bot.primary_colour,
+        )
+        page.add_field(name="Link", value="https://discord.gg/doom")
+        page.set_thumbnail(
+            url="https://cdn.discordapp.com/icons/162891400684371968/a_4363040f917b4920a2e78da1e302d9dc.gif"
+        )
+        all_pages.append(page)
+        page = discord.Embed(
             title="Sea of Thieves",
             description="One of the longest running and largest community-run Sea of Thieves Discord servers. "
             "A great and most of all welcoming place to chat about Sea of Thieves and maybe find a few crew mates "
