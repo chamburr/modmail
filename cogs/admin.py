@@ -76,10 +76,11 @@ class Admin(commands.Cog):
                     )
                 except (IndexError, discord.Forbidden):
                     try:
+                        invite = (await guild.text_channels[0].create_invite(max_age=120)).url
                         return await ctx.send(
                             embed=discord.Embed(
                                 description="Created an invite to the server that will expire in 120 seconds: "
-                                f"{(await guild.text_channels[0].create_invite(max_age=120)).url}.",
+                                f"{invite}.",
                                 colour=self.bot.primary_colour,
                             )
                         )
