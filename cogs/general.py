@@ -129,19 +129,10 @@ class General(commands.Cog):
     async def stats(self, ctx):
         guilds = 0
         channels = 0
-        total_members = 0
-        total_online = 0
 
         for guild in self.bot.guilds:
             guilds += 1
-            for _ in guild.channels:
-                channels += 1
-
-        offline = discord.Status.offline
-        for member in self.bot.get_all_members():
-            total_members += 1
-            if member.status is not offline:
-                total_online += 1
+            channels += len(guild.channels)
 
         embed = discord.Embed(title=f"{self.bot.user.name} Statistics", colour=self.bot.primary_colour)
         embed.add_field(name="Owner", value="CHamburr#2591")
@@ -152,8 +143,7 @@ class General(commands.Cog):
         )
         embed.add_field(name="Servers", value=str(guilds))
         embed.add_field(name="Channels", value=str(channels))
-        embed.add_field(name="Users", value=str(total_members))
-        embed.add_field(name="Online Users", value=str(total_online))
+        embed.add_field(name="Users", value=str(len(ctx.bot.users)))
         embed.add_field(name="CPU Usage", value=f"{psutil.cpu_percent()}%")
         embed.add_field(name="RAM Usage", value=f"{psutil.virtual_memory().percent}%")
         embed.add_field(name="Python Version", value=platform.python_version())
