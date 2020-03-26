@@ -191,7 +191,7 @@ class General(commands.Cog):
         )
         page.add_field(name="Link", value="https://discord.gg/underlords")
         page.set_thumbnail(
-            url="https://cdn.discordapp.com/icons/580534040692654101/a_fb290e4d585eb0c4cf951a00212b5836.gif"
+            url="https://cdn.discordapp.com/icons/580534040692654101/a_0a6f7616c7d9b98f740809dbea272967.gif"
         )
         all_pages.append(page)
         page = discord.Embed(
