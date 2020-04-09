@@ -160,6 +160,26 @@ class General(commands.Cog):
     async def partners(self, ctx):
         all_pages = []
         page = discord.Embed(
+            title="Discord Templates",
+            description="Discord Templates is the place for you to discover a huge variety of Discord server "
+            "templates for all purposes.",
+            colour=self.bot.primary_colour,
+        )
+        page.add_field(name="Link", value="https://discordtemplates.me")
+        page.set_thumbnail(url="https://discordtemplates.me/static/img/icon.png")
+        all_pages.append(page)
+        page = discord.Embed(
+            title="Otzdarva's Dungeon",
+            description="Otzdarva's Dungeon is a community for the Dead by Daylight streamer Otzdarva, also "
+            "known for being a PUBG and Dark Souls YouTuber in the past.",
+            colour=self.bot.primary_colour,
+        )
+        page.add_field(name="Link", value="https://discord.gg/otzdarva")
+        page.set_thumbnail(
+            url="https://cdn.discordapp.com/icons/227900298549657601/a_74313704119f88dc252e9b0b98c3ab25.gif"
+        )
+        all_pages.append(page)
+        page = discord.Embed(
             title="DOOM",
             description="Hell’s armies have invaded Earth. Become the Slayer in an epic single-player campaign to "
             "conquer demons across dimensions and stop the final destruction of humanity. The only thing they "
