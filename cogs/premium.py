@@ -1,7 +1,12 @@
+import logging
+
 import discord
+
 from discord.ext import commands
 
 from utils import checks
+
+log = logging.getLogger(__name__)
 
 
 class Premium(commands.Cog):
