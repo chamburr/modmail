@@ -195,6 +195,11 @@ class DirectMessageEvents(commands.Cog, name="Direct Message"):
                 current_embed = None
         if current_embed:
             embeds.append(current_embed)
+        if len(embeds) == 0:
+            await message.channel.send(
+                embed=discord.Embed(description="Oops... No server found.", colour=self.bot.primary_colour,)
+            )
+            return
         if msg:
             await msg.edit(embed=embeds[0])
         else:
