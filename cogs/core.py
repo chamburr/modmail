@@ -1,14 +1,20 @@
-import io
 import copy
 import datetime
+import io
+import logging
+
 import discord
+
 from discord.ext import commands
 
-from utils import checks
 from cogs.modmail_channel import ModMailEvents
+from utils import checks
+from utils.paginator import Paginator
+
+log = logging.getLogger(__name__)
 
 
-class Main(commands.Cog):
+class Core(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
@@ -16,7 +22,20 @@ class Main(commands.Cog):
     @checks.in_database()
     @checks.is_mod()
     @commands.guild_only()
-    @commands.command(description="Reply to the ticket anonymously.", usage="areply <message>")
+    @commands.command(
+        description="Reply to the ticket, useful when anonymous messaging is enabled.", usage="reply <message>",
+    )
+    async def reply(self, ctx, *, message):
+        modmail = ModMailEvents(self.bot)
+        await modmail.send_mail_mod(ctx.message, ctx.prefix, False, message)
+
+    @checks.is_modmail_channel()
+    @checks.in_database()
+    @checks.is_mod()
+    @commands.guild_only()
+    @commands.command(
+        description="Reply to the ticket anonymously.", usage="areply <message>",
+    )
     async def areply(self, ctx, *, message):
         modmail = ModMailEvents(self.bot)
         await modmail.send_mail_mod(ctx.message, ctx.prefix, True, message)
@@ -24,8 +43,8 @@ class Main(commands.Cog):
     async def close_channel(self, ctx, reason, anon: bool = False):
         try:
             await ctx.send(embed=discord.Embed(description="Closing channel...", colour=self.bot.primary_colour))
-            data = self.bot.get_data(ctx.guild.id)
-            if data[7] == 1:
+            data = await self.bot.get_data(ctx.guild.id)
+            if data[7] == True:
                 messages = await ctx.channel.history(limit=10000).flatten()
             await ctx.channel.delete()
             embed = discord.Embed(
@@ -42,7 +61,7 @@ class Main(commands.Cog):
             member = ctx.guild.get_member(self.bot.tools.get_modmail_user(ctx.channel))
             if member:
                 try:
-                    data = self.bot.get_data(ctx.guild.id)
+                    data = await self.bot.get_data(ctx.guild.id)
                     if data[6]:
                         embed2 = discord.Embed(
                             title="Custom Close Message",
@@ -101,7 +120,15 @@ class Main(commands.Cog):
                             file = discord.File(
                                 history, f"modmail_log_{self.bot.tools.get_modmail_user(ctx.channel)}.txt"
                             )
-                            return await channel.send(embed=embed, file=file)
+                            msg = await channel.send(embed=embed, file=file)
+                            log_url = msg.attachments[0].url[39:-4]
+                            log_url = log_url.replace("modmail_log_", "")
+                            log_url = [hex(int(some_id))[2:] for some_id in log_url.split("/")]
+                            log_url = f"https://discordtemplates.me/modmail-logs/{'-'.join(log_url)}"
+                            embed.add_field(name="Message Logs", value=log_url, inline=False)
+                            await msg.edit(embed=embed)
+                            logging.info(msg.id)
+                            return
                         await channel.send(embed=embed)
                     except discord.Forbidden:
                         pass
@@ -136,7 +163,7 @@ class Main(commands.Cog):
     @commands.guild_only()
     @commands.command(description="Close all of the channel.", usage="closeall [reason]")
     async def closeall(self, ctx, *, reason: str = None):
-        category = self.bot.get_data(ctx.guild.id)[2]
+        category = (await self.bot.get_data(ctx.guild.id))[2]
         category = ctx.guild.get_channel(category)
         if category:
             for channel in category.text_channels:
@@ -160,7 +187,7 @@ class Main(commands.Cog):
     @commands.guild_only()
     @commands.command(description="Close all of the channel anonymously.", usage="acloseall [reason]")
     async def acloseall(self, ctx, *, reason: str = None):
-        category = self.bot.get_data(ctx.guild.id)[2]
+        category = (await self.bot.get_data(ctx.guild.id))[2]
         category = ctx.guild.get_channel(category)
         if category:
             for channel in category.text_channels:
@@ -182,25 +209,18 @@ class Main(commands.Cog):
     @checks.is_mod()
     @commands.guild_only()
     @commands.command(
-        description="Blacklist a user from creating tickers.",
-        usage="blacklist <member>",
-        aliases=["block"],
+        description="Blacklist a user from creating tickers.", usage="blacklist <member>", aliases=["block"],
     )
     async def blacklist(self, ctx, *, member: discord.Member):
-        blacklist = self.bot.get_data(ctx.guild.id)[9]
-        if blacklist is None:
-            blacklist = []
-        else:
-            blacklist = blacklist.split(",")
-        if str(member.id) in blacklist:
-            return await ctx.send(
+        blacklist = (await self.bot.get_data(ctx.guild.id))[9]
+        if member.id in blacklist:
+            await ctx.send(
                 embed=discord.Embed(description="The user is already blacklisted.", colour=self.bot.error_colour)
             )
-        blacklist.append(str(member.id))
-        blacklist = ",".join(blacklist)
-        c = self.bot.conn.cursor()
-        c.execute("UPDATE data SET blacklist=? WHERE guild=?", (blacklist, ctx.guild.id))
-        self.bot.conn.commit()
+            return
+        blacklist.append(member.id)
+        async with self.bot.pool.acquire() as conn:
+            await conn.execute("UPDATE data SET blacklist=$1 WHERE guild=$2", blacklist, ctx.guild.id)
         await ctx.send(
             embed=discord.Embed(description="The user is blacklisted successfully.", colour=self.bot.primary_colour)
         )
@@ -209,28 +229,18 @@ class Main(commands.Cog):
     @checks.is_mod()
     @commands.guild_only()
     @commands.command(
-        description="Whitelist a user from creating tickets.",
-        usage="whitelist <member>",
-        aliases=["unblock"],
+        description="Whitelist a user from creating tickets.", usage="whitelist <member>", aliases=["unblock"],
     )
     async def whitelist(self, ctx, *, member: discord.Member):
-        blacklist = self.bot.get_data(ctx.guild.id)[9]
-        if blacklist is None:
-            blacklist = []
-        else:
-            blacklist = blacklist.split(",")
-        if str(member.id) not in blacklist:
-            return await ctx.send(
+        blacklist = (await self.bot.get_data(ctx.guild.id))[9]
+        if member.id not in blacklist:
+            await ctx.send(
                 embed=discord.Embed(description="The user is not blacklisted.", colour=self.bot.error_colour)
             )
-        blacklist.remove(str(member.id))
-        if len(blacklist) == 0:
-            blacklist = None
-        else:
-            blacklist = ",".join(blacklist)
-        c = self.bot.conn.cursor()
-        c.execute("UPDATE data SET blacklist=? WHERE guild=?", (blacklist, ctx.guild.id))
-        self.bot.conn.commit()
+            return
+        blacklist.remove(member.id)
+        async with self.bot.pool.acquire() as conn:
+            await conn.execute("UPDATE data SET blacklist=$1 WHERE guild=$2", blacklist, ctx.guild.id)
         await ctx.send(
             embed=discord.Embed(description="The user is whitelisted successfully.", colour=self.bot.primary_colour)
         )
@@ -240,13 +250,38 @@ class Main(commands.Cog):
     @commands.guild_only()
     @commands.command(description="Remove all users from the blacklist.", usage="blacklistclear")
     async def blacklistclear(self, ctx):
-        c = self.bot.conn.cursor()
-        c.execute("UPDATE data SET blacklist=? WHERE guild=?", (None, ctx.guild.id))
-        self.bot.conn.commit()
+        async with self.bot.pool.acquire() as conn:
+            await conn.execute("UPDATE data SET blacklist=$1 WHERE guild=$2", [], ctx.guild.id)
         await ctx.send(
             embed=discord.Embed(description="The blacklist is cleared successfully.", colour=self.bot.primary_colour)
         )
 
+    @checks.in_database()
+    @checks.is_mod()
+    @commands.guild_only()
+    @commands.command(description="View the blacklist.", usage="viewblacklist")
+    async def viewblacklist(self, ctx):
+        blacklist = (await self.bot.get_data(ctx.guild.id))[9]
+        if not blacklist:
+            await ctx.send(embed=discord.Embed(description="No one is blacklisted.", colour=self.bot.primary_colour))
+            return
+        all_pages = []
+        for chunk in [blacklist[i : i + 25] for i in range(0, len(blacklist), 25)]:
+            page = discord.Embed(
+                title="Blacklist",
+                description="\n".join([f"<@{user}> ({user})" for user in chunk]),
+                colour=self.bot.primary_colour,
+            )
+            page.set_footer(text="Use the reactions to flip pages.")
+            all_pages.append(page)
+        if len(all_pages) == 1:
+            embed = all_pages[0]
+            embed.set_footer(text=discord.Embed.Empty)
+            await ctx.send(embed=embed)
+            return
+        paginator = Paginator(length=1, entries=all_pages, use_defaults=True, embed=True, timeout=120)
+        await paginator.start(ctx)
+
 
 def setup(bot):
-    bot.add_cog(Main(bot))
+    bot.add_cog(Core(bot))
