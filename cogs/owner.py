@@ -111,17 +111,37 @@ class Owner(commands.Cog):
     async def rollrestart(self, ctx):
         await ctx.send(embed=discord.Embed(description="Rolling a restart...", colour=self.bot.primary_colour))
         await self.bot.cogs["Communication"].handler("roll_restart", 0, scope="launcher")
-            await ctx.send(
-                embed=discord.Embed(
-                    description="Successfully reloaded the tools.", colour=self.bot.primary_colour,
-                )
-            )
 
     @commands.is_owner()
-    @commands.command(description="Restart the bot.", usage="restart", hidden=True)
-    async def restart(self, ctx):
-        await ctx.send(embed=discord.Embed(description="Restarting...", colour=self.bot.primary_colour))
-        await self.bot.logout()
+    @commands.command(description="Get clusters' statuses.", usage="status", hidden=True)
+    async def status(self, ctx):
+        data = await self.bot.cogs["Communication"].handler("statuses", 1, scope="launcher")
+        if not data:
+            await ctx.send(
+                embed=discord.Embed(
+                    description="Something went wrong while fetching data.", colour=self.bot.error_colour,
+                )
+            )
+            return
+        await ctx.send(
+            embed=discord.Embed(
+                description=f"```json\n{json.dumps(data[0], indent=4)}```", colour=self.bot.primary_colour,
+            )
+        )
+
+    @checks.is_owner()
+    @commands.command(name="latency", description="Get shards' latency.", usage="latency", hidden=True)
+    async def latency(self, ctx):
+        data = await self.bot.cogs["Communication"].handler("get_shards", self.bot.cluster_count)
+        shards = {}
+        for element in data:
+            for key, value in element.items():
+                shards[key] = value
+        await ctx.send(
+            embed=discord.Embed(
+                description=f"```json\n{json.dumps(shards, indent=4)}```", colour=self.bot.primary_colour,
+            )
+        )
 
     @checks.is_owner()
     @commands.command(name="eval", description="Evaluate code", usage="eval <code>", hidden=True)
