@@ -83,13 +83,25 @@ class Events(commands.Cog):
 
     async def bot_stats_updater(self):
         while True:
-            c = self.bot.conn.cursor()
-            c.execute(
-                "UPDATE stats SET commands=?, messages=?, tickets=?",
-                (self.bot.total_commands, self.bot.total_messages, self.bot.total_tickets),
-            )
-            self.bot.conn.commit()
-            await asyncio.sleep(12)
+            async with self.bot.pool.acquire() as conn:
+                await conn.execute(
+                    "UPDATE stats SET commands=commands+$1, messages=messages+$2, tickets=tickets+$3",
+                    self.bot.stats_commands,
+                    self.bot.stats_messages,
+                    self.bot.stats_tickets,
+                )
+                res = await conn.fetch("SELECT identifier, category FROM ban")
+            self.bot.stats_commands = 0
+            self.bot.stats_messages = 0
+            self.bot.stats_tickets = 0
+            self.banned_users = []
+            self.banned_guilds = []
+            for row in res:
+                if row[1] == 0:
+                    self.banned_users.append(row[0])
+                elif row[1] == 1:
+                    self.banned_guilds.append(row[0])
+            await asyncio.sleep(60)
 
     @commands.Cog.listener()
     async def on_ready(self):
