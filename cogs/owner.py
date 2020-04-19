@@ -30,12 +30,9 @@ class Owner(commands.Cog):
     @checks.is_owner()
     @commands.command(description="Load a module.", usage="load <cog>", hidden=True)
     async def load(self, ctx, *, cog: str):
-        try:
-            self.bot.load_extension(cog)
-        except Exception as e:
-            await ctx.send(
-                embed=discord.Embed(description=f"ERROR: {type(e).__name__} - {e}", colour=self.bot.error_colour)
-            )
+        data = await self.bot.cogs["Communication"].handler("load_extension", self.bot.cluster_count, {"cog": cog})
+        if not data or data[0] != "Success":
+            await ctx.send(embed=discord.Embed(description=f"Error: {data[0]}", colour=self.bot.error_colour))
         else:
             await ctx.send(
                 embed=discord.Embed(description="Successfully loaded the module.", colour=self.bot.primary_colour)
@@ -44,12 +41,9 @@ class Owner(commands.Cog):
     @checks.is_owner()
     @commands.command(description="Unload a module.", usage="unload <cog>", hidden=True)
     async def unload(self, ctx, *, cog: str):
-        try:
-            self.bot.unload_extension(cog)
-        except Exception as e:
-            await ctx.send(
-                embed=discord.Embed(description=f"ERROR: {type(e).__name__} - {e}", colour=self.bot.error_colour)
-            )
+        data = await self.bot.cogs["Communication"].handler("unload_extension", self.bot.cluster_count, {"cog": cog})
+        if not data or data[0] != "Success":
+            await ctx.send(embed=discord.Embed(description=f"Error: {data[0]}", colour=self.bot.error_colour))
         else:
             await ctx.send(
                 embed=discord.Embed(description="Successfully unloaded the module.", colour=self.bot.primary_colour)
@@ -58,27 +52,24 @@ class Owner(commands.Cog):
     @checks.is_owner()
     @commands.command(description="Reload a module.", usage="reload <cog>", hidden=True)
     async def reload(self, ctx, *, cog: str):
-        try:
-            self.bot.unload_extension(cog)
-            self.bot.load_extension(cog)
-        except Exception as e:
-            await ctx.send(
-                embed=discord.Embed(description=f"ERROR: {type(e).__name__} - {e}", colour=self.bot.error_colour)
-            )
+        data = await self.bot.cogs["Communication"].handler("unload_extension", self.bot.cluster_count, {"cog": cog})
+        if not data or data[0] != "Success":
+            await ctx.send(embed=discord.Embed(description=f"Error: {data[0]}", colour=self.bot.error_colour))
         else:
-            await ctx.send(
-                embed=discord.Embed(description="Successfully reloaded the module.", colour=self.bot.primary_colour)
-            )
+            data = await self.bot.cogs["Communication"].handler("load_extension", self.bot.cluster_count, {"cog": cog})
+            if not data or data[0] != "Success":
+                await ctx.send(embed=discord.Embed(description=f"Error: {data[0]}", colour=self.bot.error_colour))
+            else:
+                await ctx.send(
+                    embed=discord.Embed(description="Successfully reloaded the module.", colour=self.bot.primary_colour)
+                )
 
     @checks.is_owner()
     @commands.command(description="Reload the configurations.", usage="reloadconf", hidden=True)
     async def reloadconf(self, ctx):
-        try:
-            importlib_reload(self.bot.config)
-        except Exception as e:
-            await ctx.send(
-                embed=discord.Embed(description=f"ERROR: {type(e).__name__} - {e}", colour=self.bot.error_colour)
-            )
+        data = await self.bot.cogs["Communication"].handler("reload_import", self.bot.cluster_count, {"lib": "config"})
+        if not data or data[0] != "Success":
+            await ctx.send(embed=discord.Embed(description=f"Error: {data[0]}", colour=self.bot.error_colour))
         else:
             await ctx.send(
                 embed=discord.Embed(
@@ -89,13 +80,13 @@ class Owner(commands.Cog):
     @checks.is_owner()
     @commands.command(description="Reload the tools.", usage="reloadtools", hidden=True)
     async def reloadtools(self, ctx):
-        try:
-            importlib_reload(self.bot.tools)
-        except Exception as e:
-            await ctx.send(
-                embed=discord.Embed(description=f"ERROR: {type(e).__name__} - {e}", colour=self.bot.error_colour)
-            )
+        data = await self.bot.cogs["Communication"].handler("reload_import", self.bot.cluster_count, {"lib": "tools"})
+        if not data or data[0] != "Success":
+            await ctx.send(embed=discord.Embed(description=f"Error: {data[0]}", colour=self.bot.error_colour))
         else:
+            await ctx.send(
+                embed=discord.Embed(description="Successfully reloaded the tools.", colour=self.bot.primary_colour,)
+            )
             await ctx.send(
                 embed=discord.Embed(
                     description="Successfully reloaded the tools.", colour=self.bot.primary_colour,
