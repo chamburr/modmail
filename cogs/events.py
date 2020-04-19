@@ -107,84 +107,86 @@ class Events(commands.Cog):
     async def on_ready(self):
         log.info(f"{self.bot.user.name}#{self.bot.user.discriminator} is online!")
         log.info("--------")
-        await self.bot.wait_until_ready()
-        event_channel = self.bot.get_channel(self.bot.config.event_channel)
-        await event_channel.send(
-            embed=discord.Embed(title="Bot Ready", colour=0x00FF00, timestamp=datetime.datetime.utcnow())
+        embed = discord.Embed(
+            title=f"[Cluster {self.bot.cluster}] Bot Ready", colour=0x00FF00, timestamp=datetime.datetime.utcnow(),
         )
+        await self.bot.http.send_message(self.bot.config.event_channel, None, embed=embed.to_dict())
 
     @commands.Cog.listener()
     async def on_shard_ready(self, shard):
         try:
-            event_channel = self.bot.get_channel(self.bot.config.event_channel)
-            await event_channel.send(
-                embed=discord.Embed(
-                    title=f"Shard {shard} Ready", colour=0x00FF00, timestamp=datetime.datetime.utcnow(),
-                )
+            embed = discord.Embed(
+                title=f"[Cluster {self.bot.cluster}] Shard {shard} Ready",
+                colour=0x00FF00,
+                timestamp=datetime.datetime.utcnow(),
             )
+            await self.bot.http.send_message(self.bot.config.event_channel, None, embed=embed.to_dict())
         except Exception:
             pass
 
     @commands.Cog.listener()
     async def on_connect(self):
         try:
-            event_channel = self.bot.get_channel(self.bot.config.event_channel)
-            await event_channel.send(
-                embed=discord.Embed(title=f"Shard Connected", colour=0x00FF00, timestamp=datetime.datetime.utcnow())
+            embed = discord.Embed(
+                title=f"[Cluster {self.bot.cluster}] Shard Connected",
+                colour=0x00FF00,
+                timestamp=datetime.datetime.utcnow(),
             )
+            await self.bot.http.send_message(self.bot.config.event_channel, None, embed=embed.to_dict())
         except Exception:
             pass
 
     @commands.Cog.listener()
     async def on_disconnect(self):
         try:
-            event_channel = self.bot.get_channel(self.bot.config.event_channel)
-            await event_channel.send(
-                embed=discord.Embed(title=f"Shard Disconnected", colour=0xFF0000, timestamp=datetime.datetime.utcnow())
+            embed = discord.Embed(
+                title=f"[Cluster {self.bot.cluster}] Shard Disconnected",
+                colour=0xFF0000,
+                timestamp=datetime.datetime.utcnow(),
             )
+            await self.bot.http.send_message(self.bot.config.event_channel, None, embed=embed.to_dict())
         except Exception:
             pass
 
     @commands.Cog.listener()
     async def on_resumed(self):
         try:
-            event_channel = self.bot.get_channel(self.bot.config.event_channel)
-            await event_channel.send(
-                embed=discord.Embed(
-                    title=f"Shard Resumed", colour=self.bot.config.primary_colour, timestamp=datetime.datetime.utcnow()
-                )
+            embed = discord.Embed(
+                title=f"[Cluster {self.bot.cluster}] Shard Resumed",
+                colour=self.bot.config.primary_colour,
+                timestamp=datetime.datetime.utcnow(),
             )
+            await self.bot.http.send_message(self.bot.config.event_channel, None, embed=embed.to_dict())
         except Exception:
             pass
 
     @commands.Cog.listener()
     async def on_guild_join(self, guild):
-        join_channel = self.bot.get_channel(self.bot.config.join_channel)
         embed = discord.Embed(
             title="Server Join",
             description=f"{guild.name} ({guild.id})",
             colour=0x00FF00,
             timestamp=datetime.datetime.utcnow(),
         )
-        embed.set_footer(text=f"{len(self.bot.guilds)} servers")
-        await join_channel.send(embed=embed)
+        guilds = sum(await self.bot.cogs["Communication"].handler("guild_count", self.bot.cluster_count))
+        embed.set_footer(text=f"{guilds} servers")
+        await self.bot.http.send_message(self.bot.config.join_channel, None, embed=embed.to_dict())
         if guild.id in self.bot.banned_guilds:
-            return await guild.leave()
+            await guild.leave()
 
     @commands.Cog.listener()
     async def on_guild_remove(self, guild):
-        c = self.bot.conn.cursor()
-        c.execute("DELETE FROM data WHERE guild=?", (guild.id,))
-        self.bot.conn.commit()
-        join_channel = self.bot.get_channel(self.bot.config.join_channel)
+        async with self.bot.pool.acquire() as conn:
+            await conn.execute("DELETE FROM data WHERE guild=$1", guild.id)
         embed = discord.Embed(
             title="Server Leave",
             description=f"{guild.name} ({guild.id})",
             colour=0xFF0000,
             timestamp=datetime.datetime.utcnow(),
         )
-        embed.set_footer(text=f"{len(self.bot.guilds)} servers")
-        await join_channel.send(embed=embed)
+        guilds = sum(await self.bot.cogs["Communication"].handler("guild_count", self.bot.cluster_count))
+        embed.set_footer(text=f"{guilds} servers")
+        await self.bot.http.send_message(self.bot.config.join_channel, None, embed=embed.to_dict())
 
     @commands.Cog.listener()
     async def on_message(self, message):
