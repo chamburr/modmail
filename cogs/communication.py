@@ -52,8 +52,6 @@ class Communication(commands.Cog):
     async def event_handler(self):
         channel = self.bot.redis.pubsub_channels[bytes(self.ipc_channel, "utf-8")]
         while await channel.wait_message():
-            if not self.bot.is_ready():
-                continue
             payload = await channel.get_json(encoding="utf-8")
             if payload.get("action"):
                 if payload.get("scope") != "bot":
