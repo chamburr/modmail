@@ -1,8 +1,11 @@
 import asyncio
-import discord
 import inspect
-from discord.ext import commands
+
 from functools import partial
+
+import discord
+
+from discord.ext import commands
 
 __all__ = ("Session", "Paginator", "button", "inverse_button")
 
@@ -20,7 +23,7 @@ class Button:
 
 
 def get_emoji_as_string(emoji):
-        return f'{emoji.name}{":" + str(emoji.id) if emoji.is_custom_emoji() else ""}'
+    return f'{emoji.name}{":" + str(emoji.id) if emoji.is_custom_emoji() else ""}'
 
 
 class Session:
