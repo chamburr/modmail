@@ -1,6 +1,8 @@
-import discord
 import logging
 import traceback
+
+import discord
+
 from discord.ext import commands
 
 log = logging.getLogger(__name__)
@@ -86,14 +88,17 @@ class ErrorHandler(commands.Cog):
                 f"{error.original.__class__.__name__}: {error.original} (In {ctx.command.name})\n"
                 f"Traceback:\n{traceback.print_tb(error.original.__traceback__)}"
             )
-            await ctx.send(
-                embed=discord.Embed(
-                    title="Unknown Error",
-                    description=f"Please report this in the support server.\n```{error.original.__class__.__name__}: "
-                    f"{error.original}```",
-                    colour=self.bot.error_colour,
+            try:
+                await ctx.send(
+                    embed=discord.Embed(
+                        title="Unknown Error",
+                        description="Please report this in the support server.\n"
+                        f"```{error.original.__class__.__name__}: {error.original}```",
+                        colour=self.bot.error_colour,
+                    )
                 )
-            )
+            except Exception:
+                pass
 
 
 def setup(bot):
