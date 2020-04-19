@@ -1,9 +1,14 @@
-import psutil
+import logging
 import platform
+
 import discord
+import psutil
+
 from discord.ext import commands
 
 from utils.paginator import Paginator
+
+log = logging.getLogger(__name__)
 
 
 class General(commands.Cog):
@@ -20,12 +25,13 @@ class General(commands.Cog):
         if command:
             command = self.bot.get_command(command.lower())
             if not command:
-                return await ctx.send(
+                await ctx.send(
                     embed=discord.Embed(
                         description=f"That command does not exist. Use `{ctx.prefix}help` to see all the commands.",
                         colour=self.bot.primary_colour,
                     )
                 )
+                return
             embed = discord.Embed(title=command.name, description=command.description, colour=self.bot.primary_colour)
             usage = "\n".join([ctx.prefix + x.strip() for x in command.usage.split("\n")])
             embed.add_field(name="Usage", value=f"```{usage}```", inline=False)
@@ -39,8 +45,8 @@ class General(commands.Cog):
         page = discord.Embed(
             title=f"{self.bot.user.name} Help Menu",
             description="Thank you for using ModMail! Please direct message me if you wish to contact staff. You can "
-            "also invite me to your server with the link below, or join our support server should you need further "
-            f"help.\n\nDon't forget to check out our partners with the `{ctx.prefix}partners` command!",
+            "also invite me to your server with the link below, or join our support server if you need further help."
+            f"\n\nDon't forget to check out our partners with the `{ctx.prefix}partners` command!",
             colour=self.bot.primary_colour,
         )
         page.set_thumbnail(url=self.bot.user.avatar_url)
@@ -85,9 +91,7 @@ class General(commands.Cog):
                 "help <command>` for more information on a command.",
                 colour=self.bot.primary_colour,
             )
-            page.set_author(
-                name=f"{self.bot.user.name} Help Menu", icon_url=self.bot.user.avatar_url,
-            )
+            page.set_author(name=f"{self.bot.user.name} Help Menu", icon_url=self.bot.user.avatar_url)
             page.set_thumbnail(url=self.bot.user.avatar_url)
             page.set_footer(text="Use the reactions to flip pages.")
             for cmd in cog_commands:
@@ -111,7 +115,6 @@ class General(commands.Cog):
         hours, remainder = divmod(int(self.bot.uptime.total_seconds()), 3600)
         minutes, seconds = divmod(remainder, 60)
         days, hours = divmod(hours, 24)
-
         if not brief:
             if days:
                 fmt = "{d} days, {h} hours, {m} minutes, and {s} seconds"
@@ -127,23 +130,22 @@ class General(commands.Cog):
         description="See some super cool statistics about me.", usage="stats", aliases=["statistics", "info"],
     )
     async def stats(self, ctx):
-        guilds = 0
-        channels = 0
-
-        for guild in self.bot.guilds:
-            guilds += 1
-            channels += len(guild.channels)
+        guilds = sum(await self.bot.cogs["Communication"].handler("guild_count", self.bot.cluster_count))
+        channels = sum(await self.bot.cogs["Communication"].handler("channel_count", self.bot.cluster_count))
+        users = sum(await self.bot.cogs["Communication"].handler("user_count", self.bot.cluster_count))
 
         embed = discord.Embed(title=f"{self.bot.user.name} Statistics", colour=self.bot.primary_colour)
         embed.add_field(name="Owner", value="CHamburr#2591")
         embed.add_field(name="Bot Version", value=self.bot.version)
         embed.add_field(name="Uptime", value=self.get_bot_uptime(brief=True))
-        embed.add_field(
-            name="Shards", value=f"{f'{ctx.guild.shard_id}/' if ctx.guild else ''}{self.bot.shard_count}",
-        )
+        embed.add_field(name="Clusters", value=f"{self.bot.cluster}/{self.bot.cluster_count}")
+        if ctx.guild:
+            embed.add_field(name="Shards", value=f"{ctx.guild.shard_id + 1}/{self.bot.shard_count}")
+        else:
+            embed.add_field(name="Shards", value=f"{self.bot.shard_count}")
         embed.add_field(name="Servers", value=str(guilds))
         embed.add_field(name="Channels", value=str(channels))
-        embed.add_field(name="Users", value=str(len(ctx.bot.users)))
+        embed.add_field(name="Users", value=str(users))
         embed.add_field(name="CPU Usage", value=f"{psutil.cpu_percent()}%")
         embed.add_field(name="RAM Usage", value=f"{psutil.virtual_memory().percent}%")
         embed.add_field(name="Python Version", value=platform.python_version())
@@ -161,8 +163,8 @@ class General(commands.Cog):
         all_pages = []
         page = discord.Embed(
             title="Discord Templates",
-            description="Discord Templates is the place for you to discover a huge variety of Discord server "
-            "templates for all purposes.",
+            description="Discord Templates is the place for you to discover a huge variety of Discord server templates "
+            "for all purposes.",
             colour=self.bot.primary_colour,
         )
         page.add_field(name="Link", value="https://discordtemplates.me")
@@ -170,8 +172,8 @@ class General(commands.Cog):
         all_pages.append(page)
         page = discord.Embed(
             title="Otzdarva's Dungeon",
-            description="Otzdarva's Dungeon is a community for the Dead by Daylight streamer Otzdarva, also "
-            "known for being a PUBG and Dark Souls YouTuber in the past.",
+            description="Otzdarva's Dungeon is a community for the Dead by Daylight streamer Otzdarva, also known for "
+            "being a PUBG and Dark Souls YouTuber in the past.",
             colour=self.bot.primary_colour,
         )
         page.add_field(name="Link", value="https://discord.gg/otzdarva")
@@ -182,8 +184,8 @@ class General(commands.Cog):
         page = discord.Embed(
             title="DOOM",
             description="Hell’s armies have invaded Earth. Become the Slayer in an epic single-player campaign to "
-            "conquer demons across dimensions and stop the final destruction of humanity. The only thing they "
-            "fear... is you. RAZE HELL in DOOM Eternal!",
+            "conquer demons across dimensions and stop the final destruction of humanity. The only thing they fear... "
+            "is you. RAZE HELL in DOOM Eternal!",
             colour=self.bot.primary_colour,
         )
         page.add_field(name="Link", value="https://discord.gg/doom")
@@ -193,9 +195,9 @@ class General(commands.Cog):
         all_pages.append(page)
         page = discord.Embed(
             title="Sea of Thieves",
-            description="One of the longest running and largest community-run Sea of Thieves Discord servers. "
-            "A great and most of all welcoming place to chat about Sea of Thieves and maybe find a few crew mates "
-            "along the way.",
+            description="One of the longest running and largest community-run Sea of Thieves Discord servers. A great "
+            "and most of all welcoming place to chat about Sea of Thieves and maybe find a few crew mates along the "
+            "way.",
             colour=self.bot.primary_colour,
         )
         page.add_field(name="Link", value="https://discord.gg/seaofthievescommunity")
@@ -238,8 +240,8 @@ class General(commands.Cog):
         all_pages.append(page)
         page = discord.Embed(
             title="Custom Bot Development",
-            description="This is also my server, and this is where you can request for bots for your server. "
-            "Nothing on this world is free btw.",
+            description="This is also my server, and this is where you can request for bots for your server. Nothing "
+            "on this world is free btw.",
             colour=self.bot.primary_colour,
         )
         page.add_field(name="Link", value="https://discord.gg/JNQhDDM")
@@ -293,19 +295,25 @@ class General(commands.Cog):
             description="Bot usage statistics since 1 January 2020.",
             colour=self.bot.primary_colour,
         )
-        embed.add_field(name="Total commands", value=self.bot.total_commands, inline=False)
-        embed.add_field(name="Total messages", value=self.bot.total_messages, inline=False)
-        embed.add_field(name="Total tickets", value=self.bot.total_tickets, inline=False)
+        async with self.bot.pool.acquire() as conn:
+            res = await conn.fetchrow("SELECT commands, messages, tickets FROM stats")
+        embed.add_field(name="Total commands", value=str(res[0]), inline=False)
+        embed.add_field(name="Total messages", value=str(res[1]), inline=False)
+        embed.add_field(name="Total tickets", value=str(res[2]), inline=False)
         await ctx.send(embed=embed)
 
     @commands.command(
         description="Get the top 15 servers using this bot.", aliases=["topguilds"], usage="topservers", hidden=True
     )
     async def topservers(self, ctx):
-        guilds = sorted(self.bot.guilds, key=lambda x: x.member_count, reverse=True)[:15]
+        data = await self.bot.cogs["Communication"].handler("get_top_guilds", self.bot.cluster_count)
+        guilds = []
+        for chunk in data:
+            guilds.extend(chunk)
+        guilds = sorted(guilds, key=lambda x: x["member_count"], reverse=True)[:15]
         top_guilds = []
         for index, guild in enumerate(guilds):
-            top_guilds.append(f"#{str(index + 1)} {guild.name} ({guild.member_count} members)")
+            top_guilds.append(f"#{str(index + 1)} {guild['name']} ({guild['member_count']} members)")
         await ctx.send(
             embed=discord.Embed(
                 title="Top 15 Servers", description="\n".join(top_guilds), colour=self.bot.primary_colour,
