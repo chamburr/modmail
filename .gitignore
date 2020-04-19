@@ -108,5 +108,3 @@ venv.bak/
 
 # Custom
 config.py
-data.sqlite
-discord.log
