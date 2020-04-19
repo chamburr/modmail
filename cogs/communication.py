@@ -183,7 +183,7 @@ class Communication(commands.Cog):
         channel = guild.get_channel(channel_id)
         if not channel:
             return
-        payload = {"output": self.to_dict(channel, ["channel"]), "command_id": command_id}
+        payload = {"output": self.to_dict(channel, ["channel", "guild"]), "command_id": command_id}
         await self.bot.redis.execute("PUBLISH", self.ipc_channel, json.dumps(payload))
 
     async def get_top_guilds(self, command_id):
