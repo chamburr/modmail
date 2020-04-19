@@ -410,6 +410,46 @@ class Configuration(commands.Cog):
             )
         )
 
+    @checks.in_database()
+    @commands.has_permissions(administrator=True)
+    @commands.guild_only()
+    @commands.command(description="View the configurations for the current server.", usage="configuration")
+    async def viewconfig(self, ctx):
+        data = await self.bot.get_data(ctx.guild.id)
+        category = ctx.guild.get_channel(data[2])
+        logging = ctx.guild.get_channel(data[4])
+        access_roles = []
+        for role in data[3]:
+            access_roles.append(f"<@&{role}>")
+        ping_roles = []
+        for role in data[8]:
+            if role == -1:
+                ping_roles.append("@here")
+            elif role == ctx.guild.default_role.id:
+                ping_roles.append("@everyone")
+            else:
+                ping_roles.append(f"<@&{role}>")
+        welcome = data[5]
+        if welcome and len(welcome) > 1000:
+            welcome = welcome[:997] + "..."
+        goodbye = data[6]
+        if goodbye and len(goodbye) > 1000:
+            goodbye = goodbye[:997] + "..."
+        blacklist = []
+        for user in data[9]:
+            blacklist.append(f"<@{user}>")
+        embed = discord.Embed(title="Server Configurations", colour=self.bot.primary_colour)
+        embed.add_field(name="Prefix", value=self.bot.tools.get_guild_prefix(self.bot, ctx.guild))
+        embed.add_field(name="Category", value="*Not set*" if category is None else category.name)
+        embed.add_field(name="Access Roles", value="*Not set*" if len(access_roles) == 0 else " ".join(access_roles))
+        embed.add_field(name="Ping Roles", value="*Not set*" if len(ping_roles) == 0 else " ".join(ping_roles))
+        embed.add_field(name="Logging", value="*Not set*" if logging is None else f"<#{logging.id}>")
+        embed.add_field(name="Advanced Logging", value="Enabled" if data[7] is True else "Disabled")
+        embed.add_field(name="Anonymous Messaging", value="Enabled" if data[10] is True else "Disabled")
+        embed.add_field(name="Greeting Message", value="*Not set*" if welcome is None else welcome, inline=False)
+        embed.add_field(name="Closing message", value="*Not set*" if goodbye is None else goodbye, inline=False)
+        await ctx.send(embed=embed)
+
 
 def setup(bot):
     bot.add_cog(Configuration(bot))
