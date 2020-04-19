@@ -1,8 +1,15 @@
 import asyncio
+import logging
+import typing
+
 import discord
+
 from discord.ext import commands
 
 from utils import checks
+
+log = logging.getLogger(__name__)
+
 
 class PingRoleConverter(commands.RoleConverter):
     async def convert(self, ctx, argument):
