@@ -1,14 +1,16 @@
 import copy
-import discord
-import logging
-import traceback
-import textwrap
 import io
+import json
+import logging
 import subprocess
+import textwrap
+import traceback
 
-from typing import Optional
 from contextlib import redirect_stdout
-from importlib import reload as importlib_reload
+from typing import Optional
+
+import discord
+
 from discord.ext import commands
 
 from utils import checks
@@ -17,9 +19,9 @@ log = logging.getLogger(__name__)
 
 
 def cleanup_code(content):
-        if content.startswith("```") and content.endswith("```"):
-            return "\n".join(content.split("\n")[1:-1])
-        return content.strip("` \n")
+    if content.startswith("```") and content.endswith("```"):
+        return "\n".join(content.split("\n")[1:-1])
+    return content.strip("` \n")
 
 
 class Owner(commands.Cog):
