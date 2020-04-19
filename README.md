@@ -31,10 +31,12 @@ This self-hosting guide requires you to have some basic knowledge about command 
 
 ### Prerequisites
 
-In order to run ModMail, you will need to install the following tools.
+In order to run ModMail, you will need to install the following software. Please also note that ModMail can only be hosted on UNIX based operating systems. Windows is not supported.
 
 - [Git](https://git-scm.com)
 - [Python 3](https://www.python.org/downloads/)
+- [PostgreSQL](https://www.postgresql.org/download/)
+- [Redis](https://redis.io/download/)
 
 ### Getting the Sources
 
@@ -68,8 +70,10 @@ pip3 install -r requirements.txt
 Congratulations! You have set up everything and you can finally have the bot up and running. Use the following command to run.
 
 ```sh
-py main.py
+python3 launcher.py
 ```
+
+Alternatively, you may also run `main.py` directly for a single cluster.
 
 ## Code of Conduct
 
