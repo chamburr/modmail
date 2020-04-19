@@ -236,21 +236,6 @@ class Owner(commands.Cog):
             await ctx.send(embed=discord.Embed(description="No results to fetch.", colour=self.bot.primary_colour))
 
     @checks.is_owner()
-    @commands.command(description="Get the bot logs. Default to 10 lines.", usage="botlogs [lines]", hidden=True)
-    async def botlogs(self, ctx, *, lines: int = 10):
-        with open("discord.log", "r") as file:
-            content = file.readlines()
-        if lines > len(content):
-            lines = len(content)
-        content = "\n".join(content[(len(content) - lines) :])
-        try:
-            await ctx.send(embed=discord.Embed(description=f"```{content}```", colour=self.bot.primary_colour))
-        except discord.HTTPException:
-            await ctx.send(
-                embed=discord.Embed(description="The message is too long to be sent.", colour=self.bot.error_colour)
-            )
-
-    @checks.is_owner()
     @commands.command(
         description="Invoke the command as another user and optionally in another channel.",
         usage="invoke [channel] <user> <command>",
