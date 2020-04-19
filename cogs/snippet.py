@@ -57,10 +57,17 @@ class Snippet(commands.Cog):
     )
     async def snippetadd(self, ctx, name: str, *, content: str):
         name = name.lower()
+        if len(name) > 100:
+            await ctx.send(
+                embed=discord.Embed(
+                    description="The snippet name cannot exceed 100 characters.", colour=self.bot.error_colour,
+                )
+            )
+            return
         if len(content) > 1000:
             await ctx.send(
                 embed=discord.Embed(
-                    description="The snippet cannot exceed 1000 characters.", colour=self.bot.error_colour,
+                    description="The snippet content cannot exceed 1000 characters.", colour=self.bot.error_colour,
                 )
             )
             return
