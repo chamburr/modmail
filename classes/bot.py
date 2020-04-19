@@ -1,15 +1,18 @@
-import aiohttp
+import datetime
+import logging
 import sys
 import traceback
-import logging
-import datetime
-import sqlite3
+
+import aiohttp
+import aioredis
+import asyncpg
+
 from discord.ext import commands
 
 import config
+
 from utils import tools
 
-conn = sqlite3.connect("data.sqlite")
 log = logging.getLogger(__name__)
 
 
@@ -18,10 +21,8 @@ class ModMail(commands.AutoShardedBot):
         super().__init__(**kwargs)
         self.start_time = datetime.datetime.utcnow()
         self.session = aiohttp.ClientSession(loop=self.loop)
-
-    @property
-    def conn(self):
-        return conn
+        self.cluster = kwargs.get("cluster_id")
+        self.cluster_count = kwargs.get("cluster_count")
 
     @property
     def uptime(self):
@@ -34,6 +35,10 @@ class ModMail(commands.AutoShardedBot):
     @property
     def config(self):
         return config
+
+    @property
+    def ipc_channel(self):
+        return self.config.ipc_channel
 
     @property
     def tools(self):
@@ -55,48 +60,62 @@ class ModMail(commands.AutoShardedBot):
     def error_colour(self):
         return self.config.error_colour
 
-    def get_data(self, guild):
-        c = self.conn.cursor()
-        c.execute("SELECT * FROM data WHERE guild=?", (guild,))
-        res = c.fetchone()
-        if not res:
-            c.execute(
-                "INSERT INTO data VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
-                (guild, None, None, None, None, None, None, None, None, None),
-            )
-            self.conn.commit()
-            return self.get_data(guild)
-        else:
-            return res
+    async def get_data(self, guild):
+        async with self.pool.acquire() as conn:
+            res = await conn.fetchrow("SELECT * FROM data WHERE guild=$1", guild)
+            if not res:
+                await conn.execute(
+                    "INSERT INTO data VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)",
+                    guild,
+                    None,
+                    None,
+                    [],
+                    None,
+                    None,
+                    None,
+                    False,
+                    [],
+                    [],
+                    False,
+                )
+                return await self.get_data(guild)
+        return res
 
     all_prefix = {}
     all_category = []
     banned_guilds = []
     banned_users = []
-    total_commands = 0
-    total_messages = 0
-    total_tickets = 0
+    stats_commands = 0
+    stats_messages = 0
+    stats_tickets = 0
+
+    async def connect_redis(self):
+        self.redis = await aioredis.create_pool("redis://localhost", minsize=5, maxsize=10, loop=self.loop, db=0)
+        info = (await self.redis.execute("INFO")).decode()
+        for line in info.split("\n"):
+            if line.startswith("redis_version"):
+                self.redis_version = line.split(":")[1]
+                break
+
+    async def connect_postgres(self):
+        self.pool = await asyncpg.create_pool(**self.config.database, max_size=20, command_timeout=60)
 
     async def start_bot(self):
-        c = self.conn.cursor()
-        c.execute("SELECT guild, prefix, category FROM data")
-        res = c.fetchall()
-        for row in res:
+        await self.connect_redis()
+        await self.connect_postgres()
+        async with self.pool.acquire() as conn:
+            data = await conn.fetch("SELECT guild, prefix, category FROM data")
+            bans = await conn.fetch("SELECT identifier, category FROM ban")
+            await conn.execute("INSERT INTO stats SELECT 0, 0, 0 WHERE NOT EXISTS (SELECT * FROM stats)")
+        for row in data:
             self.all_prefix[row[0]] = row[1]
             if row[2]:
                 self.all_category.append(row[2])
-        c.execute("SELECT id, type FROM banlist")
-        res = c.fetchall()
-        for row in res:
-            if row[1] == "user":
+        for row in bans:
+            if row[1] == 0:
                 self.banned_users.append(row[0])
-            elif row[1] == "guild":
+            elif row[1] == 1:
                 self.banned_guilds.append(row[0])
-        c.execute("SELECT commands, messages, tickets FROM stats")
-        res = c.fetchone()
-        self.total_commands = res[0]
-        self.total_messages = res[1]
-        self.total_tickets = res[2]
         for extension in self.config.initial_extensions:
             try:
                 self.load_extension(extension)
