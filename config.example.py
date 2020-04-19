@@ -22,6 +22,18 @@ sentry_url = ""
 # Whether the bot is for testing, if true, stats and errors will not be posted
 testing = True
 
+# PUBSUB channel for Redis
+ipc_channel = ""
+
+# Postgres database credentials
+database = {"database": "", "user": "", "password": "", "host": "", "port": 5432}
+
+# Number of shards for each cluster
+shards_per_cluster = 4
+
+# Additional shards to launch
+additional_shards = 0
+
 # The default prefix for commands
 default_prefix = "="
 
@@ -34,26 +46,26 @@ activity = [
 owner = 000000000000000000
 
 # Bot owners that have access to owner commands
-owners = [
-]
+owners = []
 
 # Bot admins that have access to admin commands
-admins = [
-]
+admins = []
 
 # Cogs to load on startup
 initial_extensions = [
     "cogs.admin",
+    "cogx.communication",
     "cogs.configuration",
+    "cogs.core",
     "cogs.direct_message",
     "cogs.error_handler",
     "cogs.events",
     "cogs.general",
-    "cogs.main",
     "cogs.miscellaneous",
     "cogs.modmail_channel",
     "cogs.owner",
     "cogs.premium",
+    "cogs.snippet",
 ]
 
 # Channels to send logs
