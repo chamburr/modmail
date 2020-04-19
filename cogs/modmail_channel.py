@@ -1,9 +1,14 @@
-import io
 import datetime
+import io
+import logging
+
 import discord
+
 from discord.ext import commands
 
-from utils import checks
+from utils import checks, tools
+
+log = logging.getLogger(__name__)
 
 
 class ModMailEvents(commands.Cog):
@@ -21,39 +26,47 @@ class ModMailEvents(commands.Cog):
             or message.channel.permissions_for(message.guild.me).embed_links is False
         ):
             return
-        prefix = self.bot.tools.get_guild_prefix(self.bot, message)
+        prefix = self.bot.tools.get_guild_prefix(self.bot, message.guild)
         if message.content.startswith(prefix):
             return
         if message.author.id in self.bot.banned_users:
-            return await message.channel.send(
+            await message.channel.send(
                 embed=discord.Embed(description="You are banned from this bot.", colour=self.bot.error_colour)
             )
-        await self.send_mail_mod(message, prefix)
+            return
+        data = await self.bot.get_data(message.guild.id)
+        if data[10] is True:
+            await self.send_mail_mod(message, prefix, True)
+        else:
+            await self.send_mail_mod(message, prefix)
 
-    async def send_mail_mod(self, message, prefix, anon: bool = False, msg: str = None):
-        self.bot.total_messages += 1
-        data = self.bot.get_data(message.guild.id)
-        if data[9] and self.bot.tools.get_modmail_user(message.channel) in data[9].split(","):
-            return await message.channel.send(
+    async def send_mail_mod(self, message, prefix, anon: bool = False, msg: str = None, snippet: bool = False):
+        self.bot.stats_messages += 1
+        data = await self.bot.get_data(message.guild.id)
+        if self.bot.tools.get_modmail_user(message.channel) in data[9]:
+            await message.channel.send(
                 embed=discord.Embed(
                     description="That user is blacklisted from sending a message here. You need to whitelist them "
                     "before you can send them a message.",
                     colour=self.bot.error_colour,
                 )
             )
+            return
         member = message.guild.get_member(self.bot.tools.get_modmail_user(message.channel))
         if member is None:
-            return await message.channel.send(
+            await message.channel.send(
                 embed=discord.Embed(
-                    title="Member Not Found",
-                    description=f"The user left the server. Use `{prefix}close [reason]` to close this channel.",
+                    description=f"The user was not found. Use `{prefix}close [reason]` to close this channel.",
                     colour=self.bot.error_colour,
                 )
             )
+            return
+        if snippet is True:
+            msg = tools.tag_format(msg, member)
         try:
             embed = discord.Embed(
                 title="Message Received",
-                description=message.content if anon is False else msg,
+                description=message.content if msg is None else msg,
                 colour=self.bot.mod_colour,
                 timestamp=datetime.datetime.utcnow(),
             )
@@ -73,22 +86,18 @@ class ModMailEvents(commands.Cog):
             embed.title = "Message Sent"
             embed.set_footer(text=f"{member.name}#{member.discriminator} | {member.id}", icon_url=member.avatar_url)
             for count, attachment in enumerate([attachment.url for attachment in message2.attachments], start=1):
-                embed.add_field(
-                    name=f"Attachment {count}",
-                    value=attachment,
-                    inline=False
-                )
+                embed.add_field(name=f"Attachment {count}", value=attachment, inline=False)
             for file in files:
                 file.reset()
             await message.channel.send(embed=embed, files=files)
         except discord.Forbidden:
-            return await message.channel.send(
+            await message.channel.send(
                 embed=discord.Embed(
-                    title="Failed",
                     description="The message could not be sent. The user might have disabled Direct Messages.",
                     colour=self.bot.error_colour,
                 )
             )
+            return
         try:
             await message.delete()
         except discord.Forbidden:
