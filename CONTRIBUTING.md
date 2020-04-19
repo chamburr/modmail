@@ -28,7 +28,7 @@ To set up your local development environment, follow the self-hosting guide [her
 
 ### Coding Style
 
-We use [black](https://github.com/psf/black) for code style and enforce a maximum 120 characters per line. Therefore, please always run `format.sh` before submitting a pull request.
+We use [black](https://github.com/psf/black) for code style and enforce a maximum of 120 characters per line. We also use [isort](https://github.com/timothycrosley/isort) to sort imports and keep them neat. Therefore, please always run `format.sh` before submitting a pull request.
 
 ### Submitting Pull Requests
 
