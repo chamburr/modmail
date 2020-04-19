@@ -24,7 +24,7 @@ If you want to implement a new feature, you should always create an issue about 
 
 To set up your local development environment, follow the self-hosting guide [here](https://github.com/CHamburr/modmail/blob/master/README.md). When you successfully self-host the bot, your development environment should more or less be ready.
 
-[Pylint](https://www.pylint.org) is a useful code analysis tool you may want to use.
+[Flake8](https://gitlab.com/pycqa/flake8) is a useful code analysis tool you may want to use.
 
 ### Coding Style
 
