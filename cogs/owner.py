@@ -176,15 +176,14 @@ class Owner(commands.Cog):
     @checks.is_owner()
     @commands.command(description="Execute SQL.", usage="sql <query>", hidden=True)
     async def sql(self, ctx, *, query: str):
-        c = self.bot.conn.cursor()
-        try:
-            c.execute(query)
-            res = c.fetchone()
-            self.bot.conn.commit()
-        except Exception:
-            return await ctx.send(
-                embed=discord.Embed(description=f"```py\n{traceback.format_exc()}```", colour=self.bot.error_colour)
-            )
+        async with self.bot.pool.acquire() as conn:
+            try:
+                res = await conn.fetch(query)
+            except Exception:
+                await ctx.send(
+                    embed=discord.Embed(description=f"```py\n{traceback.format_exc()}```", colour=self.bot.error_colour)
+                )
+            return
         if res:
             await ctx.send(embed=discord.Embed(description=f"```{res}```", colour=self.bot.primary_colour))
         else:
@@ -223,15 +222,19 @@ class Owner(commands.Cog):
     @checks.is_owner()
     @commands.command(description="Remove a user's premium.", usage="wipepremium <user>", hidden=True)
     async def wipepremium(self, ctx, *, user: discord.User):
-        c = self.bot.conn.cursor()
-        c.execute("SELECT * FROM premium WHERE user=?", (user.id,))
-        res = c.fetchone()
-        if res[1]:
-            for guild in res[1].split(","):
-                c.execute("UPDATE data SET welcome=?, goodbye=?, loggingplus=? WHERE guild=?", (None, None, None, guild))
-                self.bot.conn.commit()
-        c.execute("DELETE FROM premium WHERE user=?", (user.id,))
-        self.bot.conn.commit()
+        async with self.bot.pool.acquire() as conn:
+            res = await conn.fetchrow("SELECT identifier, guild FROM premium WHERE identifier=$1", user.id)
+            if res:
+                for guild in res[1]:
+                    await conn.execute(
+                        "UPDATE data SET welcome=$1, goodbye=$2, loggingplus=$3 WHERE guild=$4",
+                        None,
+                        None,
+                        False,
+                        guild,
+                    )
+                    await conn.execute("DELETE FROM snippet WHERE guild=$1", guild)
+            await conn.execute("DELETE FROM premium WHERE identifier=$1", user.id)
         await ctx.send(
             embed=discord.Embed(
                 description="Successfully removed that user's premium.", colour=self.bot.primary_colour,
@@ -240,59 +243,52 @@ class Owner(commands.Cog):
 
     @checks.is_owner()
     @commands.command(description="Make me say something.", usage="echo <message>", rest_is_raw=True, hidden=True)
-    async def echo(self, ctx, *, content):
+    async def echo(self, ctx, *, content: str):
         await ctx.send(content)
 
     @checks.is_owner()
     @commands.command(description="Ban a user from the bot", usage="banuser <user>", hidden=True)
     async def banuser(self, ctx, *, user: discord.User):
-        c = self.bot.conn.cursor()
-        c.execute("SELECT * FROM banlist WHERE id=? AND type=?", (user.id, "user"))
-        res = c.fetchone()
-        if not res:
-            c.execute("INSERT INTO banlist (id, type) VALUES (?, ?)", (user.id, "user"))
-            self.bot.conn.commit()
-            self.bot.banned_users.append(user.id)
-            await ctx.send(
-                embed=discord.Embed(
-                    description="Successfully banned that user from the bot.", colour=self.bot.primary_colour,
+        async with self.bot.pool.acquire() as conn:
+            res = await conn.fetchrow("SELECT * FROM ban WHERE identifier=$1 AND category=$2", user.id, 0)
+            if res:
+                await ctx.send(
+                    embed=discord.Embed(description="That user is already banned.", colour=self.bot.error_colour)
                 )
+                return
+            await conn.execute("INSERT INTO ban (identifier, category) VALUES ($1, $2)", user.id, 0)
+        self.bot.banned_users.append(user.id)
+        await ctx.send(
+            embed=discord.Embed(
+                description="Successfully banned that user from the bot.", colour=self.bot.primary_colour,
             )
-        else:
-            await ctx.send(
-                embed=discord.Embed(description="That user is already banned.", colour=self.bot.error_colour)
-            )
+        )
 
     @checks.is_owner()
     @commands.command(description="Unban a user from the bot", usage="unbanuser <user>", hidden=True)
     async def unbanuser(self, ctx, *, user: discord.User):
-        c = self.bot.conn.cursor()
-        c.execute("SELECT * FROM banlist WHERE id=? AND type=?", (user.id, "user"))
-        res = c.fetchone()
-        if res:
-            c.execute("DELETE FROM banlist WHERE id=? AND type=?", (user.id, "user"))
-            self.bot.conn.commit()
-            self.bot.banned_users.remove(user.id)
-            await ctx.send(
-                embed=discord.Embed(
-                    description="Successfully unbanned that user from the bot.", colour=self.bot.primary_colour,
+        async with self.bot.pool.acquire() as conn:
+            res = await conn.fetchrow("SELECT * FROM ban WHERE identifier=$1 AND category=$2", user.id, 0)
+            if not res:
+                await ctx.send(
+                    embed=discord.Embed(description="That user is not already banned.", colour=self.bot.error_colour)
                 )
+                return
+            await conn.execute("DELETE FROM ban WHERE identifier=$1 AND category=$2", user.id, 0)
+        self.bot.banned_users.remove(user.id)
+        await ctx.send(
+            embed=discord.Embed(
+                description="Successfully unbanned that user from the bot.", colour=self.bot.primary_colour,
             )
-        else:
-            await ctx.send(
-                embed=discord.Embed(description="That user is not already banned.", colour=self.bot.error_colour)
-            )
+        )
 
     @checks.is_owner()
     @commands.command(description="Make the bot leave a server.", usage="leaveserver <server ID>", hidden=True)
     async def leaveserver(self, ctx, *, guild: int):
-        guild = self.bot.get_guild(guild)
-        if not guild:
-            return await ctx.send(
-                embed=discord.Embed(description="That server is not found", colour=self.bot.error_colour)
-            )
+        data = await self.bot.cogs["Communication"].handler("leave_guild", 1, {"guild_id": guild})
+        if not data:
+            await ctx.send(embed=discord.Embed(description="That server is not found.", colour=self.bot.error_colour))
         else:
-            await guild.leave()
             await ctx.send(
                 embed=discord.Embed(description="The bot has left that server.", colour=self.bot.primary_colour)
             )
@@ -300,46 +296,42 @@ class Owner(commands.Cog):
     @checks.is_owner()
     @commands.command(description="Ban a server from the bot", usage="banserver <server ID>", hidden=True)
     async def banserver(self, ctx, *, guild: int):
-        if not self.bot.get_guild(guild):
-            return await ctx.send(
-                embed=discord.Embed(description="That server is not found", colour=self.bot.error_colour)
-            )
-        c = self.bot.conn.cursor()
-        c.execute("SELECT * FROM banlist WHERE id=? AND type=?", (guild, "guild"))
-        res = c.fetchone()
-        if not res:
-            c.execute("INSERT INTO banlist (id, type) VALUES (?, ?)", (guild, "guild"))
-            self.bot.conn.commit()
-            self.bot.banned_guilds.append(guild)
-            await ctx.send(
-                embed=discord.Embed(
-                    description="Successfully banned that server from the bot.", colour=self.bot.primary_colour,
+        data = await self.bot.cogs["Communication"].handler("leave_guild", 1, {"guild_id": guild})
+        if not data:
+            await ctx.send(embed=discord.Embed(description="That server is not found.", colour=self.bot.error_colour))
+            return
+        async with self.bot.pool.acquire() as conn:
+            res = await conn.fetchrow("SELECT * FROM ban WHERE identifier=$1 AND category=$2", guild, 1)
+            if res:
+                await ctx.send(
+                    embed=discord.Embed(description="That server is already banned.", colour=self.bot.error_colour)
                 )
+                return
+            await conn.execute("INSERT INTO ban (identifier, category) VALUES ($1, $2)", guild, 1)
+        self.bot.banned_guilds.append(guild)
+        await ctx.send(
+            embed=discord.Embed(
+                description="Successfully banned that server from the bot.", colour=self.bot.primary_colour,
             )
-        else:
-            await ctx.send(
-                embed=discord.Embed(description="That server is already banned.", colour=self.bot.error_colour)
-            )
+        )
 
     @checks.is_owner()
     @commands.command(description="Unban a server from the bot", usage="unbanserver <server ID>", hidden=True)
     async def unbanserver(self, ctx, *, guild: int):
-        c = self.bot.conn.cursor()
-        c.execute("SELECT * FROM banlist WHERE id=? AND type=?", (guild, "guild"))
-        res = c.fetchone()
-        if res:
-            c.execute("DELETE FROM banlist WHERE id=? AND type=?", (guild, "guild"))
-            self.bot.conn.commit()
-            self.bot.banned_guilds.remove(guild)
-            await ctx.send(
-                embed=discord.Embed(
-                    description="Successfully unbanned that server from the bot.", colour=self.bot.primary_colour,
+        async with self.bot.pool.acquire() as conn:
+            res = await conn.fetchrow("SELECT * FROM ban WHERE identifier=$1 AND category=$2", guild, 1)
+            if not res:
+                await ctx.send(
+                    embed=discord.Embed(description="That server is not already banned.", colour=self.bot.error_colour)
                 )
+                return
+            await conn.execute("DELETE FROM ban WHERE identifier=$1 AND category=$2", guild, 1)
+        self.bot.banned_guilds.remove(guild)
+        await ctx.send(
+            embed=discord.Embed(
+                description="Successfully unbanned that server from the bot.", colour=self.bot.primary_colour,
             )
-        else:
-            await ctx.send(
-                embed=discord.Embed(description="That server is not already banned.", colour=self.bot.error_colour)
-            )
+        )
 
 
 def setup(bot):

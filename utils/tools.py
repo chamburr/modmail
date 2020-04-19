@@ -1,46 +1,35 @@
+import logging
+
 import discord.utils as utils
 
+log = logging.getLogger(__name__)
 
-def get_guild_prefix(bot, message):
-    if not message.guild:
+
+def get_guild_prefix(bot, guild, json_dict=False):
+    if not guild:
         return bot.config.default_prefix
+    if json_dict:
+        guild_id = guild["id"]
+    else:
+        guild_id = guild.id
     try:
-        prefix = bot.all_prefix[message.guild.id]
+        prefix = bot.all_prefix[guild_id]
         return bot.config.default_prefix if prefix is None else prefix
     except KeyError:
-        c = bot.conn.cursor()
-        c.execute("SELECT prefix FROM data WHERE guild=?", (message.guild.id,))
-        prefix = c.fetchone()
-        if prefix and prefix[0]:
-            bot.all_prefix[message.guild.id] = prefix[0]
-            return prefix[0]
-        else:
-            bot.all_prefix[message.guild.id] = None
-            return bot.config.default_prefix
+        return bot.config.default_prefix
 
 
-def get_user_settings(bot, user):
-    c = bot.conn.cursor()
-    c.execute("SELECT * FROM usersettings WHERE user=?", (user,))
-    res = c.fetchone()
-    return res
+async def get_user_settings(bot, user):
+    async with bot.pool.acquire() as conn:
+        return await conn.fetchrow("SELECT identifier, confirmation FROM preference WHERE identifier=$1", user)
 
 
-def get_premium_slots(bot, user):
-    guild = bot.get_guild(bot.config.main_server)
-    member = guild.get_member(user)
-    if not member:
+async def get_premium_slots(bot, user):
+    data = await bot.cogs["Communication"].handler("get_user_premium", 1, {"user_id": user})
+    if not data or data[0] == 0:
         return False
-    elif user in bot.config.admins or user in bot.config.owners:
-        return 1000
-    elif utils.get(member.roles, id=bot.config.premium5):
-        return 5
-    elif utils.get(member.roles, id=bot.config.premium3):
-        return 3
-    elif utils.get(member.roles, id=bot.config.premium1):
-        return 1
     else:
-        return False
+        return data[0]
 
 
 def get_modmail_user(channel):

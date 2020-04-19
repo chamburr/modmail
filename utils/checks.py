@@ -1,5 +1,10 @@
+import logging
+
 import discord
+
 from discord.ext import commands
+
+log = logging.getLogger(__name__)
 
 
 def is_owner():
@@ -24,34 +29,28 @@ def is_admin():
 
 def in_database():
     async def predicate(ctx):
-        c = ctx.bot.conn.cursor()
-        c.execute("SELECT * FROM data WHERE guild=?", (ctx.guild.id,))
-        res = c.fetchone()
-        if res is None or res[2] is None:
+        async with ctx.bot.pool.acquire() as conn:
+            res = await conn.fetchrow("SELECT category FROM data WHERE guild=$1", ctx.guild.id)
+        if not res or not res[0]:
             await ctx.send(
                 embed=discord.Embed(
                     description=f"Your server has not been set up yet. Use `{ctx.prefix}setup` first.",
                     colour=ctx.bot.error_colour,
                 )
             )
-        return True if res else False
+        return True if res and res[0] else False
 
     return commands.check(predicate)
 
 
 def is_premium():
     async def predicate(ctx):
-        c = ctx.bot.conn.cursor()
-        c.execute("SELECT server FROM premium")
-        res = c.fetchall()
+        async with ctx.bot.pool.acquire() as conn:
+            res = await conn.fetch("SELECT guild FROM premium")
         all_premium = []
         for row in res:
-            if row[0] is None:
-                continue
-            row = row[0].split(",")
-            for guild in row:
-                all_premium.append(guild)
-        if str(ctx.guild.id) not in all_premium:
+            all_premium.extend(row[0])
+        if ctx.guild.id not in all_premium:
             await ctx.send(
                 embed=discord.Embed(
                     description="This server does not have premium. Want to get premium? More information "
@@ -68,41 +67,49 @@ def is_premium():
 
 def is_patron():
     async def predicate(ctx):
-        c = ctx.bot.conn.cursor()
-        c.execute("SELECT user FROM premium WHERE user=?", (ctx.author.id,))
-        res = c.fetchone()
-        if res is None:
-            slots = ctx.bot.tools.get_premium_slots(ctx.bot, ctx.author.id)
-            if slots is False:
-                await ctx.send(
-                    embed=discord.Embed(
-                        description="This command requires you to be a patron. Want to become a patron? More "
-                        f"information is available with the `{ctx.prefix}premium` command.",
-                        colour=ctx.bot.error_colour,
-                    )
+        async with ctx.bot.pool.acquire() as conn:
+            res = await conn.fetchrow("SELECT identifier FROM premium WHERE identifier=$1", ctx.author.id)
+        if res:
+            return True
+        slots = await ctx.bot.tools.get_premium_slots(ctx.bot, ctx.author.id)
+        if slots is False:
+            await ctx.send(
+                embed=discord.Embed(
+                    description="This command requires you to be a patron. Want to become a patron? More "
+                    f"information is available with the `{ctx.prefix}premium` command.",
+                    colour=ctx.bot.error_colour,
                 )
-                return False
-            else:
-                c.execute(
-                    "INSERT INTO premium (user, server) VALUES (?, ?)", (ctx.author.id, None),
-                )
-                ctx.bot.conn.commit()
-                return True
+            )
+            return False
         else:
+            async with ctx.bot.pool.acquire() as conn:
+                await conn.execute(
+                    "INSERT INTO premium (identifier, guild) VALUES ($1, $2)", ctx.author.id, [],
+                )
             return True
 
     return commands.check(predicate)
 
 
-def is_modmail_channel2(bot, channel, user_id=None):
-    return (
-        channel.category_id
-        and channel.category_id in bot.all_category
-        and channel.topic
-        and channel.topic.startswith("ModMail Channel ")
-        and channel.topic.replace("ModMail Channel ", "").split(" ")[0].isdigit()
-        and (channel.topic.replace("ModMail Channel ", "").split(" ")[0] == str(user_id) if user_id else True)
-    )
+def is_modmail_channel2(bot, channel, user_id=None, json_dict=False):
+    if json_dict is True:
+        return (
+            channel["category_id"]
+            and int(channel["category_id"]) in bot.all_category
+            and channel["topic"]
+            and channel["topic"].startswith("ModMail Channel ")
+            and channel["topic"].replace("ModMail Channel ", "").split(" ")[0].isdigit()
+            and (channel["topic"].replace("ModMail Channel ", "").split(" ")[0] == str(user_id) if user_id else True)
+        )
+    else:
+        return (
+            channel.category_id
+            and channel.category_id in bot.all_category
+            and channel.topic
+            and channel.topic.startswith("ModMail Channel ")
+            and channel.topic.replace("ModMail Channel ", "").split(" ")[0].isdigit()
+            and (channel.topic.replace("ModMail Channel ", "").split(" ")[0] == str(user_id) if user_id else True)
+        )
 
 
 def is_modmail_channel():
@@ -121,15 +128,14 @@ def is_modmail_channel():
 def is_mod():
     async def predicate(ctx):
         has_role = False
-        roles = ctx.bot.get_data(ctx.guild.id)[3]
-        if roles:
-            for role in roles.split(","):
-                role = ctx.guild.get_role(int(role))
-                if role is None:
-                    continue
-                if role in ctx.author.roles:
-                    has_role = True
-                    break
+        roles = (await ctx.bot.get_data(ctx.guild.id))[3]
+        for role in roles:
+            role = ctx.guild.get_role(role)
+            if not role:
+                continue
+            if role in ctx.author.roles:
+                has_role = True
+                break
         if has_role is False and ctx.author.guild_permissions.administrator is False:
             await ctx.send(
                 embed=discord.Embed(

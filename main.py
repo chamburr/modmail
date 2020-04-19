@@ -33,19 +33,6 @@ bot = ModMail(
     heartbeat_timeout=300,
 )
 
-c = bot.conn.cursor()
-c.execute(
-    "CREATE TABLE IF NOT EXISTS data "
-    "(guild bigint NOT NULL PRIMARY KEY, prefix text, category bigint, accessrole text, "
-    "logging bigint, welcome text, goodbye text, loggingplus integer, pingrole text, blacklist text)"
-)
-c.execute("CREATE TABLE IF NOT EXISTS premium (user bigint NOT NULL PRIMARY KEY, server text)")
-c.execute("CREATE TABLE IF NOT EXISTS banlist (id bigint NOT NULL PRIMARY KEY, type text)")
-c.execute("CREATE TABLE IF NOT EXISTS usersettings (user bigint NOT NULL PRIMARY KEY, confirmation int)")
-c.execute("CREATE TABLE IF NOT EXISTS stats (commands int, messages int, tickets int)")
-c.execute("INSERT INTO stats SELECT 0, 0, 0 WHERE NOT EXISTS (SELECT * FROM stats)")
-bot.conn.commit()
-
 
 @bot.event
 async def on_message(_):
