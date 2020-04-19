@@ -26,7 +26,7 @@ class Snippet(commands.Cog):
         async with self.bot.pool.acquire() as conn:
             res = await conn.fetchrow("SELECT content FROM snippet WHERE name=$1 AND guild=$2", name, ctx.guild.id)
         if not res:
-            await ctx.send(embed=discord.Embed(description="The snippet was not found.", colour=self.bot.error_colour,))
+            await ctx.send(embed=discord.Embed(description="The snippet was not found.", colour=self.bot.error_colour))
             return
         modmail = ModMailEvents(self.bot)
         await modmail.send_mail_mod(ctx.message, ctx.prefix, False, res[0], True)
@@ -82,7 +82,7 @@ class Snippet(commands.Cog):
                 return
             await conn.execute("INSERT INTO snippet VALUES ($1, $2, $3)", ctx.guild.id, name, content)
         await ctx.send(
-            embed=discord.Embed(description="The snippet was added successfully.", colour=self.bot.primary_colour,)
+            embed=discord.Embed(description="The snippet was added successfully.", colour=self.bot.primary_colour)
         )
 
     @checks.in_database()
@@ -103,7 +103,7 @@ class Snippet(commands.Cog):
                 return
             await conn.execute("DELETE FROM snippet WHERE name=$1 AND guild=$2", name, ctx.guild.id)
         await ctx.send(
-            embed=discord.Embed(description="The snippet was removed successfully.", colour=self.bot.primary_colour,)
+            embed=discord.Embed(description="The snippet was removed successfully.", colour=self.bot.primary_colour)
         )
 
     @checks.in_database()
@@ -152,7 +152,7 @@ class Snippet(commands.Cog):
             res = await conn.fetch("SELECT name, content FROM snippet WHERE guild=$1", ctx.guild.id)
         if not res:
             await ctx.send(
-                embed=discord.Embed(description="No snippet has been added yet.", colour=self.bot.primary_colour,)
+                embed=discord.Embed(description="No snippet has been added yet.", colour=self.bot.primary_colour)
             )
             return
         all_pages = []
