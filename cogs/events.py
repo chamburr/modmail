@@ -23,49 +23,53 @@ class Events(commands.Cog):
         self.bot_stats_updates = bot.loop.create_task(self.bot_stats_updater())
 
     async def stats_updater(self):
-        await self.bot.wait_until_ready()
         while True:
+            guilds = await self.bot.cogs["Communication"].handler("guild_count", self.bot.cluster_count)
+            if len(guilds) < self.bot.cluster_count:
+                await asyncio.sleep(300)
+                continue
+            guilds = sum(guilds)
             await self.bot.session.post(
                 f"https://top.gg/api/bots/{self.bot.user.id}/stats",
-                data=json.dumps(self.get_dbl_payload()),
+                data=json.dumps(self.get_dbl_payload(guilds)),
                 headers=self.dbl_auth,
             )
             await self.bot.session.post(
                 f"https://discord.bots.gg/api/v1/bots/{self.bot.user.id}/stats",
-                data=json.dumps(self.get_dbots_payload()),
+                data=json.dumps(self.get_dbots_payload(guilds)),
                 headers=self.dbots_auth,
             )
             await self.bot.session.post(
                 f"https://bots.ondiscord.xyz/bot-api/bots/{self.bot.user.id}/guilds",
-                data=json.dumps(self.get_bod_payload()),
+                data=json.dumps(self.get_bod_payload(guilds)),
                 headers=self.bod_auth,
             )
             await self.bot.session.post(
                 f"https://botsfordiscord.com/api/bot/{self.bot.user.id}",
-                data=json.dumps(self.get_bfd_payload()),
+                data=json.dumps(self.get_bfd_payload(guilds)),
                 headers=self.bfd_auth,
             )
             await self.bot.session.post(
                 f"https://discord.boats/api/bot/{self.bot.user.id}",
-                data=json.dumps(self.get_dboats_payload()),
+                data=json.dumps(self.get_dboats_payload(guilds)),
                 headers=self.dboats_auth,
             )
-            await asyncio.sleep(1800)
+            await asyncio.sleep(900)
 
-    def get_dbl_payload(self):
-        return {"server_count": len(self.bot.guilds), "shard_count": self.bot.shard_count}
+    def get_dbl_payload(self, guilds):
+        return {"server_count": guilds, "shard_count": self.bot.shard_count}
 
-    def get_dbots_payload(self):
-        return {"guildCount": len(self.bot.guilds), "shardCount": self.bot.shard_count}
+    def get_dbots_payload(self, guilds):
+        return {"guildCount": guilds, "shardCount": self.bot.shard_count}
 
-    def get_bod_payload(self):
-        return {"guildCount": len(self.bot.guilds)}
+    def get_bod_payload(self, guilds):
+        return {"guildCount": guilds}
 
-    def get_bfd_payload(self):
-        return {"server_count": len(self.bot.guilds)}
+    def get_bfd_payload(self, guilds):
+        return {"server_count": guilds}
 
-    def get_dboats_payload(self):
-        return {"server_count": len(self.bot.guilds)}
+    def get_dboats_payload(self, guilds):
+        return {"server_count": guilds}
 
     async def activity_updater(self):
         await self.bot.wait_until_ready()
