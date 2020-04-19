@@ -391,6 +391,24 @@ class Configuration(commands.Cog):
                 description=f"Advanced logging is {'enabled' if data[7] is False else 'disabled'}.",
                 colour=self.bot.primary_colour,
             )
+        )
+
+    @checks.in_database()
+    @commands.has_permissions(administrator=True)
+    @commands.guild_only()
+    @commands.command(description="Toggle default anonymous messages.", usage="anonymous")
+    async def anonymous(self, ctx):
+        data = await self.bot.get_data(ctx.guild.id)
+        async with self.bot.pool.acquire() as conn:
+            await conn.execute(
+                "UPDATE data SET anonymous=$1 WHERE guild=$2", True if data[10] is False else False, ctx.guild.id,
+            )
+        await ctx.send(
+            embed=discord.Embed(
+                description=f"Anonymous messaging is {'enabled' if data[10] is False else 'disabled'}.",
+                colour=self.bot.primary_colour,
+            )
+        )
 
 
 def setup(bot):
