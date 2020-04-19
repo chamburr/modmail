@@ -23,6 +23,7 @@ class Events(commands.Cog):
         self.bot_stats_updates = bot.loop.create_task(self.bot_stats_updater())
 
     async def stats_updater(self):
+        await self.bot.wait_until_ready()
         while True:
             guilds = await self.bot.cogs["Communication"].handler("guild_count", self.bot.cluster_count)
             if len(guilds) < self.bot.cluster_count:
