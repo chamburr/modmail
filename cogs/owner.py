@@ -144,7 +144,7 @@ class Owner(commands.Cog):
         )
 
     @checks.is_owner()
-    @commands.command(name="eval", description="Evaluate code", usage="eval <code>", hidden=True)
+    @commands.command(name="eval", description="Evaluate code.", usage="eval <code>", hidden=True)
     async def _eval(self, ctx, *, body: str):
         env = {
             "bot": self.bot,
@@ -162,11 +162,12 @@ class Owner(commands.Cog):
         try:
             exec(to_compile, env)
         except Exception as e:
-            return await ctx.send(
+            await ctx.send(
                 embed=discord.Embed(
                     description=f"```py\n{e.__class__.__name__}: {e}\n```", colour=self.bot.primary_colour,
                 )
             )
+            return
         func = env["func"]
         try:
             with redirect_stdout(stdout):
@@ -194,6 +195,16 @@ class Owner(commands.Cog):
                 await ctx.send(
                     embed=discord.Embed(description=f"```py\n{value}{ret}\n```", colour=self.bot.primary_colour)
                 )
+
+    @checks.is_owner()
+    @commands.command(description="Evaluate code on all clusters", usage="evall <code>", hidden=True)
+    async def evall(self, ctx, *, code: str):
+        data = "\n".join(
+            await self.bot.cogs["Communication"].handler("evaluate", self.bot.cluster_count, {"code": code})
+        )
+        if len(data) > 2000:
+            data = data[:1997] + "..."
+        await ctx.send(embed=discord.Embed(description=data, colour=self.bot.primary_colour))
 
     @checks.is_owner()
     @commands.command(description="Execute code in bash.", usage="bash <command>", hidden=True)
