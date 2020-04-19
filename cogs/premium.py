@@ -14,15 +14,15 @@ class Premium(commands.Cog):
     async def premium(self, ctx):
         embed = discord.Embed(
             title="Premium",
-            description="Purchasing premium is the best way you can show support to us. As hosting this bot for "
-            "all the servers and users costs much money, your few dollars donated will help us a lot "
-            "in keeping the bot running. You will also get access to the premium features listed below.",
+            description="Purchasing premium is the best way you can show support to us. As hosting this bot for all "
+            "the servers and users costs much money, your donation will certainly help us a lot in keeping the bot "
+            "running. You will also get access to the premium features listed below.",
             colour=self.bot.primary_colour,
         )
         embed.add_field(
             name="Premium Features",
-            value="- Priority support.\n- Custom message on new or closed ticket.\n"
-            "- Advanced logging that includes chat history.\n- More features released in future.",
+            value="- Custom greeting and closing messages.\n- Advanced logging that includes chat history.\n- Snippet "
+            "functionality (saved messages).\n- Priority support.\n- More features released in future.",
             inline=False,
         )
         embed.add_field(
