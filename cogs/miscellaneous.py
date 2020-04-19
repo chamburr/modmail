@@ -1,5 +1,10 @@
+import logging
+
 import discord
+
 from discord.ext import commands
+
+log = logging.getLogger(__name__)
 
 
 class Miscellaneous(commands.Cog):
@@ -67,9 +72,7 @@ class Miscellaneous(commands.Cog):
         embed.add_field(name="Avatar", value=f"[Link]({member.avatar_url})")
         embed.add_field(name="Joined Server", value=member.joined_at.replace(microsecond=0))
         embed.add_field(name="Account Created", value=member.created_at.replace(microsecond=0))
-        embed.add_field(
-            name="Roles", value=f"{len(roles)} roles" if len(", ".join(roles)) > 1000 else ", ".join(roles),
-        )
+        embed.add_field(name="Roles", value=f"{len(roles)} roles" if len(", ".join(roles)) > 1000 else ", ".join(roles))
         embed.set_thumbnail(url=member.avatar_url)
         await ctx.send(embed=embed)
 
@@ -85,12 +88,8 @@ class Miscellaneous(commands.Cog):
         embed.add_field(name="ID", value=guild.id)
         embed.add_field(name="Owner", value=f"{guild.owner.name}#{guild.owner.discriminator}")
         embed.add_field(name="Server Created", value=guild.created_at.replace(microsecond=0))
-        embed.add_field(
-            name="Icon", value=f"[Link]({guild.icon_url})" if guild.icon_url else "None",
-        )
-        embed.add_field(
-            name="Channels", value=str(len(guild.text_channels) + len(guild.voice_channels)),
-        )
+        embed.add_field(name="Icon", value=f"[Link]({guild.icon_url})" if guild.icon_url else "None")
+        embed.add_field(name="Channels", value=str(len(guild.text_channels) + len(guild.voice_channels)))
         embed.add_field(name="Members", value=guild.member_count)
         embed.add_field(name="Roles", value=str(len(roles)))
         if guild.icon:
