@@ -4,6 +4,13 @@ from discord.ext import commands
 
 from utils import checks
 
+class PingRoleConverter(commands.RoleConverter):
+    async def convert(self, ctx, argument):
+        try:
+            return await super().convert(ctx, argument)
+        except commands.BadArgument:
+            return argument
+
 
 class Configuration(commands.Cog):
     def __init__(self, bot):
@@ -238,31 +245,41 @@ class Configuration(commands.Cog):
     @commands.has_permissions(administrator=True)
     @commands.guild_only()
     @commands.command(
-        description="Set or clear the role mentioned when a ticket is opened. You can also use `everyone` and `here`.",
+        description="Set or clear the roles mentioned when a ticket is opened. You can also use `everyone` and `here`.",
         aliases=["mentionrole"],
-        usage="pingrole [role]",
+        usage="pingrole [roles]",
     )
-    async def pingrole(self, ctx, *, role=None):
-        c = self.bot.conn.cursor()
-        if role:
-            if role.lower().replace("@", "", 1) in ["here", "everyone"]:
-                role = f"@{role.lower().replace('@', '', 1)}"
-            else:
-                role = await commands.RoleConverter().convert(ctx, role)
-                if role is None:
-                    return await ctx.send(
+    async def pingrole(self, ctx, roles: commands.Greedy[PingRoleConverter] = []):
+        role_ids = []
+        for role in roles:
+            if not isinstance(role, discord.Role):
+                role = role.lower()
+                role = role.replace("@", "", 1)
+                if role == "everyone":
+                    role_ids.append(ctx.guild.default_role.id)
+                elif role == "here":
+                    role_ids.append(-1)
+                else:
+                    await ctx.send(
                         embed=discord.Embed(
-                            description="The role is not found. Please try again.", colour=self.bot.error_colour,
+                            description=f"The role(s) are not found. Please try again.", colour=self.bot.error_colour,
                         )
                     )
-                else:
-                    role = role.id
-        c.execute("UPDATE data SET pingrole=? WHERE guild=?", (role, ctx.guild.id))
-        self.bot.conn.commit()
-        await ctx.send(
-            embed=discord.Embed(
-                description=f"The role mentioned is updated successfully.", colour=self.bot.primary_colour,
+                    return
+            else:
+                role_ids.append(role.id)
+        if len(role_ids) > 10:
+            await ctx.send(
+                embed=discord.Embed(
+                    description="There can at most be 10 roles. Try using the command again but specify less roles.",
+                    colour=self.bot.error_colour,
+                )
             )
+            return
+        async with self.bot.pool.acquire() as conn:
+            await conn.execute("UPDATE data SET pingrole=$1 WHERE guild=$2", role_ids, ctx.guild.id)
+        await ctx.send(
+            embed=discord.Embed(description=f"The role(s) are updated successfully.", colour=self.bot.primary_colour,)
         )
 
     @commands.bot_has_permissions(manage_channels=True)
