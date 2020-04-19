@@ -26,7 +26,13 @@ testing = True
 ipc_channel = ""
 
 # Postgres database credentials
-database = {"database": "", "user": "", "password": "", "host": "", "port": 5432}
+database = {
+    "database": "",
+    "user": "",
+    "password": "",
+    "host": "",
+    "port": 5432,
+}
 
 # Number of shards for each cluster
 shards_per_cluster = 4
