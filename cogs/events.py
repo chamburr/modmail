@@ -1,8 +1,10 @@
-import json
 import asyncio
 import datetime
+import json
 import logging
+
 import discord
+
 from discord.ext import commands
 
 log = logging.getLogger(__name__)
@@ -195,23 +197,25 @@ class Events(commands.Cog):
         ctx = await self.bot.get_context(message)
         if not ctx.command:
             return
-        self.bot.total_commands += 1
+        self.bot.stats_commands += 1
         if message.guild:
             if message.guild.id in self.bot.banned_guilds:
-                return await message.guild.leave()
+                await message.guild.leave()
+                return
             permissions = message.channel.permissions_for(message.guild.me)
             if permissions.send_messages is False:
                 return
             elif permissions.embed_links is False:
-                return await message.channel.send("The Embed Links permission is needed for basic commands to work.")
+                await message.channel.send("The Embed Links permission is needed for basic commands to work.")
+                return
         if message.author.id in self.bot.banned_users:
-            return await ctx.send(
+            await ctx.send(
                 embed=discord.Embed(description="You are banned from this bot.", colour=self.bot.error_colour)
             )
+            return
         if ctx.command.cog_name in ["Owner", "Admin"] and (
             ctx.author.id in self.bot.config.admins or ctx.author.id in self.bot.config.owners
         ):
-            admin_channel = self.bot.get_channel(self.bot.config.admin_channel)
             embed = discord.Embed(
                 title=ctx.command.name.title(),
                 description=ctx.message.content,
@@ -221,9 +225,9 @@ class Events(commands.Cog):
             embed.set_author(
                 name=f"{ctx.author.name}#{ctx.author.discriminator} ({ctx.author.id})", icon_url=ctx.author.avatar_url
             )
-            await admin_channel.send(embed=embed)
+            await self.bot.http.send_message(self.bot.config.admin_channel, None, embed=embed.to_dict())
         if ctx.prefix == f"<@{self.bot.user.id}> " or ctx.prefix == f"<@!{self.bot.user.id}> ":
-            ctx.prefix = self.bot.tools.get_guild_prefix(self.bot, message)
+            ctx.prefix = self.bot.tools.get_guild_prefix(self.bot, message.guild)
         await self.bot.invoke(ctx)
 
 
