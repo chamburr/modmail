@@ -100,7 +100,7 @@ class ModMailEvents(commands.Cog):
             return
         try:
             await message.delete()
-        except discord.Forbidden:
+        except (discord.Forbidden, discord.NotFound):
             pass
 
 

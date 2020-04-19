@@ -187,7 +187,7 @@ class Communication(commands.Cog):
     async def get_top_guilds(self, command_id):
         guilds = sorted(self.bot.guilds, key=lambda x: x.member_count, reverse=True)[:15]
         payload = {
-            "output": [self.to_dict(guild, ["guild"], ["member_count"]) for guild in self.bot.guilds],
+            "output": [self.to_dict(guild, ["guild"], ["member_count"]) for guild in guilds],
             "command_id": command_id,
         }
         await self.bot.redis.execute("PUBLISH", self.ipc_channel, json.dumps(payload))
