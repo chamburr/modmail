@@ -44,9 +44,7 @@ additional_shards = 0
 default_prefix = "="
 
 # Status of the bot
-activity = [
-    f"DM to Contact Staff | {default_prefix}help",
-]
+activity = f"DM to Contact Staff | {default_prefix}help"
 
 # The main bot owner
 owner = 000000000000000000

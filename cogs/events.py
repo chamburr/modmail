@@ -20,8 +20,6 @@ class Events(commands.Cog):
         self.dboats_auth = {"Authorization": bot.config.dboats_token, "Content-Type": "application/json"}
         if self.bot.config.testing is False:
             self.stats_updates = bot.loop.create_task(self.stats_updater())
-        self.activity_index = 0
-        self.activity_updates = bot.loop.create_task(self.activity_updater())
         self.bot_stats_updates = bot.loop.create_task(self.bot_stats_updater())
 
     async def stats_updater(self):
@@ -73,16 +71,6 @@ class Events(commands.Cog):
     def get_dboats_payload(self, guilds):
         return {"server_count": guilds}
 
-    async def activity_updater(self):
-        await self.bot.wait_until_ready()
-        while True:
-            if self.activity_index + 1 >= len(self.bot.config.activity):
-                self.activity_index = 0
-            else:
-                self.activity_index = self.activity_index + 1
-            await self.bot.change_presence(activity=discord.Game(name=self.bot.config.activity[self.activity_index]))
-            await asyncio.sleep(12)
-
     async def bot_stats_updater(self):
         while True:
             async with self.bot.pool.acquire() as conn:
@@ -113,6 +101,7 @@ class Events(commands.Cog):
             title=f"[Cluster {self.bot.cluster}] Bot Ready", colour=0x00FF00, timestamp=datetime.datetime.utcnow(),
         )
         await self.bot.http.send_message(self.bot.config.event_channel, None, embed=embed.to_dict())
+        await self.bot.change_presence(activity=discord.Game(name=self.bot.config.activity))
 
     @commands.Cog.listener()
     async def on_shard_ready(self, shard):
