@@ -10,10 +10,21 @@ from utils.tools import get_guild_prefix
 if config.testing is False:
     sentry_sdk.init(config.sentry_url)
 
+if len(sys.argv) < 5:
+    shard_ids = [0]
+    shard_count = 1
+    cluster_id = 1
+    cluster_count = 1
+else:
+    shard_ids = json.loads(sys.argv[1])
+    shard_count = int(sys.argv[2])
+    cluster_id = int(sys.argv[3])
+    cluster_count = int(sys.argv[4])
+
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
-handler = logging.FileHandler(filename="discord.log", encoding="utf-8", mode="w")
+handler = logging.FileHandler(filename=f"discord-{cluster_id}.log", encoding="utf-8", mode="w")
 handler.setFormatter(logging.Formatter("%(asctime)s:%(levelname)s:%(name)s: %(message)s"))
 logger.addHandler(handler)
 
@@ -31,6 +42,10 @@ bot = ModMail(
     help_command=None,
     owner_id=config.owner,
     heartbeat_timeout=300,
+    shard_ids=shard_ids,
+    shard_count=shard_count,
+    cluster_id=cluster_id,
+    cluster_count=cluster_count,
 )
 
 
