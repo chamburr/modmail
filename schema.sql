@@ -25,7 +25,7 @@ CREATE TABLE public.snippet
     content text NOT NULL
 );
 
-ALTER TABLE public.premium
+ALTER TABLE public.snippet
     OWNER to postgres;
 
 
