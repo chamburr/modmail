@@ -231,7 +231,7 @@ class Owner(commands.Cog):
                 await ctx.send(
                     embed=discord.Embed(description=f"```py\n{traceback.format_exc()}```", colour=self.bot.error_colour)
                 )
-            return
+                return
         if res:
             await ctx.send(embed=discord.Embed(description=f"```{res}```", colour=self.bot.primary_colour))
         else:
