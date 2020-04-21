@@ -57,7 +57,10 @@ class Instance:
 
     async def read_stream(self, stream):
         while self.is_active:
-            line = await stream.readline()
+            try:
+                line = await stream.readline()
+            except (asyncio.LimitOverrunError, ValueError):
+                continue
             if line:
                 line = line.decode("utf-8")[:-1]
                 print(f"[Cluster {self.id}] {line}")
@@ -75,6 +78,7 @@ class Instance:
             stdout=asyncio.subprocess.PIPE,
             stderr=asyncio.subprocess.PIPE,
             preexec_fn=os.setsid,
+            limit=1024 * 256,
         )
         self.status = "running"
         self.started_at = time.time()
