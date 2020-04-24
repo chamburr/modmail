@@ -254,9 +254,12 @@ class Owner(commands.Cog):
 
     @checks.is_owner()
     @commands.command(description="Remove a user's premium.", usage="wipepremium <user>", hidden=True)
-    async def wipepremium(self, ctx, *, user: discord.User):
+    async def wipepremium(self, ctx, *, user: int):
+        if not user:
+            await ctx.send(embed=discord.Embed(description="No such user was found.", colour=self.bot.error_colour))
+            return
         async with self.bot.pool.acquire() as conn:
-            res = await conn.fetchrow("SELECT identifier, guild FROM premium WHERE identifier=$1", user.id)
+            res = await conn.fetchrow("SELECT identifier, guild FROM premium WHERE identifier=$1", user)
             if res:
                 for guild in res[1]:
                     await conn.execute(
@@ -267,7 +270,7 @@ class Owner(commands.Cog):
                         guild,
                     )
                     await conn.execute("DELETE FROM snippet WHERE guild=$1", guild)
-            await conn.execute("DELETE FROM premium WHERE identifier=$1", user.id)
+            await conn.execute("DELETE FROM premium WHERE identifier=$1", user)
         await ctx.send(
             embed=discord.Embed(
                 description="Successfully removed that user's premium.", colour=self.bot.primary_colour,
@@ -281,16 +284,19 @@ class Owner(commands.Cog):
 
     @checks.is_owner()
     @commands.command(description="Ban a user from the bot", usage="banuser <user>", hidden=True)
-    async def banuser(self, ctx, *, user: discord.User):
+    async def banuser(self, ctx, *, user: int):
+        if not user:
+            await ctx.send(embed=discord.Embed(description="No such user was found.", colour=self.bot.error_colour))
+            return
         async with self.bot.pool.acquire() as conn:
-            res = await conn.fetchrow("SELECT * FROM ban WHERE identifier=$1 AND category=$2", user.id, 0)
+            res = await conn.fetchrow("SELECT * FROM ban WHERE identifier=$1 AND category=$2", user, 0)
             if res:
                 await ctx.send(
                     embed=discord.Embed(description="That user is already banned.", colour=self.bot.error_colour)
                 )
                 return
-            await conn.execute("INSERT INTO ban (identifier, category) VALUES ($1, $2)", user.id, 0)
-        self.bot.banned_users.append(user.id)
+            await conn.execute("INSERT INTO ban (identifier, category) VALUES ($1, $2)", user, 0)
+        self.bot.banned_users.append(user)
         await ctx.send(
             embed=discord.Embed(
                 description="Successfully banned that user from the bot.", colour=self.bot.primary_colour,
@@ -299,16 +305,16 @@ class Owner(commands.Cog):
 
     @checks.is_owner()
     @commands.command(description="Unban a user from the bot", usage="unbanuser <user>", hidden=True)
-    async def unbanuser(self, ctx, *, user: discord.User):
+    async def unbanuser(self, ctx, *, user: int):
         async with self.bot.pool.acquire() as conn:
-            res = await conn.fetchrow("SELECT * FROM ban WHERE identifier=$1 AND category=$2", user.id, 0)
+            res = await conn.fetchrow("SELECT * FROM ban WHERE identifier=$1 AND category=$2", user, 0)
             if not res:
                 await ctx.send(
                     embed=discord.Embed(description="That user is not already banned.", colour=self.bot.error_colour)
                 )
                 return
-            await conn.execute("DELETE FROM ban WHERE identifier=$1 AND category=$2", user.id, 0)
-        self.bot.banned_users.remove(user.id)
+            await conn.execute("DELETE FROM ban WHERE identifier=$1 AND category=$2", user, 0)
+        self.bot.banned_users.remove(user)
         await ctx.send(
             embed=discord.Embed(
                 description="Successfully unbanned that user from the bot.", colour=self.bot.primary_colour,

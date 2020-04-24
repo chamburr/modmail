@@ -24,23 +24,27 @@ class Admin(commands.Cog):
             guilds.extend(chunk)
         if len(guilds) == 0:
             await ctx.send(embed=discord.Embed(description="No such guild was found.", colour=self.bot.error_colour))
-        else:
-            try:
-                await ctx.send(embed=discord.Embed(description="\n".join(guilds), colour=self.bot.primary_colour))
-            except discord.HTTPException:
-                await ctx.send(
-                    embed=discord.Embed(
-                        description="The message is too long to be sent.", colour=self.bot.error_colour,
-                    )
+            return
+        try:
+            await ctx.send(embed=discord.Embed(description="\n".join(guilds), colour=self.bot.primary_colour))
+        except discord.HTTPException:
+            await ctx.send(
+                embed=discord.Embed(
+                    description="The message is too long to be sent.", colour=self.bot.error_colour,
                 )
+            )
 
     @checks.is_admin()
     @commands.command(
         description="Get a list of servers the bot shares with the user.", usage="sharedservers <user>", hidden=True
     )
-    async def sharedservers(self, ctx, *, user: discord.User):
+    async def sharedservers(self, ctx, *, user: int):
+        user = await self.bot.cogs["Communication"].handler("get_user", 1, {"user_id": user})
+        if not user:
+            await ctx.send(embed=discord.Embed(description="No such user was found.", colour=self.bot.error_colour))
+            return
         data = await self.bot.cogs["Communication"].handler(
-            "get_user_guilds", self.bot.cluster_count, {"user_id": user.id}
+            "get_user_guilds", self.bot.cluster_count, {"user_id": user}
         )
         guilds = []
         for chunk in data:
