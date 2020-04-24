@@ -182,7 +182,10 @@ class DirectMessageEvents(commands.Cog, name="Direct Message"):
             else:
                 await self.bot.http.send_message(channel["id"], None, embed=embed.to_dict())
         except discord.Forbidden:
-            await message2.delete()
+            try:
+                await message2.delete()
+            except NameError:
+                pass
             await message.channel.send(
                 embed=discord.Embed(
                     description="No permission to send message in the channel. Please contact an admin on the server.",
