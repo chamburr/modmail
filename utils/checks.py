@@ -105,6 +105,7 @@ async def is_modmail_channel2(bot, channel, user_id=None, json_dict=False):
         return (
             category
             and "topic" in channel
+            and channel["topic"]
             and channel["topic"].startswith("ModMail Channel ")
             and channel["topic"].replace("ModMail Channel ", "").split(" ")[0].isdigit()
             and (channel["topic"].replace("ModMail Channel ", "").split(" ")[0] == str(user_id) if user_id else True)
