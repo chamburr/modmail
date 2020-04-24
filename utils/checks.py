@@ -93,7 +93,7 @@ def is_patron():
 
 async def is_modmail_channel2(bot, channel, user_id=None, json_dict=False):
     category = False
-    if (json_dict is True and channel["category_id"]) or channel.category_id:
+    if (json_dict is True and "category_id" in channel) or channel.category_id:
         categories = await bot.cogs["Communication"].handler("get_categories", bot.cluster_count)
         for chunk in categories:
             if (json_dict is True and channel["category_id"] in chunk) or channel.category_id in chunk:
@@ -102,7 +102,7 @@ async def is_modmail_channel2(bot, channel, user_id=None, json_dict=False):
     if json_dict is True:
         return (
             category
-            and channel["topic"]
+            and "topic" in channel
             and channel["topic"].startswith("ModMail Channel ")
             and channel["topic"].replace("ModMail Channel ", "").split(" ")[0].isdigit()
             and (channel["topic"].replace("ModMail Channel ", "").split(" ")[0] == str(user_id) if user_id else True)
