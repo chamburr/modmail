@@ -21,6 +21,7 @@ class Events(commands.Cog):
         if self.bot.config.testing is False:
             self.stats_updates = bot.loop.create_task(self.stats_updater())
         self.bot_stats_updates = bot.loop.create_task(self.bot_stats_updater())
+        self.bot_categories_updates = bot.loop.create_task(self.bot_categories_updater())
 
     async def stats_updater(self):
         while True:
@@ -92,6 +93,16 @@ class Events(commands.Cog):
                 elif row[1] == 1:
                     self.banned_guilds.append(row[0])
             await asyncio.sleep(60)
+
+    async def bot_categories_updater(self):
+        while True:
+            async with self.bot.pool.acquire() as conn:
+                data = await conn.fetch("SELECT category FROM data")
+            categories = []
+            for row in data:
+                categories.append(row[0])
+            self.bot.all_category = categories
+            await asyncio.sleep(1)
 
     @commands.Cog.listener()
     async def on_ready(self):
