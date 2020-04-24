@@ -91,11 +91,17 @@ def is_patron():
     return commands.check(predicate)
 
 
-def is_modmail_channel2(bot, channel, user_id=None, json_dict=False):
+async def is_modmail_channel2(bot, channel, user_id=None, json_dict=False):
+    category = False
+    if (json_dict is True and channel["category_id"]) or channel.category_id:
+        categories = await bot.cogs["Communication"].handler("get_categories", bot.cluster_count)
+        for chunk in categories:
+            if (json_dict is True and channel["category_id"] in chunk) or channel.category_id in chunk:
+                category = True
+                break
     if json_dict is True:
         return (
-            channel["category_id"]
-            and int(channel["category_id"]) in bot.all_category
+            category
             and channel["topic"]
             and channel["topic"].startswith("ModMail Channel ")
             and channel["topic"].replace("ModMail Channel ", "").split(" ")[0].isdigit()
@@ -103,8 +109,7 @@ def is_modmail_channel2(bot, channel, user_id=None, json_dict=False):
         )
     else:
         return (
-            channel.category_id
-            and channel.category_id in bot.all_category
+            category
             and channel.topic
             and channel.topic.startswith("ModMail Channel ")
             and channel.topic.replace("ModMail Channel ", "").split(" ")[0].isdigit()
@@ -114,7 +119,7 @@ def is_modmail_channel2(bot, channel, user_id=None, json_dict=False):
 
 def is_modmail_channel():
     async def predicate(ctx):
-        if not is_modmail_channel2(ctx.bot, ctx.channel):
+        if not await is_modmail_channel2(ctx.bot, ctx.channel):
             await ctx.send(
                 embed=discord.Embed(description="This channel is not a ModMail channel.", colour=ctx.bot.error_colour)
             )

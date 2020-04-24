@@ -167,7 +167,7 @@ class Core(commands.Cog):
         category = ctx.guild.get_channel(category)
         if category:
             for channel in category.text_channels:
-                if checks.is_modmail_channel2(self.bot, channel):
+                if await checks.is_modmail_channel2(self.bot, channel):
                     msg = copy.copy(ctx.message)
                     msg.channel = channel
                     new_ctx = await self.bot.get_context(msg, cls=type(ctx))
@@ -191,7 +191,7 @@ class Core(commands.Cog):
         category = ctx.guild.get_channel(category)
         if category:
             for channel in category.text_channels:
-                if checks.is_modmail_channel2(self.bot, channel):
+                if await checks.is_modmail_channel2(self.bot, channel):
                     msg = copy.copy(ctx.message)
                     msg.channel = channel
                     new_ctx = await self.bot.get_context(msg, cls=type(ctx))

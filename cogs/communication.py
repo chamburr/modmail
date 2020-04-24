@@ -109,6 +109,10 @@ class Communication(commands.Cog):
         payload = {"output": len(self.bot.users), "command_id": command_id}
         await self.bot.redis.execute("PUBLISH", self.ipc_channel, json.dumps(payload))
 
+    async def get_categories(self, command_id):
+        payload = {"output": self.bot.all_category, "command_id": command_id}
+        await self.bot.redis.execute("PUBLISH", self.ipc_channel, json.dumps(payload))
+
     async def get_user(self, user_id, command_id):
         if not self.bot.get_user(user_id):
             return
