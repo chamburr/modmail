@@ -29,9 +29,7 @@ class Admin(commands.Cog):
             await ctx.send(embed=discord.Embed(description="\n".join(guilds), colour=self.bot.primary_colour))
         except discord.HTTPException:
             await ctx.send(
-                embed=discord.Embed(
-                    description="The message is too long to be sent.", colour=self.bot.error_colour,
-                )
+                embed=discord.Embed(description="The message is too long to be sent.", colour=self.bot.error_colour)
             )
 
     @checks.is_admin()

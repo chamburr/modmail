@@ -93,10 +93,12 @@ def is_patron():
 
 async def is_modmail_channel2(bot, channel, user_id=None, json_dict=False):
     category = False
-    if (json_dict is True and "category_id" in channel) or channel.category_id:
+    if (json_dict is True and "category_id" in channel) or (json_dict is False and channel.category_id):
         categories = await bot.cogs["Communication"].handler("get_categories", bot.cluster_count)
         for chunk in categories:
-            if (json_dict is True and channel["category_id"] in chunk) or channel.category_id in chunk:
+            if (json_dict is True and channel["category_id"] in chunk) or (
+                json_dict is False and channel.category_id in chunk
+            ):
                 category = True
                 break
     if json_dict is True:
