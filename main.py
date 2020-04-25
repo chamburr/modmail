@@ -42,7 +42,7 @@ def _get_guild_prefix(bot2, message):
 
 
 bot = ModMail(
-    fetch_offline_members=True,
+    fetch_offline_members=False,
     command_prefix=_get_guild_prefix,
     case_insensitive=True,
     help_command=None,

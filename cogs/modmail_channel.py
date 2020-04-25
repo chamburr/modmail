@@ -52,7 +52,10 @@ class ModMailEvents(commands.Cog):
                 )
             )
             return
-        member = message.guild.get_member(self.bot.tools.get_modmail_user(message.channel))
+        user = self.bot.tools.get_modmail_user(message.channel)
+        member = message.guild.get_member(user)
+        if member is None:
+            member = await message.guild.fetch_member(user)
         if member is None:
             await message.channel.send(
                 embed=discord.Embed(
