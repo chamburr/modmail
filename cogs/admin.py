@@ -36,13 +36,13 @@ class Admin(commands.Cog):
     @commands.command(
         description="Get a list of servers the bot shares with the user.", usage="sharedservers <user>", hidden=True
     )
-    async def sharedservers(self, ctx, *, user: int):
-        user = await self.bot.cogs["Communication"].handler("get_user", 1, {"user_id": user})
+    async def sharedservers(self, ctx, *, user_id: int):
+        user = await self.bot.cogs["Communication"].handler("get_user", 1, {"user_id": user_id})
         if not user:
             await ctx.send(embed=discord.Embed(description="No such user was found.", colour=self.bot.error_colour))
             return
         data = await self.bot.cogs["Communication"].handler(
-            "get_user_guilds", self.bot.cluster_count, {"user_id": user}
+            "get_user_guilds", self.bot.cluster_count, {"user_id": user_id}
         )
         guilds = []
         for chunk in data:
