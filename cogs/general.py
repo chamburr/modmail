@@ -250,17 +250,6 @@ class General(commands.Cog):
             url="https://cdn.discordapp.com/avatars/432533456807919639/6b2a1311b54a1d3b3cec1fb67ef94ed7.png"
         )
         all_pages.append(page)
-        page = discord.Embed(
-            title="Custom Bot Development",
-            description="This is also my server, and this is where you can request for bots for your server. Nothing "
-            "on this world is free btw.",
-            colour=self.bot.primary_colour,
-        )
-        page.add_field(name="Link", value="https://discord.gg/JNQhDDM")
-        page.set_thumbnail(
-            url="https://cdn.discordapp.com/icons/572935145347350548/2408500f84def61a514c6c2108b53c96.png"
-        )
-        all_pages.append(page)
         for embed in all_pages:
             embed.set_author(name=f"{self.bot.user.name} partners", icon_url=self.bot.user.avatar_url)
             embed.set_footer(text="Use the reactions to flip pages.")
