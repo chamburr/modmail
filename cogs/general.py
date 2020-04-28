@@ -172,6 +172,18 @@ class General(commands.Cog):
         all_pages.append(page)
         page = discord.Embed(
             title="Otzdarva's Dungeon",
+            description="Got assignments? Need help? Then come join Discord's premier hub for students, scholars, "
+            "professionals, and hobbyists interested in discussions, challenges, as well as news, views, and reviews "
+            "that runs the gamut of academic disciplines.",
+            colour=self.bot.primary_colour,
+        )
+        page.add_field(name="Link", value="https://discord.gg/homework")
+        page.set_thumbnail(
+            url="https://cdn.discordapp.com/icons/238956364729155585/468ac0a7dc84db45d018e0c442fe8447.png"
+        )
+        all_pages.append(page)
+        page = discord.Embed(
+            title="Otzdarva's Dungeon",
             description="Otzdarva's Dungeon is a community for the Dead by Daylight streamer Otzdarva, also known for "
             "being a PUBG and Dark Souls YouTuber in the past.",
             colour=self.bot.primary_colour,
