@@ -171,7 +171,7 @@ class General(commands.Cog):
         page.set_thumbnail(url="https://discordtemplates.me/static/img/icon.png")
         all_pages.append(page)
         page = discord.Embed(
-            title="Otzdarva's Dungeon",
+            title="Homework Help",
             description="Got assignments? Need help? Then come join Discord's premier hub for students, scholars, "
             "professionals, and hobbyists interested in discussions, challenges, as well as news, views, and reviews "
             "that runs the gamut of academic disciplines.",
