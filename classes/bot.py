@@ -11,7 +11,7 @@ from discord.ext import commands
 
 import config
 
-from utils import tools
+from utils import prometheus, tools
 
 log = logging.getLogger(__name__)
 
@@ -100,9 +100,15 @@ class ModMail(commands.AutoShardedBot):
     async def connect_postgres(self):
         self.pool = await asyncpg.create_pool(**self.config.database, max_size=20, command_timeout=60)
 
+    async def connect_prometheus(self):
+        self.prom = prometheus
+        if self.config.testing is False:
+            self.prom.start(self)
+
     async def start_bot(self):
         await self.connect_redis()
         await self.connect_postgres()
+        await self.connect_prometheus()
         async with self.pool.acquire() as conn:
             data = await conn.fetch("SELECT guild, prefix, category FROM data")
             bans = await conn.fetch("SELECT identifier, category FROM ban")

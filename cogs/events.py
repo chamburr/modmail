@@ -116,6 +116,7 @@ class Events(commands.Cog):
 
     @commands.Cog.listener()
     async def on_shard_ready(self, shard):
+        self.bot.prom.events_counter.labels(type="READY").inc()
         try:
             embed = discord.Embed(
                 title=f"[Cluster {self.bot.cluster}] Shard {shard} Ready",
@@ -128,6 +129,7 @@ class Events(commands.Cog):
 
     @commands.Cog.listener()
     async def on_connect(self):
+        self.bot.prom.events_counter.labels(type="CONNECT").inc()
         try:
             embed = discord.Embed(
                 title=f"[Cluster {self.bot.cluster}] Shard Connected",
@@ -140,6 +142,7 @@ class Events(commands.Cog):
 
     @commands.Cog.listener()
     async def on_disconnect(self):
+        self.bot.prom.events_counter.labels(type="DISCONNECT").inc()
         try:
             embed = discord.Embed(
                 title=f"[Cluster {self.bot.cluster}] Shard Disconnected",
@@ -152,6 +155,7 @@ class Events(commands.Cog):
 
     @commands.Cog.listener()
     async def on_resumed(self):
+        self.bot.prom.events_counter.labels(type="RESUME").inc()
         try:
             embed = discord.Embed(
                 title=f"[Cluster {self.bot.cluster}] Shard Resumed",
@@ -164,6 +168,7 @@ class Events(commands.Cog):
 
     @commands.Cog.listener()
     async def on_guild_join(self, guild):
+        self.bot.prom.guilds_join_counter.inc()
         embed = discord.Embed(
             title="Server Join",
             description=f"{guild.name} ({guild.id})",
@@ -178,6 +183,7 @@ class Events(commands.Cog):
 
     @commands.Cog.listener()
     async def on_guild_remove(self, guild):
+        self.bot.prom.guilds_leave_counter.inc()
         async with self.bot.pool.acquire() as conn:
             await conn.execute("DELETE FROM data WHERE guild=$1", guild.id)
         embed = discord.Embed(
@@ -198,6 +204,7 @@ class Events(commands.Cog):
         if not ctx.command:
             return
         self.bot.stats_commands += 1
+        self.bot.prom.commands_counter.labels(name=ctx.command.name).inc()
         if message.guild:
             if message.guild.id in self.bot.banned_guilds:
                 await message.guild.leave()
