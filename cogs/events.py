@@ -102,7 +102,7 @@ class Events(commands.Cog):
             for row in data:
                 categories.append(row[0])
             self.bot.all_category = categories
-            await asyncio.sleep(1)
+            await asyncio.sleep(5)
 
     @commands.Cog.listener()
     async def on_ready(self):
