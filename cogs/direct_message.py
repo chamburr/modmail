@@ -145,7 +145,7 @@ class DirectMessageEvents(commands.Cog, name="Direct Message"):
                         roles.append("@here")
                     else:
                         roles.append(f"<@&{role}>")
-                res = await self.bot.http.send_message(channel["id"], " ".join(roles), embed=embed.to_dict())
+                await self.bot.http.send_message(channel["id"], " ".join(roles), embed=embed.to_dict())
                 if data[5]:
                     embed = discord.Embed(
                         title="Custom Greeting Message",
