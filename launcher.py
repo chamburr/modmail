@@ -5,7 +5,6 @@ import signal
 import sys
 import time
 
-from io import StringIO
 from pathlib import Path
 
 import aiohttp
@@ -163,10 +162,28 @@ class Main:
         await self.redis.execute_pubsub("UNSUBSCRIBE", config.ipc_channel)
         self.redis.close()
 
+    def write_targets(self, clusters):
+        data = []
+        for i, shard_list in enumerate(clusters, 1):
+            if not shard_list:
+                continue
+            data.append({
+                "labels": {
+                    "cluster": f"{i}"
+                },
+                "targets": [
+                    f"localhost:{6000 + i}"
+                ]
+            })
+        with open("targets.json", "w") as f:
+            json.dump(data, f, indent=4)
+
     async def launch(self):
         self.loop.create_task(self.event_handler())
         shard_count = await get_shard_count() + config.additional_shards
         clusters = get_cluster_list(shard_count)
+        if config.testing is False:
+            self.write_targets(clusters)
         print(f"[Cluster Manager] Starting a total of {len(clusters)} clusters.")
         for i, shard_list in enumerate(clusters, 1):
             if not shard_list:
