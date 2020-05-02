@@ -2,28 +2,19 @@ import asyncio
 
 import prometheus_client as prom
 
-events_counter = prom.Counter(
-    "modmail_discord_events", "The total number of processed events, with a type label.", ["type"],
-)
+latency_counter = prom.Gauge("modmail_latency", "The average latency for shards on this cluster")
+events_counter = prom.Counter("modmail_discord_events", "The total number of processed events.", ["type"])
+messages_counter = prom.Counter("modmail_messages", "The total number of messages received.")
 
-guilds_join_counter = prom.Counter("modmail_guilds_join", "The number of guilds ModMail is added to.",)
+guilds_join_counter = prom.Counter("modmail_guilds_join", "The number of guilds ModMail is added to.")
+guilds_leave_counter = prom.Counter("modmail_guilds_leave", "The number of guilds ModMail is removed from.")
 
-guilds_leave_counter = prom.Counter("modmail_guilds_leave", "The number of guilds ModMail is removed from.",)
+shards_counter = prom.Gauge("modmail_shards", "The total number of shards on this cluster.")
+guilds_counter = prom.Gauge("modmail_guilds", "The total number of guilds on this cluster.")
+users_counter = prom.Gauge("modmail_users", "The total number of users on this cluster.")
 
-shards_counter = prom.Gauge("modmail_shards", "The total number of shards on this cluster.",)
-
-guilds_counter = prom.Gauge("modmail_guilds", "The total number of guilds on this cluster.",)
-
-users_counter = prom.Gauge("modmail_users", "The total number of users on this cluster.",)
-
-latency_counter = prom.Gauge("modmail_latency", "The average latency for shards on this cluster",)
-
-commands_counter = prom.Counter(
-    "modmail_commands", "The total number of commands used on the bot, with a name label.", ["name"]
-)
-
-tickets_counter = prom.Counter("modmail_tickets", "The total number of tickets created by the bot.",)
-
+commands_counter = prom.Counter("modmail_commands", "The total number of commands used on the bot.", ["name"])
+tickets_counter = prom.Counter("modmail_tickets", "The total number of tickets created by the bot.")
 tickets_message_counter = prom.Counter("modmail_tickets_message", "The total number of messages sent through tickets.")
 
 

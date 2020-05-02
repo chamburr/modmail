@@ -198,6 +198,7 @@ class Events(commands.Cog):
 
     @commands.Cog.listener()
     async def on_message(self, message):
+        self.bot.prom.messages_counter.inc()
         if message.author.bot:
             return
         ctx = await self.bot.get_context(message)
