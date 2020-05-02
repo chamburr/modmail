@@ -116,7 +116,6 @@ class Events(commands.Cog):
 
     @commands.Cog.listener()
     async def on_shard_ready(self, shard):
-        self.bot.prom.events_counter.labels(type="READY").inc()
         try:
             embed = discord.Embed(
                 title=f"[Cluster {self.bot.cluster}] Shard {shard} Ready",
