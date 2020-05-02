@@ -20,9 +20,9 @@ tickets_message_counter = prom.Counter("modmail_tickets_message", "The total num
 
 def start(bot):
     port = 6000 + bot.cluster
+    prom.start_http_server(port)
     bot.loop.create_task(update_stats(bot))
     bot.loop.create_task(update_latency(bot))
-    prom.start_http_server(port)
 
 
 async def update_stats(bot):
