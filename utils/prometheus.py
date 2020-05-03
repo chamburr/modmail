@@ -38,6 +38,6 @@ async def update_latency(bot):
     while True:
         if not bot.is_ready():
             await bot.wait_until_ready()
-            await asyncio.sleep(30)
+            await asyncio.sleep(60)
         latency_counter.set(bot.latency)
         await asyncio.sleep(10)
