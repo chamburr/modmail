@@ -4,7 +4,7 @@ import prometheus_client as prom
 
 latency_counter = prom.Gauge("modmail_latency", "The average latency for shards on this cluster")
 events_counter = prom.Counter("modmail_discord_events", "The total number of processed events.", ["type"])
-messages_counter = prom.Counter("modmail_messages", "The total number of messages received.")
+dispatch_counter = prom.Counter("modmail_dispatch_events", "The total number of dispatched events.", ["type"])
 
 guilds_join_counter = prom.Counter("modmail_guilds_join", "The number of guilds ModMail is added to.")
 guilds_leave_counter = prom.Counter("modmail_guilds_leave", "The number of guilds ModMail is removed from.")
@@ -36,6 +36,8 @@ async def update_stats(bot):
 
 async def update_latency(bot):
     while True:
-        await bot.wait_until_ready()
+        if not bot.is_ready():
+            await bot.wait_until_ready()
+            await asyncio.sleep(30)
         latency_counter.set(bot.latency)
         await asyncio.sleep(10)

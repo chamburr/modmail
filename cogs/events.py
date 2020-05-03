@@ -197,7 +197,6 @@ class Events(commands.Cog):
 
     @commands.Cog.listener()
     async def on_message(self, message):
-        self.bot.prom.messages_counter.inc()
         if message.author.bot:
             return
         ctx = await self.bot.get_context(message)
@@ -236,6 +235,11 @@ class Events(commands.Cog):
         if ctx.prefix == f"<@{self.bot.user.id}> " or ctx.prefix == f"<@!{self.bot.user.id}> ":
             ctx.prefix = self.bot.tools.get_guild_prefix(self.bot, message.guild)
         await self.bot.invoke(ctx)
+
+    @commands.Cog.listener()
+    async def on_socket_response(self, message):
+        if message.get("op") == 0:
+            self.bot.prom.dispatch_counter.labels(type=message.get("t")).inc()
 
 
 def setup(bot):
