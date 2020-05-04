@@ -48,6 +48,7 @@ bot = ModMail(
     help_command=None,
     owner_id=config.owner,
     heartbeat_timeout=300,
+    max_messages=None,
     shard_ids=shard_ids,
     shard_count=shard_count,
     cluster_id=cluster_id,
