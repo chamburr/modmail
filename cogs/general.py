@@ -168,7 +168,9 @@ class General(commands.Cog):
             colour=self.bot.primary_colour,
         )
         page.add_field(name="Link", value="https://discordtemplates.me")
-        page.set_thumbnail(url="https://discordtemplates.me/static/img/icon.png")
+        page.set_thumbnail(
+            url="https://cdn.discordapp.com/icons/696179394057732237/cf54e042456638eba2ea5abddfc7910e.png"
+        )
         all_pages.append(page)
         page = discord.Embed(
             title="Homework Help",
