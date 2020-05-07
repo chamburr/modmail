@@ -53,6 +53,12 @@ h2 {
     height: 2em !important;
 }
 
+.tt-dataset .tt-suggestion:only-child {
+    border-bottom: none !important;
+    padding-bottom: 0 !important;
+    height: 1.5em !important;
+}
+
 .tt-suggestion {
     height: 2.5em;
 }
