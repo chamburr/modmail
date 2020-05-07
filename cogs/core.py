@@ -44,7 +44,7 @@ class Core(commands.Cog):
         try:
             await ctx.send(embed=discord.Embed(description="Closing channel...", colour=self.bot.primary_colour))
             data = await self.bot.get_data(ctx.guild.id)
-            if data[7] == True:
+            if data[7] is True:
                 messages = await ctx.channel.history(limit=10000).flatten()
             await ctx.channel.delete()
             embed = discord.Embed(
@@ -64,7 +64,7 @@ class Core(commands.Cog):
                     data = await self.bot.get_data(ctx.guild.id)
                     if data[6]:
                         embed2 = discord.Embed(
-                            title="Custom Close Message",
+                            title="Custom Closing Message",
                             description=self.bot.tools.tag_format(data[6], member),
                             colour=self.bot.mod_colour,
                             timestamp=datetime.datetime.utcnow(),
