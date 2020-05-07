@@ -27,12 +27,13 @@ class Premium(commands.Cog):
         embed.add_field(
             name="Premium Features",
             value="- Custom greeting and closing messages.\n- Advanced logging that includes chat history.\n- Snippet "
-            "functionality (saved messages).\n- Priority support.\n- More features released in future.",
+            "functionality (saved messages).\n- Priority support.\n-Exclusive role and channels in the support server."
+            "\n- More features released in future.",
             inline=False,
         )
         embed.add_field(
             name="Get Premium",
-            value="Please join our support server and type `donate` over there for more information.",
+            value="Please join our support server and go to https://modmail.netlify.com/premium.",
             inline=False,
         )
         await ctx.send(embed=embed)
