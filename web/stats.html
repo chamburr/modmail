@@ -16,7 +16,6 @@
     <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.12.0/css/all.css" integrity="sha384-REHJTs1r2ErKBuJB0fCK99gCYsVjwxHrSU0N7I1zl9vZbggVJXRMsv/sLlOAGb4M" crossorigin="anonymous">
     <link rel="icon" href="images/icon.png" type="image/x-icon">
     <link rel="stylesheet" href="css/styles.css">
-    <link rel="stylesheet" href="css/particles.css">
     <script src="https://ajax.aspnetcdn.com/ajax/jQuery/jquery-3.4.0.min.js"></script>
 </head>
 <body>
@@ -52,74 +51,11 @@
             </div>
         </nav>
     </header>
-    <div class="w-100 vh-100 d-table overflow-hidden">
-        <div id="particles-js"></div>
-        <div class="d-table-cell align-middle">
-            <div class="align-items-center d-flex flex-column">
-                <img src="images/icon.png" width="200vh" alt="Icon">
-                <h1 class="my-3">ModMail</h1>
-                <h3 class="text-center" style="font-weight: 500; letter-spacing: 0.1em; line-height: 1.5em;">
-                    A feature-rich Discord bot
-                    <br>
-                    for easy communication
-                    <br>
-                    between server staff and users.
-                </h3>
-            </div>
-            <div class="text-center">
-                <a class="btn btn-primary btn-lg d-inline-block m-2" href="https://discordapp.com/api/oauth2/authorize?client_id=575252669443211264&permissions=268823640&scope=bot"><i class="fas fa-plus"></i> Invite Bot</a>
-                <a class="btn btn-success btn-lg d-inline-block m-2" href="https://discord.gg/wjWJwJB"><i class="fas fa-question"></i> Support Server</a>
-                <br>
-                <a class="btn btn-info btn-lg d-inline-block m-2" href="https://github.com/CHamburr/modmail"><i class="fab fa-github"></i> GitHub Repository</a>
-            </div>
-        </div>
-    </div>
-    <hr>
-    <div class="container py-3" style="padding-left: 10%; padding-right: 10%;">
-        <a id="about"><h2>About</h2></a>
-        <p class="mt-3">ModMail is a feature-rich Discord bot designed to enable your server members to contact staff easily. A new channel is created whenever a user messages the bot, and the channel will serve as a shared inbox for seamless communication between staff and the user.</p>
-    </div>
-    <hr>
-    <div class="container py-3" style="padding-left: 10%; padding-right: 10%;">
-        <a id="features"><h2>Features</h2></a>
-        <ul class="mt-3">
-            <li>Extremely easy interactive setup.</li>
-            <li>Fancy, but organised design for you and server members.</li>
-            <li>Highly configurable, adjust things to your liking.</li>
-            <li>Advanced ticket logging, includes conversation history.</li>
-            <li>Save messages as snippets for quick responses.</li>
-            <li>And much more...</li>
-        </ul>
-    </div>
-    <hr>
-    <div class="container py-3" style="padding-left: 10%; padding-right: 10%;">
-        <a id="getting-started"><h2>Getting Started</h2></a>
-        <p class="mt-3">Follow these steps to get the bot all ready to serve your server!</p>
-        <ol>
-            <li>Invite the bot with <a href="https://discordapp.com/api/oauth2/authorize?client_id=575252669443211264&permissions=268823640&scope=bot">this link</a>.</li>
-            <li>Run <code>=setup</code>, there will be an interactive guide.</li>
-            <li>All done! For a full list of commands, see <code>=help</code>.</li>
-        </ol>
-    </div>
-    <hr>
-    <div class="container py-3" style="padding-left: 10%; padding-right: 10%;">
-        <a id="widgets"><h2>Widgets</h2></a>
-        <div class="row">
-            <div class="col-12 col-md-6 col-lg-4 my-2 px-2">
-                <a href="https://discordbots.org/bot/575252669443211264">
-                    <img class="w-100" src="https://discordbots.org/api/widget/575252669443211264.svg" alt="Discord Bot List">
-                </a>
-            </div>
-            <div class="col-12 col-md-6 col-lg-4 my-2 px-2">
-                <a href="https://botsfordiscord.com/bots/575252669443211264">
-                    <img class="w-100" src="https://botsfordiscord.com/api/bot/575252669443211264/widget?theme=dark" alt="Bots for Discord">
-                </a>
-            </div>
-            <div class="col-12 col-md-6 col-lg-4 my-2 px-2">
-                <a href="https://bots.ondiscord.xyz/bots/575252669443211264">
-                    <img class="w-100" src="https://bots.ondiscord.xyz/bots/575252669443211264/embed?theme=dark&showGuilds=true" alt="Bots on Discord">
-                </a>
-            </div>
+    <div class="container p-4">
+        <h1>Statistics</h1>
+        <h5>Enjoy these beautiful graphs! They refresh automatically every 30 seconds.</h5>
+        <div class="mt-4">
+            <iframe class="w-100" src="http://discordtemplates.me:3000/d/-bZ81ceZz/modmail?orgId=1&refresh=30s&kiosk" frameborder="0" style="height: 8800px; pointer-events: none;" id="dashboard"></iframe>
         </div>
     </div>
     <div>
@@ -134,8 +70,6 @@
     </div>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
-    <script src="https://cdn.jsdelivr.net/particles.js/2.0.0/particles.min.js"></script>
-    <script src="js/particles.js"></script>
     <script>
         $(window).scroll(function() {
             if ($(window).scrollTop() > 300) $("#scroll-button").addClass("show");

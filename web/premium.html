@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf8">
+    <meta name="description" content="A feature-rich Discord bot for easy communication between server staff and users.">
+    <meta name="author" content="CHamburr#2591">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="theme-color" content="#1e90ff">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://modmail.netlify.com">
+    <meta property="og:title" content="ModMail">
+    <meta property="og:description" content="A feature-rich Discord bot for easy communication between server staff and users.">
+    <meta property="og:image" content="https://modmail.netlify.com/images/icon.png">
+    <title>ModMail</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.12.0/css/all.css" integrity="sha384-REHJTs1r2ErKBuJB0fCK99gCYsVjwxHrSU0N7I1zl9vZbggVJXRMsv/sLlOAGb4M" crossorigin="anonymous">
+    <link rel="icon" href="images/icon.png" type="image/x-icon">
+    <link rel="stylesheet" href="css/styles.css">
+    <script src="https://ajax.aspnetcdn.com/ajax/jQuery/jquery-3.4.0.min.js"></script>
+</head>
+<body>
+    <header>
+        <nav class="navbar navbar-expand-lg navbar-dark">
+            <div class="container px-2 px-md-4 my-0 mx-auto" style="max-width: none;">
+                <a href="/" class="navbar-brand h1 mb-0">
+                    <img src="images/icon.png" width="40" height="40" alt="Icon">
+                </a>
+                <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                    <ul class="navbar-nav mr-auto" style="font-weight: 500;">
+                        <li class="nav-item active">
+                            <a class="nav-link" href="/">Home</a>
+                        </li>
+                        <li class="nav-item active">
+                            <a class="nav-link" href="/premium">Premium</a>
+                        </li>
+                        <li class="nav-item active">
+                            <a class="nav-link" href="/stats">Statistics</a>
+                        </li>
+                        <li class="nav-item active">
+                            <a class="nav-link" href="/partners">Partners</a>
+                        </li>
+                        <li class="nav-item active">
+                            <a class="nav-link" href="https://discord.gg/wjWJwJB">Support Server</a>
+                        </li>
+                    </ul>
+                    <a class="btn btn-outline-primary my-2 my-sm-0" href="https://discordapp.com/api/oauth2/authorize?client_id=575252669443211264&permissions=268823640&scope=bot">Invite Bot</a>
+                </div>
+            </div>
+        </nav>
+    </header>
+    <div class="container p-4">
+        <h1>Premium</h1>
+        <h5>Purchasing premium is the best way you can show support to the development of our bot.</h5>
+        <div class="row mt-4 text-center justify-content-around">
+            <div class="col-12 col-md-4 my-auto px-2">
+                <div class="card bg-transparent border-0">
+                    <div class="card-body">
+                        <h5 class="card-title">Automated Messages</h5>
+                        <p>Configure the bot to send an automated greeting or closing message to the user whenever a ticket is created or closed.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-12 col-md-4 my-auto px-2">
+                <div class="card bg-transparent border-0">
+                    <div class="card-body">
+                        <h5 class="card-title">Advanced Logging</h5>
+                        <p>Advanced logging includes all messages sent through ModMail. It's your choice whether to view on the website or download a txt file!</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-12 col-md-4 my-auto px-2">
+                <div class="card bg-transparent border-0">
+                    <div class="card-body">
+                        <h5 class="card-title">Snippets</h5>
+                        <p>Snippets are saved responses. You can use them with a simple command and you won't ever have to type the same thing each time!</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-12 col-md-4 my-auto px-2">
+                <div class="card bg-transparent border-0">
+                    <div class="card-body">
+                        <h5 class="card-title">Priority Support</h5>
+                        <p>Our staff are readily available to help you out with any matters. From setting up to configuring, we've got you covered.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-12 col-md-4 my-auto px-2">
+                <div class="card bg-transparent border-0">
+                    <div class="card-body">
+                        <h5 class="card-title">Exclusive Channels</h5>
+                        <p>Get access to exclusive channels in our support server, and always be the first to receive the latest news and updates!</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-12 col-md-4 my-auto px-2">
+                <div class="card bg-transparent border-0">
+                    <div class="card-body">
+                        <h5 class="card-title">And More...</h5>
+                        <p>Even though ModMail Premium is a one-time purchase, you will get access to all features and perks released in the future!</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div id="alert-toast" class="alert alert-warning m-3 position-fixed" role="alert" style="top: 0; right: 0; z-index: 9999; pointer-events: none; display: none;"></div>
+        <div class="modal fade" id="payment-modal" tabindex="-1" role="dialog" aria-labelledby="payment-modal-label" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+            <div class="modal-dialog modal-dialog-centered" role="document">
+                <div class="modal-content bg-dark">
+                    <div class="modal-header" style="border-color: grey;">
+                        <h5 class="modal-title" id="payment-modal-label">ModMail Premium</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span class="text-white" aria-hidden="true" style="text-shadow: none;">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <h6 id="payment-plan"></h6>
+                        <p>Before proceeeding to payment, please join our <a href="https://discord.gg/wjWJwJB" target="_blank" class="link-dark">support server</a> and select the user to receive the reward below.
+                        <form id="payment-form" class="needs-validation" action="https://www.paypal.com/cgi-bin/webscr" method="post" target="_top" novalidate>
+                            <input type="hidden" name="business" value="redfreebird41@gmail.com">
+                            <input type="hidden" name="lc" value="US">
+                            <input type="hidden" name="cmd" value="_xclick">
+                            <input id="payment-amount" type="hidden" name="amount" value="">
+                            <input type="hidden" name="item_name" value="Donate Bot Item">
+                            <input type="hidden" name="no_shipping" value="1">
+                            <input type="hidden" name="currency_code" value="USD">
+                            <input type="hidden" name="button_subtype" value="services">
+                            <input type="hidden" name="no_note" value="0">
+                            <input id="payment-custom" type="hidden" name="custom" value="">
+                            <input type="hidden" name="notify_url" value="https://donatebot.io/ipn">
+                            <input type="hidden" name="return" value="https://modmail.netlify.com/success">
+                            <input type="hidden" name="cancel_return" value="https://modmail.netlify.com/premium">
+                            <input type="hidden" name="bn" value="PP-BuyNowBF:btn_buynowCC_LG.gif:NonHostedGuest">
+                            <div class="form-group">
+                                <label for="payment-user">User</label>
+                                <input class="form-control typeahead" id="payment-user" type="text" placeholder="Enter username..." required>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="modal-footer" style="border-color: grey;">
+                      <button type="submit" class="btn btn-primary" id="paypal-button" form="payment-form">Continue with PayPal</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row mt-4 text-center justify-content-around">
+            <div class="col-lg-1"></div>
+            <div class="col-12 col-md-4 col-lg-3 my-auto px-2">
+                <div class="card bg-dark">
+                    <div class="card-body d-flex flex-column">
+                        <h4 class="card-title">Basic</h4>
+                        <br>
+                        <h6 class="card-subtitle">
+                            Premium for 1 Server
+                            <br>
+                            <br>
+                            <div class="btn btn-sm text-white rounded-pill py-0 pl-1 pr-2 my-1" style="border-color: #ffd700;">
+                                <div class="d-inline-block align-middle rounded-pill" style="height: 0.8rem; width: 0.8rem; margin: 1px 0 4px 0; background-color: #ffd700;"></div>
+                                Patrons
+                            </div>
+                        </h6>
+                        <br>
+                        <p class="h1 text-info">$30</p>
+                        <p class="text-muted">$30 per server</p>
+                        <br>
+                        <button class="btn btn-secondary btn-block mt-auto" data-toggle="modal" data-target="#payment-modal" data-plan="basic">Purchase Now</button>
+                        <small class="text-muted mt-2">One-time Purchase</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-12 col-md-4 col-lg-3 my-2 px-2">
+                <div class="card bg-dark">
+                    <div class="card-header font-weight-bold text-uppercase text-warning">
+                        Most Popular
+                    </div>
+                    <div class="card-body d-flex flex-column">
+                        <h4 class="card-title">Pro</h4>
+                        <br>
+                        <h6 class="card-subtitle">
+                            Premium for 3 Servers
+                            <br>
+                            <br>
+                            <div class="btn btn-sm text-white rounded-pill py-0 pl-1 pr-2 my-1" style="border-color: #ffa500;">
+                                <div class="d-inline-block align-middle rounded-pill" style="height: 0.8rem; width: 0.8rem; margin: 1px 0 4px 0; background-color: #ffa500;"></div>
+                                Super Patrons
+                            </div>
+                        </h6>
+                        <br>
+                        <p class="h1 text-info">$60</p>
+                        <p class="text-muted">$20 per server</p>
+                        <br>
+                        <button class="btn btn-primary btn-block mt-auto" data-toggle="modal" data-target="#payment-modal" data-plan="pro">Purchase Now</button>
+                        <small class="text-muted mt-2">One-time Purchase</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-12 col-md-4 col-lg-3 my-auto px-2">
+                <div class="card bg-dark">
+                    <div class="card-body d-flex flex-column">
+                        <h4 class="card-title">Plus</h4>
+                        <br>
+                        <h6 class="card-subtitle">
+                            Premium for 5 Servers
+                            <br>
+                            <br>
+                            <div class="btn btn-sm text-white rounded-pill py-0 pl-1 pr-2 my-1" style="border-color: #ff4500;">
+                                <div class="d-inline-block align-middle rounded-pill" style="height: 0.8rem; width: 0.8rem; margin: 1px 0 4px 0; background-color: #ff4500;"></div>
+                                Super Duper Patrons
+                            </div>
+                        </h6>
+                        <br>
+                        <p class="h1 text-info">$90</p>
+                        <p class="text-muted">$18 per server</p>
+                        <br>
+                        <button class="btn btn-secondary btn-block mt-auto" data-toggle="modal" data-target="#payment-modal" data-plan="plus">Purchase Now</button>
+                        <small class="text-muted mt-2">One-time Purchase</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-1"></div>
+        </div>
+        <h5 class="mt-4 pt-4">Need Something Professional?</h5>
+        <p>We can host an exclusive instance just for your server! Not only does this include the premium features listed above, you will also get to customise the bot's avatar, username and status. Furthermore, confirmation messages will be disabled, which means your server members will be able to focus on effective communication. If this is something you are looking for, drop CHamburr#2591 a direct message on Discord.</p>
+        <h5 class="mt-4">Just Want to Donate?</h5>
+        <p>That's awesome! You can do so on PayPal <a class="link-dark" href="https://paypal.me/chamburr22" target="_blank">here</a>. Any amount will be appreciated. If you wish to get access to exclusive channels and the donator role in our support server, you can drop CHamburr#2591 a direct message on Discord with your PayPal email.</p>
+    </div>
+    <div>
+        <a href="#" id="scroll-button">
+            <i class="fas fa-chevron-up fa-2x text-white"></i>
+        </a>
+    </div>
+    <div class="mt-4 px-0 py-3" style="background-color: #23272a;">
+        <footer class="text-center">
+            <p>©2019-2020 CHamburr#2591</p>
+        </footer>
+    </div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+    <script>
+        $(window).scroll(function() {
+            if ($(window).scrollTop() > 300) $("#scroll-button").addClass("show");
+            else $("#scroll-button").removeClass("show");
+        });
+        $(document).ready(function() {
+            $("#scroll-button").click(function(e) {
+                e.preventDefault();
+                $("html, body").animate({scrollTop: 0}, "300");
+            });
+        });
+    </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/typeahead.js/0.11.1/typeahead.bundle.min.js" integrity="sha256-RWiU4omUU7tQ2M3wmRQNW9UL50MB4CucbRPCbsQv+X0=" crossorigin="anonymous"></script>
+    <script>
+        function showAlert(message) {
+            $("#alert-toast").text(message);
+            $("#alert-toast").alert();
+            $("#alert-toast").fadeTo(5000, 500).slideUp(500, function() {
+                $("#alert-toast").slideUp(500);
+            });
+        }
+
+        var role = "";
+
+        $("#payment-modal").on("show.bs.modal", function(e) {
+            var plan = $(e.relatedTarget).data("plan");
+            if (plan == "basic") {
+                $("#payment-plan").text("Basic Plan (1 Server)");
+                $(this).find("#payment-amount").val("30.00");
+                role = "576756461267451934";
+            }
+            else if (plan == "pro") {
+                $("#payment-plan").text("Pro Plan (3 Servers)");
+                $(this).find("#payment-amount").val("60.00");
+                role = "576754574346551306";
+            } else {
+                $("#payment-plan").text("Plus Plan (5 Servers)");
+                $(this).find("#payment-amount").val("90.00");
+                role = "576754671620980740";
+            }
+        });
+
+        $("#payment-form").on("submit", function(e) {
+            if (this.checkValidity() == false) {
+                return;
+            }
+            var text = $("#paypal-button").text();
+            $("#paypal-button").html("<span class=\"spinner-border spinner-border-sm\" role=\"status\" aria-hidden=\"true\"></span> " + text);
+            var query = $("#payment-user").val();
+            e.preventDefault();
+            e.stopPropagation();
+            $.ajax({
+                url: "https://discordtemplates.me/modmail-search?q=" + encodeURIComponent(query)
+            }).done(function(data) {
+                var user = null;
+                data.forEach(function(value) {
+                    if (query == value.text) {
+                        user = value.id;
+                    }
+                });
+                if (user == null) {
+                    showAlert("Oops! The user was not found. Perhaps you're not in our support server?");
+                    $("#paypal-button").text(text);
+                } else {
+                    $("#payment-custom").val(user + "," + role);
+                    $("#payment-form").unbind("submit").submit();
+                }
+            }).fail(function(data) {
+                showAlert("Oops! An unknown error occurred.")
+            });
+        });
+
+        $("#payment-user").typeahead({
+            classNames: {
+                menu: "form-control p-0 h-auto w-100",
+                suggestion: "tt-suggestion form-control border-left-0 border-right-0 border-top-0 rounded-0",
+                dataset: "tt-dataset px-2 py-2"
+            }
+        }, {
+            source: function(query, syncResults, asyncResults) {
+                $.ajax({
+                    url: "https://discordtemplates.me/modmail-search?q=" + encodeURIComponent(query)
+                }).done(function(data) {
+                    data.forEach(function(value, index) {
+                        data[index].text = $("<div/>").html(value.text).text(); 
+                    });
+                    asyncResults(data);
+                }).fail(function(data) {
+                    showAlert("Oops! An error occurred while searching.")
+                });
+            },
+            display: function(data) {
+                return data.text;
+            },
+            templates: {
+                notFound: function() {
+                    return "<span class=\"px-2\">No Results Found</span>";
+                },
+                pending: function() {
+                    return "<span class=\"px-2\">Searching...</span>";
+                },
+                suggestion: function(data) {
+                    return "<div data-id=\"" + data.id + "\">" + data.text + "</div>"
+                }
+            }
+        });
+
+        window.addEventListener("load", function () {
+            var forms = document.getElementsByClassName("needs-validation");
+            Array.prototype.filter.call(forms, function(form) {
+                form.addEventListener("submit", function(event) {
+                    if (form.checkValidity() == false) {
+                        event.preventDefault();
+                        event.stopPropagation();
+                        form.classList.add("was-validated");
+                    }
+                }, false);
+            });
+        }, false);
+    </script>
+</body>
+</html>
