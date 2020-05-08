@@ -1,6 +1,5 @@
 import asyncio
 import logging
-import typing
 
 import discord
 
@@ -219,7 +218,9 @@ class Configuration(commands.Cog):
         aliases=["modrole", "supportrole"],
         usage="accessrole [roles]",
     )
-    async def accessrole(self, ctx, roles: commands.Greedy[discord.Role] = [], *, check=None):
+    async def accessrole(self, ctx, roles: commands.Greedy[discord.Role] = None, *, check=None):
+        if roles is None:
+            roles = []
         if check:
             await ctx.send(
                 embed=discord.Embed(

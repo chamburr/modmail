@@ -86,7 +86,7 @@ class Communication(commands.Cog):
                     result[attr] = self.to_dict(result[attr], ignore)
             elif isinstance(result[attr], list) or isinstance(result[attr], tuple):
                 new_list = []
-                for index, element in enumerate(result[attr]):
+                for element in result[attr]:
                     if hasattr(element, "__slots__"):
                         new_list.append(self.to_dict(element, ignore))
                     else:
@@ -254,7 +254,7 @@ class Communication(commands.Cog):
         }
         await self.bot.redis.execute("PUBLISH", self.ipc_channel, json.dumps(payload))
 
-    async def handler(self, action, expected_count, args={}, _timeout=1, scope="bot", cluster=None):
+    async def handler(self, action, expected_count, args=None, _timeout=1, scope="bot", cluster=None):
         command_id = f"{uuid4()}"
         self._messages[command_id] = []
         payload = {"scope": scope, "action": action, "command_id": command_id}
