@@ -55,15 +55,16 @@ class ModMailEvents(commands.Cog):
         user = self.bot.tools.get_modmail_user(message.channel)
         member = message.guild.get_member(user)
         if member is None:
-            member = await message.guild.fetch_member(user)
-        if member is None:
-            await message.channel.send(
-                embed=discord.Embed(
-                    description=f"The user was not found. Use `{prefix}close [reason]` to close this channel.",
-                    colour=self.bot.error_colour,
+            try:
+                member = await message.guild.fetch_member(user)
+            except discord.NotFound:
+                await message.channel.send(
+                    embed=discord.Embed(
+                        description=f"The user was not found. Use `{prefix}close [reason]` to close this channel.",
+                        colour=self.bot.error_colour,
+                    )
                 )
-            )
-            return
+                return
         if snippet is True:
             msg = tools.tag_format(msg, member)
         try:
