@@ -27,7 +27,7 @@ class Premium(commands.Cog):
         embed.add_field(
             name="Premium Features",
             value="- Custom greeting and closing messages.\n- Advanced logging that includes chat history.\n- Snippet "
-            "functionality (saved messages).\n- Priority support.\n-Exclusive role and channels in the support server."
+            "functionality (saved messages).\n- Priority support.\n- Exclusive role and channels in the support server."
             "\n- More features released in future.",
             inline=False,
         )
