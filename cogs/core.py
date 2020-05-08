@@ -127,6 +127,7 @@ class Core(commands.Cog):
                             log_url = [hex(int(some_id))[2:] for some_id in log_url.split("/")]
                             log_url = f"https://discordtemplates.me/modmail-logs/{'-'.join(log_url)}"
                             embed.add_field(name="Message Logs", value=log_url, inline=False)
+                            log.info(embed.to_dict())
                             await msg.edit(embed=embed)
                             return
                         await channel.send(embed=embed)
