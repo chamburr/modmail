@@ -262,31 +262,39 @@ class General(commands.Cog):
     async def invite(self, ctx):
         await ctx.send(
             embed=discord.Embed(
-                title="Invite Me!",
+                title="Invite Link",
                 description=f"https://discordapp.com/api/oauth2/authorize?client_id={self.bot.user.id}"
                 "&permissions=268823640&scope=bot",
                 colour=self.bot.primary_colour,
             )
         )
 
-    @commands.command(
-        description="Get a link to my support server.", usage="support", aliases=["server"],
-    )
+    @commands.command(description="Get a link to my support server.", usage="support", aliases=["server"])
     async def support(self, ctx):
         await ctx.send(
             embed=discord.Embed(
                 title="Support Server",
-                description="You can join the support server with this link: https://discord.gg/wjWJwJB",
+                description="https://discord.gg/wjWJwJB",
                 colour=self.bot.primary_colour,
             )
         )
 
-    @commands.command(description="Get the link to vote for ModMail.", usage="vote")
-    async def vote(self, ctx):
+    @commands.command(description="Get the link to ModMail's website.", usage="website")
+    async def website(self, ctx):
         await ctx.send(
             embed=discord.Embed(
-                title="Vote",
-                description=f"Please vote for me here: https://discordbots.org/bot/575252669443211264. Thank you!",
+                title="Website",
+                description=f"https://modmail.netlify.com",
+                colour=self.bot.primary_colour,
+            )
+        )
+
+    @commands.command(description="Get the link to ModMail's GitHub repository.", usage="source", aliases=["github"])
+    async def source(self, ctx):
+        await ctx.send(
+            embed=discord.Embed(
+                title="Github Repository",
+                description=f"https://github.com/CHamburr/modmail",
                 colour=self.bot.primary_colour,
             )
         )
