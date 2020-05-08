@@ -40,13 +40,15 @@ class Core(commands.Cog):
         modmail = ModMailEvents(self.bot)
         await modmail.send_mail_mod(ctx.message, ctx.prefix, True, message)
 
-    async def close_channel(self, ctx, reason, anon: bool = False):
+    async def close_channel(self, ctx, reason, anon: bool = False, test: bool = False):
         try:
-            await ctx.send(embed=discord.Embed(description="Closing channel...", colour=self.bot.primary_colour))
+            if test is False:
+                await ctx.send(embed=discord.Embed(description="Closing channel...", colour=self.bot.primary_colour))
             data = await self.bot.get_data(ctx.guild.id)
             if data[7] is True:
                 messages = await ctx.channel.history(limit=10000).flatten()
-            await ctx.channel.delete()
+            if test is False:
+                await ctx.channel.delete()
             embed = discord.Embed(
                 title="Ticket Closed",
                 description=(reason if reason else "No reason was provided."),
@@ -59,7 +61,7 @@ class Core(commands.Cog):
             )
             embed.set_footer(text=f"{ctx.guild.name} | {ctx.guild.id}", icon_url=ctx.guild.icon_url)
             member = ctx.guild.get_member(self.bot.tools.get_modmail_user(ctx.channel))
-            if member:
+            if member and test is False:
                 try:
                     data = await self.bot.get_data(ctx.guild.id)
                     if data[6]:
@@ -200,6 +202,31 @@ class Core(commands.Cog):
             await ctx.send(
                 embed=discord.Embed(
                     description="All channels are successfully closed anonymously.", colour=self.bot.primary_colour,
+                )
+            )
+        except discord.HTTPException:
+            pass
+
+    @checks.is_admin()
+    @checks.in_database()
+    @checks.is_mod()
+    @commands.bot_has_permissions(manage_channels=True)
+    @commands.guild_only()
+    @commands.command(description="Test close all of the channel.", usage="tca [reason]")
+    async def tca(self, ctx, *, reason: str = None):
+        category = (await self.bot.get_data(ctx.guild.id))[2]
+        category = ctx.guild.get_channel(category)
+        if category:
+            for channel in category.text_channels:
+                if checks.is_modmail_channel2(self.bot, channel):
+                    msg = copy.copy(ctx.message)
+                    msg.channel = channel
+                    new_ctx = await self.bot.get_context(msg, cls=type(ctx))
+                    await self.close_channel(new_ctx, reason, test=True)
+        try:
+            await ctx.send(
+                embed=discord.Embed(
+                    description="All channels are successfully closed.", colour=self.bot.primary_colour,
                 )
             )
         except discord.HTTPException:
