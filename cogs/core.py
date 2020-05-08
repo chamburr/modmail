@@ -33,9 +33,7 @@ class Core(commands.Cog):
     @checks.in_database()
     @checks.is_mod()
     @commands.guild_only()
-    @commands.command(
-        description="Reply to the ticket anonymously.", usage="areply <message>",
-    )
+    @commands.command(description="Reply to the ticket anonymously.", usage="areply <message>")
     async def areply(self, ctx, *, message):
         modmail = ModMailEvents(self.bot)
         await modmail.send_mail_mod(ctx.message, ctx.prefix, True, message)

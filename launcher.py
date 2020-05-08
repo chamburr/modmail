@@ -167,14 +167,7 @@ class Main:
         for i, shard_list in enumerate(clusters, 1):
             if not shard_list:
                 continue
-            data.append({
-                "labels": {
-                    "cluster": f"{i}"
-                },
-                "targets": [
-                    f"localhost:{6000 + i}"
-                ]
-            })
+            data.append({"labels": {"cluster": f"{i}"}, "targets": [f"localhost:{6000 + i}"]})
         with open("targets.json", "w") as f:
             json.dump(data, f, indent=4)
 
