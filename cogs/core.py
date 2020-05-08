@@ -128,9 +128,7 @@ class Core(commands.Cog):
                             log_url = f"https://discordtemplates.me/modmail-logs/{'-'.join(log_url)}"
                             embed.add_field(name="Message Logs", value=log_url, inline=False)
                             log.info(embed.to_dict())
-                            msg2 = await msg.edit(embed=embed)
-                            log.info('new:')
-                            log.info(msg2.embeds[0].to_dict())
+                            await msg.edit(embed=embed)
                             return
                         await channel.send(embed=embed)
                     except discord.Forbidden:
