@@ -268,7 +268,9 @@ class Configuration(commands.Cog):
         aliases=["mentionrole"],
         usage="pingrole [roles]",
     )
-    async def pingrole(self, ctx, roles: commands.Greedy[PingRoleConverter] = []):
+    async def pingrole(self, ctx, roles: commands.Greedy[PingRoleConverter] = None):
+        if roles is None:
+            roles = []
         role_ids = []
         for role in roles:
             if not isinstance(role, discord.Role):

@@ -32,45 +32,30 @@ class Events(commands.Cog):
             guilds = sum(guilds)
             await self.bot.session.post(
                 f"https://top.gg/api/bots/{self.bot.user.id}/stats",
-                data=json.dumps(self.get_dbl_payload(guilds)),
+                data=json.dumps({"server_count": guilds, "shard_count": self.bot.shard_count}),
                 headers=self.dbl_auth,
             )
             await self.bot.session.post(
                 f"https://discord.bots.gg/api/v1/bots/{self.bot.user.id}/stats",
-                data=json.dumps(self.get_dbots_payload(guilds)),
+                data=json.dumps({"guildCount": guilds, "shardCount": self.bot.shard_count}),
                 headers=self.dbots_auth,
             )
             await self.bot.session.post(
                 f"https://bots.ondiscord.xyz/bot-api/bots/{self.bot.user.id}/guilds",
-                data=json.dumps(self.get_bod_payload(guilds)),
+                data=json.dumps({"guildCount": guilds}),
                 headers=self.bod_auth,
             )
             await self.bot.session.post(
                 f"https://botsfordiscord.com/api/bot/{self.bot.user.id}",
-                data=json.dumps(self.get_bfd_payload(guilds)),
+                data=json.dumps({"server_count": guilds}),
                 headers=self.bfd_auth,
             )
             await self.bot.session.post(
-                f"https://discord.boats/api/bot/{self.bot.user.id}",
-                data=json.dumps(self.get_dboats_payload(guilds)),
+                f"https://discord.boats/api/v2/bot/{self.bot.user.id}",
+                data=json.dumps({"server_count": guilds}),
                 headers=self.dboats_auth,
             )
             await asyncio.sleep(900)
-
-    def get_dbl_payload(self, guilds):
-        return {"server_count": guilds, "shard_count": self.bot.shard_count}
-
-    def get_dbots_payload(self, guilds):
-        return {"guildCount": guilds, "shardCount": self.bot.shard_count}
-
-    def get_bod_payload(self, guilds):
-        return {"guildCount": guilds}
-
-    def get_bfd_payload(self, guilds):
-        return {"server_count": guilds}
-
-    def get_dboats_payload(self, guilds):
-        return {"server_count": guilds}
 
     async def bot_stats_updater(self):
         while True:
