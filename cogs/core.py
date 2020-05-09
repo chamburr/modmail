@@ -1,3 +1,4 @@
+import asyncio
 import copy
 import datetime
 import io
@@ -121,13 +122,12 @@ class Core(commands.Cog):
                                 history, f"modmail_log_{self.bot.tools.get_modmail_user(ctx.channel)}.txt"
                             )
                             msg = await channel.send(embed=embed, file=file)
-                            log.info("attachment url " + msg.attachments[0].url)
                             log_url = msg.attachments[0].url[39:-4]
                             log_url = log_url.replace("modmail_log_", "")
                             log_url = [hex(int(some_id))[2:] for some_id in log_url.split("/")]
                             log_url = f"https://discordtemplates.me/modmail-logs/{'-'.join(log_url)}"
                             embed.add_field(name="Message Logs", value=log_url, inline=False)
-                            log.info(embed.to_dict())
+                            await asyncio.sleep(0.5)
                             await msg.edit(embed=embed)
                             return
                         await channel.send(embed=embed)
