@@ -61,7 +61,7 @@ admins = []
 # Cogs to load on startup
 initial_extensions = [
     "cogs.admin",
-    "cogx.communication",
+    "cogs.communication",
     "cogs.configuration",
     "cogs.core",
     "cogs.direct_message",

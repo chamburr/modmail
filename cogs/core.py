@@ -208,7 +208,7 @@ class Core(commands.Cog):
     @checks.is_mod()
     @commands.guild_only()
     @commands.command(
-        description="Blacklist a user from creating tickers.", usage="blacklist <member>", aliases=["block"],
+        description="Blacklist a user from creating tickets.", usage="blacklist <member>", aliases=["block"],
     )
     async def blacklist(self, ctx, *, member: discord.Member):
         blacklist = (await self.bot.get_data(ctx.guild.id))[9]
