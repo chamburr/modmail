@@ -43,6 +43,9 @@ additional_shards = 0
 # The default prefix for commands
 default_prefix = "="
 
+# The server to send tickets to, no confirmation messages if set
+default_server = None
+
 # Status of the bot
 activity = f"DM to Contact Staff | {default_prefix}help"
 

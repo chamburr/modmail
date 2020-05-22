@@ -306,6 +306,9 @@ class DirectMessageEvents(commands.Cog, name="Direct Message"):
                 embed=discord.Embed(description="You are banned from this bot.", colour=self.bot.error_colour)
             )
             return
+        if self.bot.config.default_server:
+            await self.send_mail(message, self.bot.config.default_server, message.content)
+            return
         guild = None
         async for msg in message.channel.history(limit=30):
             if (
