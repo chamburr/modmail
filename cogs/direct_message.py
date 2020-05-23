@@ -114,12 +114,11 @@ class DirectMessageEvents(commands.Cog, name="Direct Message"):
                     )
                 )
                 return
-            except discord.HTTPException:
+            except discord.HTTPException as e:
                 await message.channel.send(
                     embed=discord.Embed(
-                        description="A HTTPException error occurred. This is most likely because the server has "
-                        "reached the maximum number of channels (500). Please join the support server if you cannot "
-                        "figure out what went wrong.",
+                        description="A HTTPException error occurred. Please contact an admin on the server with the "
+                        f"following error information: {e.text} ({e.code}).",
                         colour=self.bot.error_colour,
                     )
                 )
