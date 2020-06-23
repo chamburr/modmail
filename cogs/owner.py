@@ -190,7 +190,7 @@ class Owner(commands.Cog):
             if ret is None:
                 if value:
                     await ctx.send(
-                        embed=discord.Embed(descrption=f"```py\n{value}\n```", colour=self.bot.primary_colour)
+                        embed=discord.Embed(description=f"```py\n{value}\n```", colour=self.bot.primary_colour)
                     )
             else:
                 self._last_result = ret
