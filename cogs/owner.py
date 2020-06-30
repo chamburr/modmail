@@ -280,6 +280,7 @@ class Owner(commands.Cog):
     @checks.is_owner()
     @commands.command(description="Make me say something.", usage="echo <message>", rest_is_raw=True, hidden=True)
     async def echo(self, ctx, *, content: str):
+        await ctx.message.delete()
         await ctx.send(content)
 
     @checks.is_owner()
