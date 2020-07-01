@@ -5,6 +5,7 @@ import discord
 from discord.ext import commands
 
 from utils import checks
+from utils.paginator import Paginator
 
 log = logging.getLogger(__name__)
 
@@ -25,12 +26,23 @@ class Admin(commands.Cog):
         if len(guilds) == 0:
             await ctx.send(embed=discord.Embed(description="No such guild was found.", colour=self.bot.error_colour))
             return
-        try:
-            await ctx.send(embed=discord.Embed(description="\n".join(guilds), colour=self.bot.primary_colour))
-        except discord.HTTPException:
-            await ctx.send(
-                embed=discord.Embed(description="The message is too long to be sent.", colour=self.bot.error_colour)
-            )
+        all_pages = []
+        for chunk in [guilds[i : i + 20] for i in range(0, len(guilds), 20)]:
+            page = discord.Embed(title="Guilds", colour=self.bot.primary_colour)
+            for guild in chunk:
+                if page.description == discord.Embed.Empty:
+                    page.description = guild
+                else:
+                    page.description += f"\n{guild}"
+            page.set_footer(text="Use the reactions to flip pages.")
+            all_pages.append(page)
+        if len(all_pages) == 1:
+            embed = all_pages[0]
+            embed.set_footer(text=discord.Embed.Empty)
+            await ctx.send(embed=embed)
+            return
+        paginator = Paginator(length=1, entries=all_pages, use_defaults=True, embed=True, timeout=120)
+        await paginator.start(ctx)
 
     @checks.is_admin()
     @commands.command(
@@ -47,13 +59,24 @@ class Admin(commands.Cog):
         guilds = []
         for chunk in data:
             guilds.extend(chunk)
-        guild_list = [f"{guild['name']} `{guild['id']}`" for guild in guilds]
-        try:
-            await ctx.send(embed=discord.Embed(description="\n".join(guild_list), colour=self.bot.primary_colour))
-        except discord.HTTPException:
-            await ctx.send(
-                embed=discord.Embed(description="The message is too long to be sent.", colour=self.bot.error_colour)
-            )
+        guilds = [f"{guild['name']} `{guild['id']}`" for guild in guilds]
+        all_pages = []
+        for chunk in [guilds[i : i + 20] for i in range(0, len(guilds), 20)]:
+            page = discord.Embed(title="Guilds", colour=self.bot.primary_colour)
+            for guild in chunk:
+                if page.description == discord.Embed.Empty:
+                    page.description = guild
+                else:
+                    page.description += f"\n{guild}"
+            page.set_footer(text="Use the reactions to flip pages.")
+            all_pages.append(page)
+        if len(all_pages) == 1:
+            embed = all_pages[0]
+            embed.set_footer(text=discord.Embed.Empty)
+            await ctx.send(embed=embed)
+            return
+        paginator = Paginator(length=1, entries=all_pages, use_defaults=True, embed=True, timeout=120)
+        await paginator.start(ctx)
 
     @checks.is_admin()
     @commands.command(
