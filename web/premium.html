@@ -302,7 +302,7 @@
             }).done(function(data) {
                 var user = null;
                 data.forEach(function(value) {
-                    if (query == value.text) {
+                    if (query == $("<textarea/>").html(value.text).text()) {
                         user = value.id;
                     }
                 });
