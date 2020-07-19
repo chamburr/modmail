@@ -49,6 +49,9 @@ default_server = None
 # Status of the bot
 activity = f"DM to Contact Staff | {default_prefix}help"
 
+# Whether or not to fetch all members
+fetch_all_members = True
+
 # The main bot owner
 owner = 000000000000000000
 
