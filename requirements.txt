@@ -2,7 +2,7 @@ aioredis==1.3.1
 async-timeout==3.0.1
 asyncpg==0.20.1
 black==19.10b0
-discord.py==1.3.3
+discord.py==1.3.4
 flake8==3.7.9
 prometheus_client==0.7.1
 psutil==5.7.0
