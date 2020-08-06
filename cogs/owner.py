@@ -1,6 +1,5 @@
 import copy
 import io
-import json
 import logging
 import subprocess
 import textwrap
