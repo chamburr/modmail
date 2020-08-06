@@ -112,11 +112,11 @@ class Events(commands.Cog):
             pass
 
     @commands.Cog.listener()
-    async def on_connect(self):
+    async def on_shard_connect(self, shard):
         self.bot.prom.events_counter.labels(type="CONNECT").inc()
         try:
             embed = discord.Embed(
-                title=f"[Cluster {self.bot.cluster}] Shard Connected",
+                title=f"[Cluster {self.bot.cluster}] Shard {shard} Connected",
                 colour=0x00FF00,
                 timestamp=datetime.datetime.utcnow(),
             )
@@ -125,11 +125,11 @@ class Events(commands.Cog):
             pass
 
     @commands.Cog.listener()
-    async def on_disconnect(self):
+    async def on_shard_disconnect(self, shard):
         self.bot.prom.events_counter.labels(type="DISCONNECT").inc()
         try:
             embed = discord.Embed(
-                title=f"[Cluster {self.bot.cluster}] Shard Disconnected",
+                title=f"[Cluster {self.bot.cluster}] Shard {shard} Disconnected",
                 colour=0xFF0000,
                 timestamp=datetime.datetime.utcnow(),
             )
@@ -138,11 +138,11 @@ class Events(commands.Cog):
             pass
 
     @commands.Cog.listener()
-    async def on_resumed(self):
+    async def on_shard_resumed(self, shard):
         self.bot.prom.events_counter.labels(type="RESUME").inc()
         try:
             embed = discord.Embed(
-                title=f"[Cluster {self.bot.cluster}] Shard Resumed",
+                title=f"[Cluster {self.bot.cluster}] Shard {shard} Resumed",
                 colour=self.bot.config.primary_colour,
                 timestamp=datetime.datetime.utcnow(),
             )
