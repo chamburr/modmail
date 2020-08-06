@@ -156,7 +156,7 @@ class Communication(commands.Cog):
             "output": {
                 self.bot.cluster: {
                     "ready": self.bot.is_ready(),
-                    "shards": ", ".join(self.bot.shard_ids),
+                    "shards": ", ".join([str(x) for x in self.bot.shard_ids]),
                     "latency": round(self.bot.latency * 1000, 2),
                     "uptime": self.bot.uptime,
                 },
