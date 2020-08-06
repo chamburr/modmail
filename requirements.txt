@@ -2,9 +2,9 @@ aioredis==1.3.1
 async-timeout==3.0.1
 asyncpg==0.20.1
 black==19.10b0
-discord.py==1.3.4
-flake8==3.7.9
-prometheus_client==0.7.1
-psutil==5.7.0
-sentry-sdk==0.14.2
+discord.py==1.4.0
+flake8==3.8.3
+prometheus_client==0.8.0
+psutil==5.7.2
+sentry-sdk==0.16.3
 subprocess32==3.5.4
