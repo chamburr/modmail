@@ -158,7 +158,7 @@ class Communication(commands.Cog):
                     "ready": self.bot.is_ready(),
                     "shards": ", ".join([str(x) for x in self.bot.shard_ids]),
                     "latency": round(self.bot.latency * 1000, 2),
-                    "uptime": self.bot.uptime,
+                    "uptime": self.bot.uptime.total_seconds(),
                 },
             },
             "command_id": command_id,
