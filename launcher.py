@@ -139,19 +139,6 @@ class Main:
             elif payload.get("action") == "start":
                 print(f"[Cluster Manager] Received signal to start cluster {payload.get('id')}.")
                 self.loop.create_task(self.get_instance(self.instances, payload.get("id")).start())
-            elif payload.get("action") == "statuses" and payload.get("command_id"):
-                statuses = {}
-                for instance in self.instances:
-                    statuses[str(instance.id)] = {
-                        "active": instance.is_active,
-                        "status": instance.status,
-                        "started_at": instance.started_at,
-                    }
-                await self.redis.execute(
-                    "PUBLISH",
-                    config.ipc_channel,
-                    json.dumps({"command_id": payload["command_id"], "output": statuses}),
-                )
             elif payload.get("action") == "roll_restart":
                 print("[Cluster Manager] Received signal to perform a rolling restart.")
                 for instance in self.instances:

@@ -314,7 +314,7 @@ class General(commands.Cog):
         await ctx.send(embed=embed)
 
     @commands.command(
-        description="Get the top 15 servers using this bot.", aliases=["topguilds"], usage="topservers", hidden=True
+        description="Get the top 15 servers using this bot.", aliases=["topguilds"], usage="topservers", hidden=True,
     )
     async def topservers(self, ctx):
         data = await self.bot.cogs["Communication"].handler("get_top_guilds", self.bot.cluster_count)
