@@ -171,6 +171,17 @@ class General(commands.Cog):
         page.set_thumbnail(
             url="https://cdn.discordapp.com/icons/696179394057732237/cf54e042456638eba2ea5abddfc7910e.png"
         )
+        page = discord.Embed(
+            title="TGG's Gorilla Gang",
+            description="In this server owned by TGG, a popular Australian gaming YouTuber who is best known for his "
+            "GTA content, you will find tons of GTA online based content to have fun with including LFG channels, "
+            "GTA discussion channels, and more!",
+            colour=self.bot.primary_colour,
+        )
+        page.add_field(name="Link", value="https://discord.gg/gorillagang")
+        page.set_thumbnail(
+            url="https://cdn.discordapp.com/icons/722716210604671026/3b65b43ae088894f424129d71b78ebf8.png"
+        )
         all_pages.append(page)
         page = discord.Embed(
             title="Homework Help",
@@ -216,7 +227,7 @@ class General(commands.Cog):
         )
         page.add_field(name="Link", value="https://discord.gg/seaofthievescommunity")
         page.set_thumbnail(
-            url="https://cdn.discordapp.com/icons/209815380946845697/f298c64717cede4589a1503d12d40fb0.png"
+            url="https://cdn.discordapp.com/icons/209815380946845697/a_04c8ae80dce6e6ef1e3d574dca61b4a2.png"
         )
         all_pages.append(page)
         page = discord.Embed(
@@ -249,7 +260,7 @@ class General(commands.Cog):
         )
         page.add_field(name="Link", value="https://discordbots.org/bot/membercount")
         page.set_thumbnail(
-            url="https://cdn.discordapp.com/avatars/432533456807919639/6b2a1311b54a1d3b3cec1fb67ef94ed7.png"
+            url="https://cdn.discordapp.com/icons/496964682972659712/0b61c5cb7b9ace8f8f5e2fef37cacb5b.png"
         )
         all_pages.append(page)
         for embed in all_pages:
