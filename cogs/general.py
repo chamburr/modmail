@@ -171,6 +171,7 @@ class General(commands.Cog):
         page.set_thumbnail(
             url="https://cdn.discordapp.com/icons/696179394057732237/cf54e042456638eba2ea5abddfc7910e.png"
         )
+        all_pages.append(page)
         page = discord.Embed(
             title="TGG's Gorilla Gang",
             description="In this server owned by TGG, a popular Australian gaming YouTuber who is best known for his "
