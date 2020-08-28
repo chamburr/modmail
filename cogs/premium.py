@@ -33,7 +33,7 @@ class Premium(commands.Cog):
         )
         embed.add_field(
             name="Get Premium",
-            value="Please join our support server and go to https://modmail.netlify.com/premium.",
+            value="Please join our support server and go to https://modmail.xyz/premium.",
             inline=False,
         )
         await ctx.send(embed=embed)

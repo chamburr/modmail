@@ -276,7 +276,7 @@ class General(commands.Cog):
             embed=discord.Embed(
                 title="Invite Link",
                 description=f"https://discordapp.com/api/oauth2/authorize?client_id={self.bot.user.id}"
-                "&permissions=268823640&scope=bot",
+                "&permissions=268823640&redirect_uri=https%3A%2F%2Fmodmail.xyz%2Fwelcome&scope=bot",
                 colour=self.bot.primary_colour,
             )
         )
@@ -296,7 +296,7 @@ class General(commands.Cog):
         await ctx.send(
             embed=discord.Embed(
                 title="Website",
-                description=f"https://modmail.netlify.com",
+                description=f"https://modmail.xyz",
                 colour=self.bot.primary_colour,
             )
         )
