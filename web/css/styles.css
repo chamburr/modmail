@@ -97,6 +97,7 @@ footer {
     opacity: 0;
     visibility: hidden;
     transition: opacity .5s, visibility .5s;
+    z-index: 1000;
 }
 
 #scroll-button.show {
