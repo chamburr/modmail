@@ -72,9 +72,8 @@ class General(commands.Cog):
         page.add_field(
             name="Getting Started",
             value="Follow these steps to get the bot all ready to serve your server!\n1. Invite the bot with "
-            f"[this link](https://discordapp.com/api/oauth2/authorize?client_id={self.bot.user.id}"
-            f"&permissions=268823640&scope=bot)\n2. Run `{ctx.prefix}setup`, there will be an interactive guide.\n"
-            f"3. All done! For a full list of commands, see `{ctx.prefix}help`.",
+            f"[this link](https://modmail.xyz/invite)\n2. Run `{ctx.prefix}setup`, there will be an interactive guide."
+            f"\n3. All done! For a full list of commands, see `{ctx.prefix}help`.",
             inline=False,
         )
         all_pages.append(page)
@@ -275,8 +274,7 @@ class General(commands.Cog):
         await ctx.send(
             embed=discord.Embed(
                 title="Invite Link",
-                description=f"https://discordapp.com/api/oauth2/authorize?client_id={self.bot.user.id}"
-                "&permissions=268823640&redirect_uri=https%3A%2F%2Fmodmail.xyz%2Fwelcome&scope=bot",
+                description=f"https://modmail.xyz/invite",
                 colour=self.bot.primary_colour,
             )
         )
