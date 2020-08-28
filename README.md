@@ -6,11 +6,11 @@
 
 A feature-rich Discord bot for easy communication between server staff and users.
 
-![Screenshot](https://modmail.netlify.com/images/screenshot.png)
+![Screenshot](https://modmail.xyz/images/screenshot.png)
 
 A new channel is created whenever a user messages the bot, and the channel will serve as a shared inbox for seamless communication between staff and the user.
 
-To learn more, check out our [website](https://modmail.netlify.com) or visit our [Discord server](https://discord.gg/wjWJwJB).
+To learn more, check out our [website](https://modmail.xyz) or visit our [Discord server](https://discord.gg/wjWJwJB).
 
 ## Contributing
 
