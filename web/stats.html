@@ -7,10 +7,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <meta name="theme-color" content="#1e90ff">
     <meta property="og:type" content="website">
-    <meta property="og:url" content="https://modmail.netlify.com">
+    <meta property="og:url" content="https://modmail.xyz">
     <meta property="og:title" content="ModMail">
     <meta property="og:description" content="A feature-rich Discord bot for easy communication between server staff and users.">
-    <meta property="og:image" content="https://modmail.netlify.com/images/icon.png">
+    <meta property="og:image" content="https://modmail.xyz/images/icon.png">
     <title>ModMail</title>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
     <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.12.0/css/all.css" integrity="sha384-REHJTs1r2ErKBuJB0fCK99gCYsVjwxHrSU0N7I1zl9vZbggVJXRMsv/sLlOAGb4M" crossorigin="anonymous">
@@ -52,10 +52,10 @@
                             <a class="nav-link" href="/partners">Partners</a>
                         </li>
                         <li class="nav-item active">
-                            <a class="nav-link" href="https://discord.gg/wjWJwJB">Support Server</a>
+                            <a class="nav-link" href="/support">Support Server</a>
                         </li>
                     </ul>
-                    <a class="btn btn-outline-primary my-2 my-sm-0" href="https://discordapp.com/api/oauth2/authorize?client_id=575252669443211264&permissions=268823640&scope=bot">Invite Bot</a>
+                    <a class="btn btn-outline-primary my-2 my-sm-0" href="/invite">Invite Bot</a>
                 </div>
             </div>
         </nav>
@@ -64,7 +64,7 @@
         <h1>Statistics</h1>
         <h5>Enjoy these beautiful graphs! They refresh automatically every 30 seconds.</h5>
         <div class="mt-4">
-            <iframe class="w-100" src="https://grafana.discordtemplates.me/d/-bZ81ceZz/modmail?orgId=1&refresh=30s&kiosk" frameborder="0" style="height: 8800px; pointer-events: none;" id="dashboard"></iframe>
+            <iframe class="w-100" src="https://grafana.chamburr.xyz/d/-bZ81ceZz/modmail?orgId=1&refresh=30s&kiosk" frameborder="0" style="height: 8800px; pointer-events: none;" id="dashboard"></iframe>
         </div>
     </div>
     <div>
@@ -72,24 +72,11 @@
             <i class="fas fa-chevron-up fa-2x text-white"></i>
         </a>
     </div>
-    <div class="mt-4 px-0 py-3" style="background-color: #23272a;">
-        <footer class="text-center">
-            <p>©2019-2020 CHamburr#2591</p>
-        </footer>
-    </div>
+    <footer class="mt-4 px-0 py-3 text-center">
+        <p>©2019-2020 CHamburr#2591</p>
+    </footer>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
-    <script>
-        $(window).scroll(function() {
-            if ($(window).scrollTop() > 300) $("#scroll-button").addClass("show");
-            else $("#scroll-button").removeClass("show");
-        });
-        $(document).ready(function() {
-            $("#scroll-button").click(function(e) {
-                e.preventDefault();
-                $("html, body").animate({scrollTop: 0}, "300");
-            });
-        });
-    </script>
+    <script src="js/scroll.js"></script>
 </body>
 </html>

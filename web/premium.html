@@ -7,10 +7,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <meta name="theme-color" content="#1e90ff">
     <meta property="og:type" content="website">
-    <meta property="og:url" content="https://modmail.netlify.com">
+    <meta property="og:url" content="https://modmail.xyz">
     <meta property="og:title" content="ModMail">
     <meta property="og:description" content="A feature-rich Discord bot for easy communication between server staff and users.">
-    <meta property="og:image" content="https://modmail.netlify.com/images/icon.png">
+    <meta property="og:image" content="https://modmail.xyz/images/icon.png">
     <title>ModMail</title>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
     <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.12.0/css/all.css" integrity="sha384-REHJTs1r2ErKBuJB0fCK99gCYsVjwxHrSU0N7I1zl9vZbggVJXRMsv/sLlOAGb4M" crossorigin="anonymous">
@@ -52,10 +52,10 @@
                             <a class="nav-link" href="/partners">Partners</a>
                         </li>
                         <li class="nav-item active">
-                            <a class="nav-link" href="https://discord.gg/wjWJwJB">Support Server</a>
+                            <a class="nav-link" href="/support">Support Server</a>
                         </li>
                     </ul>
-                    <a class="btn btn-outline-primary my-2 my-sm-0" href="https://discordapp.com/api/oauth2/authorize?client_id=575252669443211264&permissions=268823640&scope=bot">Invite Bot</a>
+                    <a class="btn btn-outline-primary my-2 my-sm-0" href="/invite">Invite Bot</a>
                 </div>
             </div>
         </nav>
@@ -125,7 +125,7 @@
                     </div>
                     <div class="modal-body">
                         <h6 id="payment-plan"></h6>
-                        <p>Before proceeeding to payment, please join our <a href="https://discord.gg/wjWJwJB" target="_blank" class="link-dark">support server</a> and select the user to receive the reward below.
+                        <p>Before proceeeding to payment, please join our <a href="/support" target="_blank" class="link-dark">support server</a> and select the user to receive the reward below.
                         <form id="payment-form" class="needs-validation" action="https://www.paypal.com/cgi-bin/webscr" method="post" target="_top" novalidate>
                             <input type="hidden" name="business" value="redfreebird41@gmail.com">
                             <input type="hidden" name="lc" value="US">
@@ -138,8 +138,8 @@
                             <input type="hidden" name="no_note" value="0">
                             <input id="payment-custom" type="hidden" name="custom" value="">
                             <input type="hidden" name="notify_url" value="https://donatebot.io/ipn">
-                            <input type="hidden" name="return" value="https://modmail.netlify.com/success">
-                            <input type="hidden" name="cancel_return" value="https://modmail.netlify.com/premium">
+                            <input type="hidden" name="return" value="https://modmail.xyz/success">
+                            <input type="hidden" name="cancel_return" value="https://modmail.xyz/premium">
                             <input type="hidden" name="bn" value="PP-BuyNowBF:btn_buynowCC_LG.gif:NonHostedGuest">
                             <div class="form-group">
                                 <label for="payment-user">User</label>
@@ -239,132 +239,13 @@
             <i class="fas fa-chevron-up fa-2x text-white"></i>
         </a>
     </div>
-    <div class="mt-4 px-0 py-3" style="background-color: #23272a;">
-        <footer class="text-center">
-            <p>©2019-2020 CHamburr#2591</p>
-        </footer>
-    </div>
+    <footer class="mt-4 px-0 py-3 text-center">
+        <p>©2019-2020 CHamburr#2591</p>
+    </footer>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
-    <script>
-        $(window).scroll(function() {
-            if ($(window).scrollTop() > 300) $("#scroll-button").addClass("show");
-            else $("#scroll-button").removeClass("show");
-        });
-        $(document).ready(function() {
-            $("#scroll-button").click(function(e) {
-                e.preventDefault();
-                $("html, body").animate({scrollTop: 0}, "300");
-            });
-        });
-    </script>
+    <script src="js/scroll.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/typeahead.js/0.11.1/typeahead.bundle.min.js" integrity="sha256-RWiU4omUU7tQ2M3wmRQNW9UL50MB4CucbRPCbsQv+X0=" crossorigin="anonymous"></script>
-    <script>
-        function showAlert(message) {
-            $("#alert-toast").text(message);
-            $("#alert-toast").alert();
-            $("#alert-toast").fadeTo(5000, 500).slideUp(500, function() {
-                $("#alert-toast").slideUp(500);
-            });
-        }
-
-        var role = "";
-
-        $("#payment-modal").on("show.bs.modal", function(e) {
-            var plan = $(e.relatedTarget).data("plan");
-            if (plan == "basic") {
-                $("#payment-plan").text("Basic Plan (1 Server)");
-                $(this).find("#payment-amount").val("30.00");
-                role = "576756461267451934";
-            }
-            else if (plan == "pro") {
-                $("#payment-plan").text("Pro Plan (3 Servers)");
-                $(this).find("#payment-amount").val("60.00");
-                role = "576754574346551306";
-            } else {
-                $("#payment-plan").text("Plus Plan (5 Servers)");
-                $(this).find("#payment-amount").val("90.00");
-                role = "576754671620980740";
-            }
-        });
-
-        $("#payment-form").on("submit", function(e) {
-            if (this.checkValidity() == false) {
-                return;
-            }
-            var text = $("#paypal-button").text();
-            $("#paypal-button").html("<span class=\"spinner-border spinner-border-sm\" role=\"status\" aria-hidden=\"true\"></span> " + text);
-            var query = $("#payment-user").val();
-            e.preventDefault();
-            e.stopPropagation();
-            $.ajax({
-                url: "https://discordtemplates.me/modmail-search?q=" + encodeURIComponent(query)
-            }).done(function(data) {
-                var user = null;
-                data.forEach(function(value) {
-                    if (query == $("<textarea/>").html(value.text).text()) {
-                        user = value.id;
-                    }
-                });
-                if (user == null) {
-                    showAlert("Oops! The user was not found. Perhaps you're not in our support server?");
-                    $("#paypal-button").text(text);
-                } else {
-                    $("#payment-custom").val(user + "," + role);
-                    $("#payment-form").unbind("submit").submit();
-                }
-            }).fail(function(data) {
-                showAlert("Oops! An unknown error occurred.")
-            });
-        });
-
-        $("#payment-user").typeahead({
-            classNames: {
-                menu: "form-control p-0 h-auto w-100",
-                suggestion: "tt-suggestion form-control border-left-0 border-right-0 border-top-0 rounded-0",
-                dataset: "tt-dataset px-2 py-2"
-            }
-        }, {
-            source: function(query, syncResults, asyncResults) {
-                $.ajax({
-                    url: "https://discordtemplates.me/modmail-search?q=" + encodeURIComponent(query)
-                }).done(function(data) {
-                    data.forEach(function(value, index) {
-                        data[index].text = $("<div/>").html(value.text).text(); 
-                    });
-                    asyncResults(data);
-                }).fail(function(data) {
-                    showAlert("Oops! An error occurred while searching.")
-                });
-            },
-            display: function(data) {
-                return data.text;
-            },
-            templates: {
-                notFound: function() {
-                    return "<span class=\"px-2\">No Results Found</span>";
-                },
-                pending: function() {
-                    return "<span class=\"px-2\">Searching...</span>";
-                },
-                suggestion: function(data) {
-                    return "<div data-id=\"" + data.id + "\">" + data.text + "</div>"
-                }
-            }
-        });
-
-        window.addEventListener("load", function () {
-            var forms = document.getElementsByClassName("needs-validation");
-            Array.prototype.filter.call(forms, function(form) {
-                form.addEventListener("submit", function(event) {
-                    if (form.checkValidity() == false) {
-                        event.preventDefault();
-                        event.stopPropagation();
-                        form.classList.add("was-validated");
-                    }
-                }, false);
-            });
-        }, false);
-    </script>
+    <script src="js/premium.js"></script>
 </body>
 </html>
