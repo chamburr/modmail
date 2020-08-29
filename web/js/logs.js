@@ -4,7 +4,7 @@ if (id == "logs") {
     $("#logs-content").text("Invalid URL. Please try again.")
 } else {
     $.ajax({
-        url: "https://modmail.xyz/.netlify/functions/fetch-logs?id=" + id
+        url: "https://modmail.xyz/_functions/fetch-logs?id=" + id
     }).done(function(data) {
         $("#logs-content").text("");
         data.forEach(function(value) {
