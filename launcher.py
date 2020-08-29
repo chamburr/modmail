@@ -13,7 +13,7 @@ import config
 
 payload = {
     "Authorization": f"Bot {config.token}",
-    "User-Agent": f"DiscordBot (custom, {config.__version__})",
+    "User-Agent": "DiscordBot (custom, 1.0.0)",
 }
 
 
