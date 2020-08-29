@@ -30,7 +30,9 @@ class DirectMessageEvents(commands.Cog, name="Direct Message"):
             return
         guild = guild[0]
         member = await self.bot.cogs["Communication"].handler(
-            "get_guild_member", 1, {"guild_id": guild["id"], "member_id": message.author.id},
+            "get_guild_member",
+            1,
+            {"guild_id": guild["id"], "member_id": message.author.id},
         )
         if not member:
             await message.channel.send(
@@ -42,7 +44,9 @@ class DirectMessageEvents(commands.Cog, name="Direct Message"):
             return
         data = await self.bot.get_data(guild["id"])
         category = await self.bot.cogs["Communication"].handler(
-            "get_guild_channel", 1, {"guild_id": guild["id"], "channel_id": data[2]},
+            "get_guild_channel",
+            1,
+            {"guild_id": guild["id"], "channel_id": data[2]},
         )
         if not category:
             await message.channel.send(
@@ -90,13 +94,17 @@ class DirectMessageEvents(commands.Cog, name="Direct Message"):
                 )
                 new_ticket = True
                 log_channel = await self.bot.cogs["Communication"].handler(
-                    "get_guild_channel", 1, {"guild_id": guild["id"], "channel_id": data[4]},
+                    "get_guild_channel",
+                    1,
+                    {"guild_id": guild["id"], "channel_id": data[4]},
                 )
                 if log_channel:
                     log_channel = log_channel[0]
                     try:
                         embed = discord.Embed(
-                            title="New Ticket", colour=self.bot.user_colour, timestamp=datetime.datetime.utcnow(),
+                            title="New Ticket",
+                            colour=self.bot.user_colour,
+                            timestamp=datetime.datetime.utcnow(),
                         )
                         embed.set_footer(
                             text=f"{message.author.name}#{message.author.discriminator} | {message.author.id}",
@@ -352,7 +360,8 @@ class DirectMessageEvents(commands.Cog, name="Direct Message"):
                 await self.remove_reactions(msg)
                 await msg.edit(
                     embed=discord.Embed(
-                        description="Time out. You did not choose anything.", colour=self.bot.error_colour,
+                        description="Time out. You did not choose anything.",
+                        colour=self.bot.error_colour,
                     )
                 )
                 return
@@ -396,11 +405,15 @@ class DirectMessageEvents(commands.Cog, name="Direct Message"):
             async with self.bot.pool.acquire() as conn:
                 if not data:
                     await conn.execute(
-                        "INSERT INTO preference (identifier, confirmation) VALUES ($1, $2)", ctx.author.id, False,
+                        "INSERT INTO preference (identifier, confirmation) VALUES ($1, $2)",
+                        ctx.author.id,
+                        False,
                     )
                 else:
                     await conn.execute(
-                        "UPDATE preference SET confirmation=$1 WHERE identifier=$2", False, ctx.author.id,
+                        "UPDATE preference SET confirmation=$1 WHERE identifier=$2",
+                        False,
+                        ctx.author.id,
                     )
             await ctx.send(
                 embed=discord.Embed(
@@ -412,7 +425,9 @@ class DirectMessageEvents(commands.Cog, name="Direct Message"):
             return
         async with self.bot.pool.acquire() as conn:
             await conn.execute(
-                "UPDATE preference SET confirmation=$1 WHERE identifier=$2", True, ctx.author.id,
+                "UPDATE preference SET confirmation=$1 WHERE identifier=$2",
+                True,
+                ctx.author.id,
             )
         await ctx.send(
             embed=discord.Embed(description="Confirmation messages are enabled.", colour=self.bot.primary_colour)

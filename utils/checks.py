@@ -84,7 +84,9 @@ def is_patron():
         else:
             async with ctx.bot.pool.acquire() as conn:
                 await conn.execute(
-                    "INSERT INTO premium (identifier, guild) VALUES ($1, $2)", ctx.author.id, [],
+                    "INSERT INTO premium (identifier, guild) VALUES ($1, $2)",
+                    ctx.author.id,
+                    [],
                 )
             return True
 
@@ -140,7 +142,8 @@ def is_mod():
         if has_role is False and ctx.author.guild_permissions.administrator is False:
             await ctx.send(
                 embed=discord.Embed(
-                    description=f"You do not have access to use this command.", colour=ctx.bot.error_colour,
+                    description=f"You do not have access to use this command.",
+                    colour=ctx.bot.error_colour,
                 )
             )
             return False

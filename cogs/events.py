@@ -94,7 +94,9 @@ class Events(commands.Cog):
         log.info(f"{self.bot.user.name}#{self.bot.user.discriminator} is online!")
         log.info("--------")
         embed = discord.Embed(
-            title=f"[Cluster {self.bot.cluster}] Bot Ready", colour=0x00FF00, timestamp=datetime.datetime.utcnow(),
+            title=f"[Cluster {self.bot.cluster}] Bot Ready",
+            colour=0x00FF00,
+            timestamp=datetime.datetime.utcnow(),
         )
         await self.bot.http.send_message(self.bot.config.event_channel, None, embed=embed.to_dict())
         await self.bot.change_presence(activity=discord.Game(name=self.bot.config.activity))

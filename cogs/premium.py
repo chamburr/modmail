@@ -14,7 +14,9 @@ class Premium(commands.Cog):
         self.bot = bot
 
     @commands.command(
-        description="Get some information about ModMail premium.", usage="premium", aliases=["donate", "patron"],
+        description="Get some information about ModMail premium.",
+        usage="premium",
+        aliases=["donate", "patron"],
     )
     async def premium(self, ctx):
         embed = discord.Embed(
@@ -68,7 +70,8 @@ class Premium(commands.Cog):
         if not res or not res[0]:
             await ctx.send(
                 embed=discord.Embed(
-                    description="You did not assign premium to any server currently.", colour=self.bot.primary_colour,
+                    description="You did not assign premium to any server currently.",
+                    colour=self.bot.primary_colour,
                 )
             )
             return
@@ -124,7 +127,8 @@ class Premium(commands.Cog):
         if guild not in res[0]:
             await ctx.send(
                 embed=discord.Embed(
-                    description="You did not assign premium to that server.", colour=self.bot.error_colour,
+                    description="You did not assign premium to that server.",
+                    colour=self.bot.error_colour,
                 )
             )
             return

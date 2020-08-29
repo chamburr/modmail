@@ -60,14 +60,16 @@ class Snippet(commands.Cog):
         if len(name) > 100:
             await ctx.send(
                 embed=discord.Embed(
-                    description="The snippet name cannot exceed 100 characters.", colour=self.bot.error_colour,
+                    description="The snippet name cannot exceed 100 characters.",
+                    colour=self.bot.error_colour,
                 )
             )
             return
         if len(content) > 1000:
             await ctx.send(
                 embed=discord.Embed(
-                    description="The snippet content cannot exceed 1000 characters.", colour=self.bot.error_colour,
+                    description="The snippet content cannot exceed 1000 characters.",
+                    colour=self.bot.error_colour,
                 )
             )
             return
@@ -76,7 +78,8 @@ class Snippet(commands.Cog):
             if res:
                 await ctx.send(
                     embed=discord.Embed(
-                        description="A snippet with that name already exists.", colour=self.bot.error_colour,
+                        description="A snippet with that name already exists.",
+                        colour=self.bot.error_colour,
                     )
                 )
                 return
@@ -97,7 +100,8 @@ class Snippet(commands.Cog):
             if not res:
                 await ctx.send(
                     embed=discord.Embed(
-                        description="A snippet with that name was not found.", colour=self.bot.error_colour,
+                        description="A snippet with that name was not found.",
+                        colour=self.bot.error_colour,
                     )
                 )
                 return
@@ -116,7 +120,8 @@ class Snippet(commands.Cog):
             await conn.execute("DELETE FROM snippet WHERE guild=$1", ctx.guild.id)
         await ctx.send(
             embed=discord.Embed(
-                description="All snippets have been removed successfully.", colour=self.bot.primary_colour,
+                description="All snippets have been removed successfully.",
+                colour=self.bot.primary_colour,
             )
         )
 
@@ -134,12 +139,15 @@ class Snippet(commands.Cog):
             name = name.lower()
             async with self.bot.pool.acquire() as conn:
                 res = await conn.fetchrow(
-                    "SELECT name, content FROM snippet WHERE name=$1 AND guild=$2", name, ctx.guild.id,
+                    "SELECT name, content FROM snippet WHERE name=$1 AND guild=$2",
+                    name,
+                    ctx.guild.id,
                 )
             if not res:
                 await ctx.send(
                     embed=discord.Embed(
-                        description="A snippet with that name was not found.", colour=self.bot.error_colour,
+                        description="A snippet with that name was not found.",
+                        colour=self.bot.error_colour,
                     )
                 )
                 return

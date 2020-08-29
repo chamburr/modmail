@@ -24,7 +24,8 @@ class Core(commands.Cog):
     @checks.is_mod()
     @commands.guild_only()
     @commands.command(
-        description="Reply to the ticket, useful when anonymous messaging is enabled.", usage="reply <message>",
+        description="Reply to the ticket, useful when anonymous messaging is enabled.",
+        usage="reply <message>",
     )
     async def reply(self, ctx, *, message):
         modmail = ModMailEvents(self.bot)
@@ -69,7 +70,8 @@ class Core(commands.Cog):
                             timestamp=datetime.datetime.utcnow(),
                         )
                         embed2.set_footer(
-                            text=f"{ctx.guild.name} | {ctx.guild.id}", icon_url=ctx.guild.icon_url,
+                            text=f"{ctx.guild.name} | {ctx.guild.id}",
+                            icon_url=ctx.guild.icon_url,
                         )
                         await member.send(embed=embed2)
                     await member.send(embed=embed)
@@ -83,7 +85,8 @@ class Core(commands.Cog):
                             member = await self.bot.fetch_user(self.bot.tools.get_modmail_user(ctx.channel))
                         if member:
                             embed.set_footer(
-                                text=f"{member.name}#{member.discriminator} | {member.id}", icon_url=member.avatar_url,
+                                text=f"{member.name}#{member.discriminator} | {member.id}",
+                                icon_url=member.avatar_url,
                             )
                         else:
                             embed.set_footer(
@@ -93,24 +96,31 @@ class Core(commands.Cog):
                         if data[7] == 1:
                             history = ""
                             for m in messages:
-                                if (
+                                if m.author.bot and (
                                     m.author.id != self.bot.user.id
                                     or len(m.embeds) <= 0
                                     or m.embeds[0].title not in ["Message Received", "Message Sent"]
                                 ):
                                     continue
-                                if not m.embeds[0].author.name:
-                                    author = f"{' '.join(m.embeds[0].footer.text.split()[:-2])} (User)"
-                                else:
-                                    author = f"{m.embeds[0].author.name} (Staff)"
-                                description = m.embeds[0].description
-                                for attachment in [
-                                    field.value for field in m.embeds[0].fields if field.name.startswith("Attachment ")
-                                ]:
-                                    if not description:
-                                        description = f"(Attachment: {attachment})"
+                                if not m.author.bot and m.content == "":
+                                    continue
+                                author = f"{m.author} (Comment)"
+                                description = m.content
+                                if m.author.bot:
+                                    if not m.embeds[0].author.name:
+                                        author = f"{' '.join(m.embeds[0].footer.text.split()[:-2])} (User)"
                                     else:
-                                        description = description + f" (Attachment: {attachment})"
+                                        author = f"{m.embeds[0].author.name} (Staff)"
+                                    description = m.embeds[0].description
+                                    for attachment in [
+                                        field.value
+                                        for field in m.embeds[0].fields
+                                        if field.name.startswith("Attachment ")
+                                    ]:
+                                        if not description:
+                                            description = f"(Attachment: {attachment})"
+                                        else:
+                                            description = description + f" (Attachment: {attachment})"
                                 history = (
                                     f"[{str(m.created_at.replace(microsecond=0))}] {author}: "
                                     f"{description}\n" + history
@@ -123,7 +133,7 @@ class Core(commands.Cog):
                             log_url = msg.attachments[0].url[39:-4]
                             log_url = log_url.replace("modmail_log_", "")
                             log_url = [hex(int(some_id))[2:] for some_id in log_url.split("/")]
-                            log_url = f"https://discordtemplates.me/modmail-logs/{'-'.join(log_url)}"
+                            log_url = f"https://modmail.xyz/logs/{'-'.join(log_url)}"
                             embed.add_field(name="Message Logs", value=log_url, inline=False)
                             await asyncio.sleep(0.5)
                             await msg.edit(embed=embed)
@@ -134,7 +144,8 @@ class Core(commands.Cog):
         except discord.Forbidden:
             await ctx.send(
                 embed=discord.Embed(
-                    description="Missing permissions to delete this channel.", colour=self.bot.error_colour,
+                    description="Missing permissions to delete this channel.",
+                    colour=self.bot.error_colour,
                 )
             )
 
@@ -174,7 +185,8 @@ class Core(commands.Cog):
         try:
             await ctx.send(
                 embed=discord.Embed(
-                    description="All channels are successfully closed.", colour=self.bot.primary_colour,
+                    description="All channels are successfully closed.",
+                    colour=self.bot.primary_colour,
                 )
             )
         except discord.HTTPException:
@@ -198,7 +210,8 @@ class Core(commands.Cog):
         try:
             await ctx.send(
                 embed=discord.Embed(
-                    description="All channels are successfully closed anonymously.", colour=self.bot.primary_colour,
+                    description="All channels are successfully closed anonymously.",
+                    colour=self.bot.primary_colour,
                 )
             )
         except discord.HTTPException:
@@ -208,7 +221,9 @@ class Core(commands.Cog):
     @checks.is_mod()
     @commands.guild_only()
     @commands.command(
-        description="Blacklist a user from creating tickets.", usage="blacklist <member>", aliases=["block"],
+        description="Blacklist a user from creating tickets.",
+        usage="blacklist <member>",
+        aliases=["block"],
     )
     async def blacklist(self, ctx, *, member: discord.Member):
         blacklist = (await self.bot.get_data(ctx.guild.id))[9]
@@ -228,7 +243,9 @@ class Core(commands.Cog):
     @checks.is_mod()
     @commands.guild_only()
     @commands.command(
-        description="Whitelist a user from creating tickets.", usage="whitelist <member>", aliases=["unblock"],
+        description="Whitelist a user from creating tickets.",
+        usage="whitelist <member>",
+        aliases=["unblock"],
     )
     async def whitelist(self, ctx, *, member: discord.Member):
         blacklist = (await self.bot.get_data(ctx.guild.id))[9]

@@ -19,7 +19,9 @@ class Admin(commands.Cog):
 
     @checks.is_admin()
     @commands.command(
-        description="Get a list of servers with the specified name.", usage="findserver <name>", hidden=True,
+        description="Get a list of servers with the specified name.",
+        usage="findserver <name>",
+        hidden=True,
     )
     async def findserver(self, ctx, *, name: str):
         data = await self.bot.cogs["Communication"].handler("find_guild", self.bot.cluster_count, {"name": name})
@@ -83,7 +85,9 @@ class Admin(commands.Cog):
 
     @checks.is_admin()
     @commands.command(
-        description="Create an invite to the specified server.", usage="createinvite <server ID>", hidden=True,
+        description="Create an invite to the specified server.",
+        usage="createinvite <server ID>",
+        hidden=True,
     )
     async def createinvite(self, ctx, *, guild_id: int):
         guild = await self.bot.cogs["Communication"].handler("get_guild", 1, {"guild_id": guild_id})
@@ -94,7 +98,8 @@ class Admin(commands.Cog):
         if not invite:
             await ctx.send(
                 embed=discord.Embed(
-                    description="No permissions to create an invite link.", colour=self.bot.primary_colour,
+                    description="No permissions to create an invite link.",
+                    colour=self.bot.primary_colour,
                 )
             )
         else:
@@ -146,7 +151,8 @@ class Admin(commands.Cog):
                 clusters[key] = value
         await ctx.send(
             embed=discord.Embed(
-                description=f"```json\n{json.dumps(clusters, indent=4)}```", colour=self.bot.primary_colour,
+                description=f"```json\n{json.dumps(clusters, indent=4)}```",
+                colour=self.bot.primary_colour,
             )
         )
 

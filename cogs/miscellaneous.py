@@ -14,7 +14,8 @@ class Miscellaneous(commands.Cog):
     async def say_permissions(self, ctx, member, channel):
         permissions = channel.permissions_for(member)
         embed = discord.Embed(
-            title=f"Permissions for {member.name}#{member.discriminator}", colour=self.bot.primary_colour,
+            title=f"Permissions for {member.name}#{member.discriminator}",
+            colour=self.bot.primary_colour,
         )
         allowed, denied = [], []
         for name, value in permissions:
@@ -63,7 +64,8 @@ class Miscellaneous(commands.Cog):
         if member is None:
             member = ctx.author
         embed = discord.Embed(
-            title=f"User Information for {member.name}#{member.discriminator}", colour=self.bot.primary_colour,
+            title=f"User Information for {member.name}#{member.discriminator}",
+            colour=self.bot.primary_colour,
         )
         roles = [role.name for role in member.roles]
         embed.add_field(name="Status", value=str(member.status).title())
@@ -78,7 +80,9 @@ class Miscellaneous(commands.Cog):
 
     @commands.guild_only()
     @commands.command(
-        description="Get some information about this server.", usage="serverinfo", aliases=["guildinfo"],
+        description="Get some information about this server.",
+        usage="serverinfo",
+        aliases=["guildinfo"],
     )
     async def serverinfo(self, ctx):
         guild = ctx.guild
