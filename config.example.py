@@ -96,6 +96,3 @@ primary_colour = 0x1E90FF
 user_colour = 0x00FF00
 mod_colour = 0xFF4500
 error_colour = 0xFF0000
-
-# Version of bot
-__version__ = "2.0.0"
