@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"encoding/json"
 	"io/ioutil"
 	"net/http"
@@ -10,6 +11,7 @@ import (
 
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambda"
+	"github.com/aws/aws-lambda-go/lambdacontext"
 )
 
 type ErrResponse struct {
@@ -50,7 +52,7 @@ func handler(ctx context.Context, request events.APIGatewayProxyRequest) (*event
 		return newResponse(503, ErrResponse{Error: "Service Unavailable"})
 	}
 
-	if !request.QueryStringParameters["id"] {
+	if _, ok := request.QueryStringParameters["id"]; !ok {
 		return newResponse(400, ErrResponse{Error: "Bad Request"})
 	}
 
