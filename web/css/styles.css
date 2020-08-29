@@ -82,6 +82,16 @@ footer {
     cursor: pointer;
 }
 
+.navbar-brand {
+    padding-top: 0;
+    padding-bottom: 0;
+}
+
+.navbar-brand img {
+    height: 50px;
+    width: 50px;
+}
+
 #scroll-button {
     background-color: #007bff;
     border-radius: 50%;
