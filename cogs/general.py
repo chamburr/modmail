@@ -126,7 +126,9 @@ class General(commands.Cog):
         return fmt.format(d=days, h=hours, m=minutes, s=seconds)
 
     @commands.command(
-        description="See some super cool statistics about me.", usage="stats", aliases=["statistics", "info"],
+        description="See some super cool statistics about me.",
+        usage="stats",
+        aliases=["statistics", "info"],
     )
     async def stats(self, ctx):
         guilds = sum(await self.bot.cogs["Communication"].handler("guild_count", self.bot.cluster_count))
@@ -151,12 +153,15 @@ class General(commands.Cog):
         embed.add_field(name="discord.py Version", value=discord.__version__)
         embed.set_thumbnail(url=self.bot.user.avatar_url)
         embed.set_footer(
-            text=f"Made with ❤ using discord.py", icon_url="https://www.python.org/static/opengraph-icon-200x200.png",
+            text=f"Made with ❤ using discord.py",
+            icon_url="https://www.python.org/static/opengraph-icon-200x200.png",
         )
         await ctx.send(embed=embed)
 
     @commands.command(
-        description="See the amazing stuff we have partnered with.", usage="partners", aliases=["partner"],
+        description="See the amazing stuff we have partnered with.",
+        usage="partners",
+        aliases=["partner"],
     )
     async def partners(self, ctx):
         all_pages = []
@@ -324,7 +329,10 @@ class General(commands.Cog):
         await ctx.send(embed=embed)
 
     @commands.command(
-        description="Get the top 15 servers using this bot.", aliases=["topguilds"], usage="topservers", hidden=True,
+        description="Get the top 15 servers using this bot.",
+        aliases=["topguilds"],
+        usage="topservers",
+        hidden=True,
     )
     async def topservers(self, ctx):
         data = await self.bot.cogs["Communication"].handler("get_top_guilds", self.bot.cluster_count)
@@ -337,7 +345,9 @@ class General(commands.Cog):
             top_guilds.append(f"#{str(index + 1)} {guild['name']} ({guild['member_count']} members)")
         await ctx.send(
             embed=discord.Embed(
-                title="Top 15 Servers", description="\n".join(top_guilds), colour=self.bot.primary_colour,
+                title="Top 15 Servers",
+                description="\n".join(top_guilds),
+                colour=self.bot.primary_colour,
             )
         )
 

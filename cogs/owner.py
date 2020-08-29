@@ -74,7 +74,8 @@ class Owner(commands.Cog):
         else:
             await ctx.send(
                 embed=discord.Embed(
-                    description="Successfully reloaded the configurations.", colour=self.bot.primary_colour,
+                    description="Successfully reloaded the configurations.",
+                    colour=self.bot.primary_colour,
                 )
             )
 
@@ -110,7 +111,8 @@ class Owner(commands.Cog):
         except Exception as e:
             await ctx.send(
                 embed=discord.Embed(
-                    description=f"```py\n{e.__class__.__name__}: {e}\n```", colour=self.bot.primary_colour,
+                    description=f"```py\n{e.__class__.__name__}: {e}\n```",
+                    colour=self.bot.primary_colour,
                 )
             )
             return
@@ -122,7 +124,8 @@ class Owner(commands.Cog):
             value = stdout.getvalue()
             await ctx.send(
                 embed=discord.Embed(
-                    description=f"```py\n{value}{traceback.format_exc()}\n```", colour=self.bot.error_colour,
+                    description=f"```py\n{value}{traceback.format_exc()}\n```",
+                    colour=self.bot.error_colour,
                 )
             )
         else:
@@ -161,7 +164,8 @@ class Owner(commands.Cog):
         except Exception as error:
             await ctx.send(
                 embed=discord.Embed(
-                    description=f"```py\n{error.__class__.__name__}: {error}\n```", colour=self.bot.error_colour,
+                    description=f"```py\n{error.__class__.__name__}: {error}\n```",
+                    colour=self.bot.error_colour,
                 )
             )
 
@@ -217,7 +221,8 @@ class Owner(commands.Cog):
             await conn.execute("DELETE FROM premium WHERE identifier=$1", user)
         await ctx.send(
             embed=discord.Embed(
-                description="Successfully removed that user's premium.", colour=self.bot.primary_colour,
+                description="Successfully removed that user's premium.",
+                colour=self.bot.primary_colour,
             )
         )
 
@@ -238,7 +243,8 @@ class Owner(commands.Cog):
         self.bot.banned_users.append(user)
         await ctx.send(
             embed=discord.Embed(
-                description="Successfully banned that user from the bot.", colour=self.bot.primary_colour,
+                description="Successfully banned that user from the bot.",
+                colour=self.bot.primary_colour,
             )
         )
 
@@ -256,7 +262,8 @@ class Owner(commands.Cog):
         self.bot.banned_users.remove(user)
         await ctx.send(
             embed=discord.Embed(
-                description="Successfully unbanned that user from the bot.", colour=self.bot.primary_colour,
+                description="Successfully unbanned that user from the bot.",
+                colour=self.bot.primary_colour,
             )
         )
 
@@ -289,7 +296,8 @@ class Owner(commands.Cog):
         self.bot.banned_guilds.append(guild)
         await ctx.send(
             embed=discord.Embed(
-                description="Successfully banned that server from the bot.", colour=self.bot.primary_colour,
+                description="Successfully banned that server from the bot.",
+                colour=self.bot.primary_colour,
             )
         )
 
@@ -307,7 +315,8 @@ class Owner(commands.Cog):
         self.bot.banned_guilds.remove(guild)
         await ctx.send(
             embed=discord.Embed(
-                description="Successfully unbanned that server from the bot.", colour=self.bot.primary_colour,
+                description="Successfully unbanned that server from the bot.",
+                colour=self.bot.primary_colour,
             )
         )
 

@@ -146,7 +146,8 @@ class Configuration(commands.Cog):
         if prefix is None:
             await ctx.send(
                 embed=discord.Embed(
-                    description=f"The prefix for this server is `{ctx.prefix}`.", colour=self.bot.primary_colour,
+                    description=f"The prefix for this server is `{ctx.prefix}`.",
+                    colour=self.bot.primary_colour,
                 )
             )
             return
@@ -155,7 +156,10 @@ class Configuration(commands.Cog):
         else:
             if len(prefix) > 10:
                 await ctx.send(
-                    embed=discord.Embed(description="The chosen prefix is too long.", colour=self.bot.error_colour,)
+                    embed=discord.Embed(
+                        description="The chosen prefix is too long.",
+                        colour=self.bot.error_colour,
+                    )
                 )
                 return
             if prefix == self.bot.config.default_prefix:
@@ -181,7 +185,8 @@ class Configuration(commands.Cog):
         if len(name) > 100:
             await ctx.send(
                 embed=discord.Embed(
-                    description="The category name cannot be longer than 100 characters", colour=self.bot.error_colour,
+                    description="The category name cannot be longer than 100 characters",
+                    colour=self.bot.error_colour,
                 )
             )
             return
@@ -224,7 +229,8 @@ class Configuration(commands.Cog):
         if check:
             await ctx.send(
                 embed=discord.Embed(
-                    description=f"The role(s) are not found. Please try again.", colour=self.bot.error_colour,
+                    description=f"The role(s) are not found. Please try again.",
+                    colour=self.bot.error_colour,
                 )
             )
             return
@@ -238,7 +244,9 @@ class Configuration(commands.Cog):
             return
         async with self.bot.pool.acquire() as conn:
             await conn.execute(
-                "UPDATE data SET accessrole=$1 WHERE guild=$2", [role.id for role in roles], ctx.guild.id,
+                "UPDATE data SET accessrole=$1 WHERE guild=$2",
+                [role.id for role in roles],
+                ctx.guild.id,
             )
         category = (await self.bot.get_data(ctx.guild.id))[2]
         category = ctx.guild.get_channel(category)
@@ -283,7 +291,8 @@ class Configuration(commands.Cog):
                 else:
                     await ctx.send(
                         embed=discord.Embed(
-                            description=f"The role(s) are not found. Please try again.", colour=self.bot.error_colour,
+                            description=f"The role(s) are not found. Please try again.",
+                            colour=self.bot.error_colour,
                         )
                     )
                     return
@@ -300,7 +309,10 @@ class Configuration(commands.Cog):
         async with self.bot.pool.acquire() as conn:
             await conn.execute("UPDATE data SET pingrole=$1 WHERE guild=$2", role_ids, ctx.guild.id)
         await ctx.send(
-            embed=discord.Embed(description=f"The role(s) are updated successfully.", colour=self.bot.primary_colour,)
+            embed=discord.Embed(
+                description=f"The role(s) are updated successfully.",
+                colour=self.bot.primary_colour,
+            )
         )
 
     @commands.bot_has_permissions(manage_channels=True)
@@ -308,7 +320,9 @@ class Configuration(commands.Cog):
     @commands.has_permissions(administrator=True)
     @commands.guild_only()
     @commands.command(
-        description="Toggle between enable and disable for ModMail logs.", aliases=["logs"], usage="logging",
+        description="Toggle between enable and disable for ModMail logs.",
+        aliases=["logs"],
+        usage="logging",
     )
     async def logging(self, ctx):
         data = await self.bot.get_data(ctx.guild.id)
@@ -319,7 +333,8 @@ class Configuration(commands.Cog):
             except discord.Forbidden:
                 await ctx.send(
                     embed=discord.Embed(
-                        description="Missing permissions to delete the channel.", colour=self.bot.error_colour,
+                        description="Missing permissions to delete the channel.",
+                        colour=self.bot.error_colour,
                     )
                 )
                 return
@@ -394,7 +409,9 @@ class Configuration(commands.Cog):
         data = await self.bot.get_data(ctx.guild.id)
         async with self.bot.pool.acquire() as conn:
             await conn.execute(
-                "UPDATE data SET loggingplus=$1 WHERE guild=$2", True if data[7] is False else False, ctx.guild.id,
+                "UPDATE data SET loggingplus=$1 WHERE guild=$2",
+                True if data[7] is False else False,
+                ctx.guild.id,
             )
         await ctx.send(
             embed=discord.Embed(
@@ -411,7 +428,9 @@ class Configuration(commands.Cog):
         data = await self.bot.get_data(ctx.guild.id)
         async with self.bot.pool.acquire() as conn:
             await conn.execute(
-                "UPDATE data SET anonymous=$1 WHERE guild=$2", True if data[10] is False else False, ctx.guild.id,
+                "UPDATE data SET anonymous=$1 WHERE guild=$2",
+                True if data[10] is False else False,
+                ctx.guild.id,
             )
         await ctx.send(
             embed=discord.Embed(

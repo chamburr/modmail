@@ -9,7 +9,6 @@ from pathlib import Path
 
 import aiohttp
 import aioredis
-
 import config
 
 payload = {
@@ -20,7 +19,8 @@ payload = {
 
 async def get_shard_count():
     async with aiohttp.ClientSession() as session, session.get(
-        "https://discordapp.com/api/gateway/bot", headers=payload,
+        "https://discordapp.com/api/gateway/bot",
+        headers=payload,
     ) as req:
         response = await req.json()
     return response["shards"]

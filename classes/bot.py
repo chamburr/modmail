@@ -6,10 +6,9 @@ import traceback
 import aiohttp
 import aioredis
 import asyncpg
+import config
 
 from discord.ext import commands
-
-import config
 
 from utils import prometheus, tools
 
