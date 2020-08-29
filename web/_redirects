@@ -4,6 +4,6 @@ https://modmail.netlify.app/* https://modmail.xyz/:splat 301!
 /invite     https://discord.com/oauth2/authorize?client_id=575252669443211264&permissions=268823640&response_type=code&redirect_uri=https%3A%2F%2Fmodmail.xyz%2Fwelcome&scope=bot
 /repository https://github.com/CHamburr/modmail
 
-/_functions/* /.netlify/functions/:splat 200
+/_functions/* /.netlify/functions/:splat 200!
 /logs/*       /logs.html                 200
 /*            /404.html                  404
