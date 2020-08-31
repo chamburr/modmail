@@ -51,7 +51,7 @@ bot = ModMail(
     shard_count=shard_count,
     cluster_id=cluster_id,
     cluster_count=cluster_count,
-    version='2.0.1'
+    version="2.0.1",
 )
 
 
