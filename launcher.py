@@ -33,7 +33,7 @@ def get_cluster_list(shards):
     for i in range(config.clusters):
         clusters.append(shards[: base + (i < extra)])
         shards = shards[base + (i < extra) :]
-    return clustrs
+    return clusters
 
 
 class Instance:
