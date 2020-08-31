@@ -1,3 +1,3 @@
 #!/bin/bash
-isort -rc .
+isort .
 black . --line-length 120
