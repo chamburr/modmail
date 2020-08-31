@@ -147,7 +147,7 @@ class Main:
                 print("[Cluster Manager] Received signal to perform a rolling restart.")
                 for instance in self.instances:
                     self.loop.create_task(instance.restart())
-                    await asyncio.sleep(config.shards_per_cluster * 10)
+                    await asyncio.sleep(len(self.instances[0].shard_list) * 10)
 
     async def close(self):
         await self.redis.execute_pubsub("UNSUBSCRIBE", config.ipc_channel)
@@ -175,7 +175,7 @@ class Main:
             self.instances.append(
                 Instance(i, shard_list, shard_count, self.loop, main=self, cluster_count=len(clusters))
             )
-            await asyncio.sleep(config.shards_per_cluster * 10)
+            await asyncio.sleep(len(clusters[0]) * 10)
 
 
 loop = asyncio.get_event_loop()
