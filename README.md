@@ -27,7 +27,7 @@ The issue tracker here is only for bug reports and feature requests. Please do n
 
 ## Self-Hosting
 
-This self-hosting guide requires you to have some basic knowledge about command line, Python, and Discord bots. If you meet any issues while running the bot, please use Google before asking in our Discord server.
+This self-hosting guide requires you to have some basic knowledge about command line, Python, and Discord bots. We do not provide any support for self-hosting.
 
 ### Prerequisites
 
