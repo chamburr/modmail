@@ -27,9 +27,13 @@ async def get_shard_count():
 
 
 def get_cluster_list(shards):
-    return [
-        list(range(0, shards)[i : i + config.shards_per_cluster]) for i in range(0, shards, config.shards_per_cluster)
-    ]
+    base, extra = divmod(shards, config.clusters)
+    shards = list(range(shards))
+    clusters = []
+    for i in range(config.clusters):
+        clusters.append(shards[: base + (i < extra)])
+        shards = shards[base + (i < extra) :]
+    return clustrs
 
 
 class Instance:

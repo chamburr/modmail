@@ -34,8 +34,8 @@ database = {
     "port": 5432,
 }
 
-# Number of shards for each cluster
-shards_per_cluster = 4
+# Number of clusters
+clusters = 1
 
 # Additional shards to launch
 additional_shards = 0
