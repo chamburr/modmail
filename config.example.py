@@ -1,11 +1,14 @@
 # Bot's token
 token = ""
 
-# DiscordBotList token
-dbl_token = ""
+# Top.gg token
+topgg_token = ""
 
 # Discord Bots token
 dbots_token = ""
+
+# Discord Bot List token
+dbl_token = ""
 
 # Bots on Discord token
 bod_token = ""
