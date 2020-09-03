@@ -13,12 +13,13 @@ log = logging.getLogger(__name__)
 class Events(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
-        self.dbl_auth = {"Authorization": bot.config.dbl_token, "Content-Type": "application/json"}
+        self.topgg_auth = {"Authorization": bot.config.topgg_token, "Content-Type": "application/json"}
         self.dbots_auth = {"Authorization": bot.config.dbots_token, "Content-Type": "application/json"}
+        self.dbl_auth = {"Authorization": bot.config.dbl_token, "Content-Type": "application/json"}
         self.bod_auth = {"Authorization": bot.config.bod_token, "Content-Type": "application/json"}
         self.bfd_auth = {"Authorization": bot.config.bfd_token, "Content-Type": "application/json"}
         self.dboats_auth = {"Authorization": bot.config.dboats_token, "Content-Type": "application/json"}
-        if self.bot.config.testing is False:
+        if self.bot.config.testing is False and self.bot.cluster == 1:
             self.stats_updates = bot.loop.create_task(self.stats_updater())
         self.bot_stats_updates = bot.loop.create_task(self.bot_stats_updater())
         self.bot_categories_updates = bot.loop.create_task(self.bot_categories_updater())
@@ -33,12 +34,17 @@ class Events(commands.Cog):
             await self.bot.session.post(
                 f"https://top.gg/api/bots/{self.bot.user.id}/stats",
                 data=json.dumps({"server_count": guilds, "shard_count": self.bot.shard_count}),
-                headers=self.dbl_auth,
+                headers=self.topgg_auth,
             )
             await self.bot.session.post(
                 f"https://discord.bots.gg/api/v1/bots/{self.bot.user.id}/stats",
                 data=json.dumps({"guildCount": guilds, "shardCount": self.bot.shard_count}),
                 headers=self.dbots_auth,
+            )
+            await self.bot.session.post(
+                f"https://discordbotlist.com/api/v1/bots/{self.bot.user.id}/stats",
+                data=json.dumps({"guilds": guilds}),
+                headers=self.dbl_auth,
             )
             await self.bot.session.post(
                 f"https://bots.ondiscord.xyz/bot-api/bots/{self.bot.user.id}/guilds",
