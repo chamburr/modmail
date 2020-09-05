@@ -68,28 +68,17 @@ class Owner(commands.Cog):
                 )
 
     @checks.is_owner()
-    @commands.command(description="Reload the configurations.", usage="reloadconf", hidden=True)
-    async def reloadconf(self, ctx):
-        data = await self.bot.cogs["Communication"].handler("reload_import", self.bot.cluster_count, {"lib": "config"})
+    @commands.command(description="Reload a library.", usage="reloadlib", hidden=True)
+    async def reloadlib(self, ctx, *, lib: str):
+        data = await self.bot.cogs["Communication"].handler("reload_import", self.bot.cluster_count, {"lib": lib})
         if not data or data[0] != "Success":
             await ctx.send(embed=discord.Embed(description=f"Error: {data[0]}", colour=self.bot.error_colour))
         else:
             await ctx.send(
                 embed=discord.Embed(
-                    description="Successfully reloaded the configurations.",
+                    description="Successfully reloaded the library.",
                     colour=self.bot.primary_colour,
                 )
-            )
-
-    @checks.is_owner()
-    @commands.command(description="Reload the tools.", usage="reloadtools", hidden=True)
-    async def reloadtools(self, ctx):
-        data = await self.bot.cogs["Communication"].handler("reload_import", self.bot.cluster_count, {"lib": "tools"})
-        if not data or data[0] != "Success":
-            await ctx.send(embed=discord.Embed(description=f"Error: {data[0]}", colour=self.bot.error_colour))
-        else:
-            await ctx.send(
-                embed=discord.Embed(description="Successfully reloaded the tools.", colour=self.bot.primary_colour)
             )
 
     @checks.is_owner()
