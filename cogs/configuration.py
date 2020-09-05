@@ -5,17 +5,10 @@ import discord
 
 from discord.ext import commands
 
+from classes import converters
 from utils import checks
 
 log = logging.getLogger(__name__)
-
-
-class PingRoleConverter(commands.RoleConverter):
-    async def convert(self, ctx, argument):
-        try:
-            return await super().convert(ctx, argument)
-        except commands.BadArgument:
-            return argument
 
 
 class Configuration(commands.Cog):
@@ -276,7 +269,7 @@ class Configuration(commands.Cog):
         aliases=["mentionrole"],
         usage="pingrole [roles]",
     )
-    async def pingrole(self, ctx, roles: commands.Greedy[PingRoleConverter] = None):
+    async def pingrole(self, ctx, roles: commands.Greedy[converters.PingRole] = None):
         if roles is None:
             roles = []
         role_ids = []

@@ -25,9 +25,29 @@ async def get_user_settings(bot, user):
 async def get_premium_slots(bot, user):
     data = await bot.cogs["Communication"].handler("get_user_premium", 1, {"user_id": user})
     if not data or data[0] == 0:
+        async with bot.pool.acquire() as conn:
+            res = await conn.fetchrow("SELECT guild FROM premium WHERE identifier=$1", user)
+            if res:
+                return 1
         return False
     else:
         return data[0]
+
+
+async def wipe_premium(bot, user):
+    async with bot.pool.acquire() as conn:
+        res = await conn.fetchrow("SELECT identifier, guild FROM premium WHERE identifier=$1", user)
+        if res:
+            for guild in res[1]:
+                await conn.execute(
+                    "UPDATE data SET welcome=$1, goodbye=$2, loggingplus=$3 WHERE guild=$4",
+                    None,
+                    None,
+                    False,
+                    guild,
+                )
+                await conn.execute("DELETE FROM snippet WHERE guild=$1", guild)
+        await conn.execute("DELETE FROM premium WHERE identifier=$1", user)
 
 
 def get_modmail_user(channel):

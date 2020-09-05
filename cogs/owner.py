@@ -6,13 +6,15 @@ import textwrap
 import traceback
 
 from contextlib import redirect_stdout
+from datetime import timezone
 from typing import Optional
 
 import discord
 
 from discord.ext import commands
 
-from utils import checks
+from classes import converters
+from utils import checks, tools
 
 log = logging.getLogger(__name__)
 
@@ -191,7 +193,7 @@ class Owner(commands.Cog):
         usage="invoke [channel] <user> <command>",
         hidden=True,
     )
-    async def invoke(self, ctx, channel: Optional[discord.TextChannel], user: discord.User, *, command: str):
+    async def invoke(self, ctx, channel: Optional[discord.TextChannel], user: converters.GlobalUser, *, command: str):
         msg = copy.copy(ctx.message)
         channel = channel or ctx.channel
         msg.channel = channel
@@ -201,24 +203,30 @@ class Owner(commands.Cog):
         await self.bot.invoke(new_ctx)
 
     @checks.is_owner()
-    @commands.command(description="Remove a user's premium.", usage="wipepremium <user>", hidden=True)
-    async def wipepremium(self, ctx, *, user: int):
-        if not user:
-            await ctx.send(embed=discord.Embed(description="No such user was found.", colour=self.bot.error_colour))
+    @commands.command(description="Give a user temporary premium.", usage="givepremium <user> <expiry>", hidden=True)
+    async def givepremium(self, ctx, user: converters.GlobalUser, *, expiry: converters.DateTime):
+        premium = await tools.get_premium_slots(ctx.bot, user.id)
+        if premium:
+            await ctx.send(
+                embed=discord.Embed(description="That user already has premium.", colour=self.bot.error_colour)
+            )
             return
         async with self.bot.pool.acquire() as conn:
-            res = await conn.fetchrow("SELECT identifier, guild FROM premium WHERE identifier=$1", user)
-            if res:
-                for guild in res[1]:
-                    await conn.execute(
-                        "UPDATE data SET welcome=$1, goodbye=$2, loggingplus=$3 WHERE guild=$4",
-                        None,
-                        None,
-                        False,
-                        guild,
-                    )
-                    await conn.execute("DELETE FROM snippet WHERE guild=$1", guild)
-            await conn.execute("DELETE FROM premium WHERE identifier=$1", user)
+            timestamp = int(expiry.replace(tzinfo=timezone.utc).timestamp() * 1000)
+            await conn.execute(
+                "INSERT INTO premium (identifier, guild, expiry) VALUES ($1, $2, $3)", user.id, [], timestamp
+            )
+        await ctx.send(
+            embed=discord.Embed(
+                description="Successfully assigned that user premium temporarily.",
+                colour=self.bot.primary_colour,
+            )
+        )
+
+    @checks.is_owner()
+    @commands.command(description="Remove a user's premium.", usage="wipepremium <user>", hidden=True)
+    async def wipepremium(self, ctx, *, user: converters.GlobalUser):
+        await tools.wipe_premium(user.id)
         await ctx.send(
             embed=discord.Embed(
                 description="Successfully removed that user's premium.",
@@ -228,19 +236,16 @@ class Owner(commands.Cog):
 
     @checks.is_owner()
     @commands.command(description="Ban a user from the bot", usage="banuser <user>", hidden=True)
-    async def banuser(self, ctx, *, user: int):
-        if not user:
-            await ctx.send(embed=discord.Embed(description="No such user was found.", colour=self.bot.error_colour))
-            return
+    async def banuser(self, ctx, *, user: converters.GlobalUser):
         async with self.bot.pool.acquire() as conn:
-            res = await conn.fetchrow("SELECT * FROM ban WHERE identifier=$1 AND category=$2", user, 0)
+            res = await conn.fetchrow("SELECT * FROM ban WHERE identifier=$1 AND category=$2", user.id, 0)
             if res:
                 await ctx.send(
                     embed=discord.Embed(description="That user is already banned.", colour=self.bot.error_colour)
                 )
                 return
-            await conn.execute("INSERT INTO ban (identifier, category) VALUES ($1, $2)", user, 0)
-        self.bot.banned_users.append(user)
+            await conn.execute("INSERT INTO ban (identifier, category) VALUES ($1, $2)", user.id, 0)
+        self.bot.banned_users.append(user.id)
         await ctx.send(
             embed=discord.Embed(
                 description="Successfully banned that user from the bot.",
@@ -269,8 +274,8 @@ class Owner(commands.Cog):
 
     @checks.is_owner()
     @commands.command(description="Make the bot leave a server.", usage="leaveserver <server ID>", hidden=True)
-    async def leaveserver(self, ctx, *, guild: int):
-        data = await self.bot.cogs["Communication"].handler("leave_guild", 1, {"guild_id": guild})
+    async def leaveserver(self, ctx, *, guild: converters.GlobalGuild):
+        data = await self.bot.cogs["Communication"].handler("leave_guild", 1, {"guild_id": guild["id"]})
         if not data:
             await ctx.send(embed=discord.Embed(description="That server is not found.", colour=self.bot.error_colour))
         else:
@@ -280,20 +285,20 @@ class Owner(commands.Cog):
 
     @checks.is_owner()
     @commands.command(description="Ban a server from the bot", usage="banserver <server ID>", hidden=True)
-    async def banserver(self, ctx, *, guild: int):
-        data = await self.bot.cogs["Communication"].handler("leave_guild", 1, {"guild_id": guild})
+    async def banserver(self, ctx, *, guild: converters.GlobalGuild):
+        data = await self.bot.cogs["Communication"].handler("leave_guild", 1, {"guild_id": guild["id"]})
         if not data:
             await ctx.send(embed=discord.Embed(description="That server is not found.", colour=self.bot.error_colour))
             return
         async with self.bot.pool.acquire() as conn:
-            res = await conn.fetchrow("SELECT * FROM ban WHERE identifier=$1 AND category=$2", guild, 1)
+            res = await conn.fetchrow("SELECT * FROM ban WHERE identifier=$1 AND category=$2", guild["id"], 1)
             if res:
                 await ctx.send(
                     embed=discord.Embed(description="That server is already banned.", colour=self.bot.error_colour)
                 )
                 return
-            await conn.execute("INSERT INTO ban (identifier, category) VALUES ($1, $2)", guild, 1)
-        self.bot.banned_guilds.append(guild)
+            await conn.execute("INSERT INTO ban (identifier, category) VALUES ($1, $2)", guild["id"], 1)
+        self.bot.banned_guilds.append(guild["id"])
         await ctx.send(
             embed=discord.Embed(
                 description="Successfully banned that server from the bot.",
