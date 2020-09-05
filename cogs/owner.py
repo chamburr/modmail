@@ -194,7 +194,7 @@ class Owner(commands.Cog):
     @checks.is_owner()
     @commands.command(description="Give a user temporary premium.", usage="givepremium <user> <expiry>", hidden=True)
     async def givepremium(self, ctx, user: converters.GlobalUser, *, expiry: converters.DateTime):
-        premium = await self.bot.tools.get_premium_slots(ctx.bot, user.id)
+        premium = await self.bot.tools.get_premium_slots(self.bot, user.id)
         if premium:
             await ctx.send(
                 embed=discord.Embed(description="That user already has premium.", colour=self.bot.error_colour)
@@ -215,7 +215,7 @@ class Owner(commands.Cog):
     @checks.is_owner()
     @commands.command(description="Remove a user's premium.", usage="wipepremium <user>", hidden=True)
     async def wipepremium(self, ctx, *, user: converters.GlobalUser):
-        await self.bot.tools.wipe_premium(user.id)
+        await self.bot.tools.wipe_premium(self.bot, user.id)
         await ctx.send(
             embed=discord.Embed(
                 description="Successfully removed that user's premium.",

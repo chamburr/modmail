@@ -87,7 +87,7 @@ class Events(commands.Cog):
             timestamp = int(datetime.datetime.utcnow().timestamp() * 1000)
             for row in res2:
                 if row[1] < timestamp:
-                    await self.bot.tools.wipe_premium(res[0])
+                    await self.bot.tools.wipe_premium(self.bot, res[0])
             await asyncio.sleep(60)
 
     async def bot_categories_updater(self):
