@@ -6,7 +6,7 @@ import discord
 
 from discord.ext import commands
 
-from utils import checks, tools
+from utils import checks
 
 log = logging.getLogger(__name__)
 
@@ -66,7 +66,7 @@ class ModMailEvents(commands.Cog):
                 )
                 return
         if snippet is True:
-            msg = tools.tag_format(msg, member)
+            msg = self.bot.tools.tag_format(msg, member)
         try:
             embed = discord.Embed(
                 title="Message Received",
