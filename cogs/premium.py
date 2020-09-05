@@ -96,7 +96,7 @@ class Premium(commands.Cog):
             res = await conn.fetch("SELECT guild FROM premium")
         all_premium = []
         for row in res:
-            all_premium.extend(row)
+            all_premium.extend(row[0])
         if guild in all_premium:
             await ctx.send(
                 embed=discord.Embed(description="That server already has premium.", colour=self.bot.error_colour)
