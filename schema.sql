@@ -14,10 +14,6 @@ CREATE TABLE public.data
     PRIMARY KEY (guild)
 );
 
-ALTER TABLE public.data
-    OWNER to postgres;
-
-
 CREATE TABLE public.snippet
 (
     guild bigint NOT NULL,
@@ -25,20 +21,13 @@ CREATE TABLE public.snippet
     content text NOT NULL
 );
 
-ALTER TABLE public.snippet
-    OWNER to postgres;
-
-
 CREATE TABLE public.premium
 (
     identifier bigint NOT NULL,
     guild bigint[] NOT NULL,
+    expiry bigint,
     PRIMARY KEY (identifier)
 );
-
-ALTER TABLE public.premium
-    OWNER to postgres;
-
 
 CREATE TABLE public.ban
 (
@@ -47,10 +36,6 @@ CREATE TABLE public.ban
     PRIMARY KEY (identifier)
 );
 
-ALTER TABLE public.ban
-    OWNER to postgres;
-
-
 CREATE TABLE public.preference
 (
     identifier bigint NOT NULL,
@@ -58,16 +43,9 @@ CREATE TABLE public.preference
     PRIMARY KEY (identifier)
 );
 
-ALTER TABLE public.preference
-    OWNER to postgres;
-
-
 CREATE TABLE public.stats
 (
     commands integer NOT NULL,
     messages integer NOT NULL,
     tickets integer NOT NULL
 );
-
-ALTER TABLE public.stats
-    OWNER to postgres;

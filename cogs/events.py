@@ -7,6 +7,8 @@ import discord
 
 from discord.ext import commands
 
+from utils import tools
+
 log = logging.getLogger(__name__)
 
 
@@ -73,6 +75,7 @@ class Events(commands.Cog):
                     self.bot.stats_tickets,
                 )
                 res = await conn.fetch("SELECT identifier, category FROM ban")
+                res2 = await conn.fetch("SELECT identfier, expiry FROM premium WHERE expiry IS NOT NULL")
             self.bot.stats_commands = 0
             self.bot.stats_messages = 0
             self.bot.stats_tickets = 0
@@ -83,6 +86,10 @@ class Events(commands.Cog):
                     self.banned_users.append(row[0])
                 elif row[1] == 1:
                     self.banned_guilds.append(row[0])
+            timestamp = int(datetime.datetime.utcnow().timestamp() * 1000)
+            for row in res2:
+                if row[1] < timestamp:
+                    await tools.wipe_premium(res[0])
             await asyncio.sleep(60)
 
     async def bot_categories_updater(self):
