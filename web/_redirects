@@ -5,6 +5,9 @@ https://modmail.netlify.app/* https://modmail.xyz/:splat 301!
 /repository https://github.com/CHamburr/modmail
 /status     https://status.modmail.xyz
 
+/invite/*   https://api.modmail.xyz/invite/:splat
+/support/*  https://api.modmail.xyz/support/:splat
+
 /_functions/* /.netlify/functions/:splat 200!
 /logs/*       /logs.html                 200
 /*            /404.html                  404

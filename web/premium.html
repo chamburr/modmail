@@ -128,22 +128,19 @@
                         <p>Before proceeeding to payment, please join our <a href="/support" target="_blank" class="link-dark">support server</a> and select the user to receive the reward below.
                         <form id="payment-form" class="needs-validation" action="https://www.paypal.com/cgi-bin/webscr" method="post" target="_top" novalidate>
                             <input type="hidden" name="business" value="redfreebird41@gmail.com">
-                            <input type="hidden" name="lc" value="US">
+                            <input type="hidden" name="lc" value="en_US">
                             <input type="hidden" name="cmd" value="_xclick">
                             <input id="payment-amount" type="hidden" name="amount" value="">
-                            <input type="hidden" name="item_name" value="Donate Bot Item">
+                            <input id="payment-item" type="hidden" name="item_name" value="">
                             <input type="hidden" name="no_shipping" value="1">
                             <input type="hidden" name="currency_code" value="USD">
-                            <input type="hidden" name="button_subtype" value="services">
-                            <input type="hidden" name="no_note" value="0">
                             <input id="payment-custom" type="hidden" name="custom" value="">
-                            <input type="hidden" name="notify_url" value="https://donatebot.io/ipn">
+                            <input type="hidden" name="notify_url" value="https://api.modmail.xyz/webhook/payment">
                             <input type="hidden" name="return" value="https://modmail.xyz/success">
                             <input type="hidden" name="cancel_return" value="https://modmail.xyz/premium">
-                            <input type="hidden" name="bn" value="PP-BuyNowBF:btn_buynowCC_LG.gif:NonHostedGuest">
                             <div class="form-group">
-                                <label for="payment-user">User</label>
-                                <input class="form-control typeahead" id="payment-user" type="text" placeholder="Enter username..." required>
+                                Signed in as <span id="premium-user">User#0000</span>.
+                                <button id="premium-logout" type="button" class="btn btn-link link-dark p-0 border-0 align-middle">Not you?</button>
                             </div>
                         </form>
                     </div>
@@ -244,8 +241,8 @@
     </footer>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/js-cookie/2.2.1/js.cookie.min.js" integrity="sha512-Meww2sXqNHxI1+5Dyh/9KAtvI9RZSA4c1K2k5iL02oiPO/RH3Q30L3M1albtqMg50u4gRTYdV4EXOQqXEI336A==" crossorigin="anonymous"></script>
     <script src="/js/scroll.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/typeahead.js/0.11.1/typeahead.bundle.min.js" integrity="sha256-RWiU4omUU7tQ2M3wmRQNW9UL50MB4CucbRPCbsQv+X0=" crossorigin="anonymous"></script>
-    <script src="/js/premium.js"></script>
+    <script src="js/premium.js"></script>
 </body>
 </html>
