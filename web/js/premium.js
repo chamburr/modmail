@@ -6,100 +6,61 @@ function showAlert(message) {
     });
 }
 
-var role = "";
-
 $("#payment-modal").on("show.bs.modal", function(e) {
     var plan = $(e.relatedTarget).data("plan");
     if (plan == "basic") {
         $("#payment-plan").text("Basic Plan (1 Server)");
         $(this).find("#payment-amount").val("30.00");
-        role = "576756461267451934";
+        $(this).find("#payment-item").val("ModMail Premium (Basic)");
     }
     else if (plan == "pro") {
         $("#payment-plan").text("Pro Plan (3 Servers)");
         $(this).find("#payment-amount").val("60.00");
-        role = "576754574346551306";
+        $(this).find("#payment-item").val("ModMail Premium (Pro)");
     } else {
         $("#payment-plan").text("Plus Plan (5 Servers)");
         $(this).find("#payment-amount").val("90.00");
-        role = "576754671620980740";
+        $(this).find("#payment-item").val("ModMail Premium (Plus)");
     }
 });
 
-$("#payment-form").on("submit", function(e) {
-    if (this.checkValidity() == false) {
-        return;
-    }
-    var text = $("#paypal-button").text();
-    $("#paypal-button").html("<span class=\"spinner-border spinner-border-sm\" role=\"status\" aria-hidden=\"true\"></span> " + text);
-    var query = $("#payment-user").val();
-    e.preventDefault();
-    e.stopPropagation();
+function getParam(name) {
+    name = name.replace(/[\[\]]/g, "\\$&");
+    var regex = new RegExp("[?&]" + name + "(=([^&#]*)|&|#|$)");
+    var results = regex.exec(window.location.href);
+    if (!results) return null;
+    if (!results[2]) return "";
+    return decodeURIComponent(results[2].replace(/\+/g, " "));
+}
+
+function updateUser(user) {
+    Cookies.set("user_id", user.id, { expires: 14 });
+    $("#payment-custom").val(user.id);
+    $("#premium-user").text(user.username + "#" + user.discriminator);
+}
+
+var code = getParam("code");
+var userId = Cookies.get("user_id");
+
+if (code) {
+    window.history.replaceState({}, document.title, window.location.href.split("?")[0]);
     $.ajax({
-        url: "https://discordtemplates.me/modmail-search?q=" + encodeURIComponent(query)
+        url: "https://api.modmail.xyz/user?code=" + encodeURIComponent(code)
     }).done(function(data) {
-        var user = null;
-        data.forEach(function(value) {
-            if (query == $("<textarea/>").html(value.text).text()) {
-                user = value.id;
-            }
-        });
-        if (user == null) {
-            showAlert("Oops! The user was not found. Perhaps you're not in our support server?");
-            $("#paypal-button").text(text);
-        } else {
-            $("#payment-custom").val(user + "," + role);
-            $("#payment-form").unbind("submit").submit();
-        }
-    }).fail(function(data) {
-        showAlert("Oops! An unknown error occurred.")
+        updateUser(data);
+    }).fail(function(err) {
+        showAlert("Oops! An unknown error occurred. Try refreshing?");
     });
-});
-
-$("#payment-user").typeahead({
-    classNames: {
-        menu: "form-control p-0 h-auto w-100",
-        suggestion: "tt-suggestion form-control border-left-0 border-right-0 border-top-0 rounded-0",
-        dataset: "tt-dataset px-2 py-2"
-    }
-}, {
-    source: function(query, syncResults, asyncResults) {
-        $.ajax({
-            url: "https://discordtemplates.me/modmail-search?q=" + encodeURIComponent(query)
-        }).done(function(data) {
-            data.forEach(function(value, index) {
-                data[index].text = $("<div/>").html(value.text).text();
-            });
-            asyncResults(data);
-        }).fail(function(data) {
-            showAlert("Oops! An error occurred while searching.")
-        });
-    },
-    display: function(data) {
-        return data.text;
-    },
-    templates: {
-        notFound: function() {
-            return "<span class=\"px-2\">No Results Found</span>";
-        },
-        pending: function() {
-            return "<span class=\"px-2\">Searching...</span>";
-        },
-        suggestion: function(data) {
-            return "<div data-id=\"" + data.id + "\">" + data.text + "</div>"
-        }
-    }
-});
-
-window.addEventListener("load", function () {
-    var forms = document.getElementsByClassName("needs-validation");
-    Array.prototype.filter.call(forms, function(form) {
-        form.addEventListener("submit", function(event) {
-            if (form.checkValidity() == false) {
-                event.preventDefault();
-                event.stopPropagation();
-                form.classList.add("was-validated");
-            }
-        }, false);
+}
+else if (userId) {
+    $.ajax({
+        url: "https://api.modmail.xyz/user?id=" + encodeURIComponent(userId)
+    }).done(function(data) {
+        updateUser(data);
+    }).fail(function(err) {
+        Cookies.remove("user_id");
+        showAlert("Oops! An unknown error occurred. Try refreshing?");
     });
-}, false);
+} else {
+    window.location.replace("https://discord.com/api/oauth2/authorize?client_id=575252669443211264&redirect_uri=https%3A%2F%2Fmodmail.xyz%2Fpremium&response_type=code&scope=identify");
+}
