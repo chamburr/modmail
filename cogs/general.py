@@ -153,7 +153,7 @@ class General(commands.Cog):
         embed.add_field(name="discord.py Version", value=discord.__version__)
         embed.set_thumbnail(url=self.bot.user.avatar_url)
         embed.set_footer(
-            text=f"Made with ❤ using discord.py",
+            text="Made with ❤ using discord.py",
             icon_url="https://www.python.org/static/opengraph-icon-200x200.png",
         )
         await ctx.send(embed=embed)
@@ -174,6 +174,17 @@ class General(commands.Cog):
         page.add_field(name="Link", value="https://discordtemplates.me")
         page.set_thumbnail(
             url="https://cdn.discordapp.com/icons/696179394057732237/cf54e042456638eba2ea5abddfc7910e.png"
+        )
+        all_pages.append(page)
+        page = discord.Embed(
+            title="Eden of Gaming",
+            description="Eden of Gaming is a global gaming community that aims to share knowledge and build "
+            "relationships between members and fellow global gaming communities.",
+            colour=self.bot.primary_colour,
+        )
+        page.add_field(name="Link", value="https://discord.gg/edenofgaming")
+        page.set_thumbnail(
+            url="https://cdn.discordapp.com/icons/457151179072339978/a_6b2bf427b3f07f209386dcf85ea94a9a.gif"
         )
         all_pages.append(page)
         page = discord.Embed(
