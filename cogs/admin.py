@@ -21,7 +21,7 @@ class Admin(commands.Cog):
     @checks.is_admin()
     @commands.command(
         description="Get a list of servers with the specified name.",
-        usage="findserver [count] <name>",
+        usage="findserver [member count] <name>",
         hidden=True,
     )
     async def findserver(self, ctx, count: Optional[bool], *, name: str):
@@ -57,7 +57,7 @@ class Admin(commands.Cog):
     @checks.is_admin()
     @commands.command(
         description="Get a list of servers the bot shares with the user.",
-        usage="sharedservers [count] <user>",
+        usage="sharedservers [member count] <user>",
         hidden=True,
     )
     async def sharedservers(self, ctx, count: Optional[bool], *, user: converters.GlobalUser):
