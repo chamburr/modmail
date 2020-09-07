@@ -104,6 +104,40 @@ class Admin(commands.Cog):
             )
 
     @checks.is_admin()
+    @commands.command(
+        description="Get the top servers using the bot.",
+        aliases=["topguilds"],
+        usage="topservers [count]",
+        hidden=True,
+    )
+    async def topservers(self, ctx, *, count: int = 20):
+        data = await self.bot.cogs["Communication"].handler("get_top_guilds", self.bot.cluster_count, {"count": count})
+        guilds = []
+        for chunk in data:
+            guilds.extend(chunk)
+        guilds = sorted(guilds, key=lambda x: x["member_count"], reverse=True)[:count]
+        top_guilds = []
+        for index, guild in enumerate(guilds):
+            top_guilds.append(f"#{index + 1} {guild['name']} `{guild['id']}` ({guild['member_count']} members)")
+        all_pages = []
+        for chunk in [top_guilds[i : i + 20] for i in range(0, len(top_guilds), 20)]:
+            page = discord.Embed(title="Top Servers", colour=self.bot.primary_colour)
+            for guild in chunk:
+                if page.description == discord.Embed.Empty:
+                    page.description = guild
+                else:
+                    page.description += f"\n{guild}"
+            page.set_footer(text="Use the reactions to flip pages.")
+            all_pages.append(page)
+        if len(all_pages) == 1:
+            embed = all_pages[0]
+            embed.set_footer(text=discord.Embed.Empty)
+            await ctx.send(embed=embed)
+            return
+        paginator = Paginator(length=1, entries=all_pages, use_defaults=True, embed=True, timeout=120)
+        await paginator.start(ctx)
+
+    @checks.is_admin()
     @commands.command(description="Make me say something.", usage="echo [channel] <message>", hidden=True)
     async def echo(self, ctx, channel: Optional[discord.TextChannel], *, content: str):
         channel = channel or ctx.channel
