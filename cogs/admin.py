@@ -21,20 +21,24 @@ class Admin(commands.Cog):
     @checks.is_admin()
     @commands.command(
         description="Get a list of servers with the specified name.",
-        usage="findserver <name>",
+        usage="findserver [count] <name>",
         hidden=True,
     )
-    async def findserver(self, ctx, *, name: str):
+    async def findserver(self, ctx, count: Optional[bool], *, name: str):
         data = await self.bot.cogs["Communication"].handler("find_guild", self.bot.cluster_count, {"name": name})
         guilds = []
         for chunk in data:
             guilds.extend(chunk)
+        if count:
+            guilds = [f"{guild['name']} `{guild['id']}` ({guild['member_count']} members)" for guild in guilds]
+        else:
+            guilds = [f"{guild['name']} `{guild['id']}`" for guild in guilds]
         if len(guilds) == 0:
             await ctx.send(embed=discord.Embed(description="No such guild was found.", colour=self.bot.error_colour))
             return
         all_pages = []
         for chunk in [guilds[i : i + 20] for i in range(0, len(guilds), 20)]:
-            page = discord.Embed(title="Guilds", colour=self.bot.primary_colour)
+            page = discord.Embed(title="Servers", colour=self.bot.primary_colour)
             for guild in chunk:
                 if page.description == discord.Embed.Empty:
                     page.description = guild
@@ -52,19 +56,24 @@ class Admin(commands.Cog):
 
     @checks.is_admin()
     @commands.command(
-        description="Get a list of servers the bot shares with the user.", usage="sharedservers <user>", hidden=True
+        description="Get a list of servers the bot shares with the user.",
+        usage="sharedservers [count] <user>",
+        hidden=True,
     )
-    async def sharedservers(self, ctx, *, user: converters.GlobalUser):
+    async def sharedservers(self, ctx, count: Optional[bool], *, user: converters.GlobalUser):
         data = await self.bot.cogs["Communication"].handler(
             "get_user_guilds", self.bot.cluster_count, {"user_id": user.id}
         )
         guilds = []
         for chunk in data:
             guilds.extend(chunk)
-        guilds = [f"{guild['name']} `{guild['id']}`" for guild in guilds]
+        if count:
+            guilds = [f"{guild['name']} `{guild['id']}` ({guild['member_count']} members)" for guild in guilds]
+        else:
+            guilds = [f"{guild['name']} `{guild['id']}`" for guild in guilds]
         all_pages = []
         for chunk in [guilds[i : i + 20] for i in range(0, len(guilds), 20)]:
-            page = discord.Embed(title="Guilds", colour=self.bot.primary_colour)
+            page = discord.Embed(title="Servers", colour=self.bot.primary_colour)
             for guild in chunk:
                 if page.description == discord.Embed.Empty:
                     page.description = guild

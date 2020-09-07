@@ -143,7 +143,7 @@ class Communication(commands.Cog):
             return
         payload = {
             "output": [
-                self.to_dict(guild, ["guild"], ["text_channels", "icon_url", "default_role"])
+                self.to_dict(guild, ["guild"], ["text_channels", "icon_url", "default_role", "member_count"])
                 for guild in self.bot.guilds
                 if guild.get_member(user_id) is not None
             ],
@@ -204,11 +204,14 @@ class Communication(commands.Cog):
         await self.bot.redis.execute("PUBLISH", self.ipc_channel, json.dumps(payload))
 
     async def find_guild(self, name, command_id):
-        guilds = []
-        for guild in self.bot.guilds:
-            if guild.name.lower().count(name.lower()) > 0:
-                guilds.append(f"{guild.name} `{guild.id}`")
-        payload = {"output": guilds, "command_id": command_id}
+        payload = {
+            "output": [
+                self.to_dict(guild, ["guild"], ["member_count"])
+                for guild in self.bot.guilds
+                if guild.name.lower().count(name.lower()) > 0
+            ],
+            "command_id": command_id,
+        }
         await self.bot.redis.execute("PUBLISH", self.ipc_channel, json.dumps(payload))
 
     async def invite_guild(self, guild_id, command_id):
