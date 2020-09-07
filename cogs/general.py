@@ -290,7 +290,7 @@ class General(commands.Cog):
         await ctx.send(
             embed=discord.Embed(
                 title="Invite Link",
-                description=f"https://modmail.xyz/invite",
+                description="https://modmail.xyz/invite",
                 colour=self.bot.primary_colour,
             )
         )
@@ -310,7 +310,7 @@ class General(commands.Cog):
         await ctx.send(
             embed=discord.Embed(
                 title="Website",
-                description=f"https://modmail.xyz",
+                description="https://modmail.xyz",
                 colour=self.bot.primary_colour,
             )
         )
@@ -319,32 +319,8 @@ class General(commands.Cog):
     async def source(self, ctx):
         await ctx.send(
             embed=discord.Embed(
-                title="Github Repository",
-                description=f"https://github.com/CHamburr/modmail",
-                colour=self.bot.primary_colour,
-            )
-        )
-
-
-    @commands.command(
-        description="Get the top 15 servers using this bot.",
-        aliases=["topguilds"],
-        usage="topservers",
-        hidden=True,
-    )
-    async def topservers(self, ctx):
-        data = await self.bot.cogs["Communication"].handler("get_top_guilds", self.bot.cluster_count)
-        guilds = []
-        for chunk in data:
-            guilds.extend(chunk)
-        guilds = sorted(guilds, key=lambda x: x["member_count"], reverse=True)[:15]
-        top_guilds = []
-        for index, guild in enumerate(guilds):
-            top_guilds.append(f"#{str(index + 1)} {guild['name']} ({guild['member_count']} members)")
-        await ctx.send(
-            embed=discord.Embed(
-                title="Top 15 Servers",
-                description="\n".join(top_guilds),
+                title="GitHub Repository",
+                description="https://github.com/CHamburr/modmail",
                 colour=self.bot.primary_colour,
             )
         )
