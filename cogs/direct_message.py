@@ -20,7 +20,6 @@ class DirectMessageEvents(commands.Cog, name="Direct Message"):
         self.guild = None
 
     async def send_mail(self, message, guild, to_send):
-        self.bot.stats_messages += 1
         self.bot.prom.tickets_message_counter.inc()
         guild = await self.bot.cogs["Communication"].handler("get_guild", 1, {"guild_id": guild})
         if not guild:
@@ -75,11 +74,10 @@ class DirectMessageEvents(commands.Cog, name="Direct Message"):
         if len(channels) > 0:
             channel = channels[0]
         if not channel:
-            self.bot.stats_tickets += 1
             self.bot.prom.tickets_counter.inc()
             try:
                 name = "".join(
-                    l for l in message.author.name.lower() if l not in string.punctuation and l.isprintable()
+                    x for x in message.author.name.lower() if x not in string.punctuation and x.isprintable()
                 )
                 if name:
                     name = name + f"-{message.author.discriminator}"

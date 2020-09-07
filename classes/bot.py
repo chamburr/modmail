@@ -81,9 +81,6 @@ class ModMail(commands.AutoShardedBot):
     all_category = []
     banned_guilds = []
     banned_users = []
-    stats_commands = 0
-    stats_messages = 0
-    stats_tickets = 0
 
     async def connect_redis(self):
         self.redis = await aioredis.create_pool("redis://localhost", minsize=5, maxsize=10, loop=self.loop, db=0)
@@ -108,7 +105,6 @@ class ModMail(commands.AutoShardedBot):
         async with self.pool.acquire() as conn:
             data = await conn.fetch("SELECT guild, prefix, category FROM data")
             bans = await conn.fetch("SELECT identifier, category FROM ban")
-            await conn.execute("INSERT INTO stats SELECT 0, 0, 0 WHERE NOT EXISTS (SELECT * FROM stats)")
         for row in data:
             self.all_prefix[row[0]] = row[1]
             if row[2]:

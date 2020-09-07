@@ -66,17 +66,8 @@ class Events(commands.Cog):
     async def bot_stats_updater(self):
         while True:
             async with self.bot.pool.acquire() as conn:
-                await conn.execute(
-                    "UPDATE stats SET commands=commands+$1, messages=messages+$2, tickets=tickets+$3",
-                    self.bot.stats_commands,
-                    self.bot.stats_messages,
-                    self.bot.stats_tickets,
-                )
                 res = await conn.fetch("SELECT identifier, category FROM ban")
                 res2 = await conn.fetch("SELECT identifier, expiry FROM premium WHERE expiry IS NOT NULL")
-            self.bot.stats_commands = 0
-            self.bot.stats_messages = 0
-            self.bot.stats_tickets = 0
             self.banned_users = []
             self.banned_guilds = []
             for row in res:
@@ -201,7 +192,6 @@ class Events(commands.Cog):
         ctx = await self.bot.get_context(message)
         if not ctx.command:
             return
-        self.bot.stats_commands += 1
         self.bot.prom.commands_counter.labels(name=ctx.command.name).inc()
         if message.guild:
             if message.guild.id in self.bot.banned_guilds:

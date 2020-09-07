@@ -41,7 +41,7 @@ class ModMailEvents(commands.Cog):
             await self.send_mail_mod(message, prefix)
 
     async def send_mail_mod(self, message, prefix, anon: bool = False, msg: str = None, snippet: bool = False):
-        self.bot.stats_messages += 1
+        self.bot.prom.tickets_message_counter.inc()
         data = await self.bot.get_data(message.guild.id)
         if self.bot.tools.get_modmail_user(message.channel) in data[9]:
             await message.channel.send(
