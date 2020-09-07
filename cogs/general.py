@@ -325,19 +325,6 @@ class General(commands.Cog):
             )
         )
 
-    @commands.command(description="Usage statistics of the bot.", usage="usagestats", hidden=True)
-    async def usagestats(self, ctx):
-        embed = discord.Embed(
-            title="Usage Statistics",
-            description="Bot usage statistics since 1 January 2020.",
-            colour=self.bot.primary_colour,
-        )
-        async with self.bot.pool.acquire() as conn:
-            res = await conn.fetchrow("SELECT commands, messages, tickets FROM stats")
-        embed.add_field(name="Total commands", value=str(res[0]), inline=False)
-        embed.add_field(name="Total messages", value=str(res[1]), inline=False)
-        embed.add_field(name="Total tickets", value=str(res[2]), inline=False)
-        await ctx.send(embed=embed)
 
     @commands.command(
         description="Get the top 15 servers using this bot.",

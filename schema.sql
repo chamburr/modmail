@@ -42,10 +42,3 @@ CREATE TABLE public.preference
     confirmation boolean NOT NULL,
     PRIMARY KEY (identifier)
 );
-
-CREATE TABLE public.stats
-(
-    commands integer NOT NULL,
-    messages integer NOT NULL,
-    tickets integer NOT NULL
-);
