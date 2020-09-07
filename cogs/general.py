@@ -53,8 +53,7 @@ class General(commands.Cog):
         page.set_footer(text="Use the reactions to flip pages.")
         page.add_field(
             name="Invite",
-            value=f"https://discordapp.com/api/oauth2/authorize?client_id={self.bot.user.id}"
-            "&permissions=268823640&scope=bot",
+            value="https://modmail.xyz/invite",
             inline=False,
         )
         page.add_field(name="Support Server", value="https://discord.gg/wjWJwJB", inline=False)
