@@ -1,4 +1,4 @@
-module github.com/CHamburr/modmail/web
+module github.com/chamburr/modmail/web
 
 go 1.14
 

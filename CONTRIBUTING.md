@@ -6,9 +6,9 @@ The following is a set of guidelines, and it should provide a good overview of h
 
 ## Reporting Bugs and Suggesting Features
 
-We track bugs and features using the [GitHub issue tracker](https://github.com/CHamburr/modmail/issues).
+We track bugs and features using the [GitHub issue tracker](https://github.com/chamburr/modmail/issues).
 
-Before submitting a bug or a feature, please perform a search on the list of [issues](https://github.com/CHamburr/modmail/issues) and check whether it has already been reported or suggested to prevent duplicates. In the case that you find the issue is closed however, read up on the issue and create a new one if necessary.
+Before submitting a bug or a feature, please perform a search on the list of [issues](https://github.com/chamburr/modmail/issues) and check whether it has already been reported or suggested to prevent duplicates. In the case that you find the issue is closed however, read up on the issue and create a new one if necessary.
 
 When writing the report or suggestion, please provide as much information as possible. For bugs, provide clear steps on how to reproduce the bug and include screenshots. For suggestions, provide a concise description on the feature. Generally, filling in the template would work well.
 
@@ -16,13 +16,13 @@ Following these guidelines will help maintainers and the community understand th
 
 ## Writing Code
 
-Don't know where to begin? You can try looking at the list of [issues](https://github.com/CHamburr/modmail/issues). We use the tags `bug` and `enhancement` to differientiate between bugs and features.
+Don't know where to begin? You can try looking at the list of [issues](https://github.com/chamburr/modmail/issues). We use the tags `bug` and `enhancement` to differientiate between bugs and features.
 
 If you want to implement a new feature, you should always create an issue about it first. This will prevent situations where contributions are not helpful.
 
 ### Development Environment
 
-To set up your local development environment, follow the self-hosting guide [here](https://github.com/CHamburr/modmail/blob/master/README.md). When you successfully self-host the bot, your development environment should more or less be ready.
+To set up your local development environment, follow the self-hosting guide [here](https://github.com/chamburr/modmail/blob/master/README.md). When you successfully self-host the bot, your development environment should more or less be ready.
 
 [Flake8](https://gitlab.com/pycqa/flake8) is a useful code analysis tool you may want to use.
 
