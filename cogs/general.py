@@ -319,7 +319,7 @@ class General(commands.Cog):
         await ctx.send(
             embed=discord.Embed(
                 title="GitHub Repository",
-                description="https://github.com/CHamburr/modmail",
+                description="https://github.com/chamburr/modmail",
                 colour=self.bot.primary_colour,
             )
         )
