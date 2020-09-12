@@ -89,7 +89,7 @@ func handler(ctx context.Context, request events.APIGatewayProxyRequest) (*event
 
 	messages := make([]MsgEntry, 0)
 
-	re := regexp.MustCompile(`^\[[0-9-]{10} [0-9:]{8}\] [^\n]*#[0-9]{4} \((User|Staff|Comment)\):`)
+	re := regexp.MustCompile(`^\[[0-9-]{10} [0-9:]{8}\] [^\n]*(#[0-9]{4})? \((User|Staff|Comment)\):`)
 
 	for _, line := range strings.Split(string(body), "\n") {
 		if !re.MatchString(line) {
