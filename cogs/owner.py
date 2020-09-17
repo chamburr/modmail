@@ -264,28 +264,16 @@ class Owner(commands.Cog):
     @checks.is_owner()
     @commands.command(description="Make the bot leave a server.", usage="leaveserver <server ID>", hidden=True)
     async def leaveserver(self, ctx, *, guild: converters.GlobalGuild):
-        data = await self.bot.cogs["Communication"].handler("leave_guild", 1, {"guild_id": guild["id"]})
-        if not data:
-            await ctx.send(embed=discord.Embed(description="That server is not found.", colour=self.bot.error_colour))
-        else:
-            await ctx.send(
-                embed=discord.Embed(description="The bot has left that server.", colour=self.bot.primary_colour)
-            )
+        await self.bot.cogs["Communication"].handler("leave_guild", 1, {"guild_id": guild["id"]})
+        await ctx.send(
+            embed=discord.Embed(description="The bot has left that server.", colour=self.bot.primary_colour)
+        )
 
     @checks.is_owner()
     @commands.command(description="Ban a server from the bot", usage="banserver <server ID>", hidden=True)
     async def banserver(self, ctx, *, guild: converters.GlobalGuild):
-        data = await self.bot.cogs["Communication"].handler("leave_guild", 1, {"guild_id": guild["id"]})
-        if not data:
-            await ctx.send(embed=discord.Embed(description="That server is not found.", colour=self.bot.error_colour))
-            return
+        await self.bot.cogs["Communication"].handler("leave_guild", 1, {"guild_id": guild["id"]})
         async with self.bot.pool.acquire() as conn:
-            res = await conn.fetchrow("SELECT * FROM ban WHERE identifier=$1 AND category=$2", guild["id"], 1)
-            if res:
-                await ctx.send(
-                    embed=discord.Embed(description="That server is already banned.", colour=self.bot.error_colour)
-                )
-                return
             await conn.execute("INSERT INTO ban (identifier, category) VALUES ($1, $2)", guild["id"], 1)
         self.bot.banned_guilds.append(guild["id"])
         await ctx.send(
