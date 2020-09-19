@@ -91,7 +91,7 @@ class ModMail(commands.AutoShardedBot):
                 break
 
     async def connect_postgres(self):
-        self.pool = await asyncpg.create_pool(**self.config.database, max_size=20, command_timeout=60)
+        self.pool = await asyncpg.create_pool(**self.config.database, max_size=50, command_timeout=60)
 
     async def connect_prometheus(self):
         self.prom = prometheus
