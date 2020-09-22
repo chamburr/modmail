@@ -222,7 +222,7 @@ class Configuration(commands.Cog):
         if check:
             await ctx.send(
                 embed=discord.Embed(
-                    description=f"The role(s) are not found. Please try again.",
+                    description="The role(s) are not found. Please try again.",
                     colour=self.bot.error_colour,
                 )
             )
@@ -284,7 +284,7 @@ class Configuration(commands.Cog):
                 else:
                     await ctx.send(
                         embed=discord.Embed(
-                            description=f"The role(s) are not found. Please try again.",
+                            description="The role(s) are not found. Please try again.",
                             colour=self.bot.error_colour,
                         )
                     )
@@ -303,7 +303,7 @@ class Configuration(commands.Cog):
             await conn.execute("UPDATE data SET pingrole=$1 WHERE guild=$2", role_ids, ctx.guild.id)
         await ctx.send(
             embed=discord.Embed(
-                description=f"The role(s) are updated successfully.",
+                description="The role(s) are updated successfully.",
                 colour=self.bot.primary_colour,
             )
         )
