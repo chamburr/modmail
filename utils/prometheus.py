@@ -22,7 +22,7 @@ tickets_message_counter = prom.Counter("modmail_tickets_message", "The total num
 
 async def start(bot):
     port = 6000 + bot.cluster
-    await aio.web.start_http_server(addr="localhost", port=port)
+    await aio.web.start_http_server(addr="127.0.0.1", port=port)
     bot.loop.create_task(update_stats(bot))
     bot.loop.create_task(update_latency(bot))
 
