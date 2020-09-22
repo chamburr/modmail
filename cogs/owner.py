@@ -265,9 +265,7 @@ class Owner(commands.Cog):
     @commands.command(description="Make the bot leave a server.", usage="leaveserver <server ID>", hidden=True)
     async def leaveserver(self, ctx, *, guild: converters.GlobalGuild):
         await self.bot.cogs["Communication"].handler("leave_guild", 1, {"guild_id": guild["id"]})
-        await ctx.send(
-            embed=discord.Embed(description="The bot has left that server.", colour=self.bot.primary_colour)
-        )
+        await ctx.send(embed=discord.Embed(description="The bot has left that server.", colour=self.bot.primary_colour))
 
     @checks.is_owner()
     @commands.command(description="Ban a server from the bot", usage="banserver <server ID>", hidden=True)

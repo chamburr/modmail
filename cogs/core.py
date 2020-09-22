@@ -90,7 +90,7 @@ class Core(commands.Cog):
                             )
                         else:
                             embed.set_footer(
-                                text=f"Unknown#0000 | 000000000000000000",
+                                text="Unknown#0000 | 000000000000000000",
                                 icon_url="https://cdn.discordapp.com/embed/avatars/0.png",
                             )
                         if data[7] == 1:
