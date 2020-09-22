@@ -2,6 +2,8 @@ import asyncio
 
 import prometheus_client as prom
 
+from prometheus_async import aio
+
 latency_counter = prom.Gauge("modmail_latency", "The average latency for shards on this cluster")
 events_counter = prom.Counter("modmail_discord_events", "The total number of processed events.", ["type"])
 dispatch_counter = prom.Counter("modmail_dispatch_events", "The total number of dispatched events.", ["type"])
@@ -18,9 +20,9 @@ tickets_counter = prom.Counter("modmail_tickets", "The total number of tickets c
 tickets_message_counter = prom.Counter("modmail_tickets_message", "The total number of messages sent through tickets.")
 
 
-def start(bot):
+async def start(bot):
     port = 6000 + bot.cluster
-    prom.start_http_server(port)
+    await aio.web.start_http_server(addr="localhost", port=port)
     bot.loop.create_task(update_stats(bot))
     bot.loop.create_task(update_latency(bot))
 
