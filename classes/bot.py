@@ -96,7 +96,7 @@ class ModMail(commands.AutoShardedBot):
     async def connect_prometheus(self):
         self.prom = prometheus
         if self.config.testing is False:
-            self.prom.start(self)
+            await self.prom.start(self)
 
     async def start_bot(self):
         await self.connect_redis()
