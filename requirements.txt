@@ -9,5 +9,5 @@ isort==5.5.3
 prometheus-async==19.2.0
 prometheus_client==0.8.0
 psutil==5.7.2
-sentry-sdk==0.17.6
+sentry-sdk==0.17.7
 subprocess32==3.5.4
