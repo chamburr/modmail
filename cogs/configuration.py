@@ -435,7 +435,7 @@ class Configuration(commands.Cog):
     @checks.in_database()
     @commands.has_permissions(administrator=True)
     @commands.guild_only()
-    @commands.command(description="View the configurations for the current server.", usage="configuration")
+    @commands.command(description="View the configurations for the current server.", usage="viewconfig")
     async def viewconfig(self, ctx):
         data = await self.bot.get_data(ctx.guild.id)
         category = ctx.guild.get_channel(data[2])
