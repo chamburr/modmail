@@ -14,6 +14,7 @@ log = logging.getLogger(__name__)
 class General(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
+        psutil.cpu_percent()
 
     @commands.bot_has_permissions(add_reactions=True)
     @commands.command(
@@ -146,7 +147,7 @@ class General(commands.Cog):
         embed.add_field(name="Servers", value=str(guilds))
         embed.add_field(name="Channels", value=str(channels))
         embed.add_field(name="Users", value=str(users))
-        embed.add_field(name="CPU Usage", value=f"{psutil.cpu_percent()}%")
+        embed.add_field(name="CPU Usage", value=f"{psutil.cpu_percent(interval=None)}%")
         embed.add_field(name="RAM Usage", value=f"{psutil.virtual_memory().percent}%")
         embed.add_field(name="Python Version", value=platform.python_version())
         embed.add_field(name="discord.py Version", value=discord.__version__)
