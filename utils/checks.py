@@ -142,7 +142,7 @@ def is_mod():
         if has_role is False and ctx.author.guild_permissions.administrator is False:
             await ctx.send(
                 embed=discord.Embed(
-                    description=f"You do not have access to use this command.",
+                    description="You do not have access to use this command.",
                     colour=ctx.bot.error_colour,
                 )
             )
