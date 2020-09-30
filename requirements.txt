@@ -5,7 +5,7 @@ black==20.8b1
 dateparser==0.7.6
 discord.py==1.5.0
 flake8==3.8.3
-isort==5.5.3
+isort==5.5.4
 prometheus-async==19.2.0
 prometheus_client==0.8.0
 psutil==5.7.2
