@@ -196,7 +196,7 @@ class General(commands.Cog):
         )
         page.add_field(name="Link", value="https://discord.gg/gorillagang")
         page.set_thumbnail(
-            url="https://cdn.discordapp.com/icons/722716210604671026/3b65b43ae088894f424129d71b78ebf8.png"
+            url="https://cdn.discordapp.com/icons/722716210604671026/a_71cab18101a44243d0bfd94aec9cf05e.gif"
         )
         all_pages.append(page)
         page = discord.Embed(
