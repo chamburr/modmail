@@ -101,7 +101,7 @@ class Events(commands.Cog):
         route = re.sub(r"\/[%A-Z0-9]+", "/_", route)
         route = re.sub(r"\?.+", "", route)
         status = str(params.response.status)
-        self.bot.prom.inc("http", method=params.method, route=route, status=status)
+        await self.bot.prom.inc("http", method=params.method, route=route, status=status)
 
     @commands.Cog.listener()
     async def on_ready(self):
