@@ -31,8 +31,8 @@ class Prometheus:
         self.bot.loop.create_task(self.update_stats())
         self.bot.loop.create_task(self.update_latency())
 
-    def get_counter(self, name, **kwargs):
-        counter = getattr(self, name)
+    def get_counter(self, _name, **kwargs):
+        counter = getattr(self, _name)
         if kwargs:
             counter = counter.labels(**kwargs)
         return counter
