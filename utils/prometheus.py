@@ -22,7 +22,6 @@ class Prometheus:
         self.users = prom.Gauge("modmail_users", "The total number of users on this cluster.")
 
         self.commands = prom.Counter("modmail_commands", "The total number of commands used on the bot.", ["name"])
-        self.commands_time = prom.Histogram("modmail_commands_time", "The time taken for command execution.", ["name"])
         self.tickets = prom.Counter("modmail_tickets", "The total number of tickets created by the bot.")
         self.tickets_message = prom.Counter("modmail_tickets_message", "The total number of messages sent in tickets.")
 
@@ -44,10 +43,6 @@ class Prometheus:
     async def set(self, _name, _value=0, **kwargs):
         counter = self.get_counter(_name, **kwargs)
         await self.bot.loop.run_in_executor(None, functools.partial(lambda x, y: x.set(y), counter, _value))
-
-    async def obs(self, _name, _value=0, **kwargs):
-        counter = self.get_counter(_name, **kwargs)
-        await self.bot.loop.run_in_executor(None, functools.partial(lambda x, y: x.observe(y), counter, _value))
 
     async def update_stats(self):
         while True:

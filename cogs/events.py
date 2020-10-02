@@ -219,9 +219,7 @@ class Events(commands.Cog):
             await self.bot.http.send_message(self.bot.config.admin_channel, None, embed=embed.to_dict())
         if ctx.prefix == f"<@{self.bot.user.id}> " or ctx.prefix == f"<@!{self.bot.user.id}> ":
             ctx.prefix = self.bot.tools.get_guild_prefix(self.bot, message.guild)
-        start_time = time.time()
         await self.bot.invoke(ctx)
-        await self.bot.prom.obs("commands_time", round(time.time() - start_time, 2), name=ctx.command.name)
 
     @commands.Cog.listener()
     async def on_socket_response(self, message):
