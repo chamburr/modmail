@@ -228,7 +228,7 @@ class DirectMessageEvents(commands.Cog, name="Direct Message"):
                 current_embed = discord.Embed(
                     title="Select Server",
                     description="Please select the server you want to send this message to. You can do so by reacting "
-                    f"with the corresponding emote.",
+                    "with the corresponding emote.",
                     colour=self.bot.primary_colour,
                 )
                 current_embed.set_footer(text="Use the reactions to flip pages.")
