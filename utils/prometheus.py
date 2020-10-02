@@ -9,6 +9,7 @@ from prometheus_async import aio
 class Prometheus:
     def __init__(self, bot):
         self.bot = bot
+        self.loop = asyncio.get_event_loop()
 
         self.latency = prom.Gauge("modmail_latency", "The average latency for shards on this cluster")
         self.events = prom.Counter("modmail_discord_events", "The total number of processed events.", ["type"])
@@ -28,24 +29,24 @@ class Prometheus:
 
     async def start(self):
         await aio.web.start_http_server(addr="127.0.0.1", port=6000 + self.bot.cluster)
-        self.bot.loop.create_task(self.update_stats())
-        self.bot.loop.create_task(self.update_latency())
+        self.loop.create_task(self.update_stats())
+        self.loop.create_task(self.update_latency())
 
     async def get_counter(self, _name, **kwargs):
         counter = getattr(self, _name)
         if kwargs:
-            counter = await self.bot.loop.run_in_executor(
+            counter = await self.loop.run_in_executor(
                 None, functools.partial(lambda x, y: x.labels(**y), counter, kwargs)
             )
         return counter
 
     async def inc(self, _name, _value=1, **kwargs):
         counter = await self.get_counter(_name, **kwargs)
-        await self.bot.loop.run_in_executor(None, functools.partial(lambda x, y: x.inc(y), counter, _value))
+        await self.loop.run_in_executor(None, functools.partial(lambda x, y: x.inc(y), counter, _value))
 
     async def set(self, _name, _value=0, **kwargs):
         counter = await self.get_counter(_name, **kwargs)
-        await self.bot.loop.run_in_executor(None, functools.partial(lambda x, y: x.set(y), counter, _value))
+        await self.loop.run_in_executor(None, functools.partial(lambda x, y: x.set(y), counter, _value))
 
     async def update_stats(self):
         while True:
