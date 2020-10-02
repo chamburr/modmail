@@ -98,9 +98,11 @@ class Events(commands.Cog):
             log.info(f"{params.method} {params.url} took {elapsed} seconds")
         route = str(params.url)
         route = re.sub(r"https:\/\/[a-z\.]+\/api\/v[0-9]+", "", route)
-        route = re.sub(r"\/[%A-Z0-9]+", "/_", route)
+        route = re.sub(r"\/[%A-Z0-9]+", "/_id", route)
         route = re.sub(r"\?.+", "", route)
         status = str(params.response.status)
+        if not route.startswith("/"):
+            return
         await self.bot.prom.inc("http", method=params.method, route=route, status=status)
 
     @commands.Cog.listener()
@@ -247,7 +249,9 @@ class Events(commands.Cog):
     @commands.Cog.listener()
     async def on_socket_response(self, message):
         if message.get("op") == 0:
-            await self.bot.prom.inc("dispatch", type=message.get("t"))
+            t = message.get("t")
+            if not t == "PRESENCE_UPDATE":
+                await self.bot.prom.inc("dispatch", type=message.get("t"))
 
 
 def setup(bot):
