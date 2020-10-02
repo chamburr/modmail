@@ -37,17 +37,17 @@ class Prometheus:
             counter = counter.labels(**kwargs)
         return counter
 
-    async def inc(self, name, value=1, **kwargs):
-        counter = self.get_counter(name, **kwargs)
-        await self.bot.loop.run_in_executor(None, functools.partial(lambda x, y: x.inc(y), counter, value))
+    async def inc(self, _name, _value=1, **kwargs):
+        counter = self.get_counter(_name, **kwargs)
+        await self.bot.loop.run_in_executor(None, functools.partial(lambda x, y: x.inc(y), counter, _value))
 
-    async def set(self, name, value=0, **kwargs):
-        counter = self.get_counter(name, **kwargs)
-        await self.bot.loop.run_in_executor(None, functools.partial(lambda x, y: x.set(y), counter, value))
+    async def set(self, _name, _value=0, **kwargs):
+        counter = self.get_counter(_name, **kwargs)
+        await self.bot.loop.run_in_executor(None, functools.partial(lambda x, y: x.set(y), counter, _value))
 
-    async def obs(self, name, value=0, **kwargs):
-        counter = self.get_counter(name, **kwargs)
-        await self.bot.loop.run_in_executor(None, functools.partial(lambda x, y: x.observe(y), counter, value))
+    async def obs(self, _name, _value=0, **kwargs):
+        counter = self.get_counter(_name, **kwargs)
+        await self.bot.loop.run_in_executor(None, functools.partial(lambda x, y: x.observe(y), counter, _value))
 
     async def update_stats(self):
         while True:
