@@ -13,6 +13,7 @@ class Prometheus:
         self.latency = prom.Gauge("modmail_latency", "The average latency for shards on this cluster")
         self.events = prom.Counter("modmail_discord_events", "The total number of processed events.", ["type"])
         self.dispatch = prom.Counter("modmail_dispatch_events", "The total number of dispatched events.", ["type"])
+        self.http = prom.Counter("modmail_http_requests", "The http requests made.", ["method", "route", "status"])
 
         self.guilds_join = prom.Counter("modmail_guilds_join", "The number of guilds ModMail is added to.")
         self.guilds_leave = prom.Counter("modmail_guilds_leave", "The number of guilds ModMail is removed from.")

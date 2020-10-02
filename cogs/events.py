@@ -2,12 +2,13 @@ import asyncio
 import datetime
 import json
 import logging
-import time
+import re
 
+import aiohttp
 import discord
 
 from discord.ext import commands
-from prometheus_async import aio
+from discord.gateway import DiscordClientWebSocketResponse
 
 log = logging.getLogger(__name__)
 
@@ -88,10 +89,32 @@ class Events(commands.Cog):
             self.bot.all_category = categories
             await asyncio.sleep(5)
 
+    async def on_http_request_start(self, session, trace_config_ctx, params):
+        trace_config_ctx.start = asyncio.get_event_loop().time()
+
+    async def on_http_request_end(self, session, trace_config_ctx, params):
+        elapsed = asyncio.get_event_loop().time() - trace_config_ctx.start
+        if elapsed > 0.5:
+            log.info(f"{params.method} {params.url} took {elapsed} seconds")
+        route = str(params.url)
+        route = re.sub(r"https:\/\/[a-z\.]+\/api\/v[0-9]+", "", route)
+        route = re.sub(r"\/[%A-Z0-9]+", "/_", route)
+        route = re.sub(r"\?.+", "", route)
+        status = str(params.response.status)
+        self.bot.prom.inc("http", method=params.method, route=route, status=status)
+
     @commands.Cog.listener()
     async def on_ready(self):
         log.info(f"{self.bot.user.name}#{self.bot.user.discriminator} is online!")
         log.info("--------")
+        trace_config = aiohttp.TraceConfig()
+        trace_config.on_request_start.append(self.on_http_request_start)
+        trace_config.on_request_end.append(self.on_http_request_end)
+        self.bot.http._HTTPClient__session = aiohttp.ClientSession(
+            connector=self.bot.http.connector,
+            ws_response_class=DiscordClientWebSocketResponse,
+            trace_configs=[trace_config],
+        )
         embed = discord.Embed(
             title=f"[Cluster {self.bot.cluster}] Bot Ready",
             colour=0x00FF00,
