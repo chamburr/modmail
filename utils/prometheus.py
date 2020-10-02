@@ -30,18 +30,20 @@ class Prometheus:
         self.bot.loop.create_task(self.update_stats())
         self.bot.loop.create_task(self.update_latency())
 
-    def get_counter(self, _name, **kwargs):
+    async def get_counter(self, _name, **kwargs):
         counter = getattr(self, _name)
         if kwargs:
-            counter = counter.labels(**kwargs)
+            counter = await self.bot.loop.run_in_executor(
+                None, functools.partial(lambda x, y: x.labels(**y), counter, kwargs)
+            )
         return counter
 
     async def inc(self, _name, _value=1, **kwargs):
-        counter = self.get_counter(_name, **kwargs)
+        counter = await self.get_counter(_name, **kwargs)
         await self.bot.loop.run_in_executor(None, functools.partial(lambda x, y: x.inc(y), counter, _value))
 
     async def set(self, _name, _value=0, **kwargs):
-        counter = self.get_counter(_name, **kwargs)
+        counter = await self.get_counter(_name, **kwargs)
         await self.bot.loop.run_in_executor(None, functools.partial(lambda x, y: x.set(y), counter, _value))
 
     async def update_stats(self):
