@@ -250,8 +250,9 @@ class Events(commands.Cog):
     async def on_socket_response(self, message):
         if message.get("op") == 0:
             t = message.get("t")
-            if not t == "PRESENCE_UPDATE":
-                await self.bot.prom.inc("dispatch", type=message.get("t"))
+            if t == "PRESENCE_UPDATE":
+                return
+            await self.bot.prom.inc("dispatch", type=t)
 
 
 def setup(bot):
