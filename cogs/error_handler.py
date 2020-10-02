@@ -27,7 +27,7 @@ class ErrorHandler(commands.Cog):
             await ctx.send(
                 embed=discord.Embed(
                     title="Command Unavailable",
-                    description="This command cannot be used in Direct Message.",
+                    description="This command cannot be used in direct message.",
                     colour=self.bot.error_colour,
                 )
             )
@@ -35,7 +35,7 @@ class ErrorHandler(commands.Cog):
             await ctx.send(
                 embed=discord.Embed(
                     title="Command Unavailable",
-                    description="This command can only be used in Direct Message.",
+                    description="This command can only be used in direct message.",
                     colour=self.bot.error_colour,
                 )
             )
@@ -70,8 +70,8 @@ class ErrorHandler(commands.Cog):
             await ctx.send(
                 embed=discord.Embed(
                     title="Bot Missing Permissions",
-                    description="Bot is missing permissions to perform that action. The following permissions are"
-                    f" needed: {', '.join([self.bot.tools.perm_format(p) for p in error.missing_perms])}",
+                    description="Bot is missing permissions to perform that action. "
+                    f"Permissions needed: {', '.join([self.bot.tools.perm_format(p) for p in error.missing_perms])}",
                     colour=self.bot.error_colour,
                 )
             )

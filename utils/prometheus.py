@@ -1,45 +1,66 @@
 import asyncio
+import functools
 
 import prometheus_client as prom
 
 from prometheus_async import aio
 
-latency_counter = prom.Gauge("modmail_latency", "The average latency for shards on this cluster")
-events_counter = prom.Counter("modmail_discord_events", "The total number of processed events.", ["type"])
-dispatch_counter = prom.Counter("modmail_dispatch_events", "The total number of dispatched events.", ["type"])
 
-guilds_join_counter = prom.Counter("modmail_guilds_join", "The number of guilds ModMail is added to.")
-guilds_leave_counter = prom.Counter("modmail_guilds_leave", "The number of guilds ModMail is removed from.")
+class Prometheus:
+    def __init__(self, bot):
+        self.bot = bot
 
-shards_counter = prom.Gauge("modmail_shards", "The total number of shards on this cluster.")
-guilds_counter = prom.Gauge("modmail_guilds", "The total number of guilds on this cluster.")
-users_counter = prom.Gauge("modmail_users", "The total number of users on this cluster.")
+        self.latency = prom.Gauge("modmail_latency", "The average latency for shards on this cluster")
+        self.events = prom.Counter("modmail_discord_events", "The total number of processed events.", ["type"])
+        self.dispatch = prom.Counter("modmail_dispatch_events", "The total number of dispatched events.", ["type"])
 
-commands_counter = prom.Counter("modmail_commands", "The total number of commands used on the bot.", ["name"])
-tickets_counter = prom.Counter("modmail_tickets", "The total number of tickets created by the bot.")
-tickets_message_counter = prom.Counter("modmail_tickets_message", "The total number of messages sent through tickets.")
+        self.guilds_join = prom.Counter("modmail_guilds_join", "The number of guilds ModMail is added to.")
+        self.guilds_leave = prom.Counter("modmail_guilds_leave", "The number of guilds ModMail is removed from.")
 
+        self.shards = prom.Gauge("modmail_shards", "The total number of shards on this cluster.")
+        self.guilds = prom.Gauge("modmail_guilds", "The total number of guilds on this cluster.")
+        self.users = prom.Gauge("modmail_users", "The total number of users on this cluster.")
 
-async def start(bot):
-    port = 6000 + bot.cluster
-    await aio.web.start_http_server(addr="127.0.0.1", port=port)
-    bot.loop.create_task(update_stats(bot))
-    bot.loop.create_task(update_latency(bot))
+        self.commands = prom.Counter("modmail_commands", "The total number of commands used on the bot.", ["name"])
+        self.commands_time = prom.Histogram("modmail_commands_time", "The time taken for command execution.", ["name"])
+        self.tickets = prom.Counter("modmail_tickets", "The total number of tickets created by the bot.")
+        self.tickets_message = prom.Counter("modmail_tickets_message", "The total number of messages sent in tickets.")
 
+    async def start(self):
+        await aio.web.start_http_server(addr="127.0.0.1", port=6000 + self.bot.cluster)
+        self.bot.loop.create_task(self.update_stats())
+        self.bot.loop.create_task(self.update_latency())
 
-async def update_stats(bot):
-    while True:
-        await bot.wait_until_ready()
-        shards_counter.set(len(bot.shards))
-        guilds_counter.set(len(bot.guilds))
-        users_counter.set(len(bot.users))
-        await asyncio.sleep(30)
+    def get_counter(self, name, **kwargs):
+        counter = getattr(self, name)
+        if kwargs:
+            counter = counter.labels(**kwargs)
+        return counter
 
+    async def inc(self, name, value=1, **kwargs):
+        counter = self.get_counter(name, **kwargs)
+        await self.bot.loop.run_in_executor(None, functools.partial(lambda x, y: x.inc(y), counter, value))
 
-async def update_latency(bot):
-    while True:
-        if not bot.is_ready():
-            await bot.wait_until_ready()
-            await asyncio.sleep(60)
-        latency_counter.set(bot.latency)
-        await asyncio.sleep(10)
+    async def set(self, name, value=0, **kwargs):
+        counter = self.get_counter(name, **kwargs)
+        await self.bot.loop.run_in_executor(None, functools.partial(lambda x, y: x.set(y), counter, value))
+
+    async def obs(self, name, value=0, **kwargs):
+        counter = self.get_counter(name, **kwargs)
+        await self.bot.loop.run_in_executor(None, functools.partial(lambda x, y: x.observe(y), counter, value))
+
+    async def update_stats(self):
+        while True:
+            await self.bot.wait_until_ready()
+            await self.set("shards", len(self.bot.shards))
+            await self.set("guilds", len(self.bot.guilds))
+            await self.set("users", len(self.bot.users))
+            await asyncio.sleep(30)
+
+    async def update_latency(self):
+        while True:
+            if not self.bot.is_ready():
+                await self.bot.wait_until_ready()
+                await asyncio.sleep(60)
+            await self.set("latency", self.bot.latency)
+            await asyncio.sleep(10)

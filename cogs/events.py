@@ -2,10 +2,12 @@ import asyncio
 import datetime
 import json
 import logging
+import time
 
 import discord
 
 from discord.ext import commands
+from prometheus_async import aio
 
 log = logging.getLogger(__name__)
 
@@ -112,7 +114,7 @@ class Events(commands.Cog):
 
     @commands.Cog.listener()
     async def on_shard_connect(self, shard):
-        self.bot.prom.events_counter.labels(type="CONNECT").inc()
+        await self.bot.prom.inc("events", type="CONNECT")
         try:
             embed = discord.Embed(
                 title=f"[Cluster {self.bot.cluster}] Shard {shard} Connected",
@@ -125,7 +127,7 @@ class Events(commands.Cog):
 
     @commands.Cog.listener()
     async def on_shard_disconnect(self, shard):
-        self.bot.prom.events_counter.labels(type="DISCONNECT").inc()
+        await self.bot.prom.inc("events", type="DISCONNECT")
         try:
             embed = discord.Embed(
                 title=f"[Cluster {self.bot.cluster}] Shard {shard} Disconnected",
@@ -138,7 +140,7 @@ class Events(commands.Cog):
 
     @commands.Cog.listener()
     async def on_shard_resumed(self, shard):
-        self.bot.prom.events_counter.labels(type="RESUME").inc()
+        await self.bot.prom.inc("events", type="RESUME")
         try:
             embed = discord.Embed(
                 title=f"[Cluster {self.bot.cluster}] Shard {shard} Resumed",
@@ -151,7 +153,7 @@ class Events(commands.Cog):
 
     @commands.Cog.listener()
     async def on_guild_join(self, guild):
-        self.bot.prom.guilds_join_counter.inc()
+        await self.bot.prom.inc("guilds_join")
         embed = discord.Embed(
             title="Server Join",
             description=f"{guild.name} ({guild.id})",
@@ -166,7 +168,7 @@ class Events(commands.Cog):
 
     @commands.Cog.listener()
     async def on_guild_remove(self, guild):
-        self.bot.prom.guilds_leave_counter.inc()
+        await self.bot.prom.inc("guilds_leave")
         async with self.bot.pool.acquire() as conn:
             await conn.execute("DELETE FROM data WHERE guild=$1", guild.id)
         embed = discord.Embed(
@@ -186,7 +188,7 @@ class Events(commands.Cog):
         ctx = await self.bot.get_context(message)
         if not ctx.command:
             return
-        self.bot.prom.commands_counter.labels(name=ctx.command.name).inc()
+        await self.bot.prom.inc("commands", name=ctx.command.name)
         if message.guild:
             if message.guild.id in self.bot.banned_guilds:
                 await message.guild.leave()
@@ -217,12 +219,14 @@ class Events(commands.Cog):
             await self.bot.http.send_message(self.bot.config.admin_channel, None, embed=embed.to_dict())
         if ctx.prefix == f"<@{self.bot.user.id}> " or ctx.prefix == f"<@!{self.bot.user.id}> ":
             ctx.prefix = self.bot.tools.get_guild_prefix(self.bot, message.guild)
+        start_time = time.time()
         await self.bot.invoke(ctx)
+        await self.bot.prom.obs("commands_time", round(time.time() - start_time, 2), name=ctx.command.name)
 
     @commands.Cog.listener()
     async def on_socket_response(self, message):
         if message.get("op") == 0:
-            self.bot.prom.dispatch_counter.labels(type=message.get("t")).inc()
+            await self.bot.prom.inc("dispatch", type=message.get("t"))
 
 
 def setup(bot):

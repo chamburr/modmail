@@ -68,8 +68,7 @@ class Miscellaneous(commands.Cog):
         embed.add_field(name="Name", value=guild.name)
         embed.add_field(name="ID", value=guild.id)
         embed.add_field(
-            name="Owner",
-            value=f"{guild.owner.name}#{guild.owner.discriminator}" if guild.owner else "Unknown"
+            name="Owner", value=f"{guild.owner.name}#{guild.owner.discriminator}" if guild.owner else "Unknown"
         )
         embed.add_field(name="Server Created", value=guild.created_at.replace(microsecond=0))
         embed.add_field(
