@@ -261,6 +261,15 @@ class Communication(commands.Cog):
         }
         await self.bot.redis.execute("PUBLISH", self.ipc_channel, json.dumps(payload))
 
+    async def reload_extension(self, cog, command_id):
+        self.bot.unload_extension("cogs." + cog)
+        self.bot.load_extension("cogs." + cog)
+        payload = {
+            "output": "Success",
+            "command_id": command_id,
+        }
+        await self.bot.redis.execute("PUBLISH", self.ipc_channel, json.dumps(payload))
+
     async def reload_import(self, lib, command_id):
         importlib_reload(getattr(self.bot, lib))
         payload = {
