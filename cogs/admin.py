@@ -107,7 +107,7 @@ class Admin(commands.Cog):
         else:
             await ctx.send(
                 embed=discord.Embed(
-                    description=f"Here is the invite link: https://discord.gg/{invite[0]['code']}",
+                    description=f"Here is the invite link: https://discord.gg/{invite['code']}",
                     colour=self.bot.primary_colour,
                 )
             )
