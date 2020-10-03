@@ -53,5 +53,5 @@ class GlobalGuild(commands.Converter):
     async def convert(self, ctx, argument):
         guild = await ctx.bot.cogs["Communication"].handler("get_guild", 1, {"guild_id": int(argument)})
         if guild:
-            return guild[0]
+            return guild
         raise commands.BadArgument("Guild not found")

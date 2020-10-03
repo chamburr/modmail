@@ -27,7 +27,6 @@ class DirectMessageEvents(commands.Cog, name="Direct Message"):
                 embed=discord.Embed(description="The server was not found.", colour=self.bot.error_colour)
             )
             return
-        guild = guild[0]
         member = await self.bot.cogs["Communication"].handler(
             "get_guild_member",
             1,
@@ -55,7 +54,6 @@ class DirectMessageEvents(commands.Cog, name="Direct Message"):
                 )
             )
             return
-        category = category[0]
         if message.author.id in data[9]:
             await message.channel.send(
                 embed=discord.Embed(
@@ -97,7 +95,6 @@ class DirectMessageEvents(commands.Cog, name="Direct Message"):
                     {"guild_id": guild["id"], "channel_id": data[4]},
                 )
                 if log_channel:
-                    log_channel = log_channel[0]
                     try:
                         embed = discord.Embed(
                             title="New Ticket",
@@ -146,7 +143,7 @@ class DirectMessageEvents(commands.Cog, name="Direct Message"):
                 )
                 roles = []
                 for role in data[8]:
-                    if role == guild["default_role"]["id"]:
+                    if role == guild["id"]:
                         roles.append("@everyone")
                     elif role == -1:
                         roles.append("@here")
@@ -328,10 +325,8 @@ class DirectMessageEvents(commands.Cog, name="Direct Message"):
         confirmation = await self.bot.tools.get_user_settings(self.bot, message.author.id)
         confirmation = True if confirmation is None or confirmation[1] is True else False
         if guild and confirmation is False:
-            guild = guild[0]
             await self.send_mail(message, guild["id"], message.content)
         elif guild and confirmation is True:
-            guild = guild[0]
             embed = discord.Embed(
                 title="Confirmation",
                 description=f"You're sending this message to **{guild['name']}** (ID: {guild['id']}). React with ✅ "

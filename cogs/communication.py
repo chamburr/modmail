@@ -66,34 +66,29 @@ class Communication(commands.Cog):
             if payload.get("output") and payload["command_id"] in self._messages:
                 self._messages[payload["command_id"]].append(payload["output"])
 
-    def to_dict(self, cls, ignore=None, attrs=None):
-        if ignore is None:
-            ignore = []
+    def serialise_value(self, value):
+        if isinstance(value, (bool, str, float, int)) or value is None:
+            return value
+        elif isinstance(value, datetime.datetime):
+            return value.timestamp()
+        elif isinstance(value, discord.enums.Enum):
+            return value.__str__
+        elif isinstance(value, (tuple, list)):
+            return [self.serialise_value(x) for x in value]
+        else:
+            return str(value)
+
+    def to_dict(self, cls, attrs=None, default=True):
         if attrs is None:
             attrs = []
+        if default is True:
+            attrs.append("name")
+            attrs.append("id")
         result = {}
-        attrs.extend(cls.__slots__)
         for attr in attrs:
-            if attr in ignore or attr.startswith("_"):
-                continue
-            result[attr] = getattr(cls, attr)
-            if isinstance(result[attr], datetime.datetime):
-                result[attr] = result[attr].timestamp()
-            elif isinstance(result[attr], discord.enums.Enum):
-                result[attr] = result[attr].__str__
-            elif hasattr(result[attr], "__slots__"):
-                if not [slot for slot in getattr(result[attr], "__slots__") if not slot.startswith("_")]:
-                    result[attr] = str(result[attr])
-                else:
-                    result[attr] = self.to_dict(result[attr], ignore)
-            elif isinstance(result[attr], list) or isinstance(result[attr], tuple):
-                new_list = []
-                for element in result[attr]:
-                    if hasattr(element, "__slots__"):
-                        new_list.append(self.to_dict(element, ignore))
-                    else:
-                        new_list.append(element)
-                result[attr] = new_list
+            value = getattr(cls, attr)
+            if value:
+                result[attr] = self.serialise_value(value)
         return result
 
     async def guild_count(self, command_id):
@@ -112,10 +107,11 @@ class Communication(commands.Cog):
         await self.bot.redis.execute("PUBLISH", self.ipc_channel, json.dumps(payload))
 
     async def get_user(self, user_id, command_id):
-        if not self.bot.get_user(user_id):
+        user = self.bot.get_user(user_id)
+        if not user:
             return
         payload = {
-            "output": self.to_dict(self.bot.get_user(user_id), ["user"]),
+            "output": self.to_dict(user),
             "command_id": command_id,
         }
         await self.bot.redis.execute("PUBLISH", self.ipc_channel, json.dumps(payload))
@@ -143,12 +139,15 @@ class Communication(commands.Cog):
     async def get_user_guilds(self, user_id, command_id):
         if not self.bot.get_user(user_id):
             return
+        guilds = []
+        for guild in self.bot.guilds:
+            if not guild.get_member(user_id):
+                continue
+            guild_dict = self.to_dict(guild, ["icon_url", "member_count"])
+            guild_dict["text_channels"] = [self.to_dict(x, ["category_id", "topic"]) for x in guild.text_channels]
+            guilds.append(guild_dict)
         payload = {
-            "output": [
-                self.to_dict(guild, ["guild"], ["text_channels", "icon_url", "default_role", "member_count"])
-                for guild in self.bot.guilds
-                if guild.get_member(user_id) is not None
-            ],
+            "output": guilds,
             "command_id": command_id,
         }
         await self.bot.redis.execute("PUBLISH", self.ipc_channel, json.dumps(payload))
@@ -171,8 +170,10 @@ class Communication(commands.Cog):
         guild = self.bot.get_guild(guild_id)
         if not guild:
             return
+        guild_dict = self.to_dict(guild, ["icon_url"])
+        guild_dict["text_channels"] = [self.to_dict(x, ["category_id", "topic"]) for x in guild.text_channels]
         payload = {
-            "output": self.to_dict(guild, ["guild"], ["text_channels", "icon_url", "default_role"]),
+            "output": guild_dict,
             "command_id": command_id,
         }
         await self.bot.redis.execute("PUBLISH", self.ipc_channel, json.dumps(payload))
@@ -184,7 +185,7 @@ class Communication(commands.Cog):
         member = guild.get_member(member_id)
         if not member:
             return
-        payload = {"output": self.to_dict(member, ["guild", "member"]), "command_id": command_id}
+        payload = {"output": self.to_dict(member), "command_id": command_id}
         await self.bot.redis.execute("PUBLISH", self.ipc_channel, json.dumps(payload))
 
     async def get_guild_channel(self, guild_id, channel_id, command_id):
@@ -194,13 +195,13 @@ class Communication(commands.Cog):
         channel = guild.get_channel(channel_id)
         if not channel:
             return
-        payload = {"output": self.to_dict(channel, ["channel", "guild"]), "command_id": command_id}
+        payload = {"output": self.to_dict(channel), "command_id": command_id}
         await self.bot.redis.execute("PUBLISH", self.ipc_channel, json.dumps(payload))
 
     async def get_top_guilds(self, count, command_id):
         guilds = sorted(self.bot.guilds, key=lambda x: x.member_count, reverse=True)[:count]
         payload = {
-            "output": [self.to_dict(guild, ["guild"], ["member_count"]) for guild in guilds],
+            "output": [self.to_dict(guild, ["member_count"]) for guild in guilds],
             "command_id": command_id,
         }
         await self.bot.redis.execute("PUBLISH", self.ipc_channel, json.dumps(payload))
@@ -208,7 +209,7 @@ class Communication(commands.Cog):
     async def find_guild(self, name, command_id):
         payload = {
             "output": [
-                self.to_dict(guild, ["guild"], ["member_count"])
+                self.to_dict(guild, ["member_count"])
                 for guild in self.bot.guilds
                 if guild.name.lower().count(name.lower()) > 0
             ],
@@ -227,7 +228,7 @@ class Communication(commands.Cog):
                 invite = await guild.text_channels[0].create_invite(max_age=120)
             except discord.Forbidden:
                 return
-        payload = {"output": self.to_dict(invite, ["invite", "guild"]), "command_id": command_id}
+        payload = {"output": self.to_dict(invite, ["code"], False), "command_id": command_id}
         await self.bot.redis.execute("PUBLISH", self.ipc_channel, json.dumps(payload))
 
     async def leave_guild(self, guild_id, command_id):
@@ -284,6 +285,12 @@ class Communication(commands.Cog):
                     await asyncio.sleep(0.1)
         except asyncio.TimeoutError:
             pass
+        if expected_count == 1:
+            msg = self._messages.pop(command_id, None)
+            if msg is None or len(msg) == 0:
+                return None
+            else:
+                return msg[0]
         return self._messages.pop(command_id, None)
 
 
