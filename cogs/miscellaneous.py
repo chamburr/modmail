@@ -48,7 +48,9 @@ class Miscellaneous(commands.Cog):
         embed = discord.Embed(title="User Information", colour=self.bot.primary_colour)
         embed.add_field(name="Name", value=str(member))
         embed.add_field(name="ID", value=member.id)
-        embed.add_field(name="Status", value=str(member.status).title() + " (mobile)" if member.is_on_mobile() else "")
+        embed.add_field(
+            name="Status", value=str(member.status).title() + (" (mobile)" if member.is_on_mobile() else "")
+        )
         embed.add_field(name="Avatar", value=f"[Link]({member.avatar_url_as(static_format='png')})")
         embed.add_field(name="Joined Server", value=member.joined_at.replace(microsecond=0))
         embed.add_field(name="Account Created", value=member.created_at.replace(microsecond=0))
