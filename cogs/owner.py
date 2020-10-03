@@ -55,17 +55,13 @@ class Owner(commands.Cog):
     @checks.is_owner()
     @commands.command(description="Reload a module.", usage="reload <cog>", hidden=True)
     async def reload(self, ctx, *, cog: str):
-        data = await self.bot.cogs["Communication"].handler("unload_extension", self.bot.cluster_count, {"cog": cog})
+        data = await self.bot.cogs["Communication"].handler("reload_extension", self.bot.cluster_count, {"cog": cog})
         if not data or data[0] != "Success":
             await ctx.send(embed=discord.Embed(description=f"Error: {data[0]}", colour=self.bot.error_colour))
         else:
-            data = await self.bot.cogs["Communication"].handler("load_extension", self.bot.cluster_count, {"cog": cog})
-            if not data or data[0] != "Success":
-                await ctx.send(embed=discord.Embed(description=f"Error: {data[0]}", colour=self.bot.error_colour))
-            else:
-                await ctx.send(
-                    embed=discord.Embed(description="Successfully reloaded the module.", colour=self.bot.primary_colour)
-                )
+            await ctx.send(
+                embed=discord.Embed(description="Successfully reloaded the module.", colour=self.bot.primary_colour)
+            )
 
     @checks.is_owner()
     @commands.command(description="Reload a library.", usage="reloadlib", hidden=True)
