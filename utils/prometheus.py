@@ -59,6 +59,7 @@ class Prometheus:
         await self.msvr.start(addr="127.0.0.1", port=6000 + self.bot.cluster)
         self.bot.loop.create_task(self.update_bot_stats())
         self.bot.loop.create_task(self.update_process_stats())
+        self.bot.loop.create_task(self.update_platform_stats())
 
     async def update_bot_stats(self):
         while True:
