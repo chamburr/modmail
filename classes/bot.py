@@ -61,7 +61,7 @@ class ModMail(commands.AutoShardedBot):
             res = await conn.fetchrow("SELECT * FROM data WHERE guild=$1", guild)
             if not res:
                 await conn.execute(
-                    "INSERT INTO data VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)",
+                    "INSERT INTO data VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11) RETURNING *",
                     guild,
                     None,
                     None,
