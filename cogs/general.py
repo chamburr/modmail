@@ -177,6 +177,18 @@ class General(commands.Cog):
         )
         all_pages.append(page)
         page = discord.Embed(
+            title="Car Crushers Official Discord",
+            description="Official Discord server for the Roblox game, Car Crushers 2. Where you can have both on and "
+            "off topic discussions about the game or anything in general with our community of active and friendly "
+            "members!",
+            colour=self.bot.primary_colour,
+        )
+        page.add_field(name="Link", value="https://discord.gg/CUkKzGr")
+        page.set_thumbnail(
+            url="https://cdn.discordapp.com/icons/242263977986359297/a_b45b86e21caa5edb1406a761a9efe3d5.gif"
+        )
+        all_pages.append(page)
+        page = discord.Embed(
             title="Eden of Gaming",
             description="Eden of Gaming is a global gaming community that aims to share knowledge and build "
             "relationships between members and fellow global gaming communities.",
