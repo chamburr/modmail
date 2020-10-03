@@ -28,7 +28,7 @@ class Prometheus:
         self.vmem = Gauge("process_virtual_memory_bytes", "Virtual memory size in bytes.")
         self.rss = Gauge("process_resident_memory_bytes", "Resident memory size in bytes.")
         self.start_time = Gauge("process_start_time_seconds", "Start time of the process since unix epoch in seconds.")
-        self.cpu = Counter("process_cpu_seconds_total", "Total user and system CPU time spent in seconds.")
+        self.cpu = Counter("process_cpu_seconds", "Total user and system CPU time spent in seconds.")
         self.fds = Gauge("process_open_fds", "Number of open file descriptors.")
 
         self.info = Gauge("python_info", "Python platform information.")
@@ -57,6 +57,7 @@ class Prometheus:
             if issubclass(type(value), Collector):
                 self.msvr.register(getattr(self, name))
         await self.msvr.start(addr="127.0.0.1", port=6000 + self.bot.cluster)
+        self.msvr._runner._server._kwargs["access_log"] = None
         self.bot.loop.create_task(self.update_bot_stats())
         self.bot.loop.create_task(self.update_process_stats())
         self.bot.loop.create_task(self.update_platform_stats())
