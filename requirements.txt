@@ -1,3 +1,4 @@
+aioprometheus==20.0.1
 aioredis==1.3.1
 async-timeout==3.0.1
 asyncpg==0.21.0
@@ -6,8 +7,6 @@ dateparser==0.7.6
 discord.py==1.5.0
 flake8==3.8.3
 isort==5.5.4
-prometheus-async==19.2.0
-prometheus_client==0.8.0
 psutil==5.7.2
 sentry-sdk==0.18.0
 subprocess32==3.5.4
