@@ -19,7 +19,7 @@ payload = {
 
 async def get_shard_count():
     async with aiohttp.ClientSession() as session, session.get(
-        "https://discordapp.com/api/gateway/bot",
+        "https://discord.com/api/v8/gateway/bot",
         headers=payload,
     ) as req:
         response = await req.json()

@@ -65,13 +65,8 @@ class Events(commands.Cog):
             async with self.bot.pool.acquire() as conn:
                 res = await conn.fetch("SELECT identifier, category FROM ban")
                 res2 = await conn.fetch("SELECT identifier, expiry FROM premium WHERE expiry IS NOT NULL")
-            self.banned_users = []
-            self.banned_guilds = []
-            for row in res:
-                if row[1] == 0:
-                    self.banned_users.append(row[0])
-                elif row[1] == 1:
-                    self.banned_guilds.append(row[0])
+            self.banned_users = [row[0] for row in res if row[1] == 0]
+            self.banned_guilds = [row[0] for row in res if row[1] == 1]
             if self.bot.cluster == 1:
                 timestamp = int(datetime.datetime.utcnow().timestamp() * 1000)
                 for row in res2:
@@ -83,10 +78,7 @@ class Events(commands.Cog):
         while True:
             async with self.bot.pool.acquire() as conn:
                 data = await conn.fetch("SELECT category FROM data")
-            categories = []
-            for row in data:
-                categories.append(row[0])
-            self.bot.all_category = categories
+            self.bot.all_category = [row[0] for row in data]
             await asyncio.sleep(5)
 
     async def on_http_request_start(self, session, trace_config_ctx, params):
@@ -127,54 +119,43 @@ class Events(commands.Cog):
 
     @commands.Cog.listener()
     async def on_shard_ready(self, shard):
-        try:
-            embed = discord.Embed(
-                title=f"[Cluster {self.bot.cluster}] Shard {shard} Ready",
-                colour=0x00FF00,
-                timestamp=datetime.datetime.utcnow(),
-            )
-            await self.bot.http.send_message(self.bot.config.event_channel, None, embed=embed.to_dict())
-        except Exception:
-            pass
+        self.bot.prom.events.inc({"type": "READY"})
+        embed = discord.Embed(
+            title=f"[Cluster {self.bot.cluster}] Shard {shard} Ready",
+            colour=0x00FF00,
+            timestamp=datetime.datetime.utcnow(),
+        )
+        await self.bot.http.send_message(self.bot.config.event_channel, None, embed=embed.to_dict())
 
     @commands.Cog.listener()
     async def on_shard_connect(self, shard):
         self.bot.prom.events.inc({"type": "CONNECT"})
-        try:
-            embed = discord.Embed(
-                title=f"[Cluster {self.bot.cluster}] Shard {shard} Connected",
-                colour=0x00FF00,
-                timestamp=datetime.datetime.utcnow(),
-            )
-            await self.bot.http.send_message(self.bot.config.event_channel, None, embed=embed.to_dict())
-        except Exception:
-            pass
+        embed = discord.Embed(
+            title=f"[Cluster {self.bot.cluster}] Shard {shard} Connected",
+            colour=0x00FF00,
+            timestamp=datetime.datetime.utcnow(),
+        )
+        await self.bot.http.send_message(self.bot.config.event_channel, None, embed=embed.to_dict())
 
     @commands.Cog.listener()
     async def on_shard_disconnect(self, shard):
         self.bot.prom.events.inc({"type": "DISCONNECT"})
-        try:
-            embed = discord.Embed(
-                title=f"[Cluster {self.bot.cluster}] Shard {shard} Disconnected",
-                colour=0xFF0000,
-                timestamp=datetime.datetime.utcnow(),
-            )
-            await self.bot.http.send_message(self.bot.config.event_channel, None, embed=embed.to_dict())
-        except Exception:
-            pass
+        embed = discord.Embed(
+            title=f"[Cluster {self.bot.cluster}] Shard {shard} Disconnected",
+            colour=0xFF0000,
+            timestamp=datetime.datetime.utcnow(),
+        )
+        await self.bot.http.send_message(self.bot.config.event_channel, None, embed=embed.to_dict())
 
     @commands.Cog.listener()
     async def on_shard_resumed(self, shard):
         self.bot.prom.events.inc({"type": "RESUME"})
-        try:
-            embed = discord.Embed(
-                title=f"[Cluster {self.bot.cluster}] Shard {shard} Resumed",
-                colour=self.bot.config.primary_colour,
-                timestamp=datetime.datetime.utcnow(),
-            )
-            await self.bot.http.send_message(self.bot.config.event_channel, None, embed=embed.to_dict())
-        except Exception:
-            pass
+        embed = discord.Embed(
+            title=f"[Cluster {self.bot.cluster}] Shard {shard} Resumed",
+            colour=self.bot.config.primary_colour,
+            timestamp=datetime.datetime.utcnow(),
+        )
+        await self.bot.http.send_message(self.bot.config.event_channel, None, embed=embed.to_dict())
 
     @commands.Cog.listener()
     async def on_guild_join(self, guild):
@@ -226,7 +207,7 @@ class Events(commands.Cog):
                 return
         if message.author.id in self.bot.banned_users:
             await ctx.send(
-                embed=discord.Embed(description="You are banned from this bot.", colour=self.bot.error_colour)
+                embed=discord.Embed(description="You are banned from the bot.", colour=self.bot.error_colour)
             )
             return
         if ctx.command.cog_name in ["Owner", "Admin"] and (
@@ -238,9 +219,7 @@ class Events(commands.Cog):
                 colour=self.bot.primary_colour,
                 timestamp=datetime.datetime.utcnow(),
             )
-            embed.set_author(
-                name=f"{ctx.author.name}#{ctx.author.discriminator} ({ctx.author.id})", icon_url=ctx.author.avatar_url
-            )
+            embed.set_author(name=f"{ctx.author} ({ctx.author.id})", icon_url=ctx.author.avatar_url)
             await self.bot.http.send_message(self.bot.config.admin_channel, None, embed=embed.to_dict())
         if ctx.prefix == f"<@{self.bot.user.id}> " or ctx.prefix == f"<@!{self.bot.user.id}> ":
             ctx.prefix = self.bot.tools.get_guild_prefix(self.bot, message.guild)

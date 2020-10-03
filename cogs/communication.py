@@ -22,8 +22,11 @@ class Communication(commands.Cog):
         self.bot = bot
         self.ipc_channel = self.bot.ipc_channel
         self.router = None
-        bot.loop.create_task(self.register_sub())
         self._messages = dict()
+        self.bot.loop.create_task(self.register_sub())
+
+    def cog_unload(self):
+        self.bot.loop.create_task(self.unregister_sub())
 
     async def register_sub(self):
         if not bytes(self.ipc_channel, "utf-8") in self.bot.redis.pubsub_channels:

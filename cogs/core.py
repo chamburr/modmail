@@ -8,7 +8,6 @@ import discord
 
 from discord.ext import commands
 
-from cogs.modmail_channel import ModMailEvents
 from utils import checks
 from utils.paginator import Paginator
 
@@ -28,8 +27,7 @@ class Core(commands.Cog):
         usage="reply <message>",
     )
     async def reply(self, ctx, *, message):
-        modmail = ModMailEvents(self.bot)
-        await modmail.send_mail_mod(ctx.message, ctx.prefix, False, message)
+        await self.bot.cogs["ModMailEvents"].send_mail_mod(ctx.message, ctx.prefix, False, message)
 
     @checks.is_modmail_channel()
     @checks.in_database()
@@ -37,8 +35,7 @@ class Core(commands.Cog):
     @commands.guild_only()
     @commands.command(description="Reply to the ticket anonymously.", usage="areply <message>")
     async def areply(self, ctx, *, message):
-        modmail = ModMailEvents(self.bot)
-        await modmail.send_mail_mod(ctx.message, ctx.prefix, True, message)
+        await self.bot.cogs["ModMailEvents"].send_mail_mod(ctx.message, ctx.prefix, True, message)
 
     async def close_channel(self, ctx, reason, anon: bool = False):
         try:
