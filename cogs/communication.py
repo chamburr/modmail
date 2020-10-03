@@ -87,8 +87,7 @@ class Communication(commands.Cog):
         result = {}
         for attr in attrs:
             value = getattr(cls, attr)
-            if value:
-                result[attr] = self.serialise_value(value)
+            result[attr] = self.serialise_value(value)
         return result
 
     async def guild_count(self, command_id):
