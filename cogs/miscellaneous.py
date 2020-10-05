@@ -52,7 +52,9 @@ class Miscellaneous(commands.Cog):
             name="Status", value=str(member.status).title() + (" (mobile)" if member.is_on_mobile() else "")
         )
         embed.add_field(name="Avatar", value=f"[Link]({member.avatar_url_as(static_format='png')})")
-        embed.add_field(name="Joined Server", value=member.joined_at.replace(microsecond=0))
+        embed.add_field(
+            name="Joined Server", value=member.joined_at.replace(microsecond=0) if member.joined_at else "Unknown"
+        )
         embed.add_field(name="Account Created", value=member.created_at.replace(microsecond=0))
         embed.add_field(name="Roles", value=f"{len(roles)} roles" if len(", ".join(roles)) > 1000 else ", ".join(roles))
         embed.set_thumbnail(url=member.avatar_url)
