@@ -86,8 +86,8 @@ class Events(commands.Cog):
 
     async def on_http_request_end(self, session, trace_config_ctx, params):
         elapsed = asyncio.get_event_loop().time() - trace_config_ctx.start
-        if elapsed > 0.5:
-            log.info(f"{params.method} {params.url} took {elapsed} seconds")
+        if elapsed > 1:
+            log.info(f"{params.method} {params.url} took {round(elapsed, 2)} seconds")
         route = str(params.url)
         route = re.sub(r"https:\/\/[a-z\.]+\/api\/v[0-9]+", "", route)
         route = re.sub(r"\/[%A-Z0-9]+", "/_id", route)
