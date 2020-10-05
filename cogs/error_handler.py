@@ -12,7 +12,6 @@ class ErrorHandler(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         bot.on_command_error = self._on_command_error
-        self.client = None
 
     async def _on_command_error(self, ctx, error, bypass=False):
         if (

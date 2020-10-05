@@ -51,7 +51,7 @@ class Core(commands.Cog):
                 timestamp=datetime.datetime.utcnow(),
             )
             embed.set_author(
-                name=f"{ctx.author.name}#{ctx.author.discriminator}" if anon is False else "Anonymous#0000",
+                name=str(ctx.author.name) if anon is False else "Anonymous#0000",
                 icon_url=ctx.author.avatar_url if anon is False else "https://cdn.discordapp.com/embed/avatars/0.png",
             )
             embed.set_footer(text=f"{ctx.guild.name} | {ctx.guild.id}", icon_url=ctx.guild.icon_url)
@@ -81,10 +81,7 @@ class Core(commands.Cog):
                         if member is None:
                             member = await self.bot.fetch_user(self.bot.tools.get_modmail_user(ctx.channel))
                         if member:
-                            embed.set_footer(
-                                text=f"{member.name}#{member.discriminator} | {member.id}",
-                                icon_url=member.avatar_url,
-                            )
+                            embed.set_footer(text=f"{member} | {member.id}", icon_url=member.avatar_url)
                         else:
                             embed.set_footer(
                                 text="Unknown#0000 | 000000000000000000",
