@@ -310,11 +310,11 @@ class Communication(commands.Cog):
             else:
                 new_msg.append(entry)
         if expected_count == 1:
-            if len(msg) == 0:
+            if len(new_msg) == 0:
                 return None
             else:
-                return msg[0]
-        return msg
+                return new_msg[0]
+        return new_msg
 
 
 def setup(bot):
