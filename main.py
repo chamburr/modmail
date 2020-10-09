@@ -43,7 +43,7 @@ def _get_guild_prefix(bot2, message):
 
 bot = ModMail(
     intents=discord.Intents(guilds=True, members=True, presences=True, messages=True, reactions=True),
-    member_cache_flags=discord.MemberCacheFlags(online=True) if not config.fetch_all_members else None,
+    member_cache_flags=None,
     chunk_guilds_at_startup=config.fetch_all_members,
     command_prefix=_get_guild_prefix,
     case_insensitive=True,
