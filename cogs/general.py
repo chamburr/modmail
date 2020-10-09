@@ -131,9 +131,9 @@ class General(commands.Cog):
         aliases=["statistics", "info"],
     )
     async def stats(self, ctx):
-        guilds = sum(await self.bot.cogs["Communication"].handler("guild_count", self.bot.cluster_count))
-        channels = sum(await self.bot.cogs["Communication"].handler("channel_count", self.bot.cluster_count))
-        users = sum(await self.bot.cogs["Communication"].handler("user_count", self.bot.cluster_count))
+        guilds = sum(await self.bot.comm.handler("guild_count", self.bot.cluster_count))
+        channels = sum(await self.bot.comm.handler("channel_count", self.bot.cluster_count))
+        users = sum(await self.bot.comm.handler("user_count", self.bot.cluster_count))
 
         embed = discord.Embed(title=f"{self.bot.user.name} Statistics", colour=self.bot.primary_colour)
         embed.add_field(name="Owner", value="CHamburr#2591")

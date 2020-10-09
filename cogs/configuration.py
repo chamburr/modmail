@@ -111,9 +111,6 @@ class Configuration(commands.Cog):
         logging_channel = None
         if modmail_log is True:
             logging_channel = await ctx.guild.create_text_channel(name="modmail-log", category=category)
-        if data[2] and data[2] in self.bot.all_category:
-            self.bot.all_category.remove(data[2])
-        self.bot.all_category.append(category.id)
         async with self.bot.pool.acquire() as conn:
             await conn.execute(
                 "UPDATE data SET category=$1, logging=$2 WHERE guild=$3",
@@ -187,7 +184,7 @@ class Configuration(commands.Cog):
         if ctx.guild.get_channel(data[2]):
             await ctx.send(
                 embed=discord.Embed(
-                    description=f"A ModMail category already exists. Please delete that category and try again.",
+                    description="A ModMail category already exists. Please delete that category and try again.",
                     colour=self.bot.error_colour,
                 )
             )
@@ -198,9 +195,6 @@ class Configuration(commands.Cog):
                 continue
             overwrites[role] = self.role_permission
         category = await ctx.guild.create_category_channel(name=name, overwrites=overwrites)
-        if data[2] and data[2] in self.bot.all_category:
-            self.bot.all_category.remove(data[2])
-        self.bot.all_category.append(category.id)
         async with self.bot.pool.acquire() as conn:
             await conn.execute("UPDATE data SET category=$1 WHERE guild=$2", category.id, ctx.guild.id)
         await ctx.send(

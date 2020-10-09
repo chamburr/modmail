@@ -21,16 +21,16 @@ class DirectMessageEvents(commands.Cog, name="Direct Message"):
 
     async def send_mail(self, message, guild, to_send):
         self.bot.prom.tickets_message.inc({})
-        guild = await self.bot.cogs["Communication"].handler("get_guild", 1, {"guild_id": guild})
+        guild = await self.bot.comm.handler("get_guild", 1, {"guild_id": guild})
         if not guild:
             await message.channel.send(
                 embed=discord.Embed(description="The server was not found.", colour=self.bot.error_colour)
             )
             return
-        member = await self.bot.cogs["Communication"].handler(
+        member = await self.bot.comm.handler(
             "get_guild_member",
             1,
-            {"guild_id": guild["id"], "member_id": message.author.id},
+            {"guild_id": guild.id, "member_id": message.author.id},
         )
         if not member:
             await message.channel.send(
@@ -40,11 +40,11 @@ class DirectMessageEvents(commands.Cog, name="Direct Message"):
                 )
             )
             return
-        data = await self.bot.get_data(guild["id"])
-        category = await self.bot.cogs["Communication"].handler(
+        data = await self.bot.get_data(guild.id)
+        category = await self.bot.comm.handler(
             "get_guild_channel",
             1,
-            {"guild_id": guild["id"], "channel_id": data[2]},
+            {"guild_id": guild.id, "channel_id": data[2]},
         )
         if not category:
             await message.channel.send(
@@ -64,7 +64,7 @@ class DirectMessageEvents(commands.Cog, name="Direct Message"):
             return
         channels = [
             channel
-            for channel in guild["text_channels"]
+            for channel in guild.text_channels
             if checks.is_modmail_channel2(self.bot, channel, message.author.id, True)
         ]
         channel = None
@@ -82,17 +82,17 @@ class DirectMessageEvents(commands.Cog, name="Direct Message"):
                 else:
                     name = message.author.id
                 channel = await self.bot.http.create_channel(
-                    guild["id"],
+                    guild.id,
                     0,
                     name=name,
-                    parent_id=category["id"],
+                    parent_id=category.id,
                     topic=f"ModMail Channel {message.author.id} (Please do not change this)",
                 )
                 new_ticket = True
-                log_channel = await self.bot.cogs["Communication"].handler(
+                log_channel = await self.bot.comm.handler(
                     "get_guild_channel",
                     1,
-                    {"guild_id": guild["id"], "channel_id": data[4]},
+                    {"guild_id": guild.id, "channel_id": data[4]},
                 )
                 if log_channel:
                     try:
@@ -105,7 +105,7 @@ class DirectMessageEvents(commands.Cog, name="Direct Message"):
                             text=f"{message.author.name}#{message.author.discriminator} | {message.author.id}",
                             icon_url=message.author.avatar_url,
                         )
-                        await self.bot.http.send_message(log_channel["id"], None, embed=embed.to_dict())
+                        await self.bot.http.send_message(log_channel.id, None, embed=embed.to_dict())
                     except discord.Forbidden:
                         pass
             except discord.Forbidden:
@@ -143,13 +143,13 @@ class DirectMessageEvents(commands.Cog, name="Direct Message"):
                 )
                 roles = []
                 for role in data[8]:
-                    if role == guild["id"]:
+                    if role == guild.id:
                         roles.append("@everyone")
                     elif role == -1:
                         roles.append("@here")
                     else:
                         roles.append(f"<@&{role}>")
-                await self.bot.http.send_message(channel["id"], " ".join(roles), embed=embed.to_dict())
+                await self.bot.http.send_message(channel.id, " ".join(roles), embed=embed.to_dict())
                 if data[5]:
                     embed = discord.Embed(
                         title="Custom Greeting Message",
@@ -157,7 +157,7 @@ class DirectMessageEvents(commands.Cog, name="Direct Message"):
                         colour=self.bot.mod_colour,
                         timestamp=datetime.datetime.utcnow(),
                     )
-                    embed.set_footer(text=f"{guild['name']} | {guild['id']}", icon_url=guild["icon_url"])
+                    embed.set_footer(text=f"{guild.name} | {guild.id}", icon_url=guild.icon_url)
                     await message.channel.send(embed=embed)
             embed = discord.Embed(
                 title="Message Sent",
@@ -165,7 +165,7 @@ class DirectMessageEvents(commands.Cog, name="Direct Message"):
                 colour=self.bot.user_colour,
                 timestamp=datetime.datetime.utcnow(),
             )
-            embed.set_footer(text=f"{guild['name']} | {guild['id']}", icon_url=guild["icon_url"])
+            embed.set_footer(text=f"{guild.name} | {guild.id}", icon_url=guild.icon_url)
             files = []
             for file in message.attachments:
                 saved_file = io.BytesIO()
@@ -182,9 +182,9 @@ class DirectMessageEvents(commands.Cog, name="Direct Message"):
             for file in files:
                 file.reset()
             if files:
-                await self.bot.http.send_files(channel["id"], embed=embed.to_dict(), files=files)
+                await self.bot.http.send_files(channel.id, embed=embed.to_dict(), files=files)
             else:
-                await self.bot.http.send_message(channel["id"], None, embed=embed.to_dict())
+                await self.bot.http.send_message(channel.id, None, embed=embed.to_dict())
         except discord.Forbidden:
             try:
                 await message2.delete()
@@ -198,7 +198,7 @@ class DirectMessageEvents(commands.Cog, name="Direct Message"):
             )
 
     async def select_guild(self, message, prefix, msg=None):
-        data = await self.bot.cogs["Communication"].handler(
+        data = await self.bot.comm.handler(
             "get_user_guilds", self.bot.cluster_count, {"user_id": message.author.id}
         )
         guilds = []
@@ -208,16 +208,16 @@ class DirectMessageEvents(commands.Cog, name="Direct Message"):
         for guild in guilds:
             channels = [
                 channel
-                for channel in guild["text_channels"]
+                for channel in guild.text_channels
                 if checks.is_modmail_channel2(self.bot, channel, message.author.id, True)
             ]
             channel = None
             if len(channels) > 0:
                 channel = channels[0]
             if not channel:
-                guild_list[str(guild["id"])] = (guild["name"], False)
+                guild_list[str(guild.id)] = (guild.name, False)
             else:
-                guild_list[str(guild["id"])] = (guild["name"], True)
+                guild_list[str(guild.id)] = (guild.name, True)
         embeds = []
         current_embed = None
         for guild, value in guild_list.items():
@@ -319,17 +319,17 @@ class DirectMessageEvents(commands.Cog, name="Direct Message"):
                 and msg.embeds[0].title in ["Message Received", "Message Sent"]
             ):
                 guild = msg.embeds[0].footer.text.split()[-1]
-                guild = await self.bot.cogs["Communication"].handler("get_guild", 1, {"guild_id": int(guild)})
+                guild = await self.bot.comm.handler("get_guild", 1, {"guild_id": int(guild)})
                 break
         msg = None
         confirmation = await self.bot.tools.get_user_settings(self.bot, message.author.id)
         confirmation = True if confirmation is None or confirmation[1] is True else False
         if guild and confirmation is False:
-            await self.send_mail(message, guild["id"], message.content)
+            await self.send_mail(message, guild.id, message.content)
         elif guild and confirmation is True:
             embed = discord.Embed(
                 title="Confirmation",
-                description=f"You're sending this message to **{guild['name']}** (ID: {guild['id']}). React with ✅ "
+                description=f"You're sending this message to **{guild.name}** (ID: {guild.id}). React with ✅ "
                 "to confirm.\nWant to send to another server instead? React with 🔁.\nTo cancel this request, "
                 "react with ❌.",
                 colour=self.bot.primary_colour,
@@ -360,7 +360,7 @@ class DirectMessageEvents(commands.Cog, name="Direct Message"):
                 return
             if str(reaction) == "✅":
                 await msg.delete()
-                await self.send_mail(message, guild["id"], message.content)
+                await self.send_mail(message, guild.id, message.content)
             elif str(reaction) == "🔁":
                 await self.remove_reactions(msg)
                 await self.select_guild(message, prefix, msg)

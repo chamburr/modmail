@@ -33,7 +33,7 @@ class Owner(commands.Cog):
     @checks.is_owner()
     @commands.command(description="Load a module.", usage="load <cog>", hidden=True)
     async def load(self, ctx, *, cog: str):
-        data = await self.bot.cogs["Communication"].handler("load_extension", self.bot.cluster_count, {"cog": cog})
+        data = await self.bot.comm.handler("load_extension", self.bot.cluster_count, {"cog": cog})
         if not data or data[0] != "Success":
             await ctx.send(embed=discord.Embed(description=f"Error: {data[0]}", colour=self.bot.error_colour))
         else:
@@ -44,7 +44,7 @@ class Owner(commands.Cog):
     @checks.is_owner()
     @commands.command(description="Unload a module.", usage="unload <cog>", hidden=True)
     async def unload(self, ctx, *, cog: str):
-        data = await self.bot.cogs["Communication"].handler("unload_extension", self.bot.cluster_count, {"cog": cog})
+        data = await self.bot.comm.handler("unload_extension", self.bot.cluster_count, {"cog": cog})
         if not data or data[0] != "Success":
             await ctx.send(embed=discord.Embed(description=f"Error: {data[0]}", colour=self.bot.error_colour))
         else:
@@ -55,7 +55,7 @@ class Owner(commands.Cog):
     @checks.is_owner()
     @commands.command(description="Reload a module.", usage="reload <cog>", hidden=True)
     async def reload(self, ctx, *, cog: str):
-        data = await self.bot.cogs["Communication"].handler("reload_extension", self.bot.cluster_count, {"cog": cog})
+        data = await self.bot.comm.handler("reload_extension", self.bot.cluster_count, {"cog": cog})
         if not data or data[0] != "Success":
             await ctx.send(embed=discord.Embed(description=f"Error: {data[0]}", colour=self.bot.error_colour))
         else:
@@ -66,7 +66,7 @@ class Owner(commands.Cog):
     @checks.is_owner()
     @commands.command(description="Reload a library.", usage="reloadlib", hidden=True)
     async def reloadlib(self, ctx, *, lib: str):
-        data = await self.bot.cogs["Communication"].handler("reload_import", self.bot.cluster_count, {"lib": lib})
+        data = await self.bot.comm.handler("reload_import", self.bot.cluster_count, {"lib": lib})
         if not data or data[0] != "Success":
             await ctx.send(embed=discord.Embed(description=f"Error: {data[0]}", colour=self.bot.error_colour))
         else:
@@ -136,7 +136,7 @@ class Owner(commands.Cog):
     @commands.command(description="Evaluate code on all clusters", usage="evall <code>", hidden=True)
     async def evall(self, ctx, *, code: str):
         data = "\n".join(
-            await self.bot.cogs["Communication"].handler("evaluate", self.bot.cluster_count, {"code": code})
+            await self.bot.comm.handler("evaluate", self.bot.cluster_count, {"code": code})
         )
         if len(data) > 2000:
             data = data[:1997] + "..."
@@ -260,16 +260,16 @@ class Owner(commands.Cog):
     @checks.is_owner()
     @commands.command(description="Make the bot leave a server.", usage="leaveserver <server ID>", hidden=True)
     async def leaveserver(self, ctx, *, guild: converters.GlobalGuild):
-        await self.bot.cogs["Communication"].handler("leave_guild", 1, {"guild_id": guild["id"]})
+        await self.bot.comm.handler("leave_guild", 1, {"guild_id": guild.id})
         await ctx.send(embed=discord.Embed(description="The bot has left that server.", colour=self.bot.primary_colour))
 
     @checks.is_owner()
     @commands.command(description="Ban a server from the bot", usage="banserver <server ID>", hidden=True)
     async def banserver(self, ctx, *, guild: converters.GlobalGuild):
-        await self.bot.cogs["Communication"].handler("leave_guild", 1, {"guild_id": guild["id"]})
+        await self.bot.comm.handler("leave_guild", 1, {"guild_id": guild.id})
         async with self.bot.pool.acquire() as conn:
-            await conn.execute("INSERT INTO ban (identifier, category) VALUES ($1, $2)", guild["id"], 1)
-        self.bot.banned_guilds.append(guild["id"])
+            await conn.execute("INSERT INTO ban (identifier, category) VALUES ($1, $2)", guild.id, 1)
+        self.bot.banned_guilds.append(guild.id)
         await ctx.send(
             embed=discord.Embed(
                 description="Successfully banned that server from the bot.",

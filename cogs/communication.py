@@ -17,10 +17,16 @@ from utils.eval import evaluate as _evaluate
 log = logging.getLogger(__name__)
 
 
+class DictToObj():
+    def __init__(self, dictionary):
+        for k, v in dictionary.items():
+            setattr(self, k, v)
+
+
 class Communication(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
-        self.ipc_channel = self.bot.ipc_channel
+        self.ipc_channel = self.bot.config.ipc_channel
         self.router = None
         self._messages = dict()
         self.bot.loop.create_task(self.register_sub())
@@ -143,7 +149,7 @@ class Communication(commands.Cog):
             if not guild.get_member(user_id):
                 continue
             guild_dict = self.to_dict(guild, ["icon_url", "member_count"])
-            guild_dict["text_channels"] = [self.to_dict(x, ["category_id", "topic"]) for x in guild.text_channels]
+            guild_dict["text_channels"] = [self.to_dict(x, ["topic"]) for x in guild.text_channels]
             guilds.append(guild_dict)
         payload = {
             "output": guilds,
@@ -170,7 +176,7 @@ class Communication(commands.Cog):
         if not guild:
             return
         guild_dict = self.to_dict(guild, ["icon_url"])
-        guild_dict["text_channels"] = [self.to_dict(x, ["category_id", "topic"]) for x in guild.text_channels]
+        guild_dict["text_channels"] = [self.to_dict(x, ["topic"]) for x in guild.text_channels]
         payload = {
             "output": guild_dict,
             "command_id": command_id,
@@ -293,13 +299,16 @@ class Communication(commands.Cog):
                     await asyncio.sleep(0.1)
         except asyncio.TimeoutError:
             pass
+        msg = self._messages.pop(command_id, None)
+        if msg is None:
+            return None
+        msg = [DictToObj(x) if isinstance(x, dict) else x for x in msg]
         if expected_count == 1:
-            msg = self._messages.pop(command_id, None)
-            if msg is None or len(msg) == 0:
+            if len(msg) == 0:
                 return None
             else:
                 return msg[0]
-        return self._messages.pop(command_id, None)
+        return msg
 
 
 def setup(bot):

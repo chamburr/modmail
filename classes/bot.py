@@ -33,10 +33,6 @@ class ModMail(commands.AutoShardedBot):
         return config
 
     @property
-    def ipc_channel(self):
-        return self.config.ipc_channel
-
-    @property
     def tools(self):
         return tools
 
@@ -55,6 +51,10 @@ class ModMail(commands.AutoShardedBot):
     @property
     def error_colour(self):
         return self.config.error_colour
+
+    @property
+    def comm(self):
+        return self.cogs["Communication"]
 
     async def get_data(self, guild):
         async with self.pool.acquire() as conn:
@@ -77,7 +77,6 @@ class ModMail(commands.AutoShardedBot):
         return res
 
     all_prefix = {}
-    all_category = []
     banned_guilds = []
     banned_users = []
 
@@ -101,18 +100,6 @@ class ModMail(commands.AutoShardedBot):
         await self.connect_redis()
         await self.connect_postgres()
         await self.connect_prometheus()
-        async with self.pool.acquire() as conn:
-            data = await conn.fetch("SELECT guild, prefix, category FROM data")
-            bans = await conn.fetch("SELECT identifier, category FROM ban")
-        for row in data:
-            self.all_prefix[row[0]] = row[1]
-            if row[2]:
-                self.all_category.append(row[2])
-        for row in bans:
-            if row[1] == 0:
-                self.banned_users.append(row[0])
-            elif row[1] == 1:
-                self.banned_guilds.append(row[0])
         for extension in self.config.initial_extensions:
             try:
                 self.load_extension(extension)

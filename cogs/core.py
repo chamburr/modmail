@@ -167,15 +167,12 @@ class Core(commands.Cog):
     @commands.guild_only()
     @commands.command(description="Close all of the channel.", usage="closeall [reason]")
     async def closeall(self, ctx, *, reason: str = None):
-        category = (await self.bot.get_data(ctx.guild.id))[2]
-        category = ctx.guild.get_channel(category)
-        if category:
-            for channel in category.text_channels:
-                if checks.is_modmail_channel2(self.bot, channel):
-                    msg = copy.copy(ctx.message)
-                    msg.channel = channel
-                    new_ctx = await self.bot.get_context(msg, cls=type(ctx))
-                    await self.close_channel(new_ctx, reason)
+        for channel in ctx.guild.text_channels:
+            if checks.is_modmail_channel2(self.bot, channel):
+                msg = copy.copy(ctx.message)
+                msg.channel = channel
+                new_ctx = await self.bot.get_context(msg, cls=type(ctx))
+                await self.close_channel(new_ctx, reason)
         try:
             await ctx.send(
                 embed=discord.Embed(
@@ -192,15 +189,12 @@ class Core(commands.Cog):
     @commands.guild_only()
     @commands.command(description="Close all of the channel anonymously.", usage="acloseall [reason]")
     async def acloseall(self, ctx, *, reason: str = None):
-        category = (await self.bot.get_data(ctx.guild.id))[2]
-        category = ctx.guild.get_channel(category)
-        if category:
-            for channel in category.text_channels:
-                if checks.is_modmail_channel2(self.bot, channel):
-                    msg = copy.copy(ctx.message)
-                    msg.channel = channel
-                    new_ctx = await self.bot.get_context(msg, cls=type(ctx))
-                    await self.close_channel(new_ctx, reason, True)
+        for channel in ctx.guild.text_channels:
+            if checks.is_modmail_channel2(self.bot, channel):
+                msg = copy.copy(ctx.message)
+                msg.channel = channel
+                new_ctx = await self.bot.get_context(msg, cls=type(ctx))
+                await self.close_channel(new_ctx, reason, True)
         try:
             await ctx.send(
                 embed=discord.Embed(
