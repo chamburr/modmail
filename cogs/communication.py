@@ -310,9 +310,9 @@ class Communication(commands.Cog):
         new_msg = []
         for entry in msg:
             if isinstance(entry, (list, tuple)):
-                new_msg.append([DictToObj(x) if isinstance(x, dict) else x for x in entry])
+                new_msg.append([DictToObj(**x) if isinstance(x, dict) else x for x in entry])
             elif isinstance(entry, dict):
-                new_msg.append(DictToObj(entry))
+                new_msg.append(DictToObj(**entry))
             else:
                 new_msg.append(entry)
         if expected_count == 1:
