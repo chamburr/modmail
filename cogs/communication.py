@@ -17,10 +17,9 @@ from utils.eval import evaluate as _evaluate
 log = logging.getLogger(__name__)
 
 
-class DictToObj():
-    def __init__(self, dictionary):
-        for k, v in dictionary.items():
-            setattr(self, k, v)
+class DictToObj:
+    def __init__(self, entries):
+        self.__dict__.update(entries)
 
 
 class Communication(commands.Cog):
