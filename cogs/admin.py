@@ -175,13 +175,14 @@ class Admin(commands.Cog):
     @commands.command(description="Get clusters' statuses.", usage="status", hidden=True)
     async def status(self, ctx):
         data = await self.bot.comm.handler("get_status", self.bot.cluster_count)
+        data = [list(vars(x).items()) for x in data]
+        data = sorted([(int(x[0]), x[1]) for y in data for x in y], key=lambda x: x[0])
         clusters = {}
-        for element in data:
-            for key, value in element.items():
-                clusters[key] = value
+        for x in data:
+            clusters[x[0]] = x[1]
         await ctx.send(
             embed=discord.Embed(
-                description=f"```json\n{json.dumps(clusters, indent=4)}```",
+                description=f"```json\n{json.dumps(clusters, indent=4, default=lambda o: o.__dict__)}```",
                 colour=self.bot.primary_colour,
             )
         )
