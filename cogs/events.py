@@ -17,13 +17,12 @@ class Events(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         if self.bot.config.testing is False and self.bot.cluster == 1:
-            self.stats_updates = bot.loop.create_task(self.stats_updater())
-        self.bot_stats_updates = bot.loop.create_task(self.bot_stats_updater())
-        self.bot_categories_updates = bot.loop.create_task(self.bot_categories_updater())
+            self.bot_stats_updater = bot.loop.create_task(self.bot_stats_updater())
+        self.bot_misc_updater = bot.loop.create_task(self.bot_misc_updater())
 
-    async def stats_updater(self):
+    async def bot_stats_updater(self):
         while True:
-            guilds = await self.bot.cogs["Communication"].handler("guild_count", self.bot.cluster_count)
+            guilds = await self.bot.comm.handler("guild_count", self.bot.cluster_count)
             if len(guilds) < self.bot.cluster_count:
                 await asyncio.sleep(300)
                 continue
@@ -60,26 +59,21 @@ class Events(commands.Cog):
             )
             await asyncio.sleep(900)
 
-    async def bot_stats_updater(self):
+    async def bot_misc_updater(self):
         while True:
             async with self.bot.pool.acquire() as conn:
-                res = await conn.fetch("SELECT identifier, category FROM ban")
-                res2 = await conn.fetch("SELECT identifier, expiry FROM premium WHERE expiry IS NOT NULL")
-            self.banned_users = [row[0] for row in res if row[1] == 0]
-            self.banned_guilds = [row[0] for row in res if row[1] == 1]
+                data = await conn.fetch("SELECT guild, prefix FROM data")
+                bans = await conn.fetch("SELECT identifier, category FROM ban")
+                premium = await conn.fetch("SELECT identifier, expiry FROM premium WHERE expiry IS NOT NULL")
+            for row in data:
+                self.all_prefix[row[0]] = row[1]
+            self.banned_users = [row[0] for row in bans if row[1] == 0]
+            self.banned_guilds = [row[0] for row in bans if row[1] == 1]
             if self.bot.cluster == 1:
-                timestamp = int(datetime.datetime.utcnow().timestamp() * 1000)
-                for row in res2:
-                    if row[1] < timestamp:
+                for row in premium:
+                    if row[1] < int(datetime.datetime.utcnow().timestamp() * 1000):
                         await self.bot.tools.wipe_premium(self.bot, row[0])
             await asyncio.sleep(60)
-
-    async def bot_categories_updater(self):
-        while True:
-            async with self.bot.pool.acquire() as conn:
-                data = await conn.fetch("SELECT category FROM data")
-            self.bot.all_category = [row[0] for row in data]
-            await asyncio.sleep(5)
 
     async def on_http_request_start(self, session, trace_config_ctx, params):
         trace_config_ctx.start = asyncio.get_event_loop().time()
@@ -166,7 +160,7 @@ class Events(commands.Cog):
             colour=0x00FF00,
             timestamp=datetime.datetime.utcnow(),
         )
-        guilds = sum(await self.bot.cogs["Communication"].handler("guild_count", self.bot.cluster_count))
+        guilds = sum(await self.bot.comm.handler("guild_count", self.bot.cluster_count))
         embed.set_footer(text=f"{guilds} servers")
         await self.bot.http.send_message(self.bot.config.join_channel, None, embed=embed.to_dict())
         if guild.id in self.bot.banned_guilds:
@@ -183,7 +177,7 @@ class Events(commands.Cog):
             colour=0xFF0000,
             timestamp=datetime.datetime.utcnow(),
         )
-        guilds = sum(await self.bot.cogs["Communication"].handler("guild_count", self.bot.cluster_count))
+        guilds = sum(await self.bot.comm.handler("guild_count", self.bot.cluster_count))
         embed.set_footer(text=f"{guilds} servers")
         await self.bot.http.send_message(self.bot.config.join_channel, None, embed=embed.to_dict())
 

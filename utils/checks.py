@@ -93,26 +93,13 @@ def is_patron():
     return commands.check(predicate)
 
 
-def is_modmail_channel2(bot, channel, user_id=None, json_dict=False):
-    if json_dict is True:
-        return (
-            "category_id" in channel
-            and channel["category_id"] in bot.all_category
-            and "topic" in channel
-            and channel["topic"]
-            and channel["topic"].startswith("ModMail Channel ")
-            and channel["topic"].replace("ModMail Channel ", "").split(" ")[0].isdigit()
-            and (channel["topic"].replace("ModMail Channel ", "").split(" ")[0] == str(user_id) if user_id else True)
-        )
-    else:
-        return (
-            channel.category_id
-            and channel.category_id in bot.all_category
-            and channel.topic
-            and channel.topic.startswith("ModMail Channel ")
-            and channel.topic.replace("ModMail Channel ", "").split(" ")[0].isdigit()
-            and (channel.topic.replace("ModMail Channel ", "").split(" ")[0] == str(user_id) if user_id else True)
-        )
+def is_modmail_channel2(bot, channel, user_id=None):
+    return (
+        channel.topic
+        and channel.topic.startswith("ModMail Channel ")
+        and channel.topic.replace("ModMail Channel ", "").split(" ")[0].isdigit()
+        and (channel.topic.replace("ModMail Channel ", "").split(" ")[0] == str(user_id) if user_id else True)
+    )
 
 
 def is_modmail_channel():

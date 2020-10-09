@@ -17,9 +17,7 @@ class ModMailEvents(commands.Cog):
 
     @commands.Cog.listener()
     async def on_message(self, message):
-        if message.author.bot or not message.guild or not message.channel.category_id:
-            return
-        if not checks.is_modmail_channel2(self.bot, message.channel):
+        if message.author.bot or not message.guild or not checks.is_modmail_channel2(self.bot, message.channel):
             return
         if (
             message.channel.permissions_for(message.guild.me).send_messages is False
