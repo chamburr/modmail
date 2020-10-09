@@ -87,7 +87,7 @@ class DirectMessageEvents(commands.Cog, name="Direct Message"):
                     name=name,
                     parent_id=category.id,
                     topic=f"ModMail Channel {message.author.id} (Please do not change this)",
-                )).id
+                ))["id"]
                 new_ticket = True
                 log_channel = await self.bot.comm.handler(
                     "get_guild_channel",
