@@ -3,13 +3,10 @@ import logging
 log = logging.getLogger(__name__)
 
 
-def get_guild_prefix(bot, guild, json_dict=False):
+def get_guild_prefix(bot, guild):
     if not guild:
         return bot.config.default_prefix
-    if json_dict:
-        guild_id = guild["id"]
-    else:
-        guild_id = guild.id
+    guild_id = guild.id
     try:
         prefix = bot.all_prefix[guild_id]
         return bot.config.default_prefix if prefix is None else prefix

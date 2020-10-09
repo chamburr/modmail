@@ -128,7 +128,7 @@ class DirectMessageEvents(commands.Cog, name="Direct Message"):
                 return
         try:
             if new_ticket is True:
-                prefix = self.bot.tools.get_guild_prefix(self.bot, guild, True)
+                prefix = self.bot.tools.get_guild_prefix(self.bot, guild)
                 embed = discord.Embed(
                     title="New Ticket",
                     description="Type a message in this channel to reply. Messages starting with the server prefix "
