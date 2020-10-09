@@ -67,11 +67,11 @@ class DirectMessageEvents(commands.Cog, name="Direct Message"):
             for channel in guild.text_channels
             if checks.is_modmail_channel2(self.bot, channel, message.author.id)
         ]
-        channel = None
+        channel_id = None
         new_ticket = False
         if len(channels) > 0:
-            channel = channels[0]
-        if not channel:
+            channel_id = channels[0].id
+        if not channel_id:
             self.bot.prom.tickets.inc({})
             try:
                 name = "".join(
@@ -81,13 +81,13 @@ class DirectMessageEvents(commands.Cog, name="Direct Message"):
                     name = name + f"-{message.author.discriminator}"
                 else:
                     name = message.author.id
-                channel = await self.bot.http.create_channel(
+                channel_id = (await self.bot.http.create_channel(
                     guild.id,
                     0,
                     name=name,
                     parent_id=category.id,
                     topic=f"ModMail Channel {message.author.id} (Please do not change this)",
-                )
+                )).id
                 new_ticket = True
                 log_channel = await self.bot.comm.handler(
                     "get_guild_channel",
@@ -149,7 +149,7 @@ class DirectMessageEvents(commands.Cog, name="Direct Message"):
                         roles.append("@here")
                     else:
                         roles.append(f"<@&{role}>")
-                await self.bot.http.send_message(channel.id, " ".join(roles), embed=embed.to_dict())
+                await self.bot.http.send_message(channel_id, " ".join(roles), embed=embed.to_dict())
                 if data[5]:
                     embed = discord.Embed(
                         title="Custom Greeting Message",
@@ -182,9 +182,9 @@ class DirectMessageEvents(commands.Cog, name="Direct Message"):
             for file in files:
                 file.reset()
             if files:
-                await self.bot.http.send_files(channel.id, embed=embed.to_dict(), files=files)
+                await self.bot.http.send_files(channel_id, embed=embed.to_dict(), files=files)
             else:
-                await self.bot.http.send_message(channel.id, None, embed=embed.to_dict())
+                await self.bot.http.send_message(channel_id, None, embed=embed.to_dict())
         except discord.Forbidden:
             try:
                 await message2.delete()
