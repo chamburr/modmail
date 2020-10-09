@@ -65,7 +65,7 @@ class DirectMessageEvents(commands.Cog, name="Direct Message"):
         channels = [
             channel
             for channel in guild.text_channels
-            if checks.is_modmail_channel2(self.bot, channel, message.author.id, True)
+            if checks.is_modmail_channel2(self.bot, channel, message.author.id)
         ]
         channel = None
         new_ticket = False
@@ -209,7 +209,7 @@ class DirectMessageEvents(commands.Cog, name="Direct Message"):
             channels = [
                 channel
                 for channel in guild.text_channels
-                if checks.is_modmail_channel2(self.bot, channel, message.author.id, True)
+                if checks.is_modmail_channel2(self.bot, channel, message.author.id)
             ]
             channel = None
             if len(channels) > 0:

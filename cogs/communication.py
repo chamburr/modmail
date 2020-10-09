@@ -302,7 +302,14 @@ class Communication(commands.Cog):
         msg = self._messages.pop(command_id, None)
         if msg is None:
             return None
-        msg = [DictToObj(x) if isinstance(x, dict) else x for x in msg]
+        new_msg = []
+        for entry in msg:
+            if isinstance(entry, (list, tuple)):
+                new_msg.append([DictToObj(x) if isinstance(x, dict) else x for x in entry])
+            elif isinstance(entry, dict):
+                new_msg.append(DictToObj(entry))
+            else:
+                new_msg.append(entry)
         if expected_count == 1:
             if len(msg) == 0:
                 return None
