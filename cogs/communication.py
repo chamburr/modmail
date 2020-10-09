@@ -18,8 +18,14 @@ log = logging.getLogger(__name__)
 
 
 class DictToObj:
-    def __init__(self, entries):
-        self.__dict__.update(entries)
+    def __init__(self, **entries):
+        for key, value in entries.items():
+            if isinstance(value, dict):
+                self.__dict__[key] = DictToObj(**value)
+            elif isinstance(value, (tuple, list)):
+                self.__dict__[key] = [DictToObj(**x) for x in value]
+            else:
+                self.__dict__[key] = value
 
 
 class Communication(commands.Cog):
