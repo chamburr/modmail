@@ -81,7 +81,7 @@ class Premium(commands.Cog):
             if not guild:
                 to_send += f"\nUnknown server `{server}`"
             else:
-                to_send += f"\n{guild['name']} `{server}`"
+                to_send += f"\n{guild.name} `{server}`"
         await ctx.send(embed=discord.Embed(description=to_send, colour=self.bot.primary_colour))
 
     @checks.is_patron()
