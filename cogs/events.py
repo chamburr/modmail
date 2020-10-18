@@ -66,9 +66,9 @@ class Events(commands.Cog):
                 bans = await conn.fetch("SELECT identifier, category FROM ban")
                 premium = await conn.fetch("SELECT identifier, expiry FROM premium WHERE expiry IS NOT NULL")
             for row in data:
-                self.all_prefix[row[0]] = row[1]
-            self.banned_users = [row[0] for row in bans if row[1] == 0]
-            self.banned_guilds = [row[0] for row in bans if row[1] == 1]
+                self.bot.all_prefix[row[0]] = row[1]
+            self.bot.banned_users = [row[0] for row in bans if row[1] == 0]
+            self.bot.banned_guilds = [row[0] for row in bans if row[1] == 1]
             if self.bot.cluster == 1:
                 for row in premium:
                     if row[1] < int(datetime.datetime.utcnow().timestamp() * 1000):
