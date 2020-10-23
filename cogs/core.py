@@ -165,7 +165,7 @@ class Core(commands.Cog):
     @checks.is_mod()
     @commands.bot_has_permissions(manage_channels=True)
     @commands.guild_only()
-    @commands.command(description="Close all of the channel.", usage="closeall [reason]")
+    @commands.command(description="Close all of the channels.", usage="closeall [reason]")
     async def closeall(self, ctx, *, reason: str = None):
         for channel in ctx.guild.text_channels:
             if checks.is_modmail_channel2(self.bot, channel):
@@ -187,7 +187,7 @@ class Core(commands.Cog):
     @checks.is_mod()
     @commands.bot_has_permissions(manage_channels=True)
     @commands.guild_only()
-    @commands.command(description="Close all of the channel anonymously.", usage="acloseall [reason]")
+    @commands.command(description="Close all of the channels anonymously.", usage="acloseall [reason]")
     async def acloseall(self, ctx, *, reason: str = None):
         for channel in ctx.guild.text_channels:
             if checks.is_modmail_channel2(self.bot, channel):
@@ -209,7 +209,7 @@ class Core(commands.Cog):
     @checks.is_mod()
     @commands.guild_only()
     @commands.command(
-        description="Blacklist a user from creating tickets.",
+        description="Blacklist a user to prevent them from creating tickets.",
         usage="blacklist <member>",
         aliases=["block"],
     )
@@ -231,7 +231,7 @@ class Core(commands.Cog):
     @checks.is_mod()
     @commands.guild_only()
     @commands.command(
-        description="Whitelist a user from creating tickets.",
+        description="Whitelist a user to allow them to creating tickets.",
         usage="whitelist <member>",
         aliases=["unblock"],
     )
