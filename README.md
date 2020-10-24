@@ -73,7 +73,7 @@ Congratulations! You have set up everything and you can finally have the bot up 
 python3 launcher.py
 ```
 
-Alternatively, you may also run `main.py` directly for a single cluster.
+Note: If you are running launcher.py, you need to start at least 2 clusters. For a single cluster, please run `main.py` (some commands depending on the launcher may not work).
 
 ## Code of Conduct
 
