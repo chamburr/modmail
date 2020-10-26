@@ -7,6 +7,6 @@ dateparser==0.7.6
 discord.py==1.5.1
 flake8==3.8.4
 isort==5.6.4
-psutil==5.7.2
+psutil==5.7.3
 sentry-sdk==0.19.1
 subprocess32==3.5.4
