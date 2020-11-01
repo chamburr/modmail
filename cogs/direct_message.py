@@ -202,8 +202,7 @@ class DirectMessageEvents(commands.Cog, name="Direct Message"):
             "get_user_guilds", self.bot.cluster_count, {"user_id": message.author.id}
         )
         guilds = []
-        for chunk in data:
-            guilds.extend(chunk)
+        guilds.extend(data)
         guild_list = {}
         for guild in guilds:
             channels = [
