@@ -20,7 +20,7 @@ async def get_user_settings(bot, user):
 
 
 async def get_premium_slots(bot, user):
-    data = await bot.comm.handler("get_user_premium", 1, {"user_id": user})
+    data = await bot.comm.handler("get_user_premium", -1, {"user_id": user})
     if not data:
         async with bot.pool.acquire() as conn:
             res = await conn.fetchrow("SELECT guild FROM premium WHERE identifier=$1", user)

@@ -21,7 +21,7 @@ class DirectMessageEvents(commands.Cog, name="Direct Message"):
 
     async def send_mail(self, message, guild, to_send):
         self.bot.prom.tickets_message.inc({})
-        guild = await self.bot.comm.handler("get_guild", 1, {"guild_id": guild})
+        guild = await self.bot.comm.handler("get_guild", -1, {"guild_id": guild})
         if not guild:
             await message.channel.send(
                 embed=discord.Embed(description="The server was not found.", colour=self.bot.error_colour)
@@ -29,7 +29,7 @@ class DirectMessageEvents(commands.Cog, name="Direct Message"):
             return
         member = await self.bot.comm.handler(
             "get_guild_member",
-            1,
+            -1,
             {"guild_id": guild.id, "member_id": message.author.id},
         )
         if not member:
@@ -43,7 +43,7 @@ class DirectMessageEvents(commands.Cog, name="Direct Message"):
         data = await self.bot.get_data(guild.id)
         category = await self.bot.comm.handler(
             "get_guild_channel",
-            1,
+            -1,
             {"guild_id": guild.id, "channel_id": data[2]},
         )
         if not category:
@@ -91,7 +91,7 @@ class DirectMessageEvents(commands.Cog, name="Direct Message"):
                 new_ticket = True
                 log_channel = await self.bot.comm.handler(
                     "get_guild_channel",
-                    1,
+                    -1,
                     {"guild_id": guild.id, "channel_id": data[4]},
                 )
                 if log_channel:
@@ -319,7 +319,7 @@ class DirectMessageEvents(commands.Cog, name="Direct Message"):
                 and msg.embeds[0].title in ["Message Received", "Message Sent"]
             ):
                 guild = msg.embeds[0].footer.text.split()[-1]
-                guild = await self.bot.comm.handler("get_guild", 1, {"guild_id": int(guild)})
+                guild = await self.bot.comm.handler("get_guild", -1, {"guild_id": int(guild)})
                 break
         msg = None
         confirmation = await self.bot.tools.get_user_settings(self.bot, message.author.id)
