@@ -315,7 +315,7 @@ class Communication(commands.Cog):
                 new_msg.append(DictToObj(**entry))
             else:
                 new_msg.append(entry)
-        if expected_count == 1:
+        if expected_count == -1:
             if len(new_msg) == 0:
                 return None
             else:

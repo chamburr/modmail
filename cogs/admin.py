@@ -90,7 +90,7 @@ class Admin(commands.Cog):
         hidden=True,
     )
     async def createinvite(self, ctx, *, guild: converters.GlobalGuild):
-        invite = await self.bot.comm.handler("invite_guild", 1, {"guild_id": guild.id})
+        invite = await self.bot.comm.handler("invite_guild", -1, {"guild_id": guild.id})
         if not invite:
             await ctx.send(
                 embed=discord.Embed(
