@@ -73,8 +73,6 @@ Congratulations! You have set up everything and you can finally have the bot up 
 python3 launcher.py
 ```
 
-Note: If you are running launcher.py, you need to start at least 2 clusters. For a single cluster, please run `main.py` (some commands depending on the launcher may not work).
-
 ## Code of Conduct
 
 This project is governed by [Contributor Covenant Code of Conduct](https://github.com/chamburr/modmail/blob/master/CODE_OF_CONDUCT.md). By participating, you are expected to uphold this code.
