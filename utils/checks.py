@@ -45,6 +45,8 @@ def in_database():
 
 def is_premium():
     async def predicate(ctx):
+        if not ctx.bot.config.main_server:
+            return True
         async with ctx.bot.pool.acquire() as conn:
             res = await conn.fetch("SELECT guild FROM premium")
         all_premium = []
