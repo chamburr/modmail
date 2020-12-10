@@ -108,7 +108,8 @@ class Events(commands.Cog):
             colour=0x00FF00,
             timestamp=datetime.datetime.utcnow(),
         )
-        await self.bot.http.send_message(self.bot.config.event_channel, None, embed=embed.to_dict())
+        if self.bot.config.event_channel:
+            await self.bot.http.send_message(self.bot.config.event_channel, None, embed=embed.to_dict())
         await self.bot.change_presence(activity=discord.Game(name=self.bot.config.activity))
 
     @commands.Cog.listener()
@@ -119,7 +120,8 @@ class Events(commands.Cog):
             colour=0x00FF00,
             timestamp=datetime.datetime.utcnow(),
         )
-        await self.bot.http.send_message(self.bot.config.event_channel, None, embed=embed.to_dict())
+        if self.bot.config.event_channel:
+            await self.bot.http.send_message(self.bot.config.event_channel, None, embed=embed.to_dict())
 
     @commands.Cog.listener()
     async def on_shard_connect(self, shard):
@@ -129,7 +131,8 @@ class Events(commands.Cog):
             colour=0x00FF00,
             timestamp=datetime.datetime.utcnow(),
         )
-        await self.bot.http.send_message(self.bot.config.event_channel, None, embed=embed.to_dict())
+        if self.bot.config.event_channel:
+            await self.bot.http.send_message(self.bot.config.event_channel, None, embed=embed.to_dict())
 
     @commands.Cog.listener()
     async def on_shard_disconnect(self, shard):
@@ -139,7 +142,8 @@ class Events(commands.Cog):
             colour=0xFF0000,
             timestamp=datetime.datetime.utcnow(),
         )
-        await self.bot.http.send_message(self.bot.config.event_channel, None, embed=embed.to_dict())
+        if self.bot.config.event_channel:
+            await self.bot.http.send_message(self.bot.config.event_channel, None, embed=embed.to_dict())
 
     @commands.Cog.listener()
     async def on_shard_resumed(self, shard):
@@ -149,7 +153,8 @@ class Events(commands.Cog):
             colour=self.bot.config.primary_colour,
             timestamp=datetime.datetime.utcnow(),
         )
-        await self.bot.http.send_message(self.bot.config.event_channel, None, embed=embed.to_dict())
+        if self.bot.config.event_channel:
+            await self.bot.http.send_message(self.bot.config.event_channel, None, embed=embed.to_dict())
 
     @commands.Cog.listener()
     async def on_guild_join(self, guild):
@@ -162,7 +167,8 @@ class Events(commands.Cog):
         )
         guilds = sum(await self.bot.comm.handler("guild_count", self.bot.cluster_count))
         embed.set_footer(text=f"{guilds} servers")
-        await self.bot.http.send_message(self.bot.config.join_channel, None, embed=embed.to_dict())
+        if self.bot.config.join_channel:
+            await self.bot.http.send_message(self.bot.config.join_channel, None, embed=embed.to_dict())
         if guild.id in self.bot.banned_guilds:
             await guild.leave()
 
@@ -179,7 +185,8 @@ class Events(commands.Cog):
         )
         guilds = sum(await self.bot.comm.handler("guild_count", self.bot.cluster_count))
         embed.set_footer(text=f"{guilds} servers")
-        await self.bot.http.send_message(self.bot.config.join_channel, None, embed=embed.to_dict())
+        if self.bot.config.join_channel:
+            await self.bot.http.send_message(self.bot.config.join_channel, None, embed=embed.to_dict())
 
     @commands.Cog.listener()
     async def on_message(self, message):
@@ -214,7 +221,8 @@ class Events(commands.Cog):
                 timestamp=datetime.datetime.utcnow(),
             )
             embed.set_author(name=f"{ctx.author} ({ctx.author.id})", icon_url=ctx.author.avatar_url)
-            await self.bot.http.send_message(self.bot.config.admin_channel, None, embed=embed.to_dict())
+            if self.bot.config.admin_channel:
+                await self.bot.http.send_message(self.bot.config.admin_channel, None, embed=embed.to_dict())
         if ctx.prefix == f"<@{self.bot.user.id}> " or ctx.prefix == f"<@!{self.bot.user.id}> ":
             ctx.prefix = self.bot.tools.get_guild_prefix(self.bot, message.guild)
         await self.bot.invoke(ctx)

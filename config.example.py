@@ -82,17 +82,17 @@ initial_extensions = [
 ]
 
 # Channels to send logs
-join_channel = 000000000000000000
-event_channel = 000000000000000000
-admin_channel = 000000000000000000
+join_channel = None
+event_channel = None
+admin_channel = None
 
 # This is where patron roles are at
-main_server = 000000000000000000
+main_server = None
 
 # Patron roles for premium servers
-premium1 = 000000000000000000
-premium3 = 000000000000000000
-premium5 = 000000000000000000
+premium1 = None
+premium3 = None
+premium5 = None
 
 # The colour used in embeds
 primary_colour = 0x1E90FF
