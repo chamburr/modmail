@@ -48,7 +48,7 @@ class General(commands.Cog):
             title=f"{self.bot.user.name} Help Menu",
             description="Thank you for using ModMail! Please direct message me if you wish to contact staff. You can "
             "also invite me to your server with the link below, or join our support server if you need further help."
-            f"\n\nDon't forget to check out our partners with the `{ctx.prefix}partners` command!",
+            "\n\nWe released Wyvor - The best feature rich Discord music bot! Check it out now: https://wyvor.xyz.",
             colour=self.bot.primary_colour,
         )
         page.set_thumbnail(url=self.bot.user.avatar_url)
@@ -164,6 +164,17 @@ class General(commands.Cog):
         aliases=["partner"],
     )
     async def partners(self, ctx):
+        all_pages = []
+        page = discord.Embed(
+            title="Wyvor",
+            description="The best feature-rich Discord music bot. Take control over your music with an intuitive "
+            "dashboard, custom effects and more!",
+            colour=self.bot.primary_colour,
+        )
+        page.add_field(name="Link", value="https://wyvor.xyz")
+        page.set_thumbnail(
+            url="https://cdn.discordapp.com/avatars/628563240187723786/06a8639ec4e75387c26de267cc277df1.png"
+        )
         all_pages = []
         page = discord.Embed(
             title="Discord Templates",
