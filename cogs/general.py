@@ -175,7 +175,7 @@ class General(commands.Cog):
         page.set_thumbnail(
             url="https://cdn.discordapp.com/avatars/628563240187723786/06a8639ec4e75387c26de267cc277df1.png"
         )
-        all_pages = []
+        all_pages.append(page)
         page = discord.Embed(
             title="Discord Templates",
             description="Discord Templates is the place for you to discover a huge variety of Discord server templates "
