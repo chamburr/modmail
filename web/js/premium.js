@@ -15,11 +15,11 @@ $("#payment-modal").on("show.bs.modal", function(e) {
     }
     else if (plan == "pro") {
         $("#payment-plan").text("Pro Plan (3 Servers)");
-        $(this).find("#payment-amount").val("51.00");
+        $(this).find("#payment-amount").val("60.00");
         $(this).find("#payment-item").val("ModMail Premium (Pro)");
     } else {
         $("#payment-plan").text("Plus Plan (5 Servers)");
-        $(this).find("#payment-amount").val("76.00");
+        $(this).find("#payment-amount").val("90.00");
         $(this).find("#payment-item").val("ModMail Premium (Plus)");
     }
 });
