@@ -221,18 +221,6 @@ class General(commands.Cog):
         )
         all_pages.append(page)
         page = discord.Embed(
-            title="TGG's Gorilla Gang",
-            description="In this server owned by TGG, a popular Australian gaming YouTuber who is best known for his "
-            "GTA content, you will find tons of GTA online based content to have fun with including LFG channels, "
-            "GTA discussion channels, and more!",
-            colour=self.bot.primary_colour,
-        )
-        page.add_field(name="Link", value="https://discord.gg/gorillagang")
-        page.set_thumbnail(
-            url="https://cdn.discordapp.com/icons/722716210604671026/a_71cab18101a44243d0bfd94aec9cf05e.gif"
-        )
-        all_pages.append(page)
-        page = discord.Embed(
             title="Homework Help",
             description="Got assignments? Need help? Then come join Discord's premier hub for students, scholars, "
             "professionals, and hobbyists interested in discussions, challenges, as well as news, views, and reviews "
