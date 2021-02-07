@@ -81,13 +81,15 @@ class DirectMessageEvents(commands.Cog, name="Direct Message"):
                     name = name + f"-{message.author.discriminator}"
                 else:
                     name = message.author.id
-                channel_id = (await self.bot.http.create_channel(
-                    guild.id,
-                    0,
-                    name=name,
-                    parent_id=category.id,
-                    topic=f"ModMail Channel {message.author.id} (Please do not change this)",
-                ))["id"]
+                channel_id = (
+                    await self.bot.http.create_channel(
+                        guild.id,
+                        0,
+                        name=name,
+                        parent_id=category.id,
+                        topic=f"ModMail Channel {message.author.id} (Please do not change this)",
+                    )
+                )["id"]
                 new_ticket = True
                 log_channel = await self.bot.comm.handler(
                     "get_guild_channel",
@@ -198,9 +200,7 @@ class DirectMessageEvents(commands.Cog, name="Direct Message"):
             )
 
     async def select_guild(self, message, prefix, msg=None):
-        data = await self.bot.comm.handler(
-            "get_user_guilds", self.bot.cluster_count, {"user_id": message.author.id}
-        )
+        data = await self.bot.comm.handler("get_user_guilds", self.bot.cluster_count, {"user_id": message.author.id})
         guilds = []
         for chunk in data:
             guilds.extend(chunk)

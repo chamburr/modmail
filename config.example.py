@@ -25,38 +25,23 @@ sentry_url = ""
 # Whether the bot is for testing, if true, stats and errors will not be posted
 testing = True
 
-# PUBSUB channel for Redis
-ipc_channel = ""
+# AMQP credentials
+amqp_url = ""
 
-# Postgres database credentials
-database = {
-    "database": "",
-    "user": "",
-    "password": "",
-    "host": "",
-    "port": 5432,
-}
+# Redis credentials
+redis_url = ""
+
+# Postgres credentials
+postgres_url = ""
 
 # Number of clusters
 clusters = 1
-
-# Additional shards to launch
-additional_shards = 0
 
 # The default prefix for commands
 default_prefix = "="
 
 # The server to send tickets to, no confirmation messages if set
 default_server = None
-
-# Status of the bot
-activity = f"DM to Contact Staff | {default_prefix}help"
-
-# Whether or not to fetch all members
-fetch_all_members = True
-
-# The main bot owner
-owner = 000000000000000000
 
 # Bot owners that have access to owner commands
 owners = []
@@ -65,25 +50,14 @@ owners = []
 admins = []
 
 # Cogs to load on startup
-initial_extensions = [
-    "cogs.admin",
-    "cogs.communication",
-    "cogs.configuration",
-    "cogs.core",
-    "cogs.direct_message",
-    "cogs.error_handler",
-    "cogs.events",
-    "cogs.general",
-    "cogs.miscellaneous",
-    "cogs.modmail_channel",
-    "cogs.owner",
-    "cogs.premium",
-    "cogs.snippet",
+cogs = [
+    "events",
+    "error_handler",
+    "owner",
+    "general",
 ]
 
 # Channels to send logs
-join_channel = None
-event_channel = None
 admin_channel = None
 
 # This is where patron roles are at

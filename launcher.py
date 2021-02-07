@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 """
 Based on The IdleRPG Discord Bot
 Copyright (C) 2018-2021 Diniboy and Gelbpunkt
@@ -17,8 +18,9 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see https://www.gnu.org/licenses/.
 """
 
+=======
+>>>>>>> bruh cham why this so hard
 import asyncio
-import json
 import os
 import signal
 import sys
@@ -26,47 +28,17 @@ import time
 
 from pathlib import Path
 
-import aiohttp
-import aioredis
 import config
-
-payload = {
-    "Authorization": f"Bot {config.token}",
-    "User-Agent": "DiscordBot (custom, 1.0.0)",
-}
-
-
-async def get_shard_count():
-    async with aiohttp.ClientSession() as session, session.get(
-        "https://discord.com/api/v8/gateway/bot",
-        headers=payload,
-    ) as req:
-        response = await req.json()
-    return response["shards"]
-
-
-def get_cluster_list(shards):
-    base, extra = divmod(shards, config.clusters)
-    shards = list(range(shards))
-    clusters = []
-    for i in range(config.clusters):
-        clusters.append(shards[: base + (i < extra)])
-        shards = shards[base + (i < extra) :]
-    return clusters
 
 
 class Instance:
-    def __init__(self, instance_id, shard_list, shard_count, loop, main, cluster_count):
+    def __init__(self, instance_id, loop, main, cluster_count):
         self.id = instance_id
-        self.shard_list = shard_list
-        self.shard_count = shard_count
         self.loop = loop
         self.main = main
         self.cluster_count = cluster_count
         self.started_at = None
-        self.command = (
-            f"{sys.executable} \"{Path.cwd() / 'main.py'}\" \"{shard_list}\" {shard_count} {self.id} {cluster_count}"
-        )
+        self.command = f"{sys.executable} \"{Path.cwd() / 'main.py'}\" {self.id} {cluster_count}"
         self._process = None
         self.status = "initialized"
         self.started_at = 0.0
@@ -105,7 +77,9 @@ class Instance:
         self.status = "running"
         self.started_at = time.time()
         print(f"[Cluster {self.id}] The cluster is starting.")
-        await asyncio.wait([self.read_stream(self._process.stdout), self.read_stream(self._process.stderr)])
+        stdout = self.loop.create_task(self.read_stream(self._process.stdout))
+        stderr = self.loop.create_task(self.read_stream(self._process.stderr))
+        await asyncio.wait([stdout, stderr])
         return self
 
     async def stop(self):
@@ -145,56 +119,21 @@ class Main:
                 return element
         return None
 
-    async def event_handler(self):
-        self.redis = await aioredis.create_pool("redis://localhost", minsize=1, maxsize=2)
-        await self.redis.execute_pubsub("SUBSCRIBE", config.ipc_channel)
-        channel = self.redis.pubsub_channels[bytes(config.ipc_channel, "utf-8")]
-        while await channel.wait_message():
-            payload = await channel.get_json(encoding="utf-8")
-            if payload.get("scope") != "launcher" or not payload.get("action"):
-                pass
-            elif payload.get("action") == "restart":
-                print(f"[Cluster Manager] Received signal to restart cluster {payload.get('id')}.")
-                self.loop.create_task(self.get_instance(self.instances, payload.get("id")).restart())
-            elif payload.get("action") == "stop":
-                print(f"[Cluster Manager] Received signal to stop cluster {payload.get('id')}.")
-                self.loop.create_task(self.get_instance(self.instances, payload.get("id")).stop())
-            elif payload.get("action") == "start":
-                print(f"[Cluster Manager] Received signal to start cluster {payload.get('id')}.")
-                self.loop.create_task(self.get_instance(self.instances, payload.get("id")).start())
-            elif payload.get("action") == "roll_restart":
-                print("[Cluster Manager] Received signal to perform a rolling restart.")
-                for instance in self.instances:
-                    self.loop.create_task(instance.restart())
-                    await asyncio.sleep(len(self.instances[0].shard_list) * 8)
-
-    async def close(self):
-        await self.redis.execute_pubsub("UNSUBSCRIBE", config.ipc_channel)
-        self.redis.close()
-
-    def write_targets(self, clusters):
-        data = []
-        for i, shard_list in enumerate(clusters, 1):
-            if not shard_list:
-                continue
-            data.append({"labels": {"cluster": f"{i}"}, "targets": [f"localhost:{6000 + i}"]})
-        with open("targets.json", "w") as f:
-            json.dump(data, f, indent=4)
+    # def write_targets(self, clusters):
+    #     data = []
+    #     for i, shard_list in enumerate(clusters, 1):
+    #         if not shard_list:
+    #             continue
+    #         data.append({"labels": {"cluster": f"{i}"}, "targets": [f"localhost:{6000 + i}"]})
+    #     with open("targets.json", "w") as f:
+    #         json.dump(data, f, indent=4)
 
     async def launch(self):
-        self.loop.create_task(self.event_handler())
-        shard_count = await get_shard_count() + config.additional_shards
-        clusters = get_cluster_list(shard_count)
-        if config.testing is False:
-            self.write_targets(clusters)
-        print(f"[Cluster Manager] Starting a total of {len(clusters)} clusters.")
-        for i, shard_list in enumerate(clusters, 1):
-            if not shard_list:
-                continue
-            self.instances.append(
-                Instance(i, shard_list, shard_count, self.loop, main=self, cluster_count=len(clusters))
-            )
-            await asyncio.sleep(len(clusters[0]) * 8)
+        # if config.testing is False:
+        #     self.write_targets(clusters)
+        print(f"[Cluster Manager] Starting a total of {config.clusters} clusters.")
+        for i in range(config.clusters):
+            self.instances.append(Instance(i + 1, self.loop, main=self, cluster_count=config.clusters))
 
 
 loop = asyncio.get_event_loop()
@@ -213,7 +152,6 @@ except KeyboardInterrupt:
     for instance in main.instances:
         instance.task.remove_done_callback(main.dead_process_handler)
         instance.kill()
-    loop.run_until_complete(main.close())
     tasks = asyncio.gather(*asyncio.all_tasks(loop=loop), return_exceptions=True)
     tasks.add_done_callback(lambda t: loop.stop())
     tasks.cancel()

@@ -1,30 +1,23 @@
 import asyncio
-import json
 import logging
 import sys
 
-import config
-import discord
 import sentry_sdk
 
-from discord.ext import commands
+import config
 
-from classes.bot import ModMail
+from classes.bot import ModMail, when_mentioned_or
 from utils.tools import get_guild_prefix
 
 if config.testing is False:
     sentry_sdk.init(config.sentry_url)
 
-if len(sys.argv) < 5:
-    shard_ids = [0]
-    shard_count = 1
+if len(sys.argv) < 3:
     cluster_id = 1
     cluster_count = 1
 else:
-    shard_ids = json.loads(sys.argv[1])
-    shard_count = int(sys.argv[2])
-    cluster_id = int(sys.argv[3])
-    cluster_count = int(sys.argv[4])
+    cluster_id = int(sys.argv[1])
+    cluster_count = int(sys.argv[2])
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger()
@@ -38,20 +31,14 @@ log = logging.getLogger(__name__)
 
 def _get_guild_prefix(bot2, message):
     prefix = get_guild_prefix(bot2, message.guild)
-    return commands.when_mentioned_or(prefix)(bot2, message)
+    return when_mentioned_or(prefix)(bot2)
 
 
 bot = ModMail(
-    intents=discord.Intents(guilds=True, members=True, presences=True, messages=True, reactions=True),
-    member_cache_flags=None,
-    chunk_guilds_at_startup=config.fetch_all_members,
     command_prefix=_get_guild_prefix,
     case_insensitive=True,
     help_command=None,
-    owner_id=config.owner,
-    heartbeat_timeout=300,
-    shard_ids=shard_ids,
-    shard_count=shard_count,
+    owner_ids=config.owners,
     cluster_id=cluster_id,
     cluster_count=cluster_count,
     version="2.1.1",
@@ -64,4 +51,4 @@ async def on_message(_):
 
 
 loop = asyncio.get_event_loop()
-loop.run_until_complete(bot.start_bot())
+loop.run_until_complete(bot.start())
