@@ -58,9 +58,7 @@ class Admin(commands.Cog):
         hidden=True,
     )
     async def sharedservers(self, ctx, *, user: converters.GlobalUser):
-        data = await self.bot.comm.handler(
-            "get_user_guilds", self.bot.cluster_count, {"user_id": user.id}
-        )
+        data = await self.bot.comm.handler("get_user_guilds", self.bot.cluster_count, {"user_id": user.id})
         guilds = []
         for chunk in data:
             guilds.extend(chunk)
