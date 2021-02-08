@@ -158,5 +158,6 @@ class Guild(guild.Guild):
     async def get_role(self, role_id):
         result = await self._state._get(f"role:{self.id}:{role_id}")
         if result:
-            Role(guild=self, state=self._state, data=result)
+            result["permissions"] = int(result["permissions"])
+            result = Role(guild=self, state=self._state, data=result)
         return result

@@ -60,7 +60,7 @@ class TextChannel(channel.TextChannel):
         get_role = self.guild.get_role
 
         for role_id in roles:
-            role = get_role(role_id)
+            role = await get_role(role_id)
             if role is not None:
                 base.value |= role._permissions
 

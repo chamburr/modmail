@@ -380,7 +380,6 @@ class State:
             except AttributeError:
                 pass
 
-
     async def parse_message_reaction_remove_all(self, data, old):
         raw = RawReactionClearEvent(data)
         self.dispatch("raw_reaction_clear", raw)
