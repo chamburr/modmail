@@ -81,7 +81,27 @@ class Events(commands.Cog):
     @commands.Cog.listener()
     async def on_socket_raw_receive(self, message):
         message = orjson.loads(message)
-        # log.info(message)
+        if message["t"] == "PRESENCE_UPDATE":
+            await self.bot._redis.sadd(f"guild_members:{message['d']['guild_id']}", int(message["d"]["user"]["id"]))
+        if message["t"] == "GUILD_MEMBER_UPDATE":
+            if int(message["d"]["user"]["id"]) == (await self.bot.user()).id:
+                member = orjson.loads(
+                    await self.bot._redis.get(f"member:{message['d']['guild_id']}:{(await self.bot.user()).id}")
+                )
+                if member:
+                    member["roles"] = message["d"]["roles"]
+                    await self.bot._redis.set(
+                        f"member:{message['d']['guild_id']}:{(await self.bot.user()).id}", orjson.dumps(member)
+                    )
+            await self.bot._redis.sadd(f"guild_members:{message['d']['guild_id']}", int(message["d"]["user"]["id"]))
+        if message["t"] == "GUILD_CREATE":
+            for member in message["d"]["members"]:
+                if int(member["user"]["id"]) == (await self.bot.user()).id:
+                    await self.bot._redis.set(
+                        f"member:{message['d']['id']}:{(await self.bot.user()).id}", orjson.dumps(member)
+                    )
+                await self.bot._redis.sadd(f"guild_members:{message['d']['id']}", int(member["user"]["id"]))
+
 
     @commands.Cog.listener()
     async def on_reaction_add(self, reaction, member):
@@ -163,7 +183,8 @@ class Events(commands.Cog):
             if message.guild.id in self.bot.banned_guilds:
                 await message.guild.leave()
                 return
-            permissions = await message.channel.permissions_for(message.author)
+            permissions = await message.channel.permissions_for(await ctx.guild.me())
+            log.info(permissions)
             if permissions.send_messages is False:
                 return
             elif permissions.embed_links is False:
@@ -204,7 +225,7 @@ class Events(commands.Cog):
             )
             return
         if ctx.command.cog_name in ["Owner", "Admin"] and (
-                ctx.author.id in self.bot.config.admins or ctx.author.id in self.bot.config.owners
+            ctx.author.id in self.bot.config.admins or ctx.author.id in self.bot.config.owners
         ):
             embed = discord.Embed(
                 title=ctx.command.name.title(),
@@ -221,15 +242,15 @@ class Events(commands.Cog):
 
     @commands.Cog.listener()
     async def on_member_join(self, member):
-        if member.id == (await self.bot.user().id):
-            self.bot._redis.set(f"member:{member.guild.id}:{(await self.bot.user().id)}", orjson.dumps(member._data))
-        self.bot._redis.sadd(f"guild_members:{member.guild.id}", member.id)
+        if member.id == (await self.bot.user()).id:
+            await self.bot._redis.set(f"member:{member.guild.id}:{(await self.bot.user().id)}", orjson.dumps(member._data))
+        await self.bot._redis.sadd(f"guild_members:{member.guild.id}", int(member.id))
 
     @commands.Cog.listener()
     async def on_member_remove(self, member):
-        if member.id == (await self.bot.user().id):
-            self.bot._redis.delete(f"member:{member.guild.id}:{(await self.bot.user().id)}")
-        self.bot._redis.srem(f"guild_members:{member.guild.id}", member.id)
+        if member.id == (await self.bot.user()).id:
+           await self.bot._redis.delete(f"member:{member.guild.id}:{(await self.bot.user().id)}")
+        await self.bot._redis.srem(f"guild_members:{member.guild.id}", int(member.id))
 
 
 def setup(bot):

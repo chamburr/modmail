@@ -274,7 +274,7 @@ class Owner(commands.Cog):
     #         res = await conn.fetchrow("SELECT * FROM ban WHERE identifier=$1 AND category=$2", guild, 1)
     #         if not res:
     #             await ctx.send(
-    #                 embed=discord.Embed(description="That server is not already banned.", colour=self.bot.error_colour)
+    #                 embed=discord.Embed(description="That server is not banned.", colour=self.bot.error_colour)
     #             )
     #             return
     #         await conn.execute("DELETE FROM ban WHERE identifier=$1 AND category=$2", guild, 1)

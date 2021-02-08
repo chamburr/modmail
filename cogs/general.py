@@ -150,7 +150,7 @@ class General(commands.Cog):
     )
     async def stats(self, ctx):
         guilds = len(await self.bot.guilds())
-        channels = len([channel async for channel in self.bot.get_all_channels()])
+        channels = len(await self.bot._redis.smembers("channel_keys"))
         users = len(await self.bot.users())
 
         embed = discord.Embed(title=f"{(await self.bot.user()).name} Statistics", colour=self.bot.primary_colour)
