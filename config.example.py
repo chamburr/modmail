@@ -51,6 +51,7 @@ admins = []
 
 # Cogs to load on startup
 cogs = [
+    "configuration",
     "events",
     "error_handler",
     "owner",

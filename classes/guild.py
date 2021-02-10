@@ -1,11 +1,13 @@
 import logging
 
-from discord import guild, utils
+from discord import guild, utils, InvalidArgument, PermissionOverwrite, CategoryChannel
 from discord.channel import _channel_factory
 from discord.enums import *
 from discord.enums import try_enum
 from discord.member import Member, VoiceState
 from discord.role import Role
+
+from classes.channel import TextChannel
 
 log = logging.getLogger(__name__)
 
@@ -76,6 +78,54 @@ class Guild(guild.Guild):
         self._large = None if member_count is None else self._member_count >= 250
         self.owner_id = utils._get_as_snowflake(guild, "owner_id")
         self._afk_channel_id = utils._get_as_snowflake(guild, "afk_channel_id")
+
+    async def _create_channel(self, name, overwrites, channel_type, category=None, **options):
+        if overwrites is None:
+            overwrites = {}
+        elif not isinstance(overwrites, dict):
+            raise InvalidArgument('overwrites parameter expects a dict.')
+
+        perms = []
+        for target, perm in overwrites.items():
+            if not isinstance(perm, PermissionOverwrite):
+                raise InvalidArgument('Expected PermissionOverwrite received {0.__name__}'.format(type(perm)))
+
+            allow, deny = perm.pair()
+            payload = {
+                'allow': allow.value,
+                'deny': deny.value,
+                'id': (await target()).id
+            }
+
+            if isinstance(target, Role):
+                payload['type'] = 'role'
+            else:
+                payload['type'] = 'member'
+
+            perms.append(payload)
+
+        try:
+            options['rate_limit_per_user'] = options.pop('slowmode_delay')
+        except KeyError:
+            pass
+
+        parent_id = category.id if category else None
+        return await self._state.http.create_channel(self.id, channel_type.value, name=name, parent_id=parent_id,
+                                               permission_overwrites=perms, **options)
+
+    async def create_text_channel(self, name, *, overwrites=None, category=None, reason=None, **options):
+        data = await self._create_channel(name, overwrites, ChannelType.text, category, reason=reason, **options)
+        channel = TextChannel(state=self._state, guild=self, data=data)
+
+        return channel
+
+    async def create_category(self, name, *, overwrites=None, reason=None, position=None):
+        data = await self._create_channel(name, overwrites, ChannelType.category, reason=reason, position=position)
+        channel = CategoryChannel(state=self._state, guild=self, data=data)
+
+        return channel
+
+    create_category_channel = create_category
 
     async def _channels(self):
         channels = []
