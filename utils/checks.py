@@ -3,7 +3,7 @@ import logging
 import discord
 
 from discord.ext import commands
-from discord.ext.commands import BotMissingPermissions
+from discord.ext.commands import BotMissingPermissions, MissingPermissions
 
 from classes.state import PartialChannel
 
@@ -141,6 +141,25 @@ def is_mod():
             return False
         else:
             return True
+
+    return commands.check(predicate)
+
+
+def has_permissions(**perms):
+    invalid = set(perms) - set(discord.Permissions.VALID_FLAGS)
+    if invalid:
+        raise TypeError('Invalid permission(s): %s' % (', '.join(invalid)))
+
+    async def predicate(ctx):
+        ch = ctx.channel
+        permissions = await ch.permissions_for(ctx.author)
+
+        missing = [perm for perm, value in perms.items() if getattr(permissions, perm) != value]
+
+        if not missing:
+            return True
+
+        raise MissingPermissions(missing)
 
     return commands.check(predicate)
 

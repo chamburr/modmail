@@ -6,6 +6,7 @@ import discord
 from discord.ext import commands
 
 from classes import converters
+from classes.converters import RoleConverter
 from utils import checks
 
 log = logging.getLogger(__name__)
@@ -24,7 +25,7 @@ class Configuration(commands.Cog):
         )
         self.default_role_permission = discord.PermissionOverwrite(read_messages=False)
 
-    @commands.bot_has_permissions(
+    @checks.bot_has_permissions(
         manage_channels=True,
         manage_roles=True,
         read_messages=True,
@@ -34,62 +35,27 @@ class Configuration(commands.Cog):
         attach_files=True,
         add_reactions=True,
     )
-    @commands.has_permissions(administrator=True)
+    @checks.has_permissions(administrator=True)
     @commands.guild_only()
     @commands.command(description="Set up ModMail with an interactive guide.", usage="setup")
     async def setup(self, ctx):
-        def check(msg):
-            return msg.author.id == ctx.author.id and msg.channel.id == ctx.channel.id
-
-        try:
-            await ctx.send(
-                embed=discord.Embed(
-                    title="Step 1 of 2",
-                    description="ModMail will create a channel when a user sends a message to the bot. Please enter a "
-                    "name for the category that will contain these channels. You may change this manually afterwards.",
-                    colour=self.bot.primary_colour,
-                )
+        await ctx.send(
+            embed=discord.Embed(
+                title="Step 1 of 2",
+                description="ModMail will create a channel when a user sends a message to the bot. By default, `Modmail` "
+                "is the name for the category that will contain these channels. You may change this manually afterwards.",
+                colour=self.bot.primary_colour,
             )
-            category_name = await self.bot.wait_for("message", timeout=60, check=check)
-            category_name = category_name.content
-            if len(category_name) > 100:
-                await ctx.send(
-                    embed=discord.Embed(
-                        description="The name of the category cannot be longer than 100 characters."
-                        f"Please use `{ctx.prefix}setup` to try again.",
-                        colour=self.bot.error_colour,
-                    )
-                )
-                return
-            await ctx.send(
-                embed=discord.Embed(
-                    title="Step 2 of 2",
-                    description="Do you want a channel for ModMail logs? It will log the details whenever a "
-                    "ticket is created or closed. Please enter either `yes` or `no`. You can change the "
-                    "name of this channel manually afterwards.",
-                    colour=self.bot.primary_colour,
-                )
+        )
+        category_name = "ModMail"
+        await ctx.send(
+            embed=discord.Embed(
+                title="Step 2 of 2",
+                description="The bot will log the details whenever a ticket is created or closed. By default, the "
+                "channel is called `modmail-log`. You can change the name of this channel manually afterwards.",
+                colour=self.bot.primary_colour,
             )
-            modmail_log = await self.bot.wait_for("message", timeout=60, check=check)
-            if modmail_log.content.lower() == "yes":
-                modmail_log = True
-            elif modmail_log.content.lower() == "no":
-                modmail_log = False
-            else:
-                await ctx.send(
-                    embed=discord.Embed(
-                        description=f"Answer with `yes` or `no` only. Please use `{ctx.prefix}setup` to try again.",
-                        colour=self.bot.error_colour,
-                    )
-                )
-                return
-        except asyncio.TimeoutError:
-            await ctx.send(
-                embed=discord.Embed(
-                    description=f"Time out. Please use `{ctx.prefix}setup` to try again.", colour=self.bot.error_colour
-                )
-            )
-            return
+        )
         await ctx.send(
             embed=discord.Embed(
                 title="Premium",
@@ -108,14 +74,12 @@ class Configuration(commands.Cog):
                 continue
             overwrites[role] = self.role_permission
         category = await ctx.guild.create_category_channel(name=category_name, overwrites=overwrites)
-        logging_channel = None
-        if modmail_log is True:
-            logging_channel = await ctx.guild.create_text_channel(name="modmail-log", category=category)
+        logging_channel = await ctx.guild.create_text_channel(name="modmail-log", category=category)
         async with self.bot.pool.acquire() as conn:
             await conn.execute(
                 "UPDATE data SET category=$1, logging=$2 WHERE guild=$3",
                 category.id,
-                logging_channel.id if logging_channel else None,
+                logging_channel.id,
                 ctx.guild.id,
             )
         await m.edit(
@@ -166,9 +130,9 @@ class Configuration(commands.Cog):
                 )
             )
 
-    @commands.bot_has_permissions(manage_channels=True, manage_roles=True)
+    @checks.bot_has_permissions(manage_channels=True, manage_roles=True)
     @checks.in_database()
-    @commands.has_permissions(administrator=True)
+    @checks.has_permissions(administrator=True)
     @commands.guild_only()
     @commands.command(description="Re-create the category for the ModMail channels.", usage="category [name]")
     async def category(self, ctx, *, name: str = "ModMail"):
@@ -201,16 +165,16 @@ class Configuration(commands.Cog):
             embed=discord.Embed(description="Successfully created the category.", colour=self.bot.primary_colour)
         )
 
-    @commands.bot_has_permissions(manage_channels=True, manage_roles=True)
+    @checks.bot_has_permissions(manage_channels=True, manage_roles=True)
     @checks.in_database()
-    @commands.has_permissions(administrator=True)
+    @checks.has_permissions(administrator=True)
     @commands.guild_only()
     @commands.command(
         description="Set or clear the roles that have access to ticket related commands and replying to tickets.",
         aliases=["modrole", "supportrole"],
         usage="accessrole [roles]",
     )
-    async def accessrole(self, ctx, roles: commands.Greedy[discord.Role] = None, *, check=None):
+    async def accessrole(self, ctx, roles: commands.Greedy[RoleConverter] = None, *, check=None):
         if roles is None:
             roles = []
         if check:
@@ -236,12 +200,12 @@ class Configuration(commands.Cog):
                 ctx.guild.id,
             )
         category = (await self.bot.get_data(ctx.guild.id))[2]
-        category = ctx.guild.get_channel(category)
+        category = await ctx.guild.get_channel(category)
         if category and roles:
             try:
                 for role in roles:
                     await category.set_permissions(target=role, overwrite=self.role_permission)
-                await category.set_permissions(target=ctx.guild.default_role, overwrite=self.default_role_permission)
+                await category.set_permissions(target=(await ctx.guild.default_role()), overwrite=self.default_role_permission)
             except discord.Forbidden:
                 await ctx.send(
                     embed=discord.Embed(
@@ -256,7 +220,7 @@ class Configuration(commands.Cog):
         )
 
     @checks.in_database()
-    @commands.has_permissions(administrator=True)
+    @checks.has_permissions(administrator=True)
     @commands.guild_only()
     @commands.command(
         description="Set or clear the roles mentioned when a ticket is opened. You can also use `everyone` and `here`.",
@@ -272,7 +236,7 @@ class Configuration(commands.Cog):
                 role = role.lower()
                 role = role.replace("@", "", 1)
                 if role == "everyone":
-                    role_ids.append(ctx.guild.default_role.id)
+                    role_ids.append((await ctx.guild.default_role()).id)
                 elif role == "here":
                     role_ids.append(-1)
                 else:
@@ -302,9 +266,9 @@ class Configuration(commands.Cog):
             )
         )
 
-    @commands.bot_has_permissions(manage_channels=True)
+    @checks.bot_has_permissions(manage_channels=True)
     @checks.in_database()
-    @commands.has_permissions(administrator=True)
+    @checks.has_permissions(administrator=True)
     @commands.guild_only()
     @commands.command(
         description="Toggle between enable and disable for ModMail logs.",
@@ -351,7 +315,7 @@ class Configuration(commands.Cog):
 
     @checks.in_database()
     @checks.is_premium()
-    @commands.has_permissions(administrator=True)
+    @checks.has_permissions(administrator=True)
     @commands.guild_only()
     @commands.command(
         description="Set or clear the message that is sent when a new ticket is opened. Tags `{username}`, "
@@ -368,7 +332,7 @@ class Configuration(commands.Cog):
 
     @checks.in_database()
     @checks.is_premium()
-    @commands.has_permissions(administrator=True)
+    @checks.has_permissions(administrator=True)
     @commands.guild_only()
     @commands.command(
         description="Set or clear the message that is sent when a ticket is closed. Tags `{username}`, "
@@ -385,7 +349,7 @@ class Configuration(commands.Cog):
 
     @checks.in_database()
     @checks.is_premium()
-    @commands.has_permissions(administrator=True)
+    @checks.has_permissions(administrator=True)
     @commands.guild_only()
     @commands.command(
         description="Toggle advanced logging which includes messages sent and received.",
@@ -408,7 +372,7 @@ class Configuration(commands.Cog):
         )
 
     @checks.in_database()
-    @commands.has_permissions(administrator=True)
+    @checks.has_permissions(administrator=True)
     @commands.guild_only()
     @commands.command(description="Toggle default anonymous messages.", usage="anonymous")
     async def anonymous(self, ctx):
@@ -427,13 +391,13 @@ class Configuration(commands.Cog):
         )
 
     @checks.in_database()
-    @commands.has_permissions(administrator=True)
+    @checks.has_permissions(administrator=True)
     @commands.guild_only()
     @commands.command(description="View the configurations for the current server.", usage="viewconfig")
     async def viewconfig(self, ctx):
         data = await self.bot.get_data(ctx.guild.id)
-        category = ctx.guild.get_channel(data[2])
-        logging = ctx.guild.get_channel(data[4])
+        category = await ctx.guild.get_channel(data[2])
+        logging = await ctx.guild.get_channel(data[4])
         access_roles = []
         for role in data[3]:
             access_roles.append(f"<@&{role}>")
