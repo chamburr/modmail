@@ -1,4 +1,3 @@
-import asyncio
 import copy
 import datetime
 import io
@@ -6,6 +5,7 @@ import logging
 import string
 
 import discord
+import orjson
 
 from discord.ext import commands
 
@@ -18,20 +18,17 @@ class DirectMessageEvents(commands.Cog, name="Direct Message"):
     def __init__(self, bot):
         self.bot = bot
         self.guild = None
+        self.reactions = ["1⃣", "2⃣", "3⃣", "4⃣", "5⃣", "6⃣", "7⃣", "8⃣", "9⃣", "🔟", "◀️", "▶️"]
 
     async def send_mail(self, message, guild, to_send):
-        self.bot.prom.tickets_message.inc({})
-        guild = await self.bot.comm.handler("get_guild", -1, {"guild_id": guild})
+        # self.bot.prom.tickets_message.inc({})
+        guild = await self.bot.get_guild(guild)
         if not guild:
             await message.channel.send(
                 embed=discord.Embed(description="The server was not found.", colour=self.bot.error_colour)
             )
             return
-        member = await self.bot.comm.handler(
-            "get_guild_member",
-            -1,
-            {"guild_id": guild.id, "member_id": message.author.id},
-        )
+        member = await self.bot._redis.sismember(f"guild_members:{guild}", message.author.id)
         if not member:
             await message.channel.send(
                 embed=discord.Embed(
@@ -41,11 +38,7 @@ class DirectMessageEvents(commands.Cog, name="Direct Message"):
             )
             return
         data = await self.bot.get_data(guild.id)
-        category = await self.bot.comm.handler(
-            "get_guild_channel",
-            -1,
-            {"guild_id": guild.id, "channel_id": data[2]},
-        )
+        category = await guild.get_channel(data[2])
         if not category:
             await message.channel.send(
                 embed=discord.Embed(
@@ -72,7 +65,7 @@ class DirectMessageEvents(commands.Cog, name="Direct Message"):
         if len(channels) > 0:
             channel_id = channels[0].id
         if not channel_id:
-            self.bot.prom.tickets.inc({})
+            # self.bot.prom.tickets.inc({})
             try:
                 name = "".join(
                     x for x in message.author.name.lower() if x not in string.punctuation and x.isprintable()
@@ -91,11 +84,7 @@ class DirectMessageEvents(commands.Cog, name="Direct Message"):
                     )
                 )["id"]
                 new_ticket = True
-                log_channel = await self.bot.comm.handler(
-                    "get_guild_channel",
-                    -1,
-                    {"guild_id": guild.id, "channel_id": data[4]},
-                )
+                log_channel = await guild.get_channel(data[4])
                 if log_channel:
                     try:
                         embed = discord.Embed(
@@ -199,8 +188,17 @@ class DirectMessageEvents(commands.Cog, name="Direct Message"):
                 )
             )
 
+    async def get_user_guilds(self, user_id):
+        guilds = []
+        for guild in await self.bot.guilds():
+            member = await self.bot._redis.sismember(f"guild_members:{guild.id}", user_id)
+            if not member:
+                continue
+            guilds.append(guild)
+        return guilds
+
     async def select_guild(self, message, prefix, msg=None):
-        data = await self.bot.comm.handler("get_user_guilds", self.bot.cluster_count, {"user_id": message.author.id})
+        data = await self.get_user_guilds(message.author.id)
         guilds = []
         for chunk in data:
             guilds.extend(chunk)
@@ -234,59 +232,34 @@ class DirectMessageEvents(commands.Cog, name="Direct Message"):
                 value=f"{'Create a new ticket.' if value[1] is False else 'Existing ticket.'}\nServer ID: {guild}",
             )
             if len(current_embed.fields) == 10:
-                embeds.append(current_embed)
+                embeds.append(current_embed.to_dict())
                 current_embed = None
         if current_embed:
-            embeds.append(current_embed)
+            embeds.append(current_embed.to_dict())
         if len(embeds) == 0:
             await message.channel.send(
                 embed=discord.Embed(description="Oops... No server found.", colour=self.bot.primary_colour)
             )
             return
         if msg:
-            await msg.edit(embed=embeds[0])
+            await msg.edit(embed=discord.Embed.from_dict(embeds[0]))
         else:
             msg = await message.channel.send(embed=embeds[0])
-        reactions = ["1⃣", "2⃣", "3⃣", "4⃣", "5⃣", "6⃣", "7⃣", "8⃣", "9⃣", "🔟", "◀", "▶"]
 
         async def add_reactions(length):
             await msg.add_reaction("◀")
             await msg.add_reaction("▶")
             for index in range(0, length):
-                await msg.add_reaction(reactions[index])
-
-        def reaction_check(reaction2, user2):
-            return str(reaction2) in reactions and user2.id == message.author.id and reaction2.message.id == msg.id
+                await msg.add_reaction(self.reactions[index])
 
         await add_reactions(len(embeds[0].fields))
         page_index = 0
         chosen = -1
+        menus = await self.bot._connection._get("selection_menus") or []
+        menus.append({"channel": msg.channel.id, "message": msg.id, "page": 0, "all_pages": embeds})
+        await self.bot._connection.redis.set("selection_menus", orjson.dumps(menus).decode("utf-8"))
         try:
-            while chosen < 0:
-                reaction, _ = await self.bot.wait_for("reaction_add", check=reaction_check, timeout=60)
-                if str(reaction) == "◀":
-                    if page_index != 0:
-                        page_index = page_index - 1
-                        await msg.edit(embed=embeds[page_index])
-                        await add_reactions(len(embeds[page_index].fields))
-                elif str(reaction) == "▶":
-                    if page_index + 1 < len(embeds):
-                        page_index = page_index + 1
-                        await msg.edit(embed=embeds[page_index])
-                        if len(embeds[page_index].fields) != 10:
-                            to_remove = reactions[len(embeds[page_index].fields) : -2]
-                            msg = await msg.channel.fetch_message(msg.id)
-                            for this_reaction in msg.reactions:
-                                if str(this_reaction) in to_remove:
-                                    await this_reaction.remove(self.bot.user)
-                elif reactions.index(str(reaction)) >= 0:
-                    chosen = reactions.index(str(reaction))
-        except asyncio.TimeoutError:
-            await self.remove_reactions(msg)
-            await msg.edit(
-                embed=discord.Embed(description="Time out. You did not choose anything.", colour=self.bot.error_colour)
-            )
-            return
+            await asyncio.wait_for()
         await msg.delete()
         guild = embeds[page_index].fields[chosen].value.split()[-1]
         await self.send_mail(message, int(guild), message.content)
@@ -297,82 +270,35 @@ class DirectMessageEvents(commands.Cog, name="Direct Message"):
             await reaction.remove(self.bot.user)
 
     @commands.Cog.listener()
-    async def on_message(self, message):
-        if message.author.bot or not isinstance(message.channel, discord.DMChannel):
+    async def on_raw_reaction_add(self, payload):
+        if payload.user_id == (await self.bot.user()).id:
             return
-        prefix = self.bot.config.default_prefix
-        if message.content.startswith(prefix):
+        if payload.member:
             return
-        if message.author.id in self.bot.banned_users:
-            await message.channel.send(
-                embed=discord.Embed(description="You are banned from this bot.", colour=self.bot.error_colour)
-            )
+        if payload.emoji.name not in self.reactions:
             return
-        if self.bot.config.default_server:
-            await self.send_mail(message, self.bot.config.default_server, message.content)
-            return
-        guild = None
-        async for msg in message.channel.history(limit=30):
-            if (
-                msg.author.id == self.bot.user.id
-                and len(msg.embeds) > 0
-                and msg.embeds[0].title in ["Message Received", "Message Sent"]
-            ):
-                guild = msg.embeds[0].footer.text.split()[-1]
-                guild = await self.bot.comm.handler("get_guild", -1, {"guild_id": int(guild)})
-                break
-        msg = None
-        confirmation = await self.bot.tools.get_user_settings(self.bot, message.author.id)
-        confirmation = True if confirmation is None or confirmation[1] is True else False
-        if guild and confirmation is False:
-            await self.send_mail(message, guild.id, message.content)
-        elif guild and confirmation is True:
-            embed = discord.Embed(
-                title="Confirmation",
-                description=f"You're sending this message to **{guild.name}** (ID: {guild.id}). React with ✅ "
-                "to confirm.\nWant to send to another server instead? React with 🔁.\nTo cancel this request, "
-                "react with ❌.",
-                colour=self.bot.primary_colour,
-            )
-            embed.set_footer(text=f"Tip: You can disable confirmation messages with the {prefix}confirmation command.")
-            msg = await message.channel.send(embed=embed)
-            await msg.add_reaction("✅")
-            await msg.add_reaction("🔁")
-            await msg.add_reaction("❌")
-
-            def reaction_check(reaction2, user2):
-                return (
-                    str(reaction2) in ["✅", "🔁", "❌"]
-                    and user2.id == message.author.id
-                    and reaction2.message.id == msg.id
-                )
-
-            try:
-                reaction, _ = await self.bot.wait_for("reaction_add", check=reaction_check, timeout=60)
-            except asyncio.TimeoutError:
-                await self.remove_reactions(msg)
-                await msg.edit(
-                    embed=discord.Embed(
-                        description="Time out. You did not choose anything.",
-                        colour=self.bot.error_colour,
-                    )
-                )
-                return
-            if str(reaction) == "✅":
-                await msg.delete()
-                await self.send_mail(message, guild.id, message.content)
-            elif str(reaction) == "🔁":
-                await self.remove_reactions(msg)
-                await self.select_guild(message, prefix, msg)
-            elif str(reaction) == "❌":
-                await self.remove_reactions(msg)
-                await msg.edit(
-                    embed=discord.Embed(description="Request cancelled successfully.", colour=self.bot.error_colour)
-                )
-                await asyncio.sleep(5)
-                await msg.delete()
-        else:
-            await self.select_guild(message, prefix)
+        menus = await self.bot._connection._get("selection_menus")
+        for (index, menu) in enumerate(menus):
+            channel = menu["channel"]
+            message = menu["message"]
+            if payload.channel_id != channel or payload.message_id != message:
+                continue
+            page = menu["page"]
+            all_pages = menu["all_pages"]
+            chosen = None
+            if payload.emoji.name == "◀️" and page > 0:
+                page -= 1
+            if payload.emoji.name == "▶️" and page < len(all_pages) - 1:
+                page += 1
+            else:
+                chosen = self.reactions.index(payload.emoji.name)
+            await self.bot.http.edit_message(channel, message, embed=all_pages[page])
+            menu["page"] = page
+            if chosen:
+                menu["chosen"] = chosen
+            menus[index] = menu
+            await self.bot._connection.redis.set("selection_menus", orjson.dumps(menu).decode("utf-8"))
+            break
 
     @commands.dm_only()
     @commands.command(

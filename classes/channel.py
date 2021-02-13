@@ -5,14 +5,7 @@ import time
 import discord.abc
 
 from discord import channel, utils
-from discord.channel import (
-    CategoryChannel,
-    DMChannel,
-    GroupChannel,
-    StoreChannel,
-    VoiceChannel,
-    _single_delete_strategy,
-)
+from discord.channel import DMChannel, GroupChannel, StoreChannel, VoiceChannel, _single_delete_strategy
 from discord.enums import ChannelType, try_enum
 from discord.errors import ClientException, InvalidArgument, NoMoreItems
 from discord.permissions import Permissions
@@ -39,6 +32,29 @@ class TextChannel(channel.TextChannel):
         self.last_message_id = utils._get_as_snowflake(data, "last_message_id")
         self._fill_overwrites(data)
 
+    def _fill_overwrites(self, data):
+        self._overwrites = []
+        everyone_index = 0
+        everyone_id = self.guild.id
+
+        for index, overridden in enumerate(data.get("permission_overwrites", [])):
+            overridden_id = int(overridden.pop("id"))
+            if overridden["type"] == 0:
+                overridden["type"] = "role"
+            elif overridden["type"] == 1:
+                overridden["type"] = "member"
+            self._overwrites.append(discord.abc._Overwrites(id=overridden_id, **overridden))
+
+            if overridden["type"] == "member":
+                continue
+
+            if overridden_id == everyone_id:
+                everyone_index = index
+
+        tmp = self._overwrites
+        if tmp:
+            tmp[everyone_index], tmp[0] = tmp[0], tmp[everyone_index]
+
     async def _get_channel(self):
         return self
 
@@ -50,7 +66,7 @@ class TextChannel(channel.TextChannel):
     def _sorting_bucket(self):
         return ChannelType.text.value
 
-    async def permissions_for(self, member):
+    async def _permissions_for(self, member):
         if self.guild.owner_id == member.id:
             return Permissions.all()
 
@@ -101,6 +117,9 @@ class TextChannel(channel.TextChannel):
         if not base.read_messages:
             denied = Permissions.all_channel()
             base.value &= ~denied.value
+
+    async def permissions_for(self, member):
+        base = await self._permissions_for(member)
 
         denied = Permissions.voice()
         base.value &= ~denied.value
@@ -226,6 +245,31 @@ class TextChannel(channel.TextChannel):
         from discord.message import PartialMessage
 
         return PartialMessage(channel=self, id=message_id)
+
+
+class CategoryChannel(channel.CategoryChannel):
+    def _fill_overwrites(self, data):
+        self._overwrites = []
+        everyone_index = 0
+        everyone_id = self.guild.id
+
+        for index, overridden in enumerate(data.get("permission_overwrites", [])):
+            overridden_id = int(overridden.pop("id"))
+            if overridden["type"] == 0:
+                overridden["type"] = "role"
+            elif overridden["type"] == 1:
+                overridden["type"] = "member"
+            self._overwrites.append(discord.abc._Overwrites(id=overridden_id, **overridden))
+
+            if overridden["type"] == "member":
+                continue
+
+            if overridden_id == everyone_id:
+                everyone_index = index
+
+        tmp = self._overwrites
+        if tmp:
+            tmp[everyone_index], tmp[0] = tmp[0], tmp[everyone_index]
 
 
 def _channel_factory(channel_type):

@@ -1,13 +1,12 @@
 import logging
 
-from discord import guild, utils, InvalidArgument, PermissionOverwrite, CategoryChannel
-from discord.channel import _channel_factory
+from discord import CategoryChannel, InvalidArgument, PermissionOverwrite, guild, utils
 from discord.enums import *
 from discord.enums import try_enum
 from discord.member import Member, VoiceState
 from discord.role import Role
 
-from classes.channel import TextChannel
+from classes.channel import TextChannel, _channel_factory
 
 log = logging.getLogger(__name__)
 
@@ -83,35 +82,32 @@ class Guild(guild.Guild):
         if overwrites is None:
             overwrites = {}
         elif not isinstance(overwrites, dict):
-            raise InvalidArgument('overwrites parameter expects a dict.')
+            raise InvalidArgument("overwrites parameter expects a dict.")
 
         perms = []
         for target, perm in overwrites.items():
             if not isinstance(perm, PermissionOverwrite):
-                raise InvalidArgument('Expected PermissionOverwrite received {0.__name__}'.format(type(perm)))
+                raise InvalidArgument("Expected PermissionOverwrite received {0.__name__}".format(type(perm)))
 
             allow, deny = perm.pair()
-            payload = {
-                'allow': allow.value,
-                'deny': deny.value,
-                'id': (await target()).id
-            }
+            payload = {"allow": allow.value, "deny": deny.value, "id": target.id}
 
             if isinstance(target, Role):
-                payload['type'] = 'role'
+                payload["type"] = "role"
             else:
-                payload['type'] = 'member'
+                payload["type"] = "member"
 
             perms.append(payload)
 
         try:
-            options['rate_limit_per_user'] = options.pop('slowmode_delay')
+            options["rate_limit_per_user"] = options.pop("slowmode_delay")
         except KeyError:
             pass
 
         parent_id = category.id if category else None
-        return await self._state.http.create_channel(self.id, channel_type.value, name=name, parent_id=parent_id,
-                                               permission_overwrites=perms, **options)
+        return await self._state.http.create_channel(
+            self.id, channel_type.value, name=name, parent_id=parent_id, permission_overwrites=perms, **options
+        )
 
     async def create_text_channel(self, name, *, overwrites=None, category=None, reason=None, **options):
         data = await self._create_channel(name, overwrites, ChannelType.text, category, reason=reason, **options)
