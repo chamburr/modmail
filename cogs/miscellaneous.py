@@ -4,6 +4,9 @@ import discord
 
 from discord.ext import commands
 
+from classes import channel
+from utils import checks
+
 log = logging.getLogger(__name__)
 
 
@@ -11,18 +14,18 @@ class Miscellaneous(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
-    @commands.has_permissions(administrator=True)
+    @checks.has_permissions(administrator=True)
     @commands.guild_only()
     @commands.command(
         description="Show a member's permission in a channel when specified.",
         usage="permissions [member] [channel]",
         aliases=["perms"],
     )
-    async def permissions(self, ctx, member: discord.Member = None, channel: discord.TextChannel = None):
+    async def permissions(self, ctx, member: discord.Member = None, channel: channel.TextChannel = None):
         channel = channel or ctx.channel
         if member is None:
-            member = ctx.author
-        permissions = channel.permissions_for(member)
+            member = await ctx.message.member()
+        permissions = await channel.permissions_for(member)
         embed = discord.Embed(title="Permission Information", colour=self.bot.primary_colour)
         embed.add_field(name="User", value=str(member), inline=False)
         embed.add_field(
@@ -43,8 +46,9 @@ class Miscellaneous(commands.Cog):
     )
     async def userinfo(self, ctx, *, member: discord.Member = None):
         if member is None:
-            member = ctx.author
-        roles = [role.name for role in member.roles]
+            member = await ctx.message.member()
+        roles = [(await ctx.guild.default_role()).name]
+        roles.extend([(await ctx.guild.get_role(role)).name for role in member._roles])
         embed = discord.Embed(title="User Information", colour=self.bot.primary_colour)
         embed.add_field(name="Name", value=str(member))
         embed.add_field(name="ID", value=member.id)
@@ -67,18 +71,19 @@ class Miscellaneous(commands.Cog):
         aliases=["guildinfo"],
     )
     async def serverinfo(self, ctx):
-        guild = ctx.guild
+        guild = await self.bot.get_guild(ctx.guild.id)
+        log.info(await guild.channels())
         embed = discord.Embed(title="Server Information", colour=self.bot.primary_colour)
         embed.add_field(name="Name", value=guild.name)
         embed.add_field(name="ID", value=guild.id)
-        embed.add_field(name="Owner", value=str(guild.owner) if guild.owner else "Unknown")
+        embed.add_field(name="Owner", value=f"<@!{guild.owner_id}>" if guild.owner_id else "Unknown")
         embed.add_field(
             name="Icon", value=f"[Link]({guild.icon_url_as(static_format='png')})" if guild.icon else "*Not set*"
         )
         embed.add_field(name="Server Created", value=guild.created_at.replace(microsecond=0))
         embed.add_field(name="Members", value=guild.member_count)
-        embed.add_field(name="Channels", value=len(guild.text_channels) + len(guild.voice_channels))
-        embed.add_field(name="Roles", value=len(guild.roles))
+        embed.add_field(name="Channels", value=len(await guild.channels()))
+        embed.add_field(name="Roles", value=len(await guild.roles()))
         embed.add_field(name="Emojis", value=len(guild.emojis))
         if guild.icon:
             embed.set_thumbnail(url=guild.icon_url)

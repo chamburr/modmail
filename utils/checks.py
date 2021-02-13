@@ -125,13 +125,13 @@ def is_mod():
         has_role = False
         roles = (await ctx.bot.get_data(ctx.guild.id))[3]
         for role in roles:
-            role = ctx.guild.get_role(role)
+            role = await ctx.guild.get_role(role)
             if not role:
                 continue
-            if role in ctx.author.roles:
+            if role in (await ctx.message.member())._roles:
                 has_role = True
                 break
-        if has_role is False and ctx.author.guild_permissions.administrator is False:
+        if has_role is False and (await ctx.message.member()).guild_permissions.administrator is False:
             await ctx.send(
                 embed=discord.Embed(
                     description="You do not have access to use this command.",
@@ -148,11 +148,11 @@ def is_mod():
 def has_permissions(**perms):
     invalid = set(perms) - set(discord.Permissions.VALID_FLAGS)
     if invalid:
-        raise TypeError('Invalid permission(s): %s' % (', '.join(invalid)))
+        raise TypeError("Invalid permission(s): %s" % (", ".join(invalid)))
 
     async def predicate(ctx):
         ch = ctx.channel
-        permissions = await ch.permissions_for(ctx.author)
+        permissions = await ch.permissions_for(await ctx.message.member())
 
         missing = [perm for perm, value in perms.items() if getattr(permissions, perm) != value]
 

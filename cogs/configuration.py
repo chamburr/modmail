@@ -1,4 +1,3 @@
-import asyncio
 import logging
 
 import discord
@@ -39,23 +38,8 @@ class Configuration(commands.Cog):
     @commands.guild_only()
     @commands.command(description="Set up ModMail with an interactive guide.", usage="setup")
     async def setup(self, ctx):
-        await ctx.send(
-            embed=discord.Embed(
-                title="Step 1 of 2",
-                description="ModMail will create a channel when a user sends a message to the bot. By default, `Modmail` "
-                "is the name for the category that will contain these channels. You may change this manually afterwards.",
-                colour=self.bot.primary_colour,
-            )
-        )
         category_name = "ModMail"
-        await ctx.send(
-            embed=discord.Embed(
-                title="Step 2 of 2",
-                description="The bot will log the details whenever a ticket is created or closed. By default, the "
-                "channel is called `modmail-log`. You can change the name of this channel manually afterwards.",
-                colour=self.bot.primary_colour,
-            )
-        )
+        m = await ctx.send(embed=discord.Embed(description="Setting up...", colour=self.bot.primary_colour))
         await ctx.send(
             embed=discord.Embed(
                 title="Premium",
@@ -66,10 +50,9 @@ class Configuration(commands.Cog):
                 colour=self.bot.primary_colour,
             )
         )
-        m = await ctx.send(embed=discord.Embed(description="Setting up...", colour=self.bot.primary_colour))
         data = await self.bot.get_data(ctx.guild.id)
-        overwrites = {ctx.guild.default_role: self.default_role_permission}
-        for role in [ctx.guild.get_role(role) for role in data[3]]:
+        overwrites = {await ctx.guild.default_role(): self.default_role_permission}
+        for role in [await ctx.guild.get_role(role) for role in data[3]]:
             if role is None:
                 continue
             overwrites[role] = self.role_permission
@@ -84,6 +67,7 @@ class Configuration(commands.Cog):
             )
         await m.edit(
             embed=discord.Embed(
+                title="Setup",
                 description="Everything has been set up! Next up, you can give your staff access to ModMail commands "
                 f"using `{ctx.prefix}accessrole [roles]` (by default, any user with the administrator permission has "
                 "full access). You can also test things out by direct messaging me. Check out more information and "
@@ -105,7 +89,7 @@ class Configuration(commands.Cog):
                 )
             )
             return
-        if ctx.author.guild_permissions.administrator is False:
+        if (await ctx.message.member()).guild_permissions.administrator is False:
             raise commands.MissingPermissions(["administrator"])
         else:
             if len(prefix) > 10:
@@ -145,7 +129,7 @@ class Configuration(commands.Cog):
             )
             return
         data = await self.bot.get_data(ctx.guild.id)
-        if ctx.guild.get_channel(data[2]):
+        if await ctx.guild.get_channel(data[2]):
             await ctx.send(
                 embed=discord.Embed(
                     description="A ModMail category already exists. Please delete that category and try again.",
@@ -153,8 +137,8 @@ class Configuration(commands.Cog):
                 )
             )
             return
-        overwrites = {ctx.guild.default_role: self.default_role_permission}
-        for role in [ctx.guild.get_role(role) for role in data[3]]:
+        overwrites = {await ctx.guild.default_role(): self.default_role_permission}
+        for role in [await ctx.guild.get_role(role) for role in data[3]]:
             if role is None:
                 continue
             overwrites[role] = self.role_permission
@@ -205,7 +189,9 @@ class Configuration(commands.Cog):
             try:
                 for role in roles:
                     await category.set_permissions(target=role, overwrite=self.role_permission)
-                await category.set_permissions(target=(await ctx.guild.default_role()), overwrite=self.default_role_permission)
+                await category.set_permissions(
+                    target=(await ctx.guild.default_role()), overwrite=self.default_role_permission
+                )
             except discord.Forbidden:
                 await ctx.send(
                     embed=discord.Embed(
@@ -227,7 +213,7 @@ class Configuration(commands.Cog):
         aliases=["mentionrole"],
         usage="pingrole [roles]",
     )
-    async def pingrole(self, ctx, roles: commands.Greedy[converters.PingRole] = None):
+    async def pingrole(self, ctx, roles: commands.Greedy[converters.RoleConverter] = None):
         if roles is None:
             roles = []
         role_ids = []
@@ -277,7 +263,7 @@ class Configuration(commands.Cog):
     )
     async def logging(self, ctx):
         data = await self.bot.get_data(ctx.guild.id)
-        channel = ctx.guild.get_channel(data[4])
+        channel = await ctx.guild.get_channel(data[4])
         if channel:
             try:
                 await channel.delete()
@@ -296,7 +282,7 @@ class Configuration(commands.Cog):
                 embed=discord.Embed(description="ModMail logs are disabled.", colour=self.bot.primary_colour)
             )
         else:
-            category = ctx.guild.get_channel(data[2])
+            category = await ctx.guild.get_channel(data[2])
             if category is None:
                 await ctx.send(
                     embed=discord.Embed(
@@ -405,7 +391,7 @@ class Configuration(commands.Cog):
         for role in data[8]:
             if role == -1:
                 ping_roles.append("@here")
-            elif role == ctx.guild.default_role.id:
+            elif role == (await ctx.guild.default_role()).id:
                 ping_roles.append("@everyone")
             else:
                 ping_roles.append(f"<@&{role}>")

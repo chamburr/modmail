@@ -55,7 +55,7 @@ class Message(message.Message):
     async def member(self):
         try:
             member = self._data["member"]
-            author = await self.author()
+            author = self.author
             try:
                 author._update_from_message(member)
             except AttributeError:

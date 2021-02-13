@@ -29,7 +29,7 @@ class DateTime(commands.Converter):
 
 class RoleConverter(commands.IDConverter):
     async def convert(self, ctx, argument):
-        match = self._get_id_match(argument) or re.match(r'<@&([0-9]+)>$', argument)
+        match = self._get_id_match(argument) or re.match(r"<@&([0-9]+)>$", argument)
         if match:
             result = await ctx.guild.get_role(int(match.group(1)))
         else:

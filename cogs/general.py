@@ -151,10 +151,10 @@ class General(commands.Cog):
     async def stats(self, ctx):
         guilds = len(await self.bot.guilds())
         channels = len(await self.bot._redis.smembers("channel_keys"))
-        users = len(await self.bot.users())
 
         embed = discord.Embed(title=f"{(await self.bot.user()).name} Statistics", colour=self.bot.primary_colour)
-        embed.add_field(name="Owner", value="waterflamev8#4123")
+        embed.add_field(name="Owner", value="CHamburr#2591")
+        embed.add_field(name="Contributor", value="waterflamev8#4123")
         embed.add_field(name="Bot Version", value=self.bot.version)
         embed.add_field(name="Uptime", value=await self.get_bot_uptime(brief=True))
         embed.add_field(name="Clusters", value=f"{self.bot.cluster}/{self.bot.cluster_count}")
@@ -164,7 +164,6 @@ class General(commands.Cog):
             embed.add_field(name="Shards", value=f"{await self.bot.shard_count()}")
         embed.add_field(name="Servers", value=str(guilds))
         embed.add_field(name="Channels", value=str(channels))
-        embed.add_field(name="Users", value=str(users))
         embed.add_field(name="CPU Usage", value=f"{psutil.cpu_percent(interval=None)}%")
         embed.add_field(name="RAM Usage", value=f"{psutil.virtual_memory().percent}%")
         embed.add_field(name="Python Version", value=platform.python_version())

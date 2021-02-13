@@ -5,11 +5,12 @@ import io
 import logging
 
 import discord
+import orjson
 
 from discord.ext import commands
 
+from classes import converters
 from utils import checks
-from utils.paginator import Paginator
 
 log = logging.getLogger(__name__)
 
@@ -213,7 +214,7 @@ class Core(commands.Cog):
         usage="blacklist <member>",
         aliases=["block"],
     )
-    async def blacklist(self, ctx, *, member: discord.Member):
+    async def blacklist(self, ctx, *, member: converters.GlobalUser):
         blacklist = (await self.bot.get_data(ctx.guild.id))[9]
         if member.id in blacklist:
             await ctx.send(
@@ -231,11 +232,11 @@ class Core(commands.Cog):
     @checks.is_mod()
     @commands.guild_only()
     @commands.command(
-        description="Whitelist a user to allow them to creating tickets.",
+        description="Whitelist a user to allow them to create tickets.",
         usage="whitelist <member>",
         aliases=["unblock"],
     )
-    async def whitelist(self, ctx, *, member: discord.Member):
+    async def whitelist(self, ctx, *, member: converters.GlobalUser):
         blacklist = (await self.bot.get_data(ctx.guild.id))[9]
         if member.id not in blacklist:
             await ctx.send(
@@ -277,14 +278,18 @@ class Core(commands.Cog):
                 colour=self.bot.primary_colour,
             )
             page.set_footer(text="Use the reactions to flip pages.")
-            all_pages.append(page)
+            all_pages.append(page.to_dict())
         if len(all_pages) == 1:
-            embed = all_pages[0]
+            embed = discord.Embed.from_dict(all_pages[0])
             embed.set_footer(text=discord.Embed.Empty)
             await ctx.send(embed=embed)
             return
-        paginator = Paginator(length=1, entries=all_pages, use_defaults=True, embed=True, timeout=120)
-        await paginator.start(ctx)
+        msg = await ctx.send(embed=discord.Embed.from_dict(all_pages[0]))
+        for reaction in ["⏮️", "◀️", "⏹️", "▶️", "⏭️"]:
+            await msg.add_reaction(reaction)
+        menus = await self.bot._connection._get("reaction_menus") or []
+        menus.append({"channel": msg.channel.id, "message": msg.id, "page": 0, "all_pages": all_pages})
+        await self.bot._connection.redis.set("reaction_menus", orjson.dumps(menus).decode("utf-8"))
 
 
 def setup(bot):
