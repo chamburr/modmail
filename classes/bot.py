@@ -313,7 +313,7 @@ class ModMail(commands.AutoShardedBot):
 
     async def start(self):
         log.info("Starting...")
-
+        
         await self.connect_amqp()
         await self.connect_redis()
         await self.connect_postgres()

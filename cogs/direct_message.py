@@ -1,3 +1,4 @@
+import asyncio
 import copy
 import datetime
 import io
@@ -7,6 +8,7 @@ import string
 import discord
 import orjson
 
+from discord.channel import DMChannel
 from discord.ext import commands
 
 from utils import checks
@@ -246,28 +248,18 @@ class DirectMessageEvents(commands.Cog, name="Direct Message"):
         else:
             msg = await message.channel.send(embed=embeds[0])
 
-        async def add_reactions(length):
-            await msg.add_reaction("◀")
-            await msg.add_reaction("▶")
-            for index in range(0, length):
-                await msg.add_reaction(self.reactions[index])
-
-        await add_reactions(len(embeds[0].fields))
-        page_index = 0
-        chosen = -1
+        await self.add_reactions(len(embeds[0]["fields"]), msg)
         menus = await self.bot._connection._get("selection_menus") or []
-        menus.append({"channel": msg.channel.id, "message": msg.id, "page": 0, "all_pages": embeds})
+        menus.append(
+            {"channel": msg.channel.id, "message": msg.id, "page": 0, "all_pages": embeds, "to_send": msg.content}
+        )
         await self.bot._connection.redis.set("selection_menus", orjson.dumps(menus).decode("utf-8"))
-        try:
-            await asyncio.wait_for()
-        await msg.delete()
-        guild = embeds[page_index].fields[chosen].value.split()[-1]
-        await self.send_mail(message, int(guild), message.content)
 
-    async def remove_reactions(self, message):
-        message = await message.channel.fetch_message(message.id)
-        for reaction in message.reactions:
-            await reaction.remove(self.bot.user)
+    async def add_reactions(self, length, channel_id, message_id):
+        await self.bot.http.add_reaction(channel_id, message_id, "◀")
+        await self.bot.http.add_reaction(channel_id, message_id, "▶")
+        for index in range(length):
+            await self.bot.http.add_reaction(channel_id, message_id, self.reactions[index])
 
     @commands.Cog.listener()
     async def on_raw_reaction_add(self, payload):
@@ -276,7 +268,43 @@ class DirectMessageEvents(commands.Cog, name="Direct Message"):
         if payload.member:
             return
         if payload.emoji.name not in self.reactions:
-            return
+            if payload.emoji.name in ["✅", "🔁", "❌"]:
+                menus = await self.bot._connection._get("confirmation_menus")
+                idx = None
+                for (index, menu) in enumerate(menus):
+                    channel = menu["channel"]
+                    message = menu["message"]
+                    if payload.channel_id != channel or payload.message_id != message:
+                        continue
+                    content = menu["content"]
+                    guild_id = menu["guild_id"]
+                    if payload.emoji.name == "✅":
+                        msg = orjson.loads(await self.bot.http.get_message(channel, message))
+                        await self.bot._state.http.delete_message(channel, message)
+                        await self.send_mail(msg, guild_id, content)
+                    elif payload.emoji.name == "🔁":
+                        for reaction in ["✅", "🔁", "❌"]:
+                            await self.bot.http.remove_own_reaction(channel, message, reaction)
+                        await self.select_guild(message, self.bot.config.default_prefix, msg)
+                    elif payload.emoji.name == "❌":
+                        for reaction in ["✅", "🔁", "❌"]:
+                            await self.bot.http.remove_own_reaction(channel, message, reaction)
+                        await self.bot.http.edit_message(
+                            channel,
+                            message,
+                            embed=discord.Embed(
+                                description="Request cancelled successfully.", colour=self.bot.error_colour
+                            ).to_dict(),
+                        )
+                        await asyncio.sleep(5)
+                        await self.bot._state.http.delete_message(channel, message)
+                    idx = index
+                    break
+
+                del menus[idx]
+                await self.bot._connection.redis.set("confirmation_menus", orjson.dumps(menus).decode("utf-8"))
+            else:
+                return
         menus = await self.bot._connection._get("selection_menus")
         for (index, menu) in enumerate(menus):
             channel = menu["channel"]
@@ -285,20 +313,84 @@ class DirectMessageEvents(commands.Cog, name="Direct Message"):
                 continue
             page = menu["page"]
             all_pages = menu["all_pages"]
-            chosen = None
             if payload.emoji.name == "◀️" and page > 0:
                 page -= 1
-            if payload.emoji.name == "▶️" and page < len(all_pages) - 1:
+                await self.bot.http.edit_message(channel, message, embed=all_pages[page])
+                await self.add_reactions(len(all_pages[page]["fields"]), channel, message)
+            elif payload.emoji.name == "▶️" and page < len(all_pages) - 1:
                 page += 1
+                await self.bot.http.edit_message(channel, message, embed=all_pages[page])
+                if len(all_pages[page]["fields"]) != 10:
+                    to_remove = self.reactions[len(all_pages[page]["fields"]) : -2]
+                    msg = orjson.loads(await self.bot.http.get_message(channel, message))
+                    for reaction in msg["reactions"]:
+                        if reaction in to_remove:
+                            await self.bot.http.remove_own_reaction(channel, message, reaction)
             else:
                 chosen = self.reactions.index(payload.emoji.name)
-            await self.bot.http.edit_message(channel, message, embed=all_pages[page])
+                await self.bot._state.http.delete_message(channel, message)
+                guild = all_pages[page]["fields"][chosen]["value"].split()[-1]
+                msg = menu["to_send"]
+                await self.send_mail(msg, int(guild), msg)
+
             menu["page"] = page
-            if chosen:
-                menu["chosen"] = chosen
             menus[index] = menu
             await self.bot._connection.redis.set("selection_menus", orjson.dumps(menu).decode("utf-8"))
             break
+
+    @commands.Cog.listener()
+    async def on_raw_message(self, message):
+        if message.author.bot:
+            return
+        prefix = self.bot.config.default_prefix
+        if message.content.startswith(prefix):
+            return
+        if message.author.id in self.bot.banned_users:
+            await message.channel.send(
+                embed=discord.Embed(description="You are banned from this bot.", colour=self.bot.error_colour)
+            )
+            return
+        if self.bot.config.default_server:
+            await self.send_mail(message, self.bot.config.default_server, message.content)
+            return
+        guild = None
+        data = await self.bot.http.get_channel(message.channel.id)
+        message.channel = DMChannel(me=await self.bot.user(), state=self.bot._connection, data=data)
+        async for msg in message.channel.history(limit=30):
+            if (
+                msg.author.id == (await self.bot.user()).id
+                and len(msg.embeds) > 0
+                and msg.embeds[0].title in ["Message Received", "Message Sent"]
+            ):
+                guild = msg.embeds[0].footer.text.split()[-1]
+                guild = await self.bot.get_guild(int(guild))
+                break
+        msg = None
+        confirmation = await self.bot.tools.get_user_settings(self.bot, message.author.id)
+        confirmation = True if confirmation is None or confirmation[1] is True else False
+        if guild and confirmation is False:
+            await self.send_mail(message, guild.id, message.content)
+        elif guild and confirmation is True:
+            embed = discord.Embed(
+                title="Confirmation",
+                description=f"You're sending this message to **{guild.name}** (ID: {guild.id}). React with ✅ "
+                "to confirm.\nWant to send to another server instead? React with 🔁.\nTo cancel this request, "
+                "react with ❌.",
+                colour=self.bot.primary_colour,
+            )
+            embed.set_footer(text=f"Tip: You can disable confirmation messages with the {prefix}confirmation command.")
+            msg = await message.channel.send(embed=embed)
+            await msg.add_reaction("✅")
+            await msg.add_reaction("🔁")
+            await msg.add_reaction("❌")
+
+            menus = await self.bot._connection._get("confirmation_menus") or []
+            menus.append(
+                {"channel": msg.channel.id, "message": msg.id, "content": message.content, "guild_id": message.guild.id}
+            )
+            await self.bot._connection.redis.set("selection_menus", orjson.dumps(menus).decode("utf-8"))
+        else:
+            await self.select_guild(message, prefix)
 
     @commands.dm_only()
     @commands.command(
