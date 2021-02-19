@@ -20,7 +20,7 @@ class General(commands.Cog):
         self.bot = bot
         psutil.cpu_percent()
 
-    @checks.bot_has_permissions(add_reactions=True)
+    @checks.bot_has_permissions(manage_messages=True)
     @commands.command(
         description="Shows the help menu or information for a specific command when specified.",
         usage="help [command]",
@@ -175,6 +175,7 @@ class General(commands.Cog):
         )
         await ctx.send(embed=embed)
 
+    @checks.bot_has_permissions(manage_messages=True)
     @commands.command(
         description="See the amazing stuff we have partnered with.",
         usage="partners",

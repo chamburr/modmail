@@ -118,6 +118,8 @@ class TextChannel(channel.TextChannel):
             denied = Permissions.all_channel()
             base.value &= ~denied.value
 
+        return base
+
     async def permissions_for(self, member):
         base = await self._permissions_for(member)
 

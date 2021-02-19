@@ -20,8 +20,8 @@ class ModMailEvents(commands.Cog):
         if message.author.bot or not message.guild or not checks.is_modmail_channel2(self.bot, message.channel):
             return
         if (
-            message.channel.permissions_for(message.guild.me).send_messages is False
-            or message.channel.permissions_for(message.guild.me).embed_links is False
+            message.channel.permissions_for(await message.guild.me()).send_messages is False
+            or message.channel.permissions_for(await message.guild.me()).embed_links is False
         ):
             return
         prefix = self.bot.tools.get_guild_prefix(self.bot, message.guild)
@@ -39,7 +39,7 @@ class ModMailEvents(commands.Cog):
             await self.send_mail_mod(message, prefix)
 
     async def send_mail_mod(self, message, prefix, anon: bool = False, msg: str = None, snippet: bool = False):
-        self.bot.prom.tickets_message.inc({})
+        # self.bot.prom.tickets_message.inc({})
         data = await self.bot.get_data(message.guild.id)
         if self.bot.tools.get_modmail_user(message.channel) in data[9]:
             await message.channel.send(

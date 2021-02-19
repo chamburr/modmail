@@ -128,6 +128,7 @@ class Snippet(commands.Cog):
     @checks.in_database()
     @checks.is_premium()
     @checks.is_mod()
+    @checks.bot_has_permissions(manage_messages=True)
     @commands.guild_only()
     @commands.command(
         description="View all the snippets or a specific one if specified.",

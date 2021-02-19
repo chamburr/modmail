@@ -129,9 +129,8 @@ class Main:
     #         json.dump(data, f, indent=4)
 
     async def launch(self):
-        # if config.testing is False:
-        #     self.write_targets(clusters)
         print(f"[Cluster Manager] Starting a total of {config.clusters} clusters.")
+        await asyncio.sleep(5)
         for i in range(config.clusters):
             self.instances.append(Instance(i + 1, self.loop, main=self, cluster_count=config.clusters))
 
