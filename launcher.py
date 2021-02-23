@@ -108,7 +108,7 @@ class Main:
 
     async def launch(self):
         print(f"[Cluster Manager] Starting a total of {config.clusters} clusters.")
-        await asyncio.sleep(5)
+        await asyncio.sleep(10)
         for i in range(config.clusters):
             self.instances.append(Instance(i + 1, self.loop, main=self, cluster_count=config.clusters))
 

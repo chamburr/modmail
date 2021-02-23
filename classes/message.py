@@ -35,7 +35,13 @@ class Message(message.Message):
         self.nonce = data.get("nonce")
 
         ref = data.get("message_reference")
-        self.reference = MessageReference(state, **ref) if ref is not None else None
+        self.reference = MessageReference.with_state(state, ref) if ref is not None else None
+
+        try:
+            author = self._data["author"]
+            self._author = self._state.store_user(author)
+        except KeyError:
+            self._author = None
 
         for handler in ("call", "flags"):
             try:
@@ -45,12 +51,7 @@ class Message(message.Message):
 
     @property
     def author(self):
-        try:
-            author = self._data["author"]
-            author = self._state.store_user(author)
-            return author
-        except KeyError:
-            return None
+        return self._author
 
     async def member(self):
         try:

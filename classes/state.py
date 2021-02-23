@@ -53,23 +53,44 @@ class State:
             if attr.startswith("parse_"):
                 self.parsers[attr[6:].upper()] = func
 
-    async def _get(self, key):
-        result = await self.redis.get(key)
-        if result:
-            result = orjson.loads(result)
-            if isinstance(result, dict):
-                result["_key"] = key
-                if result.get("permission_overwrites"):
-                    result["permission_overwrites"] = [
-                        {
-                            "id": x["id"],
-                            "type": "role" if x["type"] == 0 else "member",
-                            "allow": int(x["allow"]),
-                            "deny": int(x["deny"]),
-                        }
-                        for x in result["permission_overwrites"]
-                    ]
-        return result
+    async def _get(self, keys):
+        if isinstance(keys, list):
+            result = await self.redis.mget(*keys)
+            if result != [None]:
+                for index in range(len(result)):
+                    res = orjson.loads(result[index])
+                    if isinstance(res, dict):
+                        res["_key"] = keys[index]
+                        if res.get("permission_overwrites"):
+                            res["permission_overwrites"] = [
+                                {
+                                    "id": x["id"],
+                                    "type": "role" if x["type"] == 0 else "member",
+                                    "allow": int(x["allow"]),
+                                    "deny": int(x["deny"]),
+                                }
+                                for x in res["permission_overwrites"]
+                            ]
+                    result[index] = res
+            return result
+        elif isinstance(keys, str):
+            result = await self.redis.get(keys)
+            if result:
+                result = orjson.loads(result)
+                if isinstance(result, dict):
+                    result["_key"] = keys
+                    if result.get("permission_overwrites"):
+                        result["permission_overwrites"] = [
+                            {
+                                "id": x["id"],
+                                "type": "role" if x["type"] == 0 else "member",
+                                "allow": int(x["allow"]),
+                                "deny": int(x["deny"]),
+                            }
+                            for x in result["permission_overwrites"]
+                        ]
+            return result
+        return None
 
     async def _members(self, key, key_id=None):
         key += "_keys"
@@ -88,15 +109,15 @@ class State:
         return None
 
     async def _members_get_all(self, key, key_id=None, name=None, first=None, second=None, predicate=None):
-        results = []
+        matches = []
         for match in await self._members(key, key_id):
             keys = match.split(":")
             if name is None or keys[0] == str(name):
                 if first is None or (len(keys) >= 1 and keys[1] == str(first)):
                     if second is None or (len(keys) >= 2 and keys[2] == str(second)):
                         if predicate is None or predicate(match) is True:
-                            results.append(await self._get(match))
-        return results
+                            matches.append(match)
+        return await self._get(matches)
 
     def _key_first(self, obj):
         keys = obj["_key"].split(":")

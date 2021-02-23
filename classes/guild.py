@@ -1,6 +1,6 @@
 import logging
 
-from discord import CategoryChannel, InvalidArgument, PermissionOverwrite, guild, utils
+from discord import CategoryChannel, Emoji, InvalidArgument, PermissionOverwrite, guild, utils
 from discord.enums import *
 from discord.enums import try_enum
 from discord.member import Member, VoiceState
@@ -22,6 +22,11 @@ class Guild(guild.Guild):
     async def me(self):
         self_id = (await self._state.user()).id
         return await self.get_member(self_id)
+
+    async def text_channels(self):
+        r = [ch for ch in await self._channels() if isinstance(ch, TextChannel)]
+        r.sort(key=lambda c: (c.position, c.id))
+        return r
 
     def _add_channel(self, channel):
         return
@@ -130,6 +135,12 @@ class Guild(guild.Guild):
             channels.append(factory(guild=self, state=self._state, data=channel))
         return channels
 
+    async def _emojis(self):
+        emojis = []
+        for emoji in await self._state._members_get_all("guild", key_id=self.id, name="emoji"):
+            emojis.append(Emoji(guild=self, state=self._state, data=emoji))
+        return emojis
+
     async def _members(self):
         members = []
         for member in await self._state._members_get_all("guild", key_id=self.id, name="member"):
@@ -188,6 +199,9 @@ class Guild(guild.Guild):
     async def public_updates_channel(self):
         channel_id = self._public_updates_channel_id
         return channel_id and await self.get_channel(channel_id)
+
+    async def emojis(self):
+        return await self._emojis()
 
     async def members(self):
         return await self._members()
