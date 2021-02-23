@@ -76,6 +76,10 @@ def get_modmail_user(channel):
     return int(channel.topic.replace("ModMail Channel ", "").split(" ")[0])
 
 
+def get_modmail_channel(channel):
+    return int(channel.topic.replace("ModMail Channel ", "").split(" ")[1])
+
+
 def perm_format(perm):
     return perm.replace("_", " ").replace("guild", "server").title()
 

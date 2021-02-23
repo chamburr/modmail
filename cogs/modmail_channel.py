@@ -19,10 +19,9 @@ class ModMailEvents(commands.Cog):
     async def on_message(self, message):
         if message.author.bot or not message.guild or not checks.is_modmail_channel2(self.bot, message.channel):
             return
-        if (
-            message.channel.permissions_for(await message.guild.me()).send_messages is False
-            or message.channel.permissions_for(await message.guild.me()).embed_links is False
-        ):
+        if (await message.channel.permissions_for(await message.guild.me())).send_messages is False or (
+            await message.channel.permissions_for(await message.guild.me())
+        ).embed_links is False:
             return
         prefix = self.bot.tools.get_guild_prefix(self.bot, message.guild)
         if message.content.startswith(prefix):
@@ -51,18 +50,15 @@ class ModMailEvents(commands.Cog):
             )
             return
         user = self.bot.tools.get_modmail_user(message.channel)
-        member = message.guild.get_member(user)
-        if member is None:
-            try:
-                member = await message.guild.fetch_member(user)
-            except discord.NotFound:
-                await message.channel.send(
-                    embed=discord.Embed(
-                        description=f"The user was not found. Use `{prefix}close [reason]` to close this channel.",
-                        colour=self.bot.error_colour,
-                    )
+        member = await message.guild.fetch_member(user)
+        if not member:
+            await message.channel.send(
+                embed=discord.Embed(
+                    description=f"The user was not found. Use `{prefix}close [reason]` to close this channel.",
+                    colour=self.bot.error_colour,
                 )
-                return
+            )
+            return
         if snippet is True:
             msg = self.bot.tools.tag_format(msg, member)
         try:
@@ -84,10 +80,16 @@ class ModMailEvents(commands.Cog):
                 saved_file = io.BytesIO()
                 await file.save(saved_file)
                 files.append(discord.File(saved_file, file.filename))
-            message2 = await member.send(embed=embed, files=files)
+            channel = self.bot.tools.get_modmail_channel(message.channel)
+            if len(files) == 0:
+                message2 = await self.bot.http.send_message(channel, content=None, embed=embed.to_dict())
+            else:
+                message2 = await self.bot.http.send_files(
+                    channel, content=None, embed=embed.to_dict(), files=files
+                )
             embed.title = "Message Sent"
             embed.set_footer(text=f"{member} | {member.id}", icon_url=member.avatar_url)
-            for count, attachment in enumerate([attachment.url for attachment in message2.attachments], start=1):
+            for count, attachment in enumerate([attachment["url"] for attachment in message2["attachments"]], start=1):
                 embed.add_field(name=f"Attachment {count}", value=attachment, inline=False)
             for file in files:
                 file.reset()

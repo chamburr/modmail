@@ -72,7 +72,6 @@ class Miscellaneous(commands.Cog):
     )
     async def serverinfo(self, ctx):
         guild = await self.bot.get_guild(ctx.guild.id)
-        log.info(await guild.channels())
         embed = discord.Embed(title="Server Information", colour=self.bot.primary_colour)
         embed.add_field(name="Name", value=guild.name)
         embed.add_field(name="ID", value=guild.id)
@@ -84,7 +83,7 @@ class Miscellaneous(commands.Cog):
         embed.add_field(name="Members", value=guild.member_count)
         embed.add_field(name="Channels", value=len(await guild.channels()))
         embed.add_field(name="Roles", value=len(await guild.roles()))
-        embed.add_field(name="Emojis", value=len(guild.emojis))
+        embed.add_field(name="Emojis", value=len(await guild.emojis()))
         if guild.icon:
             embed.set_thumbnail(url=guild.icon_url)
         await ctx.send(embed=embed)

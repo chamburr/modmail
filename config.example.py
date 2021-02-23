@@ -51,12 +51,17 @@ admins = []
 
 # Cogs to load on startup
 cogs = [
+    "direct_message",
     "configuration",
     "core",
-    "events",
     "error_handler",
-    "owner",
+    "events",
     "general",
+    "miscellaneous",
+    "modmail_channel",
+    "owner",
+    "premium",
+    "snippet",
 ]
 
 # Channels to send logs

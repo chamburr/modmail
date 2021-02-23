@@ -1,5 +1,4 @@
 import asyncio
-import copy
 import datetime
 import io
 import logging
@@ -11,6 +10,7 @@ import orjson
 from discord.channel import DMChannel
 from discord.ext import commands
 
+from classes.state import PartialChannel
 from utils import checks
 
 log = logging.getLogger(__name__)
@@ -26,40 +26,48 @@ class DirectMessageEvents(commands.Cog, name="Direct Message"):
         # self.bot.prom.tickets_message.inc({})
         guild = await self.bot.get_guild(guild)
         if not guild:
-            await message.channel.send(
-                embed=discord.Embed(description="The server was not found.", colour=self.bot.error_colour)
+            await self.bot.http.send_message(
+                message.channel.id,
+                content=None,
+                embed=discord.Embed(description="The server was not found.", colour=self.bot.error_colour).to_dict(),
             )
             return
-        member = await self.bot._redis.sismember(f"guild_members:{guild}", message.author.id)
+        member = await self.bot._redis.sismember(f"user:{message.author.id}", guild.id)
         if not member:
-            await message.channel.send(
+            await self.bot.http.send_message(
+                message.channel.id,
+                content=None,
                 embed=discord.Embed(
                     description="You are not in that server, and the message is not sent.",
                     colour=self.bot.error_colour,
-                )
+                ).to_dict(),
             )
             return
         data = await self.bot.get_data(guild.id)
         category = await guild.get_channel(data[2])
         if not category:
-            await message.channel.send(
+            await self.bot.http.send_message(
+                message.channel.id,
+                content=None,
                 embed=discord.Embed(
                     description="A ModMail category is not found. The bot is not set up properly in the server.",
                     colour=self.bot.error_colour,
-                )
+                ).to_dict(),
             )
             return
         if message.author.id in data[9]:
-            await message.channel.send(
+            await self.bot.http.send_message(
+                message.channel.id,
+                content=None,
                 embed=discord.Embed(
                     description="That server has blacklisted you from sending a message there.",
                     colour=self.bot.error_colour,
-                )
+                ).to_dict(),
             )
             return
         channels = [
             channel
-            for channel in guild.text_channels
+            for channel in (await guild.text_channels())
             if checks.is_modmail_channel2(self.bot, channel, message.author.id)
         ]
         channel_id = None
@@ -82,7 +90,7 @@ class DirectMessageEvents(commands.Cog, name="Direct Message"):
                         0,
                         name=name,
                         parent_id=category.id,
-                        topic=f"ModMail Channel {message.author.id} (Please do not change this)",
+                        topic=f"ModMail Channel {message.author.id} {message.channel.id} (Please do not change this)",
                     )
                 )["id"]
                 new_ticket = True
@@ -102,21 +110,25 @@ class DirectMessageEvents(commands.Cog, name="Direct Message"):
                     except discord.Forbidden:
                         pass
             except discord.Forbidden:
-                await message.channel.send(
+                await self.bot.http.send_message(
+                    message.channel.id,
+                    content=None,
                     embed=discord.Embed(
                         description="The bot is missing permissions to create a channel. Please contact an admin on "
                         "the server.",
                         colour=self.bot.error_colour,
-                    )
+                    ).to_dict(),
                 )
                 return
             except discord.HTTPException as e:
-                await message.channel.send(
+                await self.bot.http.send_message(
+                    message.channel.id,
+                    content=None,
                     embed=discord.Embed(
                         description="A HTTPException error occurred. Please contact an admin on the server with the "
                         f"following error information: {e.text} ({e.code}).",
                         colour=self.bot.error_colour,
-                    )
+                    ).to_dict(),
                 )
                 return
         try:
@@ -164,13 +176,18 @@ class DirectMessageEvents(commands.Cog, name="Direct Message"):
                 saved_file = io.BytesIO()
                 await file.save(saved_file)
                 files.append(discord.File(saved_file, file.filename))
-            message2 = await message.channel.send(embed=embed, files=files)
+            if len(files) == 0:
+                message2 = await self.bot.http.send_message(message.channel.id, content=None, embed=embed.to_dict())
+            else:
+                message2 = await self.bot.http.send_files(
+                    message.channel.id, content=None, embed=embed.to_dict(), files=files
+                )
             embed.title = "Message Received"
             embed.set_footer(
                 text=f"{message.author.name}#{message.author.discriminator} | {message.author.id}",
                 icon_url=message.author.avatar_url,
             )
-            for count, attachment in enumerate([attachment.url for attachment in message2.attachments], start=1):
+            for count, attachment in enumerate([attachment.url for attachment in message2["attachments"]], start=1):
                 embed.add_field(name=f"Attachment {count}", value=attachment, inline=False)
             for file in files:
                 file.reset()
@@ -191,24 +208,16 @@ class DirectMessageEvents(commands.Cog, name="Direct Message"):
             )
 
     async def get_user_guilds(self, user_id):
-        guilds = []
-        for guild in await self.bot.guilds():
-            member = await self.bot._redis.sismember(f"guild_members:{guild.id}", user_id)
-            if not member:
-                continue
-            guilds.append(guild)
-        return guilds
+        return [int(guild) for guild in await self.bot._redis.smembers(f"user:{user_id}")]
 
     async def select_guild(self, message, prefix, msg=None):
-        data = await self.get_user_guilds(message.author.id)
-        guilds = []
-        for chunk in data:
-            guilds.extend(chunk)
+        guilds = await self.get_user_guilds(message.author.id)
         guild_list = {}
-        for guild in guilds:
+        for g in guilds:
+            guild = await self.bot.get_guild(g)
             channels = [
                 channel
-                for channel in guild.text_channels
+                for channel in (await guild.text_channels())
                 if checks.is_modmail_channel2(self.bot, channel, message.author.id)
             ]
             channel = None
@@ -246,12 +255,11 @@ class DirectMessageEvents(commands.Cog, name="Direct Message"):
         if msg:
             await msg.edit(embed=discord.Embed.from_dict(embeds[0]))
         else:
-            msg = await message.channel.send(embed=embeds[0])
-
-        await self.add_reactions(len(embeds[0]["fields"]), msg)
+            msg = await message.channel.send(embed=discord.Embed.from_dict(embeds[0]))
+        await self.add_reactions(len(embeds[0]["fields"]), msg.channel.id, msg.id)
         menus = await self.bot._connection._get("selection_menus") or []
         menus.append(
-            {"channel": msg.channel.id, "message": msg.id, "page": 0, "all_pages": embeds, "to_send": msg.content}
+            {"channel": msg.channel.id, "message": msg.id, "page": 0, "all_pages": embeds, "to_send": message._data}
         )
         await self.bot._connection.redis.set("selection_menus", orjson.dumps(menus).decode("utf-8"))
 
@@ -269,7 +277,7 @@ class DirectMessageEvents(commands.Cog, name="Direct Message"):
             return
         if payload.emoji.name not in self.reactions:
             if payload.emoji.name in ["✅", "🔁", "❌"]:
-                menus = await self.bot._connection._get("confirmation_menus")
+                menus = await self.bot._connection._get("confirmation_menus") or []
                 idx = None
                 for (index, menu) in enumerate(menus):
                     channel = menu["channel"]
@@ -279,13 +287,13 @@ class DirectMessageEvents(commands.Cog, name="Direct Message"):
                     content = menu["content"]
                     guild_id = menu["guild_id"]
                     if payload.emoji.name == "✅":
-                        msg = orjson.loads(await self.bot.http.get_message(channel, message))
-                        await self.bot._state.http.delete_message(channel, message)
+                        msg = self.bot._connection.create_message(channel=PartialChannel(channel), data=menu["msg"])
                         await self.send_mail(msg, guild_id, content)
+                        await self.bot.http.delete_message(channel, message)
                     elif payload.emoji.name == "🔁":
                         for reaction in ["✅", "🔁", "❌"]:
                             await self.bot.http.remove_own_reaction(channel, message, reaction)
-                        await self.select_guild(message, self.bot.config.default_prefix, msg)
+                        await self.select_guild(message, self.bot.config.default_prefix, message)
                     elif payload.emoji.name == "❌":
                         for reaction in ["✅", "🔁", "❌"]:
                             await self.bot.http.remove_own_reaction(channel, message, reaction)
@@ -297,7 +305,7 @@ class DirectMessageEvents(commands.Cog, name="Direct Message"):
                             ).to_dict(),
                         )
                         await asyncio.sleep(5)
-                        await self.bot._state.http.delete_message(channel, message)
+                        await self.bot.http.delete_message(channel, message)
                     idx = index
                     break
 
@@ -305,7 +313,7 @@ class DirectMessageEvents(commands.Cog, name="Direct Message"):
                 await self.bot._connection.redis.set("confirmation_menus", orjson.dumps(menus).decode("utf-8"))
             else:
                 return
-        menus = await self.bot._connection._get("selection_menus")
+        menus = await self.bot._connection._get("selection_menus") or []
         for (index, menu) in enumerate(menus):
             channel = menu["channel"]
             message = menu["message"]
@@ -322,20 +330,26 @@ class DirectMessageEvents(commands.Cog, name="Direct Message"):
                 await self.bot.http.edit_message(channel, message, embed=all_pages[page])
                 if len(all_pages[page]["fields"]) != 10:
                     to_remove = self.reactions[len(all_pages[page]["fields"]) : -2]
-                    msg = orjson.loads(await self.bot.http.get_message(channel, message))
+                    msg = await self.bot.http.get_message(channel, message)
                     for reaction in msg["reactions"]:
                         if reaction in to_remove:
                             await self.bot.http.remove_own_reaction(channel, message, reaction)
             else:
                 chosen = self.reactions.index(payload.emoji.name)
-                await self.bot._state.http.delete_message(channel, message)
+                await self.bot.http.delete_message(channel, message)
                 guild = all_pages[page]["fields"][chosen]["value"].split()[-1]
                 msg = menu["to_send"]
-                await self.send_mail(msg, int(guild), msg)
+                message = self.bot._connection.create_message(channel=PartialChannel(channel), data=msg)
+                if message.content.find(f"{self.bot.config.default_prefix}new") == 0:
+                    await self.send_mail(
+                        message, int(guild), message.content[len(f"{self.bot.config.default_prefix}new") :]
+                    )
+                else:
+                    await self.send_mail(message, int(guild), message.content)
 
             menu["page"] = page
             menus[index] = menu
-            await self.bot._connection.redis.set("selection_menus", orjson.dumps(menu).decode("utf-8"))
+            await self.bot._connection.redis.set("selection_menus", orjson.dumps(menus).decode("utf-8"))
             break
 
     @commands.Cog.listener()
@@ -386,9 +400,15 @@ class DirectMessageEvents(commands.Cog, name="Direct Message"):
 
             menus = await self.bot._connection._get("confirmation_menus") or []
             menus.append(
-                {"channel": msg.channel.id, "message": msg.id, "content": message.content, "guild_id": message.guild.id}
+                {
+                    "channel": msg.channel.id,
+                    "message": msg.id,
+                    "content": message.content,
+                    "guild_id": guild.id,
+                    "msg": message._data,
+                }
             )
-            await self.bot._connection.redis.set("selection_menus", orjson.dumps(menus).decode("utf-8"))
+            await self.bot._connection.redis.set("confirmation_menus", orjson.dumps(menus).decode("utf-8"))
         else:
             await self.select_guild(message, prefix)
 
@@ -398,10 +418,10 @@ class DirectMessageEvents(commands.Cog, name="Direct Message"):
         usage="new <message>",
         aliases=["create", "switch", "change"],
     )
-    async def new(self, ctx, *, message):
-        msg = copy.copy(ctx.message)
-        msg.content = message
-        await self.select_guild(msg, ctx.prefix)
+    async def new(self, ctx):
+        data = await self.bot.http.get_channel(ctx.message.channel.id)
+        ctx.message.channel = DMChannel(me=await self.bot.user(), state=self.bot._connection, data=data)
+        await self.select_guild(ctx.message, ctx.prefix)
 
     @commands.dm_only()
     @commands.command(description="Shortcut to send message to a server.", usage="send <server ID> <message>")

@@ -82,7 +82,7 @@ class Events(commands.Cog):
     async def on_socket_raw_receive(self, message):
         message = orjson.loads(message)
         if message["t"] == "PRESENCE_UPDATE":
-            await self.bot._redis.sadd(f"guild_members:{message['d']['guild_id']}", message["d"]["user"]["id"])
+            await self.bot._redis.sadd(f"user:{message['d']['user']['id']}", message["d"]["guild_id"])
         if message["t"] == "GUILD_MEMBER_UPDATE":
             if int(message["d"]["user"]["id"]) == (await self.bot.user()).id:
                 member = orjson.loads(
@@ -93,15 +93,14 @@ class Events(commands.Cog):
                     await self.bot._redis.set(
                         f"member:{message['d']['guild_id']}:{(await self.bot.user()).id}", orjson.dumps(member)
                     )
-            await self.bot._redis.sadd(f"guild_members:{message['d']['guild_id']}", message["d"]["user"]["id"])
+            await self.bot._redis.sadd(f"user:{message['d']['user']['id']}", message["d"]["guild_id"])
         if message["t"] == "GUILD_CREATE":
-            await self.bot._redis.delete(f"guild_members:{message['d']['id']}")
             for member in message["d"]["members"]:
                 if int(member["user"]["id"]) == (await self.bot.user()).id:
                     await self.bot._redis.set(
                         f"member:{message['d']['id']}:{(await self.bot.user()).id}", orjson.dumps(member)
                     )
-                await self.bot._redis.sadd(f"guild_members:{message['d']['id']}", member["user"]["id"])
+                await self.bot._redis.sadd(f"user:{member['user']['id']}", message["d"]["id"])
 
     @commands.Cog.listener()
     async def on_reaction_add(self, reaction, member):
@@ -245,13 +244,13 @@ class Events(commands.Cog):
             await self.bot._redis.set(
                 f"member:{member.guild.id}:{(await self.bot.user().id)}", orjson.dumps(member._data)
             )
-        await self.bot._redis.sadd(f"guild_members:{member.guild.id}", member.id)
+        await self.bot._redis.sadd(f"user:{member.id}", member.guild.id)
 
     @commands.Cog.listener()
     async def on_member_remove(self, member):
         if member.id == (await self.bot.user()).id:
             await self.bot._redis.delete(f"member:{member.guild.id}:{(await self.bot.user().id)}")
-        await self.bot._redis.srem(f"guild_members:{member.guild.id}", member.id)
+        await self.bot._redis.srem(f"user:{member.id}", member.guild.id)
 
 
 def setup(bot):
