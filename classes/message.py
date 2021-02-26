@@ -53,6 +53,10 @@ class Message(message.Message):
     def author(self):
         return self._author
 
+    @author.setter
+    def author(self, value):
+        self._author = value
+
     async def member(self):
         try:
             member = self._data["member"]

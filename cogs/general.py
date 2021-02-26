@@ -100,16 +100,21 @@ class General(commands.Cog):
                     page.add_field(name=cmd.name, value=cmd.description, inline=False)
             all_pages.append(page)
         for page in range(len(all_pages)):
-            all_pages[page].set_author(
-                name=f"{(await self.bot.user()).name} partners", icon_url=(await self.bot.user()).avatar_url
-            )
             all_pages[page].set_footer(text=f"Use the reactions to flip pages. (Page {page + 1}/{len(all_pages)})")
             all_pages[page] = all_pages[page].to_dict()
         msg = await ctx.send(embed=discord.Embed.from_dict(all_pages[0]))
         for reaction in ["⏮️", "◀️", "⏹️", "▶️", "⏭️"]:
             await msg.add_reaction(reaction)
         menus = await self.bot._connection._get("reaction_menus") or []
-        menus.append({"channel": msg.channel.id, "message": msg.id, "page": 0, "all_pages": all_pages})
+        menus.append(
+            {
+                "channel": msg.channel.id,
+                "message": msg.id,
+                "page": 0,
+                "all_pages": all_pages,
+                "end": datetime.timestamp(datetime.now()) + 2 * 60,
+            }
+        )
         await self.bot._connection.redis.set("reaction_menus", orjson.dumps(menus).decode("utf-8"))
 
     @commands.command(description="Pong! Get my latency.", usage="ping")
@@ -329,7 +334,15 @@ class General(commands.Cog):
         for reaction in ["⏮️", "◀️", "⏹️", "▶️", "⏭️"]:
             await msg.add_reaction(reaction)
         menus = await self.bot._connection._get("reaction_menus") or []
-        menus.append({"channel": msg.channel.id, "message": msg.id, "page": 0, "all_pages": all_pages})
+        menus.append(
+            {
+                "channel": msg.channel.id,
+                "message": msg.id,
+                "page": 0,
+                "all_pages": all_pages,
+                "end": datetime.timestamp(datetime.now()) + 2 * 60,
+            }
+        )
         await self.bot._connection.redis.set("reaction_menus", orjson.dumps(menus).decode("utf-8"))
 
     @commands.command(description="Get a link to invite me.", usage="invite")

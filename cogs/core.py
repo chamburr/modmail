@@ -56,10 +56,11 @@ class Core(commands.Cog):
                 icon_url=ctx.author.avatar_url if anon is False else "https://cdn.discordapp.com/embed/avatars/0.png",
             )
             embed.set_footer(text=f"{ctx.guild.name} | {ctx.guild.id}", icon_url=ctx.guild.icon_url)
-            member = ctx.guild.get_member(self.bot.tools.get_modmail_user(ctx.channel))
+            member = await ctx.guild.fetch_member(self.bot.tools.get_modmail_user(ctx.channel))
             if member:
                 try:
                     data = await self.bot.get_data(ctx.guild.id)
+                    channel = self.bot.tools.get_modmail_channel(ctx.channel)
                     if data[6]:
                         embed2 = discord.Embed(
                             title="Custom Closing Message",
@@ -71,12 +72,12 @@ class Core(commands.Cog):
                             text=f"{ctx.guild.name} | {ctx.guild.id}",
                             icon_url=ctx.guild.icon_url,
                         )
-                        await member.send(embed=embed2)
-                    await member.send(embed=embed)
+                        await self.bot.http.send_message(channel, content=None, embed=embed2.to_dict())
+                    await self.bot.http.send_message(channel, content=None, embed=embed.to_dict())
                 except discord.Forbidden:
                     pass
             if data[4]:
-                channel = ctx.guild.get_channel(data[4])
+                channel = await ctx.guild.get_channel(data[4])
                 if channel:
                     try:
                         if member is None:
@@ -92,7 +93,7 @@ class Core(commands.Cog):
                             history = ""
                             for m in messages:
                                 if m.author.bot and (
-                                    m.author.id != self.bot.user.id
+                                    m.author.id != (await self.bot.user()).id
                                     or len(m.embeds) <= 0
                                     or m.embeds[0].title not in ["Message Received", "Message Sent"]
                                 ):
@@ -147,7 +148,7 @@ class Core(commands.Cog):
     @checks.is_modmail_channel()
     @checks.in_database()
     @checks.is_mod()
-    @commands.bot_has_permissions(manage_channels=True)
+    @checks.bot_has_permissions(manage_channels=True)
     @commands.guild_only()
     @commands.command(description="Close the channel.", usage="close [reason]")
     async def close(self, ctx, *, reason: str = None):
@@ -156,7 +157,7 @@ class Core(commands.Cog):
     @checks.is_modmail_channel()
     @checks.in_database()
     @checks.is_mod()
-    @commands.bot_has_permissions(manage_channels=True)
+    @checks.bot_has_permissions(manage_channels=True)
     @commands.guild_only()
     @commands.command(description="Close the channel anonymously.", usage="aclose [reason]")
     async def aclose(self, ctx, *, reason: str = None):
@@ -164,11 +165,11 @@ class Core(commands.Cog):
 
     @checks.in_database()
     @checks.is_mod()
-    @commands.bot_has_permissions(manage_channels=True)
+    @checks.bot_has_permissions(manage_channels=True)
     @commands.guild_only()
     @commands.command(description="Close all of the channels.", usage="closeall [reason]")
     async def closeall(self, ctx, *, reason: str = None):
-        for channel in ctx.guild.text_channels:
+        for channel in await ctx.guild.text_channels():
             if checks.is_modmail_channel2(self.bot, channel):
                 msg = copy.copy(ctx.message)
                 msg.channel = channel
@@ -186,11 +187,11 @@ class Core(commands.Cog):
 
     @checks.in_database()
     @checks.is_mod()
-    @commands.bot_has_permissions(manage_channels=True)
+    @checks.bot_has_permissions(manage_channels=True)
     @commands.guild_only()
     @commands.command(description="Close all of the channels anonymously.", usage="acloseall [reason]")
     async def acloseall(self, ctx, *, reason: str = None):
-        for channel in ctx.guild.text_channels:
+        for channel in await ctx.guild.text_channels():
             if checks.is_modmail_channel2(self.bot, channel):
                 msg = copy.copy(ctx.message)
                 msg.channel = channel
@@ -288,7 +289,15 @@ class Core(commands.Cog):
         for reaction in ["⏮️", "◀️", "⏹️", "▶️", "⏭️"]:
             await msg.add_reaction(reaction)
         menus = await self.bot._connection._get("reaction_menus") or []
-        menus.append({"channel": msg.channel.id, "message": msg.id, "page": 0, "all_pages": all_pages})
+        menus.append(
+            {
+                "channel": msg.channel.id,
+                "message": msg.id,
+                "page": 0,
+                "all_pages": all_pages,
+                "end": datetime.datetime.timestamp(datetime.datetime.now()) + 2 * 60,
+            }
+        )
         await self.bot._connection.redis.set("reaction_menus", orjson.dumps(menus).decode("utf-8"))
 
 

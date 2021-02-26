@@ -84,9 +84,7 @@ class ModMailEvents(commands.Cog):
             if len(files) == 0:
                 message2 = await self.bot.http.send_message(channel, content=None, embed=embed.to_dict())
             else:
-                message2 = await self.bot.http.send_files(
-                    channel, content=None, embed=embed.to_dict(), files=files
-                )
+                message2 = await self.bot.http.send_files(channel, content=None, embed=embed.to_dict(), files=files)
             embed.title = "Message Sent"
             embed.set_footer(text=f"{member} | {member.id}", icon_url=member.avatar_url)
             for count, attachment in enumerate([attachment["url"] for attachment in message2["attachments"]], start=1):

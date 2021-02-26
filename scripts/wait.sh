@@ -24,7 +24,7 @@
 # SOFTWARE.
 
 set -- "$@" -- "$TIMEOUT" "$QUIET" "$HOST" "$PORT" "$result"
-TIMEOUT=15
+TIMEOUT=20
 QUIET=0
 
 echoerr() {

@@ -34,6 +34,10 @@ redis_url = ""
 # Postgres credentials
 postgres_url = ""
 
+# Server
+http_url = ""
+http_port = ""
+
 # Number of clusters
 clusters = 1
 

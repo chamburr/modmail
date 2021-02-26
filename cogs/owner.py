@@ -30,53 +30,6 @@ class Owner(commands.Cog):
         self.bot = bot
         self._last_result = None
 
-    # @checks.is_owner()
-    # @commands.command(description="Load a module.", usage="load <cog>", hidden=True)
-    # async def load(self, ctx, *, cog: str):
-    #     data = await self.bot.comm.handler("load_extension", self.bot.cluster_count, {"cog": cog})
-    #     if not data or data[0] != "Success":
-    #         await ctx.send(embed=discord.Embed(description=f"Error: {data[0]}", colour=self.bot.error_colour))
-    #     else:
-    #         await ctx.send(
-    #             embed=discord.Embed(description="Successfully loaded the module.", colour=self.bot.primary_colour)
-    #         )
-    #
-    # @checks.is_owner()
-    # @commands.command(description="Unload a module.", usage="unload <cog>", hidden=True)
-    # async def unload(self, ctx, *, cog: str):
-    #     data = await self.bot.comm.handler("unload_extension", self.bot.cluster_count, {"cog": cog})
-    #     if not data or data[0] != "Success":
-    #         await ctx.send(embed=discord.Embed(description=f"Error: {data[0]}", colour=self.bot.error_colour))
-    #     else:
-    #         await ctx.send(
-    #             embed=discord.Embed(description="Successfully unloaded the module.", colour=self.bot.primary_colour)
-    #         )
-    #
-    # @checks.is_owner()
-    # @commands.command(description="Reload a module.", usage="reload <cog>", hidden=True)
-    # async def reload(self, ctx, *, cog: str):
-    #     data = await self.bot.comm.handler("reload_extension", self.bot.cluster_count, {"cog": cog})
-    #     if not data or data[0] != "Success":
-    #         await ctx.send(embed=discord.Embed(description=f"Error: {data[0]}", colour=self.bot.error_colour))
-    #     else:
-    #         await ctx.send(
-    #             embed=discord.Embed(description="Successfully reloaded the module.", colour=self.bot.primary_colour)
-    #         )
-    #
-    # @checks.is_owner()
-    # @commands.command(description="Reload a library.", usage="reloadlib", hidden=True)
-    # async def reloadlib(self, ctx, *, lib: str):
-    #     data = await self.bot.comm.handler("reload_import", self.bot.cluster_count, {"lib": lib})
-    #     if not data or data[0] != "Success":
-    #         await ctx.send(embed=discord.Embed(description=f"Error: {data[0]}", colour=self.bot.error_colour))
-    #     else:
-    #         await ctx.send(
-    #             embed=discord.Embed(
-    #                 description="Successfully reloaded the library.",
-    #                 colour=self.bot.primary_colour,
-    #             )
-    #         )
-
     @checks.is_owner()
     @commands.command(name="eval", description="Evaluate code.", usage="eval <code>", hidden=True)
     async def _eval(self, ctx, *, body: str):
@@ -162,20 +115,20 @@ class Owner(commands.Cog):
         else:
             await ctx.send(embed=discord.Embed(description="No results to fetch.", colour=self.bot.primary_colour))
 
-    # @checks.is_owner()
-    # @commands.command(
-    #     description="Invoke the command as another user and optionally in another channel.",
-    #     usage="invoke [channel] <user> <command>",
-    #     hidden=True,
-    # )
-    # async def invoke(self, ctx, channel: Optional[channel.TextChannel], user: converters.GlobalUser, *, command: str):
-    #     msg = copy.copy(ctx.message)
-    #     channel = channel or ctx.channel
-    #     msg.channel = channel
-    #     msg.author = channel.guild.get_member(user.id) or user
-    #     msg.content = ctx.prefix + command
-    #     new_ctx = await self.bot.get_context(msg, cls=type(ctx))
-    #     await self.bot.invoke(new_ctx)
+    @checks.is_owner()
+    @commands.command(
+        description="Invoke the command as another user and optionally in another channel.",
+        usage="invoke [channel] <user> <command>",
+        hidden=True,
+    )
+    async def invoke(self, ctx, channel: Optional[channel.TextChannel], user: converters.GlobalUser, *, command: str):
+        msg = copy.copy(ctx.message)
+        channel = channel or ctx.channel
+        msg.channel = channel
+        msg.author = user
+        msg.content = ctx.prefix + command
+        new_ctx = await self.bot.get_context(msg, cls=type(ctx))
+        await self.bot.invoke(new_ctx)
 
     @checks.is_owner()
     @commands.command(description="Give a user temporary premium.", usage="givepremium <user> <expiry>", hidden=True)
@@ -247,45 +200,49 @@ class Owner(commands.Cog):
             )
         )
 
-    #
-    # @checks.is_owner()
-    # @commands.command(description="Make the bot leave a server.", usage="leaveserver <server ID>", hidden=True)
-    # async def leaveserver(self, ctx, *, guild: converters.GlobalGuild):
-    #     await self.bot.comm.handler("leave_guild", -1, {"guild_id": guild.id})
-    #     await ctx.send(embed=discord.Embed(description="The bot has left that server.", colour=self.bot.primary_colour))
-    #
-    # @checks.is_owner()
-    # @commands.command(description="Ban a server from the bot", usage="banserver <server ID>", hidden=True)
-    # async def banserver(self, ctx, *, guild: converters.GlobalGuild):
-    #     await self.bot.comm.handler("leave_guild", -1, {"guild_id": guild.id})
-    #     async with self.bot.pool.acquire() as conn:
-    #         await conn.execute("INSERT INTO ban (identifier, category) VALUES ($1, $2)", guild.id, 1)
-    #     self.bot.banned_guilds.append(guild.id)
-    #     await ctx.send(
-    #         embed=discord.Embed(
-    #             description="Successfully banned that server from the bot.",
-    #             colour=self.bot.primary_colour,
-    #         )
-    #     )
-    #
-    # @checks.is_owner()
-    # @commands.command(description="Unban a server from the bot", usage="unbanserver <server ID>", hidden=True)
-    # async def unbanserver(self, ctx, *, guild: int):
-    #     async with self.bot.pool.acquire() as conn:
-    #         res = await conn.fetchrow("SELECT * FROM ban WHERE identifier=$1 AND category=$2", guild, 1)
-    #         if not res:
-    #             await ctx.send(
-    #                 embed=discord.Embed(description="That server is not banned.", colour=self.bot.error_colour)
-    #             )
-    #             return
-    #         await conn.execute("DELETE FROM ban WHERE identifier=$1 AND category=$2", guild, 1)
-    #     self.bot.banned_guilds.remove(guild)
-    #     await ctx.send(
-    #         embed=discord.Embed(
-    #             description="Successfully unbanned that server from the bot.",
-    #             colour=self.bot.primary_colour,
-    #         )
-    #     )
+    @checks.is_owner()
+    @commands.command(description="Make the bot leave a server.", usage="leaveserver <server ID>", hidden=True)
+    async def leaveserver(self, ctx, *, guild_id: int):
+        guild = await self.bot.get_guild(guild_id)
+        if not guild:
+            return
+        await guild.leave()
+        await ctx.send(embed=discord.Embed(description="The bot has left that server.", colour=self.bot.primary_colour))
+
+    @checks.is_owner()
+    @commands.command(description="Ban a server from the bot", usage="banserver <server ID>", hidden=True)
+    async def banserver(self, ctx, *, guild_id: int):
+        guild = await self.bot.get_guild(guild_id)
+        if not guild:
+            return
+        async with self.bot.pool.acquire() as conn:
+            await conn.execute("INSERT INTO ban (identifier, category) VALUES ($1, $2)", guild_id, 1)
+        self.bot.banned_guilds.append(guild_id)
+        await ctx.send(
+            embed=discord.Embed(
+                description="Successfully banned that server from the bot.",
+                colour=self.bot.primary_colour,
+            )
+        )
+
+    @checks.is_owner()
+    @commands.command(description="Unban a server from the bot", usage="unbanserver <server ID>", hidden=True)
+    async def unbanserver(self, ctx, *, guild_id: int):
+        async with self.bot.pool.acquire() as conn:
+            res = await conn.fetchrow("SELECT * FROM ban WHERE identifier=$1 AND category=$2", guild_id, 1)
+            if not res:
+                await ctx.send(
+                    embed=discord.Embed(description="That server is not banned.", colour=self.bot.error_colour)
+                )
+                return
+            await conn.execute("DELETE FROM ban WHERE identifier=$1 AND category=$2", guild_id, 1)
+        self.bot.banned_guilds.remove(guild_id)
+        await ctx.send(
+            embed=discord.Embed(
+                description="Successfully unbanned that server from the bot.",
+                colour=self.bot.primary_colour,
+            )
+        )
 
 
 def setup(bot):

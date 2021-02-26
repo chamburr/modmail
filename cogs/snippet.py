@@ -1,5 +1,7 @@
 import logging
 
+from datetime import datetime
+
 import discord
 import orjson
 
@@ -185,7 +187,15 @@ class Snippet(commands.Cog):
         for reaction in ["⏮️", "◀️", "⏹️", "▶️", "⏭️"]:
             await msg.add_reaction(reaction)
         menus = await self.bot._connection._get("reaction_menus") or []
-        menus.append({"channel": msg.channel.id, "message": msg.id, "page": 0, "all_pages": all_pages})
+        menus.append(
+            {
+                "channel": msg.channel.id,
+                "message": msg.id,
+                "page": 0,
+                "all_pages": all_pages,
+                "end": datetime.timestamp(datetime.now()) + 2 * 60,
+            }
+        )
         await self.bot._connection.redis.set("reaction_menus", orjson.dumps(menus).decode("utf-8"))
 
 

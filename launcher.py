@@ -4,7 +4,14 @@ import signal
 import sys
 import time
 
+from datetime import datetime
 from pathlib import Path
+
+import aioredis
+import discord
+import orjson
+
+from aiohttp import web
 
 import config
 
@@ -76,6 +83,84 @@ class Instance:
         await self.start()
 
 
+class Scheduler:
+    def __init__(self, loop):
+        self.loop = loop
+        self.redis = None
+        self.http = None
+        self.reactions = ["1⃣", "2⃣", "3⃣", "4⃣", "5⃣", "6⃣", "7⃣", "8⃣", "9⃣", "🔟", "◀️", "▶️"]
+
+    async def _login(self):
+        client = discord.Client()
+        await client.http.static_login(config.token, bot=True)
+        return client.http
+
+    async def cleanup(self):
+        rm = await self.redis.get("reaction_menus")
+        if rm:
+            rm = orjson.loads(rm)
+            filtered_rm = []
+            for menu in rm:
+                if menu["end"] <= datetime.timestamp(datetime.now()):
+                    try:
+                        await self.http.clear_reactions(menu["channel"], menu["message"])
+                    except discord.Forbidden:
+                        for reaction in ["⏮️", "◀️", "⏹️", "▶️", "⏭️"]:
+                            await self.http.remove_own_reaction(menu["channel"], menu["message"], reaction)
+                else:
+                    filtered_rm.append(menu)
+            await self.redis.set("reaction_menus", orjson.dumps(filtered_rm).decode("utf-8"))
+        sm = await self.redis.get("selection_menus")
+        if sm:
+            sm = orjson.loads(sm)
+            filtered_sm = []
+            for menu in sm:
+                if menu["end"] <= datetime.timestamp(datetime.now()):
+                    channel_id = menu["channel"]
+                    message_id = menu["message"]
+                    reactions = len(menu["all_pages"][menu["page"]]["fields"])
+                    await self.http.remove_own_reaction(channel_id, message_id, "◀")
+                    await self.http.remove_own_reaction(channel_id, message_id, "▶")
+                    for index in range(reactions):
+                        await self.http.remove_own_reaction(channel_id, message_id, self.reactions[index])
+
+                    await self.http.edit_message(
+                        menu["channel"],
+                        menu["message"],
+                        embed=discord.Embed(
+                            description="Time out. You did not choose anything.", colour=config.error_colour
+                        ).to_dict(),
+                    )
+                else:
+                    filtered_sm.append(menu)
+            await self.redis.set("selection_menus", orjson.dumps(filtered_sm).decode("utf-8"))
+        cm = await self.redis.get("confirmation_menus")
+        if cm:
+            cm = orjson.loads(cm)
+            filtered_cm = []
+            for menu in cm:
+                if menu["end"] <= datetime.timestamp(datetime.now()):
+                    await self.http.edit_message(
+                        menu["channel"],
+                        menu["message"],
+                        embed=discord.Embed(
+                            description="Time out. You did not choose anything.", colour=config.error_colour
+                        ).to_dict(),
+                    )
+                    for reaction in ["✅", "🔁", "❌"]:
+                        await self.http.remove_own_reaction(menu["channel"], menu["message"], reaction)
+                else:
+                    filtered_cm.append(menu)
+            await self.redis.set("confirmation_menus", orjson.dumps(filtered_cm).decode("utf-8"))
+
+    async def launch(self):
+        self.redis = await aioredis.create_redis_pool(config.redis_url, minsize=5, maxsize=10, loop=self.loop)
+        self.http = await self._login()
+        while True:
+            await self.cleanup()
+            await asyncio.sleep(5)
+
+
 class Main:
     def __init__(self, loop):
         self.loop = loop
@@ -97,6 +182,14 @@ class Main:
                 return element
         return None
 
+    async def post_restart(self, _):
+        for instance in self.instances:
+            self.loop.create_task(instance.restart())
+
+    async def post_stop(self, _):
+        for instance in self.instances:
+            self.loop.create_task(instance.stop())
+
     # def write_targets(self, clusters):
     #     data = []
     #     for i, shard_list in enumerate(clusters, 1):
@@ -111,11 +204,16 @@ class Main:
         await asyncio.sleep(10)
         for i in range(config.clusters):
             self.instances.append(Instance(i + 1, self.loop, main=self, cluster_count=config.clusters))
+        # app = web.Application()
+        # app.add_routes([web.get("/restart", self.post_restart), web.get("/stop", self.post_stop)])
+        # web.run_app(app, host=config.http_url, port=config.http_port, path="/api")
 
 
 loop = asyncio.get_event_loop()
 main = Main(loop=loop)
 loop.create_task(main.launch())
+scheduler = Scheduler(loop=loop)
+loop.create_task(scheduler.launch())
 
 try:
     loop.run_forever()
