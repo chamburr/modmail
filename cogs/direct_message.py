@@ -259,7 +259,14 @@ class DirectMessageEvents(commands.Cog, name="Direct Message"):
         await self.add_reactions(len(embeds[0]["fields"]), msg.channel.id, msg.id)
         menus = await self.bot._connection._get("selection_menus") or []
         menus.append(
-            {"channel": msg.channel.id, "message": msg.id, "page": 0, "all_pages": embeds, "to_send": message._data}
+            {
+                "channel": msg.channel.id,
+                "message": msg.id,
+                "page": 0,
+                "all_pages": embeds,
+                "to_send": message._data,
+                "end": datetime.datetime.timestamp(datetime.datetime.now()) + 2 * 60,
+            }
         )
         await self.bot._connection.redis.set("selection_menus", orjson.dumps(menus).decode("utf-8"))
 
@@ -293,7 +300,9 @@ class DirectMessageEvents(commands.Cog, name="Direct Message"):
                     elif payload.emoji.name == "🔁":
                         for reaction in ["✅", "🔁", "❌"]:
                             await self.bot.http.remove_own_reaction(channel, message, reaction)
-                        await self.select_guild(message, self.bot.config.default_prefix, message)
+                        msg = self.bot._connection.create_message(channel=PartialChannel(channel), data=menu["msg"])
+                        msg2 = self.bot._connection.create_message(channel=PartialChannel(channel), data=menu["msg2"])
+                        await self.select_guild(msg, self.bot.config.default_prefix, msg2)
                     elif payload.emoji.name == "❌":
                         for reaction in ["✅", "🔁", "❌"]:
                             await self.bot.http.remove_own_reaction(channel, message, reaction)
@@ -309,11 +318,12 @@ class DirectMessageEvents(commands.Cog, name="Direct Message"):
                     idx = index
                     break
 
-                del menus[idx]
+                if idx:
+                    del menus[idx]
                 await self.bot._connection.redis.set("confirmation_menus", orjson.dumps(menus).decode("utf-8"))
-            else:
-                return
+            return
         menus = await self.bot._connection._get("selection_menus") or []
+        idx = None
         for (index, menu) in enumerate(menus):
             channel = menu["channel"]
             message = menu["message"]
@@ -344,11 +354,15 @@ class DirectMessageEvents(commands.Cog, name="Direct Message"):
                     await self.send_mail(
                         message, int(guild), message.content[len(f"{self.bot.config.default_prefix}new") :]
                     )
+                    idx = index
                 else:
                     await self.send_mail(message, int(guild), message.content)
+                    idx = index
 
             menu["page"] = page
             menus[index] = menu
+            if idx:
+                del menus[idx]
             await self.bot._connection.redis.set("selection_menus", orjson.dumps(menus).decode("utf-8"))
             break
 
@@ -406,6 +420,8 @@ class DirectMessageEvents(commands.Cog, name="Direct Message"):
                     "content": message.content,
                     "guild_id": guild.id,
                     "msg": message._data,
+                    "msg2": msg._data,
+                    "end": datetime.datetime.timestamp(datetime.datetime.now()) + 2 * 60,
                 }
             )
             await self.bot._connection.redis.set("confirmation_menus", orjson.dumps(menus).decode("utf-8"))

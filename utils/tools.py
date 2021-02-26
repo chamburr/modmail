@@ -1,7 +1,5 @@
 import logging
 
-from discord import utils
-
 log = logging.getLogger(__name__)
 
 
@@ -20,7 +18,7 @@ async def get_user_premium(bot, user_id):
     guild = await bot.get_guild(bot.config.main_server)
     if not guild:
         return
-    member = await bot._redis.sismember(f"guild_members:{guild.id}", user_id)
+    member = await bot._redis.sismember(f"user:{user_id}", guild.id)
     if not member:
         return
     roles = (await bot.http.get_member(guild.id, user_id))["roles"]
