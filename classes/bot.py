@@ -5,6 +5,7 @@ import sys
 import traceback
 
 import aio_pika
+import aiohttp
 import aioredis
 import asyncpg
 import orjson
@@ -75,6 +76,7 @@ class ModMail(commands.AutoShardedBot):
         self._amqp_channel = None
         self._amqp_queue = None
 
+        self.session = aiohttp.ClientSession(loop=self.loop)
         self.cluster = kwargs.get("cluster_id")
         self.cluster_count = kwargs.get("cluster_count")
         self.version = kwargs.get("version")

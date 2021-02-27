@@ -20,38 +20,37 @@ class Events(commands.Cog):
 
     async def bot_stats_updater(self):
         while True:
-            guilds = await self.bot.comm.handler("guild_count", self.bot.cluster_count)
-            if len(guilds) < self.bot.cluster_count:
+            guilds = len(await self.bot.guilds())
+            if guilds < self.bot.cluster_count:
                 await asyncio.sleep(300)
                 continue
-            guilds = sum(guilds)
             await self.bot.session.post(
-                f"https://top.gg/api/bots/{self.bot.user.id}/stats",
-                data=json.dumps({"server_count": guilds, "shard_count": self.bot.shard_count}),
+                f"https://top.gg/api/bots/{(await self.bot.user()).id}/stats",
+                data=json.dumps({"server_count": guilds, "shard_count": await self.bot.shard_count()}),
                 headers={"Authorization": self.bot.config.topgg_token, "Content-Type": "application/json"},
             )
             await self.bot.session.post(
-                f"https://discord.bots.gg/api/v1/bots/{self.bot.user.id}/stats",
-                data=json.dumps({"guildCount": guilds, "shardCount": self.bot.shard_count}),
+                f"https://discord.bots.gg/api/v1/bots/{(await self.bot.user()).id}/stats",
+                data=json.dumps({"guildCount": guilds, "shardCount": await self.bot.shard_count()}),
                 headers={"Authorization": self.bot.config.dbots_token, "Content-Type": "application/json"},
             )
             await self.bot.session.post(
-                f"https://discordbotlist.com/api/v1/bots/{self.bot.user.id}/stats",
+                f"https://discordbotlist.com/api/v1/bots/{(await self.bot.user()).id}/stats",
                 data=json.dumps({"guilds": guilds}),
                 headers={"Authorization": self.bot.config.dbl_token, "Content-Type": "application/json"},
             )
             await self.bot.session.post(
-                f"https://bots.ondiscord.xyz/bot-api/bots/{self.bot.user.id}/guilds",
+                f"https://bots.ondiscord.xyz/bot-api/bots/{(await self.bot.user()).id}/guilds",
                 data=json.dumps({"guildCount": guilds}),
                 headers={"Authorization": self.bot.config.bod_token, "Content-Type": "application/json"},
             )
             await self.bot.session.post(
-                f"https://botsfordiscord.com/api/bot/{self.bot.user.id}",
+                f"https://botsfordiscord.com/api/bot/{(await self.bot.user()).id}",
                 data=json.dumps({"server_count": guilds}),
                 headers={"Authorization": self.bot.config.bfd_token, "Content-Type": "application/json"},
             )
             await self.bot.session.post(
-                f"https://discord.boats/api/v2/bot/{self.bot.user.id}",
+                f"https://discord.boats/api/v2/bot/{(await self.bot.user()).id}",
                 data=json.dumps({"server_count": guilds}),
                 headers={"Authorization": self.bot.config.dboats_token, "Content-Type": "application/json"},
             )

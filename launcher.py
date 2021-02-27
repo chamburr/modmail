@@ -182,13 +182,13 @@ class Main:
                 return element
         return None
 
-    async def post_restart(self, _):
-        for instance in self.instances:
-            self.loop.create_task(instance.restart())
-
-    async def post_stop(self, _):
-        for instance in self.instances:
-            self.loop.create_task(instance.stop())
+    async def handler(self, request):
+        if request.path == "/restart":
+            for instance in self.instances:
+                self.loop.create_task(instance.restart())
+        elif request.path == "/stop":
+            for instance in self.instances:
+                self.loop.create_task(instance.stop())
 
     # def write_targets(self, clusters):
     #     data = []
@@ -204,9 +204,12 @@ class Main:
         await asyncio.sleep(10)
         for i in range(config.clusters):
             self.instances.append(Instance(i + 1, self.loop, main=self, cluster_count=config.clusters))
-        # app = web.Application()
-        # app.add_routes([web.get("/restart", self.post_restart), web.get("/stop", self.post_stop)])
-        # web.run_app(app, host=config.http_url, port=config.http_port, path="/api")
+
+        server = web.Server(self.handler)
+        runner = web.ServerRunner(server)
+        await runner.setup()
+        site = web.TCPSite(runner, config.http_host, config.http_port)
+        await site.start()
 
 
 loop = asyncio.get_event_loop()

@@ -16,6 +16,7 @@ log = logging.getLogger(__name__)
 class Admin(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
+        self.uri = f"http://{self.bot.config.http_host}:{self.bot.config.http_port}"
 
     # @checks.is_admin()
     # @commands.command(
@@ -156,17 +157,17 @@ class Admin(commands.Cog):
     #     await ctx.send(embed=discord.Embed(description="Starting...", colour=self.bot.primary_colour))
     #     await self.bot.comm.handler("start", 0, scope="launcher", cluster=cluster)
 
-    # @checks.is_admin()
-    # @commands.command(description="Stop a cluster.", usage="stop <cluster>", hidden=True)
-    # async def stop(self, ctx, *, cluster: int):
-    #     await ctx.send(embed=discord.Embed(description="Stopping...", colour=self.bot.primary_colour))
-    #     await self.bot.comm.handler("stop", 0, scope="launcher", cluster=cluster)
+    @checks.is_admin()
+    @commands.command(description="Stop all clusters.", usage="stop", hidden=True)
+    async def stop(self, ctx, *, cluster: int):
+        await ctx.send(embed=discord.Embed(description="Stopping...", colour=self.bot.primary_colour))
+        await self.bot.session.post(f"{self.uri}/stop")
 
     @checks.is_admin()
-    @commands.command(description="Perform a rolling restart.", usage="rollrestart", hidden=True)
-    async def rollrestart(self, ctx):
+    @commands.command(description="Restart all clusters.", usage="restart", hidden=True)
+    async def restart(self, ctx):
         await ctx.send(embed=discord.Embed(description="Rolling a restart...", colour=self.bot.primary_colour))
-        await self.bot.session.post()
+        await self.bot.session.post(f"{self.uri}/restart")
 
     # @checks.is_admin()
     # @commands.command(description="Get clusters' statuses.", usage="status", hidden=True)
