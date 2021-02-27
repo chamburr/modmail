@@ -1,4 +1,5 @@
 <<<<<<< HEAD
+<<<<<<< HEAD
 """
 Based on The IdleRPG Discord Bot
 Copyright (C) 2018-2021 Diniboy and Gelbpunkt
@@ -20,6 +21,8 @@ along with this program.  If not, see https://www.gnu.org/licenses/.
 
 =======
 >>>>>>> bruh cham why this so hard
+=======
+>>>>>>> 54691043a8a98258d1a7ada96ff4177725830f40
 import asyncio
 import os
 import signal
