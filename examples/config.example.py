@@ -35,7 +35,7 @@ redis_url = ""
 postgres_url = ""
 
 # Server
-http_url = ""
+http_host = ""
 http_port = ""
 
 # Number of clusters
