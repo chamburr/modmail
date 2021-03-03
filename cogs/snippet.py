@@ -1,9 +1,6 @@
 import logging
 
-from datetime import datetime
-
 import discord
-import orjson
 
 from discord.ext import commands
 
@@ -182,21 +179,7 @@ class Snippet(commands.Cog):
             embed.set_footer(text=discord.Embed.Empty)
             await ctx.send(embed=embed)
             return
-
-        msg = await ctx.send(embed=discord.Embed.from_dict(all_pages[0]))
-        for reaction in ["⏮️", "◀️", "⏹️", "▶️", "⏭️"]:
-            await msg.add_reaction(reaction)
-        menus = await self.bot._connection._get("reaction_menus") or []
-        menus.append(
-            {
-                "channel": msg.channel.id,
-                "message": msg.id,
-                "page": 0,
-                "all_pages": all_pages,
-                "end": datetime.timestamp(datetime.now()) + 2 * 60,
-            }
-        )
-        await self.bot._connection.redis.set("reaction_menus", orjson.dumps(menus).decode("utf-8"))
+        await self.bot.create_reaction_menu(ctx, all_pages)
 
 
 def setup(bot):

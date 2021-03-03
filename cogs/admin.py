@@ -47,20 +47,7 @@ class Admin(commands.Cog):
             embed.set_footer(text=discord.Embed.Empty)
             await ctx.send(embed=embed)
             return
-        msg = await ctx.send(embed=discord.Embed.from_dict(all_pages[0]))
-        for reaction in ["⏮️", "◀️", "⏹️", "▶️", "⏭️"]:
-            await msg.add_reaction(reaction)
-        menus = await self.bot._connection._get("reaction_menus") or []
-        menus.append(
-            {
-                "channel": msg.channel.id,
-                "message": msg.id,
-                "page": 0,
-                "all_pages": all_pages,
-                "end": datetime.timestamp(datetime.now()) + 2 * 60,
-            }
-        )
-        await self.bot._connection.redis.set("reaction_menus", orjson.dumps(menus).decode("utf-8"))
+        await self.bot.create_reaction_menu(ctx, all_pages)
 
     async def get_user_guilds(self, user_id):
         guilds = await self.bot._redis.smembers(f"user:{user_id}")
@@ -90,20 +77,7 @@ class Admin(commands.Cog):
             embed.set_footer(text=discord.Embed.Empty)
             await ctx.send(embed=embed)
             return
-        msg = await ctx.send(embed=discord.Embed.from_dict(all_pages[0]))
-        for reaction in ["⏮️", "◀️", "⏹️", "▶️", "⏭️"]:
-            await msg.add_reaction(reaction)
-        menus = await self.bot._connection._get("reaction_menus") or []
-        menus.append(
-            {
-                "channel": msg.channel.id,
-                "message": msg.id,
-                "page": 0,
-                "all_pages": all_pages,
-                "end": datetime.timestamp(datetime.now()) + 2 * 60,
-            }
-        )
-        await self.bot._connection.redis.set("reaction_menus", orjson.dumps(menus).decode("utf-8"))
+        await self.bot.create_reaction_menu(ctx, all_pages)
 
     async def invite_guild(self, guild_id):
         guild = await self.bot.get_guild(guild_id)
@@ -171,31 +145,18 @@ class Admin(commands.Cog):
             embed.set_footer(text=discord.Embed.Empty)
             await ctx.send(embed=embed)
             return
-        msg = await ctx.send(embed=discord.Embed.from_dict(all_pages[0]))
-        for reaction in ["⏮️", "◀️", "⏹️", "▶️", "⏭️"]:
-            await msg.add_reaction(reaction)
-        menus = await self.bot._connection._get("reaction_menus") or []
-        menus.append(
-            {
-                "channel": msg.channel.id,
-                "message": msg.id,
-                "page": 0,
-                "all_pages": all_pages,
-                "end": datetime.timestamp(datetime.now()) + 2 * 60,
-            }
-        )
-        await self.bot._connection.redis.set("reaction_menus", orjson.dumps(menus).decode("utf-8"))
+        await self.bot.create_reaction_menu(ctx, all_pages)
 
     @checks.is_admin()
     @commands.command(description="Make me say something.", usage="echo [channel] <message>", hidden=True)
-    async def echo(self, ctx, channel: Optional[channel.TextChannel], *, content: str):
-        channel = channel or ctx.channel
+    async def echo(self, ctx, channel: Optional[str], *, content: str):
+        channel = await self.bot.tools.parse_channel(self.bot, ctx.guild, channel) or ctx.channel
         await ctx.message.delete()
         await channel.send(content, allowed_mentions=discord.AllowedMentions(everyone=False))
 
     @checks.is_admin()
     @commands.command(description="Stop all clusters.", usage="stop", hidden=True)
-    async def stop(self, ctx, *, cluster: int):
+    async def stop(self, ctx):
         await ctx.send(embed=discord.Embed(description="Stopping...", colour=self.bot.primary_colour))
         await self.bot.session.post(f"{self.uri}/stop")
 

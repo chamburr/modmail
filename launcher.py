@@ -107,6 +107,8 @@ class Scheduler:
                     except discord.Forbidden:
                         for reaction in ["⏮️", "◀️", "⏹️", "▶️", "⏭️"]:
                             await self.http.remove_own_reaction(menu["channel"], menu["message"], reaction)
+                    except discord.NotFound:
+                        pass
                 else:
                     filtered_rm.append(menu)
             await self.redis.set("reaction_menus", orjson.dumps(filtered_rm).decode("utf-8"))
@@ -119,18 +121,21 @@ class Scheduler:
                     channel_id = menu["channel"]
                     message_id = menu["message"]
                     reactions = len(menu["all_pages"][menu["page"]]["fields"])
-                    await self.http.remove_own_reaction(channel_id, message_id, "◀")
-                    await self.http.remove_own_reaction(channel_id, message_id, "▶")
-                    for index in range(reactions):
-                        await self.http.remove_own_reaction(channel_id, message_id, self.reactions[index])
+                    try:
+                        await self.http.remove_own_reaction(channel_id, message_id, "◀")
+                        await self.http.remove_own_reaction(channel_id, message_id, "▶")
+                        for index in range(reactions):
+                            await self.http.remove_own_reaction(channel_id, message_id, self.reactions[index])
 
-                    await self.http.edit_message(
-                        menu["channel"],
-                        menu["message"],
-                        embed=discord.Embed(
-                            description="Time out. You did not choose anything.", colour=config.error_colour
-                        ).to_dict(),
-                    )
+                        await self.http.edit_message(
+                            menu["channel"],
+                            menu["message"],
+                            embed=discord.Embed(
+                                description="Time out. You did not choose anything.", colour=config.error_colour
+                            ).to_dict(),
+                        )
+                    except discord.NotFound:
+                        pass
                 else:
                     filtered_sm.append(menu)
             await self.redis.set("selection_menus", orjson.dumps(filtered_sm).decode("utf-8"))
@@ -140,15 +145,18 @@ class Scheduler:
             filtered_cm = []
             for menu in cm:
                 if menu["end"] <= datetime.timestamp(datetime.now()):
-                    await self.http.edit_message(
-                        menu["channel"],
-                        menu["message"],
-                        embed=discord.Embed(
-                            description="Time out. You did not choose anything.", colour=config.error_colour
-                        ).to_dict(),
-                    )
-                    for reaction in ["✅", "🔁", "❌"]:
-                        await self.http.remove_own_reaction(menu["channel"], menu["message"], reaction)
+                    try:
+                        await self.http.edit_message(
+                            menu["channel"],
+                            menu["message"],
+                            embed=discord.Embed(
+                                description="Time out. You did not choose anything.", colour=config.error_colour
+                            ).to_dict(),
+                        )
+                        for reaction in ["✅", "🔁", "❌"]:
+                            await self.http.remove_own_reaction(menu["channel"], menu["message"], reaction)
+                    except discord.NotFound:
+                        pass
                 else:
                     filtered_cm.append(menu)
             await self.redis.set("confirmation_menus", orjson.dumps(filtered_cm).decode("utf-8"))

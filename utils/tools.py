@@ -1,5 +1,7 @@
 import logging
 
+from discord.ext import commands
+
 log = logging.getLogger(__name__)
 
 
@@ -99,3 +101,40 @@ def tag_format(message, author):
     for tag, val in tags.items():
         message = message.replace(tag, val)
     return shorten_message(message)
+
+
+async def parse_channel(bot, guild, channel):
+    try:
+        channel = int(channel)
+        return await bot.get_channel(channel)
+    except ValueError:
+        if channel[:2] == "<#" and channel[-1] == ">":
+            try:
+                channel = int(channel[2:-1])
+                return await bot.get_channel(channel)
+            except ValueError:
+                raise commands.BadArgument
+        else:
+            for ch in await guild.text_channels():
+                log.info(ch)
+                if ch.name == channel:
+                    return ch
+            raise commands.BadArgument
+
+
+async def parse_member(bot, guild, member):
+    try:
+        member = int(member)
+        return await bot.http.get_member(guild, member)
+    except ValueError:
+        if member[:2] == "<@" and member[-1] == ">":
+            try:
+                member = int(member[2:-1])
+                return await bot.http.get_member(guild, member)
+            except ValueError:
+                raise commands.BadArgument
+        else:
+            try:
+                return (await bot.http.request_guild_members(guild, member))[0]
+            except IndexError:
+                raise commands.BadArgument

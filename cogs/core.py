@@ -5,8 +5,8 @@ import io
 import logging
 
 import discord
-import orjson
 
+from discord import Member
 from discord.ext import commands
 
 from classes import converters
@@ -215,7 +215,12 @@ class Core(commands.Cog):
         usage="blacklist <member>",
         aliases=["block"],
     )
-    async def blacklist(self, ctx, *, member: converters.GlobalUser):
+    async def blacklist(self, ctx, *, member: str):
+        member = Member(
+            guild=ctx.guild,
+            state=self.bot._connection,
+            data=await self.bot.tools.parse_member(self.bot, ctx.guild.id, member),
+        )
         blacklist = (await self.bot.get_data(ctx.guild.id))[9]
         if member.id in blacklist:
             await ctx.send(
@@ -237,7 +242,12 @@ class Core(commands.Cog):
         usage="whitelist <member>",
         aliases=["unblock"],
     )
-    async def whitelist(self, ctx, *, member: converters.GlobalUser):
+    async def whitelist(self, ctx, *, member: str):
+        member = Member(
+            guild=ctx.guild,
+            state=self.bot._connection,
+            data=await self.bot.tools.parse_member(self.bot, ctx.guild.id, member),
+        )
         blacklist = (await self.bot.get_data(ctx.guild.id))[9]
         if member.id not in blacklist:
             await ctx.send(
@@ -285,20 +295,7 @@ class Core(commands.Cog):
             embed.set_footer(text=discord.Embed.Empty)
             await ctx.send(embed=embed)
             return
-        msg = await ctx.send(embed=discord.Embed.from_dict(all_pages[0]))
-        for reaction in ["⏮️", "◀️", "⏹️", "▶️", "⏭️"]:
-            await msg.add_reaction(reaction)
-        menus = await self.bot._connection._get("reaction_menus") or []
-        menus.append(
-            {
-                "channel": msg.channel.id,
-                "message": msg.id,
-                "page": 0,
-                "all_pages": all_pages,
-                "end": datetime.datetime.timestamp(datetime.datetime.now()) + 2 * 60,
-            }
-        )
-        await self.bot._connection.redis.set("reaction_menus", orjson.dumps(menus).decode("utf-8"))
+        await self.bot.create_reaction_menu(ctx, all_pages)
 
 
 def setup(bot):

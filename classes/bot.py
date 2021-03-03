@@ -4,23 +4,25 @@ import logging
 import sys
 import traceback
 
+from datetime import datetime
+
 import aio_pika
 import aiohttp
 import aioredis
 import asyncpg
 import orjson
 
-from discord import utils
+from discord import Embed, utils
 from discord.ext import commands
 from discord.ext.commands import Context, DefaultHelpCommand
 from discord.ext.commands.core import _CaseInsensitiveDict
 from discord.ext.commands.view import StringView
 from discord.gateway import DiscordWebSocket
-from discord.http import HTTPClient
 from discord.utils import parse_time, to_json
 
 import config
 
+from classes.http import HTTPClient
 from classes.misc import Session, Status
 from classes.state import State
 from utils import tools
@@ -297,6 +299,22 @@ class ModMail(commands.AutoShardedBot):
         data = to_json(msg)
         self.ws._dispatch("socket_raw_send", data)
         await self._amqp_channel.default_exchange.publish(aio_pika.Message(body=data), routing_key="gateway.send")
+
+    async def create_reaction_menu(self, ctx, pages):
+        msg = await ctx.send(embed=Embed.from_dict(pages[0]))
+        for reaction in ["⏮️", "◀️", "⏹️", "▶️", "⏭️"]:
+            await msg.add_reaction(reaction)
+        menus = await self._connection._get("reaction_menus") or []
+        menus.append(
+            {
+                "channel": msg.channel.id,
+                "message": msg.id,
+                "page": 0,
+                "all_pages": pages,
+                "end": datetime.timestamp(datetime.now()) + 2 * 60,
+            }
+        )
+        await self._connection.redis.set("reaction_menus", orjson.dumps(menus).decode("utf-8"))
 
     all_prefix = {}
     banned_guilds = []

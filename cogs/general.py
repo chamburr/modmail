@@ -5,7 +5,6 @@ import time
 from datetime import datetime
 
 import discord
-import orjson
 import psutil
 
 from discord.ext import commands
@@ -102,20 +101,7 @@ class General(commands.Cog):
         for page in range(len(all_pages)):
             all_pages[page].set_footer(text=f"Use the reactions to flip pages. (Page {page + 1}/{len(all_pages)})")
             all_pages[page] = all_pages[page].to_dict()
-        msg = await ctx.send(embed=discord.Embed.from_dict(all_pages[0]))
-        for reaction in ["⏮️", "◀️", "⏹️", "▶️", "⏭️"]:
-            await msg.add_reaction(reaction)
-        menus = await self.bot._connection._get("reaction_menus") or []
-        menus.append(
-            {
-                "channel": msg.channel.id,
-                "message": msg.id,
-                "page": 0,
-                "all_pages": all_pages,
-                "end": datetime.timestamp(datetime.now()) + 2 * 60,
-            }
-        )
-        await self.bot._connection.redis.set("reaction_menus", orjson.dumps(menus).decode("utf-8"))
+        await self.bot.create_reaction_menu(ctx, all_pages)
 
     @commands.command(description="Pong! Get my latency.", usage="ping")
     async def ping(self, ctx):
@@ -159,7 +145,7 @@ class General(commands.Cog):
 
         embed = discord.Embed(title=f"{(await self.bot.user()).name} Statistics", colour=self.bot.primary_colour)
         embed.add_field(name="Owner", value="CHamburr#2591")
-        embed.add_field(name="Contributor", value="waterflamev8#4123")
+        embed.add_field(name="Co-Developer", value="waterflamev8#4123")
         embed.add_field(name="Bot Version", value=self.bot.version)
         embed.add_field(name="Uptime", value=await self.get_bot_uptime(brief=True))
         embed.add_field(name="Clusters", value=f"{self.bot.cluster}/{self.bot.cluster_count}")
@@ -329,21 +315,7 @@ class General(commands.Cog):
             )
             all_pages[page].set_footer(text=f"Use the reactions to flip pages. (Page {page + 1}/{len(all_pages)})")
             all_pages[page] = all_pages[page].to_dict()
-
-        msg = await ctx.send(embed=discord.Embed.from_dict(all_pages[0]))
-        for reaction in ["⏮️", "◀️", "⏹️", "▶️", "⏭️"]:
-            await msg.add_reaction(reaction)
-        menus = await self.bot._connection._get("reaction_menus") or []
-        menus.append(
-            {
-                "channel": msg.channel.id,
-                "message": msg.id,
-                "page": 0,
-                "all_pages": all_pages,
-                "end": datetime.timestamp(datetime.now()) + 2 * 60,
-            }
-        )
-        await self.bot._connection.redis.set("reaction_menus", orjson.dumps(menus).decode("utf-8"))
+        await self.bot.create_reaction_menu(ctx, all_pages)
 
     @commands.command(description="Get a link to invite me.", usage="invite")
     async def invite(self, ctx):
