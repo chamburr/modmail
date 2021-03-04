@@ -22,14 +22,27 @@ class Miscellaneous(commands.Cog):
         usage="permissions [member] [channel]",
         aliases=["perms"],
     )
-    async def permissions(self, ctx, args: str = None):
-        args = args.split()
-        channel = await self.bot.tools.parse_channel(self.bot, ctx.guild, args[0]) or ctx.channel
-        member = Member(
-            guild=ctx.guild,
-            state=self.bot._connection,
-            data=await self.bot.tools.parse_member(self.bot, ctx.guild.id, member),
-        )
+    async def permissions(self, ctx, *args: str):
+        member = None
+        ch = None
+        if len(args) == 1:
+            try:
+                member = Member(
+                    guild=ctx.guild,
+                    state=self.bot._connection,
+                    data=await self.bot.tools.parse_member(self.bot, ctx.guild.id, args[0]),
+                )
+            except commands.BadArgument:
+                ch = await self.bot.tools.parse_channel(self.bot, ctx.guild, args[0])
+        elif len(args) == 2:
+            member = Member(
+                guild=ctx.guild,
+                state=self.bot._connection,
+                data=await self.bot.tools.parse_member(self.bot, ctx.guild.id, args[0]),
+            )
+            ch = await self.bot.tools.parse_channel(self.bot, ctx.guild, args[1])
+
+        channel = ch or ctx.channel
         if member is None:
             member = await ctx.message.member()
         permissions = await channel.permissions_for(member)

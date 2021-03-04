@@ -116,7 +116,6 @@ async def parse_channel(bot, guild, channel):
                 raise commands.BadArgument
         else:
             for ch in await guild.text_channels():
-                log.info(ch)
                 if ch.name == channel:
                     return ch
             raise commands.BadArgument
@@ -127,7 +126,13 @@ async def parse_member(bot, guild, member):
         member = int(member)
         return await bot.http.get_member(guild, member)
     except ValueError:
-        if member[:2] == "<@" and member[-1] == ">":
+        if member[:3] == "<@!" and member[-1] == ">":
+            try:
+                member = int(member[3:-1])
+                return await bot.http.get_member(guild, member)
+            except ValueError:
+                raise commands.BadArgument
+        elif member[:2] == "<@" and member[-1] == ">":
             try:
                 member = int(member[2:-1])
                 return await bot.http.get_member(guild, member)
