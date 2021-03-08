@@ -92,7 +92,7 @@ class Guild(guild.Guild):
         perms = []
         for target, perm in overwrites.items():
             if not isinstance(perm, PermissionOverwrite):
-                raise InvalidArgument("Expected PermissionOverwrite received {0.__name__}".format(type(perm)))
+                raise InvalidArgument(f"Expected PermissionOverwrite received {type(perm).__name__}")
 
             allow, deny = perm.pair()
             payload = {"allow": allow.value, "deny": deny.value, "id": target.id}

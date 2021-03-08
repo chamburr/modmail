@@ -236,7 +236,7 @@ class TextChannel(channel.TextChannel):
             raise ClientException("The channel must be a news channel.")
 
         if not isinstance(destination, TextChannel):
-            raise InvalidArgument("Expected TextChannel received {0.__name__}".format(type(destination)))
+            raise InvalidArgument(f"Expected TextChannel received {type(destination).__name__}")
 
         from discord.webhook import Webhook
 

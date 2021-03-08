@@ -18,7 +18,7 @@ class Admin(commands.Cog):
         self.uri = f"http://{self.bot.config.http_host}:{self.bot.config.http_port}"
 
     async def find_guild(self, name):
-        return [guild for guild in await self.bot.guilds() if guild.name.lower().count(name.lower()) > 0]
+        return
 
     @checks.is_admin()
     @commands.command(
@@ -27,8 +27,10 @@ class Admin(commands.Cog):
         hidden=True,
     )
     async def findserver(self, ctx, *, name: str):
-        guilds = await self.find_guild(name)
-        guilds = [f"{guild.name} `{guild.id}` ({guild.member_count} members)" for guild in guilds]
+        guilds = [
+            f"{guild.name} `{guild.id}` ({guild.member_count} members)"
+            for guild in [guild for guild in await self.bot.guilds() if guild.name.lower().count(name.lower()) > 0]
+        ]
         if len(guilds) == 0:
             await ctx.send(embed=discord.Embed(description="No such guild was found.", colour=self.bot.error_colour))
             return
@@ -49,10 +51,6 @@ class Admin(commands.Cog):
             return
         await self.bot.create_reaction_menu(ctx, all_pages)
 
-    async def get_user_guilds(self, user_id):
-        guilds = await self.bot._redis.smembers(f"user:{user_id}")
-        return [await self.bot.get_guild(int(guild)) for guild in guilds]
-
     @checks.is_admin()
     @commands.command(
         description="Get a list of servers the bot shares with the user.",
@@ -60,8 +58,12 @@ class Admin(commands.Cog):
         hidden=True,
     )
     async def sharedservers(self, ctx, *, user: converters.GlobalUser):
-        guilds = await self.get_user_guilds(user.id)
-        guilds = [f"{guild.name} `{guild.id}` ({guild.member_count} members)" for guild in guilds]
+        guilds = [
+            f"{guild.name} `{guild.id}` ({guild.member_count} members)"
+            for guild in [
+                await self.bot.get_guild(int(guild)) for guild in await self.bot._redis.smembers(f"user:{user.id}")
+            ]
+        ]
         all_pages = []
         for chunk in [guilds[i : i + 20] for i in range(0, len(guilds), 20)]:
             page = discord.Embed(title="Servers", colour=self.bot.primary_colour)
@@ -79,8 +81,15 @@ class Admin(commands.Cog):
             return
         await self.bot.create_reaction_menu(ctx, all_pages)
 
-    async def invite_guild(self, guild_id):
-        guild = await self.bot.get_guild(guild_id)
+    @checks.is_admin()
+    @commands.command(
+        description="Create an invite to the specified server.",
+        usage="createinvite <server ID>",
+        hidden=True,
+    )
+    async def createinvite(self, ctx, *, guild: int):
+        invite = None
+        guild = await self.bot.get_guild(guild)
         if not guild:
             return
         try:
@@ -89,17 +98,8 @@ class Admin(commands.Cog):
             try:
                 invite = await self.bot.http.create_invite((await guild.text_channels())[0].id, max_age=120)
             except discord.Forbidden:
-                return
-        return invite
+                pass
 
-    @checks.is_admin()
-    @commands.command(
-        description="Create an invite to the specified server.",
-        usage="createinvite <server ID>",
-        hidden=True,
-    )
-    async def createinvite(self, ctx, *, guild: int):
-        invite = await self.invite_guild(guild)
         if not invite:
             await ctx.send(
                 embed=discord.Embed(
@@ -115,9 +115,6 @@ class Admin(commands.Cog):
                 )
             )
 
-    async def get_top_guilds(self, count):
-        return sorted(await self.bot.guilds(), key=lambda x: x.member_count, reverse=True)[:count]
-
     @checks.is_admin()
     @commands.command(
         description="Get the top servers using the bot.",
@@ -126,7 +123,7 @@ class Admin(commands.Cog):
         hidden=True,
     )
     async def topservers(self, ctx, *, count: int = 20):
-        guilds = await self.get_top_guilds(count)
+        guilds = sorted(await self.bot.guilds(), key=lambda x: x.member_count, reverse=True)[:count]
         top_guilds = []
         for index, guild in enumerate(guilds):
             top_guilds.append(f"#{index + 1} {guild.name} `{guild.id}` ({guild.member_count} members)")
@@ -155,15 +152,9 @@ class Admin(commands.Cog):
         await channel.send(content, allowed_mentions=discord.AllowedMentions(everyone=False))
 
     @checks.is_admin()
-    @commands.command(description="Stop all clusters.", usage="stop", hidden=True)
-    async def stop(self, ctx):
-        await ctx.send(embed=discord.Embed(description="Stopping...", colour=self.bot.primary_colour))
-        await self.bot.session.post(f"{self.uri}/stop")
-
-    @checks.is_admin()
     @commands.command(description="Restart all clusters.", usage="restart", hidden=True)
     async def restart(self, ctx):
-        await ctx.send(embed=discord.Embed(description="Rolling a restart...", colour=self.bot.primary_colour))
+        await ctx.send(embed=discord.Embed(description="Restarting...", colour=self.bot.primary_colour))
         await self.bot.session.post(f"{self.uri}/restart")
 
 

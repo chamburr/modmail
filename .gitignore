@@ -107,7 +107,6 @@ venv.bak/
 .mypy_cache/
 
 # Custom
-.idea/
 .DS_Store
 config.py
 targets.json

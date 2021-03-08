@@ -86,33 +86,34 @@ class HTTPClient(http.HTTPClient):
                         f.reset(seek=tries)
                 try:
                     async with self.__session.request(method, url, **kwargs) as r:
-                        log.debug("%s %s with %s has returned %s", method, url, kwargs.get("data"), r.status)
+                        log.debug(f"{method} {url} with {kwargs.get('data')} has returned {r.status}")
 
                         data = await json_or_text(r)
 
                         remaining = r.headers.get("X-Ratelimit-Remaining")
                         if remaining == "0" and r.status != 429:
                             delta = utils._parse_ratelimit_header(r, use_clock=self.use_clock)
-                            log.debug("A rate limit bucket has been exhausted (bucket: %s, retry: %s).", bucket, delta)
+                            log.debug(f"A rate limit bucket has been exhausted (bucket: {bucket}, retry: {delta}).")
                             maybe_lock.defer()
                             self.loop.call_later(delta, lock.release)
 
                         if 300 > r.status >= 200:
-                            log.debug("%s %s has received %s", method, url, data)
+                            log.debug(f"{method} {url} has received {data}", method, url, data)
                             return data
 
                         if r.status == 429:
                             if not r.headers.get("Via"):
                                 raise HTTPException(r, data)
 
-                            fmt = 'We are being rate limited. Retrying in %.2f seconds. Handled under the bucket "%s"'
-
                             retry_after = data["retry_after"] / 1000.0
-                            log.warning(fmt, retry_after, bucket)
+                            log.warning(
+                                f"We are being rate limited. Retrying in {retry_after}.2f seconds."
+                                f"Handled under the bucket '{bucket}'"
+                            )
 
                             is_global = data.get("global", False)
                             if is_global:
-                                log.warning("Global rate limit has been hit. Retrying in %.2f seconds.", retry_after)
+                                log.warning(f"Global rate limit has been hit. Retrying in {retry_after}.2f seconds.")
                                 self._global_over.clear()
 
                             await asyncio.sleep(retry_after)

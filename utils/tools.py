@@ -16,27 +16,6 @@ def get_guild_prefix(bot, guild):
         return bot.config.default_prefix
 
 
-async def get_user_premium(bot, user_id):
-    guild = await bot.get_guild(bot.config.main_server)
-    if not guild:
-        return
-    member = await bot._redis.sismember(f"user:{user_id}", guild.id)
-    if not member:
-        return
-    roles = (await bot.http.get_member(guild.id, user_id))["roles"]
-    if user_id in bot.config.admins or user_id in bot.config.owners:
-        amount = 1000
-    elif bot.config.premium5 in roles:
-        amount = 5
-    elif bot.config.premium3 in roles:
-        amount = 3
-    elif bot.config.premium1 in roles:
-        amount = 1
-    else:
-        amount = 0
-    return amount
-
-
 async def get_user_settings(bot, user):
     async with bot.pool.acquire() as conn:
         return await conn.fetchrow("SELECT identifier, confirmation FROM preference WHERE identifier=$1", user)
@@ -45,15 +24,25 @@ async def get_user_settings(bot, user):
 async def get_premium_slots(bot, user):
     if not bot.config.main_server:
         return False
-    data = await get_user_premium(bot, user)
-    if not data:
-        async with bot.pool.acquire() as conn:
-            res = await conn.fetchrow("SELECT guild FROM premium WHERE identifier=$1", user)
-            if res:
-                return 1
-        return False
-    else:
-        return data
+    guild = await bot.get_guild(bot.config.main_server)
+    member = await bot.http.get_member(guild.id, user.id)
+    if not member:
+        return
+    roles = member["roles"]
+    if user.id in bot.config.admins or user.id in bot.config.owners:
+        return 1000
+    elif bot.config.premium5 in roles:
+        return 5
+    elif bot.config.premium3 in roles:
+        return 3
+    elif bot.config.premium1 in roles:
+        return 1
+    async with bot.pool.acquire() as conn:
+        res = await conn.fetchrow("SELECT guild FROM premium WHERE identifier=$1", user)
+        if res:
+            return 1
+        else:
+            return 0
 
 
 async def wipe_premium(bot, user):

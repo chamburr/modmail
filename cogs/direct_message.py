@@ -3,6 +3,7 @@ import datetime
 import io
 import logging
 import string
+import time
 
 import discord
 import orjson
@@ -257,18 +258,17 @@ class DirectMessageEvents(commands.Cog, name="Direct Message"):
         else:
             msg = await message.channel.send(embed=discord.Embed.from_dict(embeds[0]))
         await self.add_reactions(len(embeds[0]["fields"]), msg.channel.id, msg.id)
-        menus = await self.bot._connection._get("selection_menus") or []
-        menus.append(
+        self.bot.state.sadd(
+            "selection_menus",
             {
                 "channel": msg.channel.id,
                 "message": msg.id,
                 "page": 0,
                 "all_pages": embeds,
                 "to_send": message._data,
-                "end": datetime.datetime.timestamp(datetime.datetime.now()) + 2 * 60,
-            }
+                "end": int(time.time()) + 2 * 60,
+            },
         )
-        await self.bot._connection.redis.set("selection_menus", orjson.dumps(menus).decode("utf-8"))
 
     async def add_reactions(self, length, channel_id, message_id):
         await self.bot.http.add_reaction(channel_id, message_id, "◀")
@@ -278,14 +278,13 @@ class DirectMessageEvents(commands.Cog, name="Direct Message"):
 
     @commands.Cog.listener()
     async def on_raw_reaction_add(self, payload):
-        if payload.user_id == (await self.bot.user()).id:
+        if payload.user_id == self.bot.id:
             return
         if payload.member:
             return
         if payload.emoji.name not in self.reactions:
             if payload.emoji.name in ["✅", "🔁", "❌"]:
                 menus = await self.bot._connection._get("confirmation_menus") or []
-                idx = None
                 for (index, menu) in enumerate(menus):
                     channel = menu["channel"]
                     message = menu["message"]
@@ -313,17 +312,10 @@ class DirectMessageEvents(commands.Cog, name="Direct Message"):
                                 description="Request cancelled successfully.", colour=self.bot.error_colour
                             ).to_dict(),
                         )
-                        await asyncio.sleep(5)
-                        await self.bot.http.delete_message(channel, message)
-                    idx = index
                     break
-
-                if idx:
-                    del menus[idx]
                 await self.bot._connection.redis.set("confirmation_menus", orjson.dumps(menus).decode("utf-8"))
             return
         menus = await self.bot._connection._get("selection_menus") or []
-        idx = None
         for (index, menu) in enumerate(menus):
             channel = menu["channel"]
             message = menu["message"]
@@ -350,19 +342,10 @@ class DirectMessageEvents(commands.Cog, name="Direct Message"):
                 guild = all_pages[page]["fields"][chosen]["value"].split()[-1]
                 msg = menu["to_send"]
                 message = self.bot._connection.create_message(channel=PartialChannel(channel), data=msg)
-                if message.content.find(f"{self.bot.config.default_prefix}new") == 0:
-                    await self.send_mail(
-                        message, int(guild), message.content[len(f"{self.bot.config.default_prefix}new") :]
-                    )
-                    idx = index
-                else:
-                    await self.send_mail(message, int(guild), message.content)
-                    idx = index
+                await self.send_mail(message, int(guild), message.content)
 
             menu["page"] = page
             menus[index] = menu
-            if idx:
-                del menus[idx]
             await self.bot._connection.redis.set("selection_menus", orjson.dumps(menus).decode("utf-8"))
             break
 
@@ -383,10 +366,10 @@ class DirectMessageEvents(commands.Cog, name="Direct Message"):
             return
         guild = None
         data = await self.bot.http.get_channel(message.channel.id)
-        message.channel = DMChannel(me=await self.bot.user(), state=self.bot._connection, data=data)
+        message.channel = DMChannel(me=await self.bot.user(), state=self.bot.state, data=data)
         async for msg in message.channel.history(limit=30):
             if (
-                msg.author.id == (await self.bot.user()).id
+                msg.author.id == self.bot.id
                 and len(msg.embeds) > 0
                 and msg.embeds[0].title in ["Message Received", "Message Sent"]
             ):
@@ -412,8 +395,8 @@ class DirectMessageEvents(commands.Cog, name="Direct Message"):
             await msg.add_reaction("🔁")
             await msg.add_reaction("❌")
 
-            menus = await self.bot._connection._get("confirmation_menus") or []
-            menus.append(
+            self.bot.state.sadd(
+                "confirmation_menus",
                 {
                     "channel": msg.channel.id,
                     "message": msg.id,
@@ -421,10 +404,9 @@ class DirectMessageEvents(commands.Cog, name="Direct Message"):
                     "guild_id": guild.id,
                     "msg": message._data,
                     "msg2": msg._data,
-                    "end": datetime.datetime.timestamp(datetime.datetime.now()) + 2 * 60,
-                }
+                    "end": int(time.time()) + 2 * 60,
+                },
             )
-            await self.bot._connection.redis.set("confirmation_menus", orjson.dumps(menus).decode("utf-8"))
         else:
             await self.select_guild(message, prefix)
 
@@ -436,7 +418,7 @@ class DirectMessageEvents(commands.Cog, name="Direct Message"):
     )
     async def new(self, ctx):
         data = await self.bot.http.get_channel(ctx.message.channel.id)
-        ctx.message.channel = DMChannel(me=await self.bot.user(), state=self.bot._connection, data=data)
+        ctx.message.channel = DMChannel(me=await self.bot.user(), state=self.bot.state, data=data)
         await self.select_guild(ctx.message, ctx.prefix)
 
     @commands.dm_only()

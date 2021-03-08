@@ -9,7 +9,6 @@ import discord
 from discord import Member
 from discord.ext import commands
 
-from classes import converters
 from utils import checks
 
 log = logging.getLogger(__name__)
@@ -93,7 +92,7 @@ class Core(commands.Cog):
                             history = ""
                             for m in messages:
                                 if m.author.bot and (
-                                    m.author.id != (await self.bot.user()).id
+                                    m.author.id != self.bot.id
                                     or len(m.embeds) <= 0
                                     or m.embeds[0].title not in ["Message Received", "Message Sent"]
                                 ):

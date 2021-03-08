@@ -1,7 +1,7 @@
 version: '3.9'
 
 volumes:
-  amqp:  
+  amqp:
   postgres:
   redis:
 
@@ -9,29 +9,17 @@ networks:
   default:
 
 services:
-  app:
+  modmail:
     build: ./
-    command: sh -c 'scripts/wait.sh amqp:5672 -- python3 -u launcher.py'
-    restart: unless-stopped
+    restart: always
     depends_on:
-      - amqp
       - postgres
+      - rabbitmq
       - redis
       - twilight-dispatch
-  
-  amqp:
-    image: rabbitmq:management-alpine
-    restart: unless-stopped
-    volumes:
-      - amqp:/var/lib/rabbitmq
-    ports:
-      - 5672:5672
-      - 15672:15672
-    env_file:
-      - amqp.env
-    
+
   postgres:
-    image: postgres:alpine 
+    image: postgres:alpine
     restart: unless-stopped
     volumes:
       - postgres:/var/lib/postgresql/data
@@ -40,6 +28,17 @@ services:
       - 5432:5432
     env_file:
       - db.env
+
+  rabbitmq:
+    image: rabbitmq:management-alpine
+    restart: unless-stopped
+    volumes:
+      - amqp:/var/lib/rabbitmq
+    ports:
+      - 5672:5672
+      - 15672:15672
+    env_file:
+      - rabbitmq.env
 
   redis:
     image: redis:alpine
@@ -52,9 +51,8 @@ services:
   twilight-dispatch:
     image: chamburr/twilight-dispatch:latest
     restart: unless-stopped
-    network_mode: host
     depends_on:
       - amqp
       - redis
     env_file:
-      - .env
+      - twilight-dispatch.env

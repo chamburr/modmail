@@ -2,9 +2,8 @@ import asyncio
 import inspect
 import logging
 import sys
+import time
 import traceback
-
-from datetime import datetime
 
 import aio_pika
 import aiohttp
@@ -12,9 +11,9 @@ import aioredis
 import asyncpg
 import orjson
 
-from discord import Embed, utils
+from discord import utils
 from discord.ext import commands
-from discord.ext.commands import Context, DefaultHelpCommand
+from discord.ext.commands import Context
 from discord.ext.commands.core import _CaseInsensitiveDict
 from discord.ext.commands.view import StringView
 from discord.gateway import DiscordWebSocket
@@ -30,21 +29,17 @@ from utils import tools
 log = logging.getLogger(__name__)
 
 
-async def when_mentioned(bot):
-    return [(await bot.user()).mention + " ", "<@!%s> " % (await bot.user()).id]
-
-
 def when_mentioned_or(*prefixes):
-    async def inner(bot):
+    def inner(bot):
         r = list(prefixes)
-        r = (await when_mentioned(bot)) + r
+        r = [f"{bot.mention}", f"<@!{bot.id}> "] + r
         return r
 
     return inner
 
 
 class ModMail(commands.AutoShardedBot):
-    def __init__(self, command_prefix, help_command=DefaultHelpCommand(), description=None, **kwargs):
+    def __init__(self, command_prefix, description=None, **kwargs):
         self.command_prefix = command_prefix
         self.extra_events = {}
         self._BotBase__cogs = {}
@@ -58,7 +53,6 @@ class ModMail(commands.AutoShardedBot):
         self.owner_id = kwargs.get("owner_id")
         self.owner_ids = kwargs.get("owner_ids", set())
         self._skip_check = lambda x, y: x == y
-        self.help_command = help_command
         self.case_insensitive = kwargs.get("case_insensitive", False)
         self.all_commands = _CaseInsensitiveDict() if self.case_insensitive else {}
 
@@ -82,6 +76,10 @@ class ModMail(commands.AutoShardedBot):
         self.cluster = kwargs.get("cluster_id")
         self.cluster_count = kwargs.get("cluster_count")
         self.version = kwargs.get("version")
+
+    @property
+    def state(self):
+        return self._connection
 
     @property
     def config(self):
@@ -147,17 +145,13 @@ class ModMail(commands.AutoShardedBot):
         return await self._connection.get_user(user_id)
 
     async def get_emoji(self, emoji_id):
-        return await self._connection.get_emoji(emoji_id)
+        pass
 
     async def get_all_channels(self):
-        for guild in await self.guilds():
-            for channel in await guild.channels():
-                yield channel
+        pass
 
     async def get_all_members(self):
-        for guild in await self.guilds():
-            for member in await guild.members():
-                yield member
+        pass
 
     async def _get_state(self, **options):
         return State(
@@ -175,7 +169,7 @@ class ModMail(commands.AutoShardedBot):
         view = StringView(message.content)
         ctx = cls(prefix=None, view=view, bot=self, message=message)
 
-        if self._skip_check(message.author.id, (await self.user()).id):
+        if self._skip_check(message.author.id, self.id):
             return ctx
 
         prefix = await self.get_prefix(message)
@@ -195,14 +189,14 @@ class ModMail(commands.AutoShardedBot):
                 if not isinstance(prefix, list):
                     raise TypeError(
                         "get_prefix must return either a string or a list of string, "
-                        "not {}".format(prefix.__class__.__name__)
+                        f"not {prefix.__class__.__name__}"
                     )
 
                 for value in prefix:
                     if not isinstance(value, str):
                         raise TypeError(
                             "Iterable command_prefix or list returned from get_prefix must "
-                            "contain only strings, not {}".format(value.__class__.__name__)
+                            f"contain only strings, not {value.__class__.__name__}"
                         )
 
                 raise
@@ -258,7 +252,7 @@ class ModMail(commands.AutoShardedBot):
         try:
             func = self.ws._discord_parsers[event]
         except KeyError:
-            log.debug("Unknown event %s.", event)
+            log.debug(f"Unknown event {event}.")
         else:
             try:
                 await func(data, old)
@@ -301,20 +295,19 @@ class ModMail(commands.AutoShardedBot):
         await self._amqp_channel.default_exchange.publish(aio_pika.Message(body=data), routing_key="gateway.send")
 
     async def create_reaction_menu(self, ctx, pages):
-        msg = await ctx.send(embed=Embed.from_dict(pages[0]))
+        msg = await ctx.send(embed=pages[0])
         for reaction in ["⏮️", "◀️", "⏹️", "▶️", "⏭️"]:
             await msg.add_reaction(reaction)
-        menus = await self._connection._get("reaction_menus") or []
-        menus.append(
+        await self.state.sadd(
+            "reaction_menus",
             {
                 "channel": msg.channel.id,
                 "message": msg.id,
                 "page": 0,
-                "all_pages": pages,
-                "end": datetime.timestamp(datetime.now()) + 2 * 60,
-            }
+                "all_pages": [page.to_dict() for page in pages],
+                "end": int(time.time()) + 2 * 60,
+            },
         )
-        await self._connection.redis.set("reaction_menus", orjson.dumps(menus).decode("utf-8"))
 
     all_prefix = {}
     banned_guilds = []

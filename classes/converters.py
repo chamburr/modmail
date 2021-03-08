@@ -50,10 +50,6 @@ class PingRole(commands.RoleConverter):
 
 class GlobalUser(commands.UserConverter):
     async def convert(self, ctx, argument):
-        # try:
-        #     return await (await super().convert(ctx, argument))
-        # except commands.BadArgument:
-        #     pass
         match = self._get_id_match(argument) or re.match(r"<@!?([0-9]+)>$", argument)
         if match is not None:
             try:

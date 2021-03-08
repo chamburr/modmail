@@ -1,12 +1,12 @@
-FROM python:alpine
+FROM python:latest
 
 WORKDIR /modmail
 
-COPY requirements.txt ./
+COPY requirements.txt .
 
-RUN apk --no-cache add curl build-base linux-headers && \
-	curl -sSf https://sh.rustup.rs | sh -s -- --profile minimal --default-toolchain nightly -y && \
-	source $HOME/.cargo/env && \
-	pip3 install -r requirements.txt
+RUN pip3 install -r requirements.txt && \
+    chmod +x scripts/wait.sh
 
 COPY . .
+
+CMD ["sh", "-c", "'scripts/wait.sh rabbitmq:5672 -- python3 -u launcher.py'"]

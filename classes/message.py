@@ -43,9 +43,20 @@ class Message(message.Message):
         except KeyError:
             self._author = None
 
+        try:
+            member = self._data["member"]
+            author = self._author
+            try:
+                author._update_from_message(member)
+            except AttributeError:
+                author = Member._from_message(message=self, data=member)
+            self._member = author
+        except KeyError:
+            self._member = None
+
         for handler in ("call", "flags"):
             try:
-                getattr(self, "_handle_%s" % handler)(data[handler])
+                getattr(self, f"_handle_{handler}")(data[handler])
             except KeyError:
                 continue
 
@@ -57,17 +68,13 @@ class Message(message.Message):
     def author(self, value):
         self._author = value
 
-    async def member(self):
-        try:
-            member = self._data["member"]
-            author = self.author
-            try:
-                author._update_from_message(member)
-            except AttributeError:
-                author = Member._from_message(message=self, data=member)
-            return author
-        except KeyError:
-            return None
+    @property
+    def member(self):
+        return self._member
+
+    @member.setter
+    def member(self, value):
+        return
 
     async def mentions(self):
         try:

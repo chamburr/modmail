@@ -53,7 +53,7 @@ class State:
             if attr.startswith("parse_"):
                 self.parsers[attr[6:].upper()] = func
 
-    async def _get(self, keys):
+    async def get(self, keys):
         if isinstance(keys, list):
             result = await self.redis.mget(*keys)
             if result != [None]:
@@ -92,6 +92,12 @@ class State:
             return result
         return None
 
+    async def sadd(self, key, value):
+        return await self.redis.sadd(key, orjson.dumps(value).decode("utf-8"))
+
+    async def scard(self, key):
+        return await self.redis.scard(key)
+
     async def _members(self, key, key_id=None):
         key += "_keys"
         if key_id:
@@ -105,7 +111,7 @@ class State:
                 if first is None or (len(keys) >= 2 and keys[1] == str(first)):
                     if second is None or (len(keys) >= 3 and keys[2] == str(second)):
                         if predicate is None or predicate(match) is True:
-                            return await self._get(match)
+                            return await self.get(match)
         return None
 
     async def _members_get_all(self, key, key_id=None, name=None, first=None, second=None, predicate=None):
@@ -117,7 +123,7 @@ class State:
                     if second is None or (len(keys) >= 2 and keys[2] == str(second)):
                         if predicate is None or predicate(match) is True:
                             matches.append(match)
-        return await self._get(matches)
+        return await self.get(matches)
 
     def _key_first(self, obj):
         keys = obj["_key"].split(":")
@@ -129,7 +135,7 @@ class State:
         for match in await self._members("member"):
             user_id = match.split(":")[2]
             if user_id not in user_ids:
-                results.append(await self._get(match))
+                results.append(await self.get(match))
                 user_ids.append(user_id)
         return [User(state=self, data=x["user"]) for x in results]
 
@@ -179,7 +185,7 @@ class State:
             await func(*args, **kwargs)
 
     async def user(self):
-        result = await self._get("bot_user")
+        result = await self.get("bot_user")
         if result:
             result = ClientUser(state=self, data=result)
         return result
@@ -223,7 +229,7 @@ class State:
         return await self._guilds()
 
     async def _get_guild(self, guild_id):
-        result = await self._get(f"guild:{guild_id}")
+        result = await self.get(f"guild:{guild_id}")
         if result:
             result = Guild(state=self, data=result)
         return result
@@ -251,7 +257,7 @@ class State:
         return await self._private_channels()
 
     async def _get_private_channel(self, channel_id):
-        result = await self._get(f"channel:{channel_id}")
+        result = await self.get(f"channel:{channel_id}")
         if result:
             result = DMChannel(me=self.user, state=self, data=result)
         return result

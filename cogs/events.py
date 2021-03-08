@@ -25,32 +25,32 @@ class Events(commands.Cog):
                 await asyncio.sleep(300)
                 continue
             await self.bot.session.post(
-                f"https://top.gg/api/bots/{(await self.bot.user()).id}/stats",
+                f"https://top.gg/api/bots/{self.bot.id}/stats",
                 data=json.dumps({"server_count": guilds, "shard_count": await self.bot.shard_count()}),
                 headers={"Authorization": self.bot.config.topgg_token, "Content-Type": "application/json"},
             )
             await self.bot.session.post(
-                f"https://discord.bots.gg/api/v1/bots/{(await self.bot.user()).id}/stats",
+                f"https://discord.bots.gg/api/v1/bots/{self.bot.id}/stats",
                 data=json.dumps({"guildCount": guilds, "shardCount": await self.bot.shard_count()}),
                 headers={"Authorization": self.bot.config.dbots_token, "Content-Type": "application/json"},
             )
             await self.bot.session.post(
-                f"https://discordbotlist.com/api/v1/bots/{(await self.bot.user()).id}/stats",
+                f"https://discordbotlist.com/api/v1/bots/{self.bot.id}/stats",
                 data=json.dumps({"guilds": guilds}),
                 headers={"Authorization": self.bot.config.dbl_token, "Content-Type": "application/json"},
             )
             await self.bot.session.post(
-                f"https://bots.ondiscord.xyz/bot-api/bots/{(await self.bot.user()).id}/guilds",
+                f"https://bots.ondiscord.xyz/bot-api/bots/{self.bot.id}/guilds",
                 data=json.dumps({"guildCount": guilds}),
                 headers={"Authorization": self.bot.config.bod_token, "Content-Type": "application/json"},
             )
             await self.bot.session.post(
-                f"https://botsfordiscord.com/api/bot/{(await self.bot.user()).id}",
+                f"https://botsfordiscord.com/api/bot/{self.bot.id}",
                 data=json.dumps({"server_count": guilds}),
                 headers={"Authorization": self.bot.config.bfd_token, "Content-Type": "application/json"},
             )
             await self.bot.session.post(
-                f"https://discord.boats/api/v2/bot/{(await self.bot.user()).id}",
+                f"https://discord.boats/api/v2/bot/{self.bot.id}",
                 data=json.dumps({"server_count": guilds}),
                 headers={"Authorization": self.bot.config.dboats_token, "Content-Type": "application/json"},
             )
@@ -74,7 +74,12 @@ class Events(commands.Cog):
 
     @commands.Cog.listener()
     async def on_ready(self):
-        log.info(f"{(await self.bot.user()).name}#{(await self.bot.user()).discriminator} is online!")
+        bot = await self.bot.user()
+        self.bot.avatar_url = bot.avatar_url
+        self.bot.id = bot.id
+        self.bot.mention = bot.mention
+        self.bot.name = bot.name
+        log.info(f"{bot} is online!")
         log.info("--------")
 
     @commands.Cog.listener()
@@ -82,24 +87,23 @@ class Events(commands.Cog):
         message = orjson.loads(message)
         if message["t"] == "PRESENCE_UPDATE":
             await self.bot._redis.sadd(f"user:{message['d']['user']['id']}", message["d"]["guild_id"])
-        if message["t"] == "GUILD_MEMBER_UPDATE":
-            if int(message["d"]["user"]["id"]) == (await self.bot.user()).id:
+            await self.bot._redis.sadd("user_keys", f"user:{message['d']['user']['id']}")
+        elif message["t"] == "GUILD_MEMBER_UPDATE":
+            if int(message["d"]["user"]["id"]) == self.bot.id:
                 member = orjson.loads(
-                    await self.bot._redis.get(f"member:{message['d']['guild_id']}:{(await self.bot.user()).id}")
+                    await self.bot._connection.redis._get(f"member:{message['d']['guild_id']}:{self.bot.id}")
                 )
                 if member:
                     member["roles"] = message["d"]["roles"]
-                    await self.bot._redis.set(
-                        f"member:{message['d']['guild_id']}:{(await self.bot.user()).id}", orjson.dumps(member)
-                    )
+                    await self.bot._redis.set(f"member:{message['d']['guild_id']}:{self.bot.id}", orjson.dumps(member))
             await self.bot._redis.sadd(f"user:{message['d']['user']['id']}", message["d"]["guild_id"])
-        if message["t"] == "GUILD_CREATE":
+            await self.bot._redis.sadd("user_keys", f"user:{message['d']['user']['id']}")
+        elif message["t"] == "GUILD_CREATE":
             for member in message["d"]["members"]:
-                if int(member["user"]["id"]) == (await self.bot.user()).id:
-                    await self.bot._redis.set(
-                        f"member:{message['d']['id']}:{(await self.bot.user()).id}", orjson.dumps(member)
-                    )
+                if int(member["user"]["id"]) == self.bot.id:
+                    await self.bot._redis.set(f"member:{message['d']['id']}:{self.bot.id}", orjson.dumps(member))
                 await self.bot._redis.sadd(f"user:{member['user']['id']}", message["d"]["id"])
+                await self.bot._redis.sadd("user_keys", f"user:{message['user']['id']}")
 
     @commands.Cog.listener()
     async def on_reaction_add(self, reaction, member):
@@ -137,7 +141,7 @@ class Events(commands.Cog):
 
     @commands.Cog.listener()
     async def on_raw_reaction_add(self, payload):
-        if payload.user_id == (await self.bot.user()).id:
+        if payload.user_id == self.bot.id:
             return
         if payload.member:
             return
@@ -204,7 +208,7 @@ class Events(commands.Cog):
             embed.set_author(name=f"{ctx.author} ({ctx.author.id})", icon_url=ctx.author.avatar_url)
             if self.bot.config.admin_channel:
                 await self.bot.http.send_message(self.bot.config.admin_channel, None, embed=embed.to_dict())
-        if ctx.prefix == f"<@{(await self.bot.user()).id}> " or ctx.prefix == f"<@!{(await self.bot.user()).id}> ":
+        if ctx.prefix == f"<@{self.bot.id}> " or ctx.prefix == f"<@!{self.bot.id}> ":
             ctx.prefix = self.bot.tools.get_guild_prefix(self.bot, message.guild)
         await self.bot.invoke(ctx)
 
@@ -233,23 +237,25 @@ class Events(commands.Cog):
             embed.set_author(name=f"{ctx.author} ({ctx.author.id})", icon_url=ctx.author.avatar_url)
             if self.bot.config.admin_channel:
                 await self.bot.http.send_message(self.bot.config.admin_channel, None, embed=embed.to_dict())
-        if ctx.prefix == f"<@{(await self.bot.user()).id}> " or ctx.prefix == f"<@!{(await self.bot.user()).id}> ":
+        if ctx.prefix == f"<@{self.bot.id}> " or ctx.prefix == f"<@!{self.bot.id}> ":
             ctx.prefix = self.bot.tools.get_guild_prefix(self.bot, message.guild)
         await self.bot.invoke(ctx)
 
     @commands.Cog.listener()
     async def on_member_join(self, member):
-        if member.id == (await self.bot.user()).id:
+        if member.id == self.bot.id:
             await self.bot._redis.set(
                 f"member:{member.guild.id}:{(await self.bot.user().id)}", orjson.dumps(member._data)
             )
         await self.bot._redis.sadd(f"user:{member.id}", member.guild.id)
+        await self.bot._redis.sadd("user_keys", f"user:{member.id}")
 
     @commands.Cog.listener()
     async def on_member_remove(self, member):
-        if member.id == (await self.bot.user()).id:
+        if member.id == self.bot.id:
             await self.bot._redis.delete(f"member:{member.guild.id}:{(await self.bot.user().id)}")
         await self.bot._redis.srem(f"user:{member.id}", member.guild.id)
+        await self.bot._redis.sadd("user_keys", f"user:{member.id}")
 
 
 def setup(bot):

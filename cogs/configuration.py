@@ -36,20 +36,10 @@ class Configuration(commands.Cog):
     )
     @checks.has_permissions(administrator=True)
     @commands.guild_only()
-    @commands.command(description="Set up ModMail with an interactive guide.", usage="setup")
+    @commands.command(description="Set up ModMail.", usage="setup")
     async def setup(self, ctx):
         category_name = "ModMail"
-        m = await ctx.send(embed=discord.Embed(description="Setting up...", colour=self.bot.primary_colour))
-        await ctx.send(
-            embed=discord.Embed(
-                title="Premium",
-                description="Please consider purchasing premium! It is the best way you can show support to us. You "
-                "will get access to premium features including greeting and closing messages, advanced logging that "
-                "includes chat history, as well as the snippet functionality. You will also receive priority support "
-                f"in our server. For more information, see `{ctx.prefix}premium`.",
-                colour=self.bot.primary_colour,
-            )
-        )
+        msg = await ctx.send(embed=discord.Embed(description="Setting up...", colour=self.bot.primary_colour))
         data = await self.bot.get_data(ctx.guild.id)
         overwrites = {await ctx.guild.default_role(): self.default_role_permission}
         for role in [await ctx.guild.get_role(role) for role in data[3]]:
@@ -65,7 +55,17 @@ class Configuration(commands.Cog):
                 logging_channel.id,
                 ctx.guild.id,
             )
-        await m.edit(
+        await msg.edit(
+            embed=discord.Embed(
+                title="Premium",
+                description="Please consider purchasing premium! It is the best way you can show support to us. You "
+                "will get access to premium features including greeting and closing messages, advanced logging that "
+                "includes chat history, as well as the snippet functionality. You will also receive priority support "
+                f"in our server. For more information, see `{ctx.prefix}premium`.",
+                colour=self.bot.primary_colour,
+            )
+        )
+        await ctx.send(
             embed=discord.Embed(
                 title="Setup",
                 description="Everything has been set up! Next up, you can give your staff access to ModMail commands "

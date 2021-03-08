@@ -19,7 +19,7 @@ class General(commands.Cog):
         self.bot = bot
         psutil.cpu_percent()
 
-    @checks.bot_has_permissions(manage_messages=True)
+    @checks.bot_has_permissions(add_reactions=True)
     @commands.command(
         description="Shows the help menu or information for a specific command when specified.",
         usage="help [command]",
@@ -47,19 +47,19 @@ class General(commands.Cog):
             return
         all_pages = []
         page = discord.Embed(
-            title=f"{(await self.bot.user()).name} Help Menu",
+            title=f"{self.bot.name} Help Menu",
             description="Thank you for using ModMail! Please direct message me if you wish to contact staff. You can "
             "also invite me to your server with the link below, or join our support server if you need further help."
             "\n\nWe released Wyvor - The best feature rich Discord music bot! Check it out now: https://wyvor.xyz.",
             colour=self.bot.primary_colour,
         )
-        page.set_thumbnail(url=(await self.bot.user()).avatar_url)
+        page.set_thumbnail(url=self.bot.avatar_url)
         page.set_footer(text="Use the reactions to flip pages.")
         page.add_field(name="Invite", value="https://modmail.xyz/invite", inline=False)
         page.add_field(name="Support Server", value="https://discord.gg/wjWJwJB", inline=False)
         all_pages.append(page)
-        page = discord.Embed(title=f"{(await self.bot.user()).name} Help Menu", colour=self.bot.primary_colour)
-        page.set_thumbnail(url=(await self.bot.user()).avatar_url)
+        page = discord.Embed(title=f"{self.bot.name} Help Menu", colour=self.bot.primary_colour)
+        page.set_thumbnail(url=self.bot.avatar_url)
         page.set_footer(text="Use the reactions to flip pages.")
         page.add_field(
             name="About ModMail",
@@ -89,10 +89,8 @@ class General(commands.Cog):
                 "help <command>` for more information on a command.",
                 colour=self.bot.primary_colour,
             )
-            page.set_author(
-                name=f"{(await self.bot.user()).name} Help Menu", icon_url=(await self.bot.user()).avatar_url
-            )
-            page.set_thumbnail(url=(await self.bot.user()).avatar_url)
+            page.set_author(name=f"{self.bot.name} Help Menu", icon_url=self.bot.avatar_url)
+            page.set_thumbnail(url=self.bot.avatar_url)
             page.set_footer(text="Use the reactions to flip pages.")
             for cmd in cog_commands:
                 if cmd.hidden is False:
@@ -100,7 +98,6 @@ class General(commands.Cog):
             all_pages.append(page)
         for page in range(len(all_pages)):
             all_pages[page].set_footer(text=f"Use the reactions to flip pages. (Page {page + 1}/{len(all_pages)})")
-            all_pages[page] = all_pages[page].to_dict()
         await self.bot.create_reaction_menu(ctx, all_pages)
 
     @commands.command(description="Pong! Get my latency.", usage="ping")
@@ -118,21 +115,7 @@ class General(commands.Cog):
         )
 
     async def get_bot_uptime(self, *, brief=False):
-        start_time = await self.bot.started()
-        uptime = datetime.utcnow() - start_time
-        hours, remainder = divmod(int(uptime.total_seconds()), 3600)
-        minutes, seconds = divmod(remainder, 60)
-        days, hours = divmod(hours, 24)
-        if not brief:
-            if days:
-                fmt = "{d} days, {h} hours, {m} minutes, and {s} seconds"
-            else:
-                fmt = "{h} hours, {m} minutes, and {s} seconds"
-        else:
-            fmt = "{h}h {m}m {s}s"
-            if days:
-                fmt = "{d}d " + fmt
-        return fmt.format(d=days, h=hours, m=minutes, s=seconds)
+
 
     @commands.command(
         description="See some super cool statistics about me.",
@@ -140,14 +123,24 @@ class General(commands.Cog):
         aliases=["statistics", "info"],
     )
     async def stats(self, ctx):
-        guilds = len(await self.bot.guilds())
-        channels = len(await self.bot._redis.smembers("channel_keys"))
+        start_time = await self.bot.started()
+        uptime = datetime.utcnow() - start_time
+        hours, remainder = divmod(int(uptime.total_seconds()), 3600)
+        minutes, seconds = divmod(remainder, 60)
+        days, hours = divmod(hours, 24)
+        fmt = "{h}h {m}m {s}s"
+        if days:
+            fmt = "{d}d " + fmt
+        fmt.format(d=days, h=hours, m=minutes, s=seconds)
 
-        embed = discord.Embed(title=f"{(await self.bot.user()).name} Statistics", colour=self.bot.primary_colour)
+        guilds = await self.bot.state.scard("guild_keys")
+        channels = await self.bot.state.scard("channel_keys")
+        users = await self.bot.state.scard("user_keys")
+
+        embed = discord.Embed(title=f"{self.bot.name} Statistics", colour=self.bot.primary_colour)
         embed.add_field(name="Owner", value="CHamburr#2591")
-        embed.add_field(name="Co-Developer", value="waterflamev8#4123")
         embed.add_field(name="Bot Version", value=self.bot.version)
-        embed.add_field(name="Uptime", value=await self.get_bot_uptime(brief=True))
+        embed.add_field(name="Uptime", value=fmt)
         embed.add_field(name="Clusters", value=f"{self.bot.cluster}/{self.bot.cluster_count}")
         if ctx.guild:
             embed.add_field(name="Shards", value=f"{ctx.guild.shard_id + 1}/{await self.bot.shard_count()}")
@@ -155,18 +148,14 @@ class General(commands.Cog):
             embed.add_field(name="Shards", value=f"{await self.bot.shard_count()}")
         embed.add_field(name="Servers", value=str(guilds))
         embed.add_field(name="Channels", value=str(channels))
+        embed.add_field(name="Users", value=str(users))
         embed.add_field(name="CPU Usage", value=f"{psutil.cpu_percent(interval=None)}%")
         embed.add_field(name="RAM Usage", value=f"{psutil.virtual_memory().percent}%")
         embed.add_field(name="Python Version", value=platform.python_version())
-        embed.add_field(name="discord.py Version", value=discord.__version__)
-        embed.set_thumbnail(url=(await self.bot.user()).avatar_url)
-        embed.set_footer(
-            text="</> with ❤ using discord.py",
-            icon_url="https://www.python.org/static/opengraph-icon-200x200.png",
-        )
+        embed.set_thumbnail(url=self.bot.avatar_url)
         await ctx.send(embed=embed)
 
-    @checks.bot_has_permissions(manage_messages=True)
+    @checks.bot_has_permissions(add_reactions=True)
     @commands.command(
         description="See the amazing stuff we have partnered with.",
         usage="partners",
@@ -310,11 +299,8 @@ class General(commands.Cog):
         )
         all_pages.append(page)
         for page in range(len(all_pages)):
-            all_pages[page].set_author(
-                name=f"{(await self.bot.user()).name} partners", icon_url=(await self.bot.user()).avatar_url
-            )
+            all_pages[page].set_author(name=f"{self.bot.name} partners", icon_url=self.bot.avatar_url)
             all_pages[page].set_footer(text=f"Use the reactions to flip pages. (Page {page + 1}/{len(all_pages)})")
-            all_pages[page] = all_pages[page].to_dict()
         await self.bot.create_reaction_menu(ctx, all_pages)
 
     @commands.command(description="Get a link to invite me.", usage="invite")

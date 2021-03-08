@@ -1,10 +1,10 @@
 import asyncio
+import json
 import os
 import signal
 import sys
 import time
 
-from datetime import datetime
 from pathlib import Path
 
 import aioredis
@@ -101,7 +101,7 @@ class Scheduler:
             rm = orjson.loads(rm)
             filtered_rm = []
             for menu in rm:
-                if menu["end"] <= datetime.timestamp(datetime.now()):
+                if menu["end"] <= int(time.time()):
                     try:
                         await self.http.clear_reactions(menu["channel"], menu["message"])
                     except discord.Forbidden:
@@ -117,7 +117,7 @@ class Scheduler:
             sm = orjson.loads(sm)
             filtered_sm = []
             for menu in sm:
-                if menu["end"] <= datetime.timestamp(datetime.now()):
+                if menu["end"] <= int(time.time()):
                     channel_id = menu["channel"]
                     message_id = menu["message"]
                     reactions = len(menu["all_pages"][menu["page"]]["fields"])
@@ -144,7 +144,7 @@ class Scheduler:
             cm = orjson.loads(cm)
             filtered_cm = []
             for menu in cm:
-                if menu["end"] <= datetime.timestamp(datetime.now()):
+                if menu["end"] <= int(time.time()):
                     try:
                         await self.http.edit_message(
                             menu["channel"],
@@ -198,14 +198,12 @@ class Main:
             for instance in self.instances:
                 self.loop.create_task(instance.stop())
 
-    # def write_targets(self, clusters):
-    #     data = []
-    #     for i, shard_list in enumerate(clusters, 1):
-    #         if not shard_list:
-    #             continue
-    #         data.append({"labels": {"cluster": f"{i}"}, "targets": [f"localhost:{6000 + i}"]})
-    #     with open("targets.json", "w") as f:
-    #         json.dump(data, f, indent=4)
+    def write_targets(self, clusters):
+        data = []
+        for i in range(len(clusters)):
+            data.append({"labels": {"cluster": f"{i}"}, "targets": [f"localhost:{6000 + i}"]})
+        with open("targets.json", "w") as f:
+            json.dump(data, f, indent=4)
 
     async def launch(self):
         print(f"[Cluster Manager] Starting a total of {config.clusters} clusters.")
