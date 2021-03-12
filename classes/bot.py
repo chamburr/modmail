@@ -73,6 +73,7 @@ class ModMail(commands.AutoShardedBot):
         self._amqp_queue = None
 
         self.session = aiohttp.ClientSession(loop=self.loop)
+        self.http_uri = f"http://{self.config.http_host}:{self.config.http_port}"
         self.cluster = kwargs.get("cluster_id")
         self.cluster_count = kwargs.get("cluster_count")
         self.version = kwargs.get("version")

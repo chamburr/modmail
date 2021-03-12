@@ -29,7 +29,7 @@ class Miscellaneous(commands.Cog):
             try:
                 member = Member(
                     guild=ctx.guild,
-                    state=self.bot._connection,
+                    state=self.bot.state,
                     data=await self.bot.tools.parse_member(self.bot, ctx.guild.id, args[0]),
                 )
             except commands.BadArgument:
@@ -37,7 +37,7 @@ class Miscellaneous(commands.Cog):
         elif len(args) == 2:
             member = Member(
                 guild=ctx.guild,
-                state=self.bot._connection,
+                state=self.bot.state,
                 data=await self.bot.tools.parse_member(self.bot, ctx.guild.id, args[0]),
             )
             ch = await self.bot.tools.parse_channel(self.bot, ctx.guild, args[1])
@@ -67,11 +67,11 @@ class Miscellaneous(commands.Cog):
     async def userinfo(self, ctx, *, member: str = None):
         member = Member(
             guild=ctx.guild,
-            state=self.bot._connection,
+            state=self.bot.state,
             data=await self.bot.tools.parse_member(self.bot, ctx.guild.id, member),
         )
         if member is None:
-            member = await ctx.message.member()
+            member = ctx.message.member
         roles = [(await ctx.guild.default_role()).name]
         roles.extend([(await ctx.guild.get_role(role)).name for role in member._roles])
         embed = discord.Embed(title="User Information", colour=self.bot.primary_colour)
@@ -100,7 +100,7 @@ class Miscellaneous(commands.Cog):
         embed = discord.Embed(title="Server Information", colour=self.bot.primary_colour)
         embed.add_field(name="Name", value=guild.name)
         embed.add_field(name="ID", value=guild.id)
-        embed.add_field(name="Owner", value=f"<@!{guild.owner_id}>" if guild.owner_id else "Unknown")
+        embed.add_field(name="Owner", value=f"<@{guild.owner_id}>" if guild.owner_id else "Unknown")
         embed.add_field(
             name="Icon", value=f"[Link]({guild.icon_url_as(static_format='png')})" if guild.icon else "*Not set*"
         )

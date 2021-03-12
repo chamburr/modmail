@@ -7,6 +7,7 @@ import time
 
 from pathlib import Path
 
+import aiohttp
 import aioredis
 import discord
 import orjson
@@ -88,12 +89,48 @@ class Scheduler:
         self.loop = loop
         self.redis = None
         self.http = None
+        self.bot_id = None
+        self.bot_shard_count = None
+
+        self.session = aiohttp.ClientSession(loop=self.loop)
         self.reactions = ["1⃣", "2⃣", "3⃣", "4⃣", "5⃣", "6⃣", "7⃣", "8⃣", "9⃣", "🔟", "◀️", "▶️"]
 
-    async def _login(self):
-        client = discord.Client()
-        await client.http.static_login(config.token, bot=True)
-        return client.http
+    async def bot_stats_updater(self):
+        while True:
+            if not self.bot_id and not self.bot_shard_count:
+                continue
+            guilds = await self.redis.scard("guild_keys")
+            await self.session.post(
+                f"https://top.gg/api/bots/{self.bot_id}/stats",
+                data=orjson.dumps({"server_count": guilds, "shard_count": await self.bot_shard_count}),
+                headers={"Authorization": config.topgg_token, "Content-Type": "application/json"},
+            )
+            await self.session.post(
+                f"https://discord.bots.gg/api/v1/bots/{self.bot_id}/stats",
+                data=orjson.dumps({"guildCount": guilds, "shardCount": await self.bot_shard_count}),
+                headers={"Authorization": config.dbots_token, "Content-Type": "application/json"},
+            )
+            await self.session.post(
+                f"https://discordbotlist.com/api/v1/bots/{self.bot_id}/stats",
+                data=orjson.dumps({"guilds": guilds}),
+                headers={"Authorization": config.dbl_token, "Content-Type": "application/json"},
+            )
+            await self.session.post(
+                f"https://bots.ondiscord.xyz/bot-api/bots/{self.bot_id}/guilds",
+                data=orjson.dumps({"guildCount": guilds}),
+                headers={"Authorization": config.bod_token, "Content-Type": "application/json"},
+            )
+            await self.session.post(
+                f"https://botsfordiscord.com/api/bot/{self.bot_id}",
+                data=orjson.dumps({"server_count": guilds}),
+                headers={"Authorization": config.bfd_token, "Content-Type": "application/json"},
+            )
+            await self.session.post(
+                f"https://discord.boats/api/v2/bot/{self.bot_id}",
+                data=orjson.dumps({"server_count": guilds}),
+                headers={"Authorization": config.dboats_token, "Content-Type": "application/json"},
+            )
+            await asyncio.sleep(900)
 
     async def cleanup(self):
         rm = await self.redis.get("reaction_menus")
@@ -162,8 +199,14 @@ class Scheduler:
             await self.redis.set("confirmation_menus", orjson.dumps(filtered_cm).decode("utf-8"))
 
     async def launch(self):
+        client = discord.Client()
+        await client.http.static_login(config.token, bot=True)
+        self.http = client.http
         self.redis = await aioredis.create_redis_pool(config.redis_url, minsize=5, maxsize=10, loop=self.loop)
-        self.http = await self._login()
+        self.bot_id = (await self.redis.get("bot_user"))["id"]
+        self.bot_shard_count = int(await self.redis.get("gateway_shards"))
+        if config.testing is False:
+            await self.bot_stats_updater()
         while True:
             await self.cleanup()
             await asyncio.sleep(5)
@@ -173,7 +216,7 @@ class Main:
     def __init__(self, loop):
         self.loop = loop
         self.instances = []
-        self.redis = None
+        self.session = aiohttp.ClientSession(loop=self.loop)
 
     def dead_process_handler(self, result):
         instance = result.result()
@@ -194,9 +237,11 @@ class Main:
         if request.path == "/restart":
             for instance in self.instances:
                 self.loop.create_task(instance.restart())
-        elif request.path == "/stop":
-            for instance in self.instances:
-                self.loop.create_task(instance.stop())
+        elif request.path == "/healthcheck":
+            return web.Response(body={"status": "OK"}, content_type="application/json")
+        elif request.path == "/status":
+            data = [{"cluster": x.id, "status": "OK" if x.status == "running" else "ERROR"} for x in self.instances]
+            return web.Response(body=data, content_type="application/json")
 
     def write_targets(self, clusters):
         data = []
@@ -207,7 +252,12 @@ class Main:
 
     async def launch(self):
         print(f"[Cluster Manager] Starting a total of {config.clusters} clusters.")
-        await asyncio.sleep(10)
+        while True:
+            resp = await self.session.get(f"{config.td_host}:{config.td_port}/healthcheck")
+            async with resp:
+                if await resp.json() == {"status": "OK"}:
+                    break
+            await asyncio.sleep(5)
         for i in range(config.clusters):
             self.instances.append(Instance(i + 1, self.loop, main=self, cluster_count=config.clusters))
 

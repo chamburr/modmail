@@ -41,7 +41,7 @@ class Configuration(commands.Cog):
         category_name = "ModMail"
         msg = await ctx.send(embed=discord.Embed(description="Setting up...", colour=self.bot.primary_colour))
         data = await self.bot.get_data(ctx.guild.id)
-        overwrites = {await ctx.guild.default_role(): self.default_role_permission}
+        overwrites = {ctx.guild.id: self.default_role_permission}
         for role in [await ctx.guild.get_role(role) for role in data[3]]:
             if role is None:
                 continue
@@ -137,7 +137,7 @@ class Configuration(commands.Cog):
                 )
             )
             return
-        overwrites = {await ctx.guild.default_role(): self.default_role_permission}
+        overwrites = {ctx.guild.id: self.default_role_permission}
         for role in [await ctx.guild.get_role(role) for role in data[3]]:
             if role is None:
                 continue
@@ -189,9 +189,7 @@ class Configuration(commands.Cog):
             try:
                 for role in roles:
                     await category.set_permissions(target=role, overwrite=self.role_permission)
-                await category.set_permissions(
-                    target=(await ctx.guild.default_role()), overwrite=self.default_role_permission
-                )
+                await category.set_permissions(target=ctx.guild.id, overwrite=self.default_role_permission)
             except discord.Forbidden:
                 await ctx.send(
                     embed=discord.Embed(
@@ -222,7 +220,7 @@ class Configuration(commands.Cog):
                 role = role.lower()
                 role = role.replace("@", "", 1)
                 if role == "everyone":
-                    role_ids.append((await ctx.guild.default_role()).id)
+                    role_ids.append(ctx.guild.id)
                 elif role == "here":
                     role_ids.append(-1)
                 else:
@@ -391,7 +389,7 @@ class Configuration(commands.Cog):
         for role in data[8]:
             if role == -1:
                 ping_roles.append("@here")
-            elif role == (await ctx.guild.default_role()).id:
+            elif role == ctx.guild.id:
                 ping_roles.append("@everyone")
             else:
                 ping_roles.append(f"<@&{role}>")

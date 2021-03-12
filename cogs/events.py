@@ -1,6 +1,5 @@
 import asyncio
 import datetime
-import json
 import logging
 
 import discord
@@ -14,47 +13,7 @@ log = logging.getLogger(__name__)
 class Events(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
-        if self.bot.config.testing is False and self.bot.cluster == 1:
-            self.bot_stats_updater = bot.loop.create_task(self.bot_stats_updater())
         self.bot_misc_updater = bot.loop.create_task(self.bot_misc_updater())
-
-    async def bot_stats_updater(self):
-        while True:
-            guilds = len(await self.bot.guilds())
-            if guilds < self.bot.cluster_count:
-                await asyncio.sleep(300)
-                continue
-            await self.bot.session.post(
-                f"https://top.gg/api/bots/{self.bot.id}/stats",
-                data=json.dumps({"server_count": guilds, "shard_count": await self.bot.shard_count()}),
-                headers={"Authorization": self.bot.config.topgg_token, "Content-Type": "application/json"},
-            )
-            await self.bot.session.post(
-                f"https://discord.bots.gg/api/v1/bots/{self.bot.id}/stats",
-                data=json.dumps({"guildCount": guilds, "shardCount": await self.bot.shard_count()}),
-                headers={"Authorization": self.bot.config.dbots_token, "Content-Type": "application/json"},
-            )
-            await self.bot.session.post(
-                f"https://discordbotlist.com/api/v1/bots/{self.bot.id}/stats",
-                data=json.dumps({"guilds": guilds}),
-                headers={"Authorization": self.bot.config.dbl_token, "Content-Type": "application/json"},
-            )
-            await self.bot.session.post(
-                f"https://bots.ondiscord.xyz/bot-api/bots/{self.bot.id}/guilds",
-                data=json.dumps({"guildCount": guilds}),
-                headers={"Authorization": self.bot.config.bod_token, "Content-Type": "application/json"},
-            )
-            await self.bot.session.post(
-                f"https://botsfordiscord.com/api/bot/{self.bot.id}",
-                data=json.dumps({"server_count": guilds}),
-                headers={"Authorization": self.bot.config.bfd_token, "Content-Type": "application/json"},
-            )
-            await self.bot.session.post(
-                f"https://discord.boats/api/v2/bot/{self.bot.id}",
-                data=json.dumps({"server_count": guilds}),
-                headers={"Authorization": self.bot.config.dboats_token, "Content-Type": "application/json"},
-            )
-            await asyncio.sleep(900)
 
     async def bot_misc_updater(self):
         while True:
@@ -83,27 +42,24 @@ class Events(commands.Cog):
         log.info("--------")
 
     @commands.Cog.listener()
-    async def on_socket_raw_receive(self, message):
-        message = orjson.loads(message)
+    async def on_socket_response(self, message):
         if message["t"] == "PRESENCE_UPDATE":
-            await self.bot._redis.sadd(f"user:{message['d']['user']['id']}", message["d"]["guild_id"])
-            await self.bot._redis.sadd("user_keys", f"user:{message['d']['user']['id']}")
+            await self.bot.state.sadd(f"user:{message['d']['user']['id']}", message["d"]["guild_id"])
+            await self.bot.state.sadd("user_keys", f"user:{message['d']['user']['id']}")
         elif message["t"] == "GUILD_MEMBER_UPDATE":
             if int(message["d"]["user"]["id"]) == self.bot.id:
-                member = orjson.loads(
-                    await self.bot._connection.redis._get(f"member:{message['d']['guild_id']}:{self.bot.id}")
-                )
+                member = await self.bot.state.get(f"member:{message['d']['guild_id']}:{self.bot.id}")
                 if member:
                     member["roles"] = message["d"]["roles"]
-                    await self.bot._redis.set(f"member:{message['d']['guild_id']}:{self.bot.id}", orjson.dumps(member))
-            await self.bot._redis.sadd(f"user:{message['d']['user']['id']}", message["d"]["guild_id"])
-            await self.bot._redis.sadd("user_keys", f"user:{message['d']['user']['id']}")
+                    await self.bot.state.set(f"member:{message['d']['guild_id']}:{self.bot.id}", member)
+            await self.bot.state.sadd(f"user:{message['d']['user']['id']}", message["d"]["guild_id"])
+            await self.bot.state.sadd("user_keys", f"user:{message['d']['user']['id']}")
         elif message["t"] == "GUILD_CREATE":
             for member in message["d"]["members"]:
                 if int(member["user"]["id"]) == self.bot.id:
-                    await self.bot._redis.set(f"member:{message['d']['id']}:{self.bot.id}", orjson.dumps(member))
-                await self.bot._redis.sadd(f"user:{member['user']['id']}", message["d"]["id"])
-                await self.bot._redis.sadd("user_keys", f"user:{message['user']['id']}")
+                    await self.bot.state.set(f"member:{message['d']['id']}:{self.bot.id}", member)
+                await self.bot.state.sadd(f"user:{member['user']['id']}", message["d"]["id"])
+                await self.bot.state.sadd("user_keys", f"user:{message['user']['id']}")
 
     @commands.Cog.listener()
     async def on_reaction_add(self, reaction, member):

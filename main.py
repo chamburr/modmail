@@ -38,7 +38,6 @@ bot = ModMail(
     command_prefix=_get_guild_prefix,
     case_insensitive=True,
     help_command=None,
-    owner_ids=config.owners,
     cluster_id=cluster_id,
     cluster_count=cluster_count,
     version="2.1.1",

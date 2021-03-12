@@ -93,10 +93,20 @@ class State:
         return None
 
     async def sadd(self, key, value):
-        return await self.redis.sadd(key, orjson.dumps(value).decode("utf-8"))
+        if isinstance(value, dict):
+            return await self.redis.sadd(key, orjson.dumps(value).decode("utf-8"))
+        return await self.redis.sadd(key, value)
 
     async def scard(self, key):
         return await self.redis.scard(key)
+
+    async def set(self, key, value):
+        if isinstance(value, dict):
+            return await self.redis.set(key, orjson.dumps(value).decode("utf-8"))
+        return await self.redis.set(key, value)
+
+    async def smembers(self, key):
+        return await self.redis.smembers(key)
 
     async def _members(self, key, key_id=None):
         key += "_keys"

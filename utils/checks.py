@@ -128,9 +128,9 @@ def is_mod():
             role = await ctx.guild.get_role(role)
             if not role:
                 continue
-            if role in (await ctx.message.member())._roles:
+            if role in await ctx.message.member.roles():
                 return True
-        if (await ctx.message.member()).guild_permissions.administrator is False and has_role is False:
+        if ctx.message.member.guild_permissions.administrator is False and has_role is False:
             await ctx.send(
                 embed=discord.Embed(
                     description="You do not have access to use this command.",

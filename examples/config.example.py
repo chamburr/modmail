@@ -34,9 +34,13 @@ redis_url = ""
 # Postgres credentials
 postgres_url = ""
 
-# Server
+# HTTP API Server
 http_host = ""
 http_port = ""
+
+# Twilight-dispatch HTTP Server
+td_host = ""
+td_port = ""
 
 # Number of clusters
 clusters = 1

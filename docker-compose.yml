@@ -20,7 +20,7 @@ services:
 
   postgres:
     image: postgres:alpine
-    restart: unless-stopped
+    restart: always
     volumes:
       - postgres:/var/lib/postgresql/data
       - ./schema.sql:/docker-entrypoint-initdb.d/schema.sql
@@ -31,7 +31,7 @@ services:
 
   rabbitmq:
     image: rabbitmq:management-alpine
-    restart: unless-stopped
+    restart: always
     volumes:
       - amqp:/var/lib/rabbitmq
     ports:
@@ -42,7 +42,7 @@ services:
 
   redis:
     image: redis:alpine
-    restart: unless-stopped
+    restart: always
     volumes:
       - redis:/data
     ports:
@@ -50,7 +50,7 @@ services:
 
   twilight-dispatch:
     image: chamburr/twilight-dispatch:latest
-    restart: unless-stopped
+    restart: always
     depends_on:
       - amqp
       - redis

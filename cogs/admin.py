@@ -6,7 +6,7 @@ import discord
 
 from discord.ext import commands
 
-from classes import channel, converters
+from classes import abc, converters
 from utils import checks
 
 log = logging.getLogger(__name__)
@@ -15,10 +15,6 @@ log = logging.getLogger(__name__)
 class Admin(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
-        self.uri = f"http://{self.bot.config.http_host}:{self.bot.config.http_port}"
-
-    async def find_guild(self, name):
-        return
 
     @checks.is_admin()
     @commands.command(
@@ -43,9 +39,9 @@ class Admin(commands.Cog):
                 else:
                     page.description += f"\n{guild}"
             page.set_footer(text="Use the reactions to flip pages.")
-            all_pages.append(page.to_dict())
+            all_pages.append(page)
         if len(all_pages) == 1:
-            embed = discord.Embed.from_dict(all_pages[0])
+            embed = all_pages[0]
             embed.set_footer(text=discord.Embed.Empty)
             await ctx.send(embed=embed)
             return
@@ -61,7 +57,7 @@ class Admin(commands.Cog):
         guilds = [
             f"{guild.name} `{guild.id}` ({guild.member_count} members)"
             for guild in [
-                await self.bot.get_guild(int(guild)) for guild in await self.bot._redis.smembers(f"user:{user.id}")
+                await self.bot.get_guild(int(guild)) for guild in await self.bot.state.smembers(f"user:{user.id}")
             ]
         ]
         all_pages = []
@@ -73,9 +69,9 @@ class Admin(commands.Cog):
                 else:
                     page.description += f"\n{guild}"
             page.set_footer(text="Use the reactions to flip pages.")
-            all_pages.append(page.to_dict())
+            all_pages.append(page)
         if len(all_pages) == 1:
-            embed = discord.Embed.from_dict(all_pages[0])
+            embed = all_pages[0]
             embed.set_footer(text=discord.Embed.Empty)
             await ctx.send(embed=embed)
             return
@@ -90,13 +86,14 @@ class Admin(commands.Cog):
     async def createinvite(self, ctx, *, guild: int):
         invite = None
         guild = await self.bot.get_guild(guild)
+        discord.abc = abc
         if not guild:
             return
         try:
             invite = (await guild.invites())[0]
         except (IndexError, discord.Forbidden):
             try:
-                invite = await self.bot.http.create_invite((await guild.text_channels())[0].id, max_age=120)
+                invite = (await guild.text_channels())[0].create_invite(max_age=120)
             except discord.Forbidden:
                 pass
 
@@ -110,7 +107,7 @@ class Admin(commands.Cog):
         else:
             await ctx.send(
                 embed=discord.Embed(
-                    description=f"Here is the invite link: https://discord.gg/{invite['code']}",
+                    description=f"Here is the invite link: https://discord.gg/{invite.code}",
                     colour=self.bot.primary_colour,
                 )
             )
@@ -136,9 +133,9 @@ class Admin(commands.Cog):
                 else:
                     page.description += f"\n{guild}"
             page.set_footer(text="Use the reactions to flip pages.")
-            all_pages.append(page.to_dict())
+            all_pages.append(page)
         if len(all_pages) == 1:
-            embed = discord.Embed.from_dict(all_pages[0])
+            embed = all_pages[0]
             embed.set_footer(text=discord.Embed.Empty)
             await ctx.send(embed=embed)
             return
@@ -155,7 +152,7 @@ class Admin(commands.Cog):
     @commands.command(description="Restart all clusters.", usage="restart", hidden=True)
     async def restart(self, ctx):
         await ctx.send(embed=discord.Embed(description="Restarting...", colour=self.bot.primary_colour))
-        await self.bot.session.post(f"{self.uri}/restart")
+        await self.bot.session.post(f"{self.bot.http_uri}/restart")
 
 
 def setup(bot):

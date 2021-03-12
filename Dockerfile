@@ -9,4 +9,4 @@ RUN pip3 install -r requirements.txt && \
 
 COPY . .
 
-CMD ["sh", "-c", "'scripts/wait.sh rabbitmq:5672 -- python3 -u launcher.py'"]
+CMD ["sh", "-c", "'python3 -u launcher.py'"]

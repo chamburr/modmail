@@ -127,7 +127,7 @@ class Snippet(commands.Cog):
     @checks.in_database()
     @checks.is_premium()
     @checks.is_mod()
-    @checks.bot_has_permissions(manage_messages=True)
+    @checks.bot_has_permissions(add_reactions=True)
     @commands.guild_only()
     @commands.command(
         description="View all the snippets or a specific one if specified.",
@@ -173,9 +173,9 @@ class Snippet(commands.Cog):
                     inline=False,
                 )
             page.set_footer(text="Use the reactions to flip pages.")
-            all_pages.append(page.to_dict())
+            all_pages.append(page)
         if len(all_pages) == 1:
-            embed = discord.Embed.from_dict(all_pages[0])
+            embed = all_pages[0]
             embed.set_footer(text=discord.Embed.Empty)
             await ctx.send(embed=embed)
             return

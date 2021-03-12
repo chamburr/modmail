@@ -19,9 +19,8 @@ class ModMailEvents(commands.Cog):
     async def on_message(self, message):
         if message.author.bot or not message.guild or not checks.is_modmail_channel2(self.bot, message.channel):
             return
-        if (await message.channel.permissions_for(await message.guild.me())).send_messages is False or (
-            await message.channel.permissions_for(await message.guild.me())
-        ).embed_links is False:
+        permissions = await message.channel.permissions_for(await message.guild.me())
+        if permissions.send_messages is False or permissions.embed_links is False:
             return
         prefix = self.bot.tools.get_guild_prefix(self.bot, message.guild)
         if message.content.startswith(prefix):

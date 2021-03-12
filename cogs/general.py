@@ -104,7 +104,7 @@ class General(commands.Cog):
     async def ping(self, ctx):
         start = time.time()
         msg = await ctx.send(embed=discord.Embed(description="Checking latency...", colour=self.bot.primary_colour))
-        shard = 0 if ctx.guild is None else ctx.guild.shard_id
+        shard = ctx.guild.shard_id if ctx.guild else 0
         await msg.edit(
             embed=discord.Embed(
                 title="Pong!",
@@ -113,9 +113,6 @@ class General(commands.Cog):
                 colour=self.bot.primary_colour,
             )
         )
-
-    async def get_bot_uptime(self, *, brief=False):
-
 
     @commands.command(
         description="See some super cool statistics about me.",

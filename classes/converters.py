@@ -40,7 +40,7 @@ class RoleConverter(commands.IDConverter):
         return result
 
 
-class PingRole(commands.RoleConverter):
+class PingRole(RoleConverter):
     async def convert(self, ctx, argument):
         try:
             return await super().convert(ctx, argument)
