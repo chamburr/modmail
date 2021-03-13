@@ -48,11 +48,16 @@ class Events(commands.Cog):
             await self.bot.state.sadd("user_keys", f"user:{message['d']['user']['id']}")
         elif message["t"] == "GUILD_MEMBER_ADD":
             if int(message["d"]["user"]["id"]) == self.bot.id:
-                await self.bot.state.set(
+                await self.bot.state.set(f"member:{message['d']['guild_id']}:{self.bot.id}", message["d"])
+            await self.bot.state.sadd(f"user:{message['d']['user']['id']}", message["d"]["guild_id"])
+            await self.bot.state.sadd("user_keys", f"user:{message['d']['user']['id']}")
+        elif message["t"] == "GUILD_MEMBER_REMOVE":
+            if int(message["d"]["user"]["id"]) == self.bot.id:
+                await self.bot.state.delete(
                     f"member:{message['d']['guild_id']}:{self.bot.id}",
                 )
-            await self.bot.state.sadd(f"user:{member.id}", member.guild.id)
-            await self.bot.state.sadd("user_keys", f"user:{member.id}")
+            await self.bot.state.srem(f"user:{message['d']['user']['id']}", message["d"]["guild_id"])
+            await self.bot.state.srem(f"user_keys", f"user:{message['d']['user']['id']}")
         elif message["t"] == "GUILD_MEMBER_UPDATE":
             if int(message["d"]["user"]["id"]) == self.bot.id:
                 member = await self.bot.state.get(f"member:{message['d']['guild_id']}:{self.bot.id}")
@@ -204,16 +209,16 @@ class Events(commands.Cog):
             ctx.prefix = self.bot.tools.get_guild_prefix(self.bot, message.guild)
         await self.bot.invoke(ctx)
 
-    @commands.Cog.listener()
-    async def on_member_join(self, member):
-
-
-    @commands.Cog.listener()
-    async def on_member_remove(self, member):
-        if member.id == self.bot.id:
-            await self.bot._redis.delete(f"member:{member.guild.id}:{(await self.bot.user().id)}")
-        await self.bot._redis.srem(f"user:{member.id}", member.guild.id)
-        await self.bot._redis.sadd("user_keys", f"user:{member.id}")
+    # @commands.Cog.listener()
+    # async def on_member_join(self, member):
+    #
+    #
+    # @commands.Cog.listener()
+    # async def on_member_remove(self, member):
+    #     if member.id == self.bot.id:
+    #         await self.bot._redis.delete(f"member:{member.guild.id}:{(await self.bot.user().id)}")
+    #     await self.bot._redis.srem(f"user:{member.id}", member.guild.id)
+    #     await self.bot._redis.sadd("user_keys", f"user:{member.id}")
 
 
 def setup(bot):

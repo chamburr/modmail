@@ -25,14 +25,28 @@ sentry_url = ""
 # Whether the bot is for testing, if true, stats and errors will not be posted
 testing = True
 
-# AMQP credentials
-amqp_url = ""
+# RabbitMQ credentials
+rabbitmq = {
+    "username": "",
+    "password": "",
+    "host": "",
+    "port": 5672,
+}
 
 # Redis credentials
-redis_url = ""
+redis = {
+    "host": "",
+    "port": 6379,
+}
 
 # Postgres credentials
-postgres_url = ""
+database = {
+    "database": "",
+    "user": "",
+    "password": "",
+    "host": "",
+    "port": 5432,
+}
 
 # HTTP API Server
 http_host = ""
@@ -57,22 +71,7 @@ owners = []
 # Bot admins that have access to admin commands
 admins = []
 
-# Cogs to load on startup
-cogs = [
-    "direct_message",
-    "configuration",
-    "core",
-    "error_handler",
-    "events",
-    "general",
-    "miscellaneous",
-    "modmail_channel",
-    "owner",
-    "premium",
-    "snippet",
-]
-
-# Channels to send logs
+# Channel to send logs
 admin_channel = None
 
 # This is where patron roles are at

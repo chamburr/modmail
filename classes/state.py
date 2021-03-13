@@ -53,44 +53,33 @@ class State:
             if attr.startswith("parse_"):
                 self.parsers[attr[6:].upper()] = func
 
+    async def delete(self, key):
+        return await self.redis.delete(key)
+
     async def get(self, keys):
-        if isinstance(keys, list):
-            result = await self.redis.mget(*keys)
-            if result != [None]:
-                for index in range(len(result)):
-                    res = orjson.loads(result[index])
-                    if isinstance(res, dict):
-                        res["_key"] = keys[index]
-                        if res.get("permission_overwrites"):
-                            res["permission_overwrites"] = [
-                                {
-                                    "id": x["id"],
-                                    "type": "role" if x["type"] == 0 else "member",
-                                    "allow": int(x["allow"]),
-                                    "deny": int(x["deny"]),
-                                }
-                                for x in res["permission_overwrites"]
-                            ]
-                    result[index] = res
-            return result
-        elif isinstance(keys, str):
-            result = await self.redis.get(keys)
-            if result:
-                result = orjson.loads(result)
-                if isinstance(result, dict):
-                    result["_key"] = keys
-                    if result.get("permission_overwrites"):
-                        result["permission_overwrites"] = [
+        result = await self.redis.mget(*keys)
+        if set(result) != [None]:
+            for index in range(len(result)):
+                res = orjson.loads(result[index])
+                if isinstance(res, dict):
+                    res["_key"] = keys[index]
+                    if res.get("permission_overwrites"):
+                        res["permission_overwrites"] = [
                             {
                                 "id": x["id"],
                                 "type": "role" if x["type"] == 0 else "member",
                                 "allow": int(x["allow"]),
                                 "deny": int(x["deny"]),
                             }
-                            for x in result["permission_overwrites"]
+                            for x in res["permission_overwrites"]
                         ]
+                    result[index] = res
+        if isinstance(keys, str):
+            return result[0]
+        elif isinstance(keys, list):
             return result
-        return None
+        else:
+            return None
 
     async def sadd(self, key, value):
         if isinstance(value, dict):
@@ -107,6 +96,9 @@ class State:
 
     async def smembers(self, key):
         return await self.redis.smembers(key)
+
+    async def srem(self, key, value):
+        return await self.redis.srem(key, value)
 
     async def _members(self, key, key_id=None):
         key += "_keys"
@@ -140,13 +132,11 @@ class State:
         return int(keys[1])
 
     async def _users(self):
-        results = []
-        user_ids = []
+        user_ids = set()
         for match in await self._members("member"):
             user_id = match.split(":")[2]
-            if user_id not in user_ids:
-                results.append(await self.get(match))
-                user_ids.append(user_id)
+            user_ids.add(user_id)
+        results = await self.get(list(user_ids))
         return [User(state=self, data=x["user"]) for x in results]
 
     async def _emojis(self):

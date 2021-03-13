@@ -122,7 +122,9 @@ class Owner(commands.Cog):
         usage="invoke [channel] <user> <command>",
         hidden=True,
     )
-    async def invoke(self, ctx, channel: Optional[channel.TextChannel], user: converters.UserConverter, *, command: str):
+    async def invoke(
+        self, ctx, channel: Optional[channel.TextChannel], user: converters.UserConverter, *, command: str
+    ):
         msg = copy.copy(ctx.message)
         channel = channel or ctx.channel
         msg.channel = channel

@@ -23,21 +23,6 @@ async def json_or_text(response):
 
 
 class HTTPClient(http.HTTPClient):
-    def __init__(self, connector=None, *, proxy=None, proxy_auth=None, loop=None, unsync_clock=True):
-        self.loop = asyncio.get_event_loop() if loop is None else loop
-        self.connector = connector
-        self.__session = None
-        self._locks = weakref.WeakValueDictionary()
-        self._global_over = asyncio.Event()
-        self._global_over.set()
-        self.token = None
-        self.bot_token = False
-        self.proxy = proxy
-        self.proxy_auth = proxy_auth
-        self.use_clock = not unsync_clock
-
-        self.user_agent = "DiscordBot (Custom, 1.0.0)"
-
     async def request(self, route, *, files=None, **kwargs):
         bucket = route.bucket
         method = route.method

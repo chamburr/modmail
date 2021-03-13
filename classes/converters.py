@@ -5,7 +5,7 @@ import dateparser
 import discord
 
 from discord.ext import commands
-from discord.ext.commands import RoleNotFound, NoPrivateMessage
+from discord.ext.commands import NoPrivateMessage, RoleNotFound
 
 log = logging.getLogger(__name__)
 

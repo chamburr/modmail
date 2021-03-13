@@ -78,6 +78,21 @@ class ModMail(commands.AutoShardedBot):
         self.cluster_count = kwargs.get("cluster_count")
         self.version = kwargs.get("version")
 
+        self._cogs = [
+            "admin",
+            "direct_message",
+            "configuration",
+            "core",
+            "error_handler",
+            "events",
+            "general",
+            "miscellaneous",
+            "modmail_channel",
+            "owner",
+            "premium",
+            "snippet",
+        ]
+
     @property
     def state(self):
         return self._connection
@@ -344,7 +359,7 @@ class ModMail(commands.AutoShardedBot):
 
         await self.http.static_login(self.config.token, bot=True)
 
-        for extension in self.config.cogs:
+        for extension in self._cogs:
             try:
                 self.load_extension("cogs." + extension)
             except Exception:
