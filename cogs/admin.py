@@ -7,6 +7,7 @@ import discord
 from discord.ext import commands
 
 from classes import abc, converters
+from classes.converters import GlobalGuild
 from utils import checks
 
 log = logging.getLogger(__name__)
@@ -53,7 +54,7 @@ class Admin(commands.Cog):
         usage="sharedservers <user>",
         hidden=True,
     )
-    async def sharedservers(self, ctx, *, user: converters.GlobalUser):
+    async def sharedservers(self, ctx, *, user: converters.UserConverter):
         guilds = [
             f"{guild.name} `{guild.id}` ({guild.member_count} members)"
             for guild in [
@@ -83,12 +84,9 @@ class Admin(commands.Cog):
         usage="createinvite <server ID>",
         hidden=True,
     )
-    async def createinvite(self, ctx, *, guild: int):
+    async def createinvite(self, ctx, *, guild: GlobalGuild):
         invite = None
-        guild = await self.bot.get_guild(guild)
         discord.abc = abc
-        if not guild:
-            return
         try:
             invite = (await guild.invites())[0]
         except (IndexError, discord.Forbidden):

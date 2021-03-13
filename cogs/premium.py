@@ -4,6 +4,7 @@ import discord
 
 from discord.ext import commands
 
+from classes.converters import GlobalGuild
 from utils import checks
 
 log = logging.getLogger(__name__)
@@ -86,18 +87,13 @@ class Premium(commands.Cog):
 
     @checks.is_patron()
     @commands.command(description="Assign premium slot to a server.", usage="premiumassign <server ID>")
-    async def premiumassign(self, ctx, *, guild: int):
-        if not await self.bot.get_guild(guild):
-            await ctx.send(
-                embed=discord.Embed(description="The server ID you provided is invalid.", colour=self.bot.error_colour)
-            )
-            return
+    async def premiumassign(self, ctx, *, guild: GlobalGuild):
         async with self.bot.pool.acquire() as conn:
             res = await conn.fetch("SELECT guild FROM premium")
         all_premium = []
         for row in res:
             all_premium.extend(row[0])
-        if guild in all_premium:
+        if guild.id in all_premium:
             await ctx.send(
                 embed=discord.Embed(description="That server already has premium.", colour=self.bot.error_colour)
             )
@@ -114,17 +110,17 @@ class Premium(commands.Cog):
                 )
             )
             return
-        servers[0].append(guild)
+        servers[0].append(guild.id)
         async with self.bot.pool.acquire() as conn:
             await conn.execute("UPDATE premium SET guild=$1 WHERE identifier=$2", servers[0], ctx.author.id)
         await ctx.send(embed=discord.Embed(description="That server now has premium.", colour=self.bot.primary_colour))
 
     @checks.is_patron()
     @commands.command(description="Remove premium slot from a server.", usage="premiumremove <server ID>")
-    async def premiumremove(self, ctx, *, guild: int):
+    async def premiumremove(self, ctx, *, guild: GlobalGuild):
         async with self.bot.pool.acquire() as conn:
             res = await conn.fetchrow("SELECT guild FROM premium WHERE identifier=$1", ctx.author.id)
-        if guild not in res[0]:
+        if guild.id not in res[0]:
             await ctx.send(
                 embed=discord.Embed(
                     description="You did not assign premium to that server.",
@@ -133,13 +129,13 @@ class Premium(commands.Cog):
             )
             return
         servers = res[0]
-        servers.remove(guild)
+        servers.remove(guild.id)
         async with self.bot.pool.acquire() as conn:
             await conn.execute("UPDATE premium SET guild=$1 WHERE identifier=$2", servers, ctx.author.id)
             await conn.execute(
-                "UPDATE data SET welcome=$1, goodbye=$2, loggingplus=$3 WHERE guild=$4", None, None, False, guild
+                "UPDATE data SET welcome=$1, goodbye=$2, loggingplus=$3 WHERE guild=$4", None, None, False, guild.id
             )
-            await conn.execute("DELETE FROM snippet WHERE guild=$1", guild)
+            await conn.execute("DELETE FROM snippet WHERE guild=$1", guild.id)
         await ctx.send(
             embed=discord.Embed(description="That server no longer has premium.", colour=self.bot.primary_colour)
         )

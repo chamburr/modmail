@@ -46,6 +46,13 @@ class Events(commands.Cog):
         if message["t"] == "PRESENCE_UPDATE":
             await self.bot.state.sadd(f"user:{message['d']['user']['id']}", message["d"]["guild_id"])
             await self.bot.state.sadd("user_keys", f"user:{message['d']['user']['id']}")
+        elif message["t"] == "GUILD_MEMBER_ADD":
+            if int(message["d"]["user"]["id"]) == self.bot.id:
+                await self.bot.state.set(
+                    f"member:{message['d']['guild_id']}:{self.bot.id}",
+                )
+            await self.bot.state.sadd(f"user:{member.id}", member.guild.id)
+            await self.bot.state.sadd("user_keys", f"user:{member.id}")
         elif message["t"] == "GUILD_MEMBER_UPDATE":
             if int(message["d"]["user"]["id"]) == self.bot.id:
                 member = await self.bot.state.get(f"member:{message['d']['guild_id']}:{self.bot.id}")
@@ -199,12 +206,7 @@ class Events(commands.Cog):
 
     @commands.Cog.listener()
     async def on_member_join(self, member):
-        if member.id == self.bot.id:
-            await self.bot._redis.set(
-                f"member:{member.guild.id}:{(await self.bot.user().id)}", orjson.dumps(member._data)
-            )
-        await self.bot._redis.sadd(f"user:{member.id}", member.guild.id)
-        await self.bot._redis.sadd("user_keys", f"user:{member.id}")
+
 
     @commands.Cog.listener()
     async def on_member_remove(self, member):

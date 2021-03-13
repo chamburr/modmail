@@ -5,7 +5,7 @@ import dateparser
 import discord
 
 from discord.ext import commands
-from discord.ext.commands import RoleNotFound
+from discord.ext.commands import RoleNotFound, NoPrivateMessage
 
 log = logging.getLogger(__name__)
 
@@ -29,11 +29,15 @@ class DateTime(commands.Converter):
 
 class RoleConverter(commands.IDConverter):
     async def convert(self, ctx, argument):
+        guild = ctx.guild
+        if not guild:
+            raise NoPrivateMessage()
+
         match = self._get_id_match(argument) or re.match(r"<@&([0-9]+)>$", argument)
         if match:
-            result = await ctx.guild.get_role(int(match.group(1)))
+            result = await guild.get_role(int(match.group(1)))
         else:
-            result = discord.utils.get(ctx.guild._roles.values(), name=argument)
+            result = discord.utils.get(guild._roles.values(), name=argument)
 
         if result is None:
             raise RoleNotFound(argument)
@@ -48,7 +52,7 @@ class PingRole(RoleConverter):
             return argument
 
 
-class GlobalUser(commands.UserConverter):
+class UserConverter(commands.UserConverter):
     async def convert(self, ctx, argument):
         match = self._get_id_match(argument) or re.match(r"<@!?([0-9]+)>$", argument)
         if match is not None:
@@ -57,3 +61,11 @@ class GlobalUser(commands.UserConverter):
             except discord.NotFound:
                 pass
         raise commands.BadArgument("User not found")
+
+
+class GuildConverter(commands.Converter):
+    async def convert(self, ctx, argument):
+        guild = await ctx.bot.get_guild(int(argument))
+        if guild:
+            return guild
+        raise commands.BadArgument("Guild not found")

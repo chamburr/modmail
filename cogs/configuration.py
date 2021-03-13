@@ -38,7 +38,6 @@ class Configuration(commands.Cog):
     @commands.guild_only()
     @commands.command(description="Set up ModMail.", usage="setup")
     async def setup(self, ctx):
-        category_name = "ModMail"
         msg = await ctx.send(embed=discord.Embed(description="Setting up...", colour=self.bot.primary_colour))
         data = await self.bot.get_data(ctx.guild.id)
         overwrites = {ctx.guild.id: self.default_role_permission}
@@ -46,7 +45,7 @@ class Configuration(commands.Cog):
             if role is None:
                 continue
             overwrites[role] = self.role_permission
-        category = await ctx.guild.create_category_channel(name=category_name, overwrites=overwrites)
+        category = await ctx.guild.create_category_channel(name="ModMail", overwrites=overwrites)
         logging_channel = await ctx.guild.create_text_channel(name="modmail-log", category=category)
         async with self.bot.pool.acquire() as conn:
             await conn.execute(
