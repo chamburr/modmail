@@ -92,6 +92,14 @@ def tag_format(message, author):
     return shorten_message(message)
 
 
+def parse_rabbitmq_config(config: dict):
+    return {"login": config["username"], "password": config["password"], "host": config["host"], "port": config["port"]}
+
+
+def parse_redis_config(config):
+    return tuple([config["host"], config["port"]])
+
+
 async def parse_channel(bot, guild, channel):
     try:
         channel = int(channel)

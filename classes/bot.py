@@ -25,6 +25,7 @@ from classes.http import HTTPClient
 from classes.misc import Session, Status
 from classes.state import State
 from utils import tools
+from utils.tools import parse_rabbitmq_config, parse_redis_config
 
 log = logging.getLogger(__name__)
 
@@ -140,16 +141,16 @@ class ModMail(commands.AutoShardedBot):
         return await self._connection.private_channels()
 
     async def shard_count(self):
-        return int(await self._redis.get("gateway_shards", encoding="utf-8"))
+        return int(await self._connection.get("gateway_shards"))
 
     async def started(self):
-        return parse_time(str(await self._connection._get("gateway_started")).split(".")[0])
+        return parse_time(str(await self._connection.get("gateway_started")).split(".")[0])
 
     async def statuses(self):
-        return [Status(x) for x in await self._connection._get("gateway_statuses")]
+        return [Status(x) for x in await self._connection.get("gateway_statuses")]
 
     async def sessions(self):
-        return {int(x): Session(y) for x, y in (await self._connection._get("gateway_sessions")).items()}
+        return {int(x): Session(y) for x, y in (await self._connection.get("gateway_sessions")).items()}
 
     async def get_channel(self, channel_id):
         return await self._connection.get_channel(channel_id)
@@ -330,15 +331,17 @@ class ModMail(commands.AutoShardedBot):
     banned_users = []
 
     async def connect_amqp(self):
-        self._amqp = await aio_pika.connect_robust(self.config.amqp_url)
+        self._amqp = await aio_pika.connect_robust(**parse_rabbitmq_config(self.config.rabbitmq))
         self._amqp_channel = await self._amqp.channel()
         self._amqp_queue = await self._amqp_channel.get_queue("gateway.recv")
 
     async def connect_redis(self):
-        self._redis = await aioredis.create_redis_pool(self.config.redis_url, minsize=5, maxsize=10, loop=self.loop)
+        self._redis = await aioredis.create_redis_pool(
+            parse_redis_config(self.config.redis), minsize=5, maxsize=10, loop=self.loop
+        )
 
     async def connect_postgres(self):
-        self.pool = await asyncpg.create_pool(self.config.postgres_url, max_size=10, command_timeout=60)
+        self.pool = await asyncpg.create_pool(**self.config.database, max_size=10, command_timeout=60)
 
     async def start(self):
         log.info("Starting...")

@@ -9,12 +9,22 @@ from pathlib import Path
 
 import aiohttp
 import aioredis
+import asyncpg
 import discord
 import orjson
 
 from aiohttp import web
 
 import config
+
+from utils.tools import parse_redis_config
+
+
+async def migrations(filename, connection):
+    with open(filename, "r") as f:
+        sql = " ".join(f.readlines())
+    async with connection.acquire() as conn:
+        await conn.execute(sql)
 
 
 class Instance:
@@ -92,7 +102,7 @@ class Scheduler:
         self.bot_id = None
         self.bot_shard_count = None
 
-        self.session = aiohttp.ClientSession(loop=self.loop)
+        self.session = None
         self.reactions = ["1⃣", "2⃣", "3⃣", "4⃣", "5⃣", "6⃣", "7⃣", "8⃣", "9⃣", "🔟", "◀️", "▶️"]
 
     async def bot_stats_updater(self):
@@ -201,9 +211,12 @@ class Scheduler:
     async def launch(self):
         client = discord.Client()
         await client.http.static_login(config.token, bot=True)
+        self.session = aiohttp.ClientSession(loop=self.loop)
         self.http = client.http
-        self.redis = await aioredis.create_redis_pool(config.redis_url, minsize=5, maxsize=10, loop=self.loop)
-        self.bot_id = (await self.redis.get("bot_user"))["id"]
+        self.redis = await aioredis.create_redis_pool(
+            parse_redis_config(config.redis), minsize=5, maxsize=10, loop=self.loop
+        )
+        self.bot_id = (orjson.loads(await self.redis.get("bot_user")))["id"]
         self.bot_shard_count = int(await self.redis.get("gateway_shards"))
         if config.testing is False:
             await self.bot_stats_updater()
@@ -216,7 +229,8 @@ class Main:
     def __init__(self, loop):
         self.loop = loop
         self.instances = []
-        self.session = aiohttp.ClientSession(loop=self.loop)
+        self.session = None
+        self._pool = None
 
     def dead_process_handler(self, result):
         instance = result.result()
@@ -252,11 +266,17 @@ class Main:
 
     async def launch(self):
         print(f"[Cluster Manager] Starting a total of {config.clusters} clusters.")
+        self.session = aiohttp.ClientSession(loop=self.loop)
+        self._pool = await asyncpg.create_pool(**config.database, max_size=10, command_timeout=60)
+        await migrations("schema.sql", self._pool)
         while True:
-            resp = await self.session.get(f"{config.td_host}:{config.td_port}/healthcheck")
-            async with resp:
-                if await resp.json() == {"status": "OK"}:
-                    break
+            try:
+                resp = await self.session.get(f"http://{config.td_host}:{config.td_port}/healthcheck")
+                async with resp:
+                    if await resp.json() == {"status": "OK"}:
+                        break
+            except Exception:
+                pass
             await asyncio.sleep(5)
         for i in range(config.clusters):
             self.instances.append(Instance(i + 1, self.loop, main=self, cluster_count=config.clusters))

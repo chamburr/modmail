@@ -1,44 +1,44 @@
-CREATE TABLE public.data
+CREATE TABLE IF NOT EXISTS public.data
 (
-    guild bigint NOT NULL,
-    prefix text,
-    category bigint,
-    accessrole bigint[] NOT NULL,
-    logging bigint,
-    welcome text,
-    goodbye text,
-    loggingplus boolean NOT NULL,
-    pingrole bigint[] NOT NULL,
-    blacklist bigint[] NOT NULL,
-    anonymous boolean NOT NULL,
+    guild       bigint   NOT NULL,
+    prefix      text,
+    category    bigint,
+    accessrole  bigint[] NOT NULL,
+    logging     bigint,
+    welcome     text,
+    goodbye     text,
+    loggingplus boolean  NOT NULL,
+    pingrole    bigint[] NOT NULL,
+    blacklist   bigint[] NOT NULL,
+    anonymous   boolean  NOT NULL,
     PRIMARY KEY (guild)
 );
 
-CREATE TABLE public.snippet
+CREATE TABLE IF NOT EXISTS public.snippet
 (
-    guild bigint NOT NULL,
-    name text NOT NULL,
-    content text NOT NULL
+    guild   bigint NOT NULL,
+    name    text   NOT NULL,
+    content text   NOT NULL
 );
 
-CREATE TABLE public.premium
+CREATE TABLE IF NOT EXISTS public.premium
 (
-    identifier bigint NOT NULL,
-    guild bigint[] NOT NULL,
-    expiry bigint,
+    identifier bigint   NOT NULL,
+    guild      bigint[] NOT NULL,
+    expiry     bigint,
     PRIMARY KEY (identifier)
 );
 
-CREATE TABLE public.ban
+CREATE TABLE IF NOT EXISTS public.ban
 (
-    identifier bigint NOT NULL,
-    category integer NOT NULL,
+    identifier bigint  NOT NULL,
+    category   integer NOT NULL,
     PRIMARY KEY (identifier)
 );
 
-CREATE TABLE public.preference
+CREATE TABLE IF NOT EXISTS public.preference
 (
-    identifier bigint NOT NULL,
+    identifier   bigint  NOT NULL,
     confirmation boolean NOT NULL,
     PRIMARY KEY (identifier)
 );

@@ -1,7 +1,7 @@
 version: '3.9'
 
 volumes:
-  amqp:
+  rabbitmq:
   postgres:
   redis:
 
@@ -23,7 +23,6 @@ services:
     restart: always
     volumes:
       - postgres:/var/lib/postgresql/data
-      - ./schema.sql:/docker-entrypoint-initdb.d/schema.sql
     ports:
       - 5432:5432
     env_file:
@@ -33,7 +32,7 @@ services:
     image: rabbitmq:management-alpine
     restart: always
     volumes:
-      - amqp:/var/lib/rabbitmq
+      - rabbitmq:/var/lib/rabbitmq
     ports:
       - 5672:5672
       - 15672:15672
@@ -52,7 +51,7 @@ services:
     image: chamburr/twilight-dispatch:latest
     restart: always
     depends_on:
-      - amqp
+      - rabbitmq
       - redis
     env_file:
       - twilight-dispatch.env
