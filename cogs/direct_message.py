@@ -11,7 +11,6 @@ import orjson
 from discord.channel import DMChannel
 from discord.ext import commands
 
-from classes.state import PartialChannel
 from utils import checks
 
 log = logging.getLogger(__name__)

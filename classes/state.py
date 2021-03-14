@@ -24,11 +24,6 @@ from classes.message import Message
 log = logging.getLogger(__name__)
 
 
-class PartialChannel:
-    def __init__(self, id):
-        self.id = id
-
-
 class State:
     def __init__(self, *, dispatch, handlers, hooks, http, loop, redis=None, shard_count=None, **options):
         self.dispatch = dispatch
@@ -58,7 +53,7 @@ class State:
 
     async def get(self, keys):
         result = await self.redis.mget(*keys)
-        if set(result) != [None]:
+        if set(result) != {None}:
             for index in range(len(result)):
                 res = orjson.loads(result[index])
                 if isinstance(res, dict):
@@ -95,10 +90,13 @@ class State:
         return await self.redis.set(key, value)
 
     async def smembers(self, key):
-        return await self.redis.smembers(key)
+        result = list(await self.redis.smembers(key))
+        for index in range(len(result)):
+            result[index] = orjson.loads(result[index])
+        return set(result)
 
     async def srem(self, key, value):
-        return await self.redis.srem(key, value)
+        return await self.redis.srem(key, orjson.dumps(value).decode("utf-8"))
 
     async def _members(self, key, key_id=None):
         key += "_keys"
@@ -345,9 +343,9 @@ class State:
             message = self.create_message(channel=channel, data=data)
             self.dispatch("message", message)
         else:
-            channel = PartialChannel(int(data["channel_id"]))
+            channel = DMChannel(me=(await self.user()), state=self, data={"id": int(data["channel_id"])})
             message = self.create_message(channel=channel, data=data)
-            self.dispatch("raw_message", message)
+            self.dispatch("message", message)
 
     async def parse_message_delete(self, data, old):
         raw = RawMessageDeleteEvent(data)

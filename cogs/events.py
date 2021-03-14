@@ -7,6 +7,9 @@ import orjson
 
 from discord.ext import commands
 
+from classes.channel import TextChannel
+from classes.message import Message
+
 log = logging.getLogger(__name__)
 
 
@@ -74,52 +77,16 @@ class Events(commands.Cog):
                 await self.bot.state.sadd("user_keys", f"user:{message['user']['id']}")
 
     @commands.Cog.listener()
-    async def on_reaction_add(self, reaction, member):
-        if reaction.emoji not in ["⏮️", "◀️", "⏹️", "▶️", "⏭️"]:
-            return
-        if member.bot:
-            return
-        menus = await self.bot._connection._get("reaction_menus") or []
-        for (index, menu) in enumerate(menus):
-            channel = menu["channel"]
-            message = menu["message"]
-            if reaction.message.channel.id != channel or reaction.message.id != message:
-                continue
-            page = menu["page"]
-            all_pages = menu["all_pages"]
-            if reaction.emoji == "⏮️":
-                page = 0
-            elif reaction.emoji == "◀️" and page > 0:
-                page -= 1
-            elif reaction.emoji == "⏹️":
-                await self.bot.http.clear_reactions(reaction.message.channel.id, reaction.message.id)
-                return
-            elif reaction.emoji == "▶️" and page < len(all_pages) - 1:
-                page += 1
-            elif reaction.emoji == "⏭️":
-                page = len(all_pages) - 1
-            await self.bot.http.edit_message(channel, message, embed=all_pages[page])
-            await self.bot.http.remove_reaction(
-                reaction.message.channel.id, reaction.message.id, reaction.emoji, member.id
-            )
-            menu["page"] = page
-            menus[index] = menu
-            await self.bot._connection.redis.set("reaction_menus", orjson.dumps(menus).decode("utf-8"))
-            break
-
-    @commands.Cog.listener()
     async def on_raw_reaction_add(self, payload):
-        if payload.user_id == self.bot.id:
-            return
-        if payload.member:
+        if payload.member.bot:
             return
         if payload.emoji.name not in ["⏮️", "◀️", "⏹️", "▶️", "⏭️"]:
             return
-        menus = await self.bot._connection._get("reaction_menus") or []
-        for (index, menu) in enumerate(menus):
-            channel = menu["channel"]
-            message = menu["message"]
-            if payload.channel_id != channel or payload.message_id != message:
+        menus = await self.bot.state.smembers("reaction_menus")
+        for menu in menus:
+            channel = TextChannel(state=self.bot.state, guild=None, data={"id": menu["channel"]})
+            message = channel.get_partial_message(menu["message"])
+            if payload.channel_id != channel.id or payload.message_id != message.id:
                 continue
             page = menu["page"]
             all_pages = menu["all_pages"]
@@ -128,17 +95,21 @@ class Events(commands.Cog):
             elif payload.emoji.name == "◀️" and page > 0:
                 page -= 1
             elif payload.emoji.name == "⏹️":
-                for emoji in ["⏮️", "◀️", "⏹️", "▶️", "⏭️"]:
-                    await self.bot.http.remove_own_reaction(payload.channel_id, payload.message_id, emoji)
+                try:
+                    await message.clear_reactions()
+                except discord.Forbidden:
+                    for emoji in ["⏮️", "◀️", "⏹️", "▶️", "⏭️"]:
+                        await message.remove_reaction(emoji, self.bot.id)
+                await self.bot.state.srem("reaction_menus", menu)
                 return
             elif payload.emoji.name == "▶️" and page < len(all_pages) - 1:
                 page += 1
             elif payload.emoji.name == "⏭️":
                 page = len(all_pages) - 1
             await self.bot.http.edit_message(channel, message, embed=all_pages[page])
+            await self.bot.state.srem("reaction_menus", menu)
             menu["page"] = page
-            menus[index] = menu
-            await self.bot._connection.redis.set("reaction_menus", orjson.dumps(menus).decode("utf-8"))
+            await self.bot.state.sadd("reaction_menus", menu)
             break
 
     @commands.Cog.listener()
@@ -179,46 +150,6 @@ class Events(commands.Cog):
         if ctx.prefix == f"<@{self.bot.id}> " or ctx.prefix == f"<@!{self.bot.id}> ":
             ctx.prefix = self.bot.tools.get_guild_prefix(self.bot, message.guild)
         await self.bot.invoke(ctx)
-
-    @commands.Cog.listener()
-    async def on_raw_message(self, message):
-        if message.author.bot:
-            return
-        ctx = await self.bot.get_context(message)
-        if not ctx.command:
-            return
-        # self.bot.prom.commands.inc({"name": ctx.command.name})
-        if message.author.id in self.bot.banned_users:
-            await ctx.send(
-                embed=discord.Embed(description="You are banned from the bot.", colour=self.bot.error_colour)
-            )
-            return
-        if ctx.command.cog_name in ["Owner", "Admin"] and (
-            ctx.author.id in self.bot.config.admins or ctx.author.id in self.bot.config.owners
-        ):
-            embed = discord.Embed(
-                title=ctx.command.name.title(),
-                description=ctx.message.content,
-                colour=self.bot.primary_colour,
-                timestamp=datetime.datetime.utcnow(),
-            )
-            embed.set_author(name=f"{ctx.author} ({ctx.author.id})", icon_url=ctx.author.avatar_url)
-            if self.bot.config.admin_channel:
-                await self.bot.http.send_message(self.bot.config.admin_channel, None, embed=embed.to_dict())
-        if ctx.prefix == f"<@{self.bot.id}> " or ctx.prefix == f"<@!{self.bot.id}> ":
-            ctx.prefix = self.bot.tools.get_guild_prefix(self.bot, message.guild)
-        await self.bot.invoke(ctx)
-
-    # @commands.Cog.listener()
-    # async def on_member_join(self, member):
-    #
-    #
-    # @commands.Cog.listener()
-    # async def on_member_remove(self, member):
-    #     if member.id == self.bot.id:
-    #         await self.bot._redis.delete(f"member:{member.guild.id}:{(await self.bot.user().id)}")
-    #     await self.bot._redis.srem(f"user:{member.id}", member.guild.id)
-    #     await self.bot._redis.sadd("user_keys", f"user:{member.id}")
 
 
 def setup(bot):
