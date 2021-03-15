@@ -13,8 +13,7 @@ import discord
 
 from discord.ext import commands
 
-from classes import channel, converters
-from classes.converters import GlobalGuild
+from classes.converters import ChannelConverter, DateTimeConverter, GuildConverter, UserConverter
 from utils import checks
 
 log = logging.getLogger(__name__)
@@ -122,9 +121,7 @@ class Owner(commands.Cog):
         usage="invoke [channel] <user> <command>",
         hidden=True,
     )
-    async def invoke(
-        self, ctx, channel: Optional[channel.TextChannel], user: converters.UserConverter, *, command: str
-    ):
+    async def invoke(self, ctx, channel: Optional[ChannelConverter], user: UserConverter, *, command: str):
         msg = copy.copy(ctx.message)
         channel = channel or ctx.channel
         msg.channel = channel
@@ -135,7 +132,7 @@ class Owner(commands.Cog):
 
     @checks.is_owner()
     @commands.command(description="Give a user temporary premium.", usage="givepremium <user> <expiry>", hidden=True)
-    async def givepremium(self, ctx, user: converters.UserConverter, *, expiry: converters.DateTime):
+    async def givepremium(self, ctx, user: UserConverter, *, expiry: DateTimeConverter):
         premium = await self.bot.tools.get_premium_slots(self.bot, user.id)
         if premium:
             await ctx.send(
@@ -156,7 +153,7 @@ class Owner(commands.Cog):
 
     @checks.is_owner()
     @commands.command(description="Remove a user's premium.", usage="wipepremium <user>", hidden=True)
-    async def wipepremium(self, ctx, *, user: converters.UserConverter):
+    async def wipepremium(self, ctx, *, user: UserConverter):
         await self.bot.tools.wipe_premium(self.bot, user.id)
         await ctx.send(
             embed=discord.Embed(
@@ -167,7 +164,7 @@ class Owner(commands.Cog):
 
     @checks.is_owner()
     @commands.command(description="Ban a user from the bot", usage="banuser <user>", hidden=True)
-    async def banuser(self, ctx, *, user: converters.UserConverter):
+    async def banuser(self, ctx, *, user: UserConverter):
         async with self.bot.pool.acquire() as conn:
             res = await conn.fetchrow("SELECT * FROM ban WHERE identifier=$1 AND category=$2", user.id, 0)
             if res:
@@ -186,7 +183,7 @@ class Owner(commands.Cog):
 
     @checks.is_owner()
     @commands.command(description="Unban a user from the bot", usage="unbanuser <user>", hidden=True)
-    async def unbanuser(self, ctx, *, user: converters.UserConverter):
+    async def unbanuser(self, ctx, *, user: UserConverter):
         async with self.bot.pool.acquire() as conn:
             res = await conn.fetchrow("SELECT * FROM ban WHERE identifier=$1 AND category=$2", user.id, 0)
             if not res:
@@ -205,13 +202,13 @@ class Owner(commands.Cog):
 
     @checks.is_owner()
     @commands.command(description="Make the bot leave a server.", usage="leaveserver <server ID>", hidden=True)
-    async def leaveserver(self, ctx, *, guild: GlobalGuild):
+    async def leaveserver(self, ctx, *, guild: GuildConverter):
         await guild.leave()
         await ctx.send(embed=discord.Embed(description="The bot has left that server.", colour=self.bot.primary_colour))
 
     @checks.is_owner()
     @commands.command(description="Ban a server from the bot", usage="banserver <server ID>", hidden=True)
-    async def banserver(self, ctx, *, guild_id: GlobalGuild):
+    async def banserver(self, ctx, *, guild_id: GuildConverter):
         async with self.bot.pool.acquire() as conn:
             await conn.execute("INSERT INTO ban (identifier, category) VALUES ($1, $2)", guild_id, 1)
         self.bot.banned_guilds.append(guild_id)

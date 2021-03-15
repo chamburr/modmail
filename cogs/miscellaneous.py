@@ -5,7 +5,7 @@ import discord
 from discord import Member
 from discord.ext import commands
 
-from classes import channel
+from classes.converters import ChannelConverter, MemberConverter
 from utils import checks
 
 log = logging.getLogger(__name__)
@@ -22,27 +22,8 @@ class Miscellaneous(commands.Cog):
         usage="permissions [member] [channel]",
         aliases=["perms"],
     )
-    async def permissions(self, ctx, *args: str):
-        member = None
-        ch = None
-        if len(args) == 1:
-            try:
-                member = Member(
-                    guild=ctx.guild,
-                    state=self.bot.state,
-                    data=await self.bot.tools.parse_member(self.bot, ctx.guild.id, args[0]),
-                )
-            except commands.BadArgument:
-                ch = await self.bot.tools.parse_channel(self.bot, ctx.guild, args[0])
-        elif len(args) == 2:
-            member = Member(
-                guild=ctx.guild,
-                state=self.bot.state,
-                data=await self.bot.tools.parse_member(self.bot, ctx.guild.id, args[0]),
-            )
-            ch = await self.bot.tools.parse_channel(self.bot, ctx.guild, args[1])
-
-        channel = ch or ctx.channel
+    async def permissions(self, ctx, member: MemberConverter = None, channel: ChannelConverter = None):
+        channel = channel or ctx.channel
         if member is None:
             member = await ctx.message.member()
         permissions = await channel.permissions_for(member)
@@ -64,16 +45,10 @@ class Miscellaneous(commands.Cog):
         usage="userinfo [member]",
         aliases=["memberinfo"],
     )
-    async def userinfo(self, ctx, *, member: str = None):
-        member = Member(
-            guild=ctx.guild,
-            state=self.bot.state,
-            data=await self.bot.tools.parse_member(self.bot, ctx.guild.id, member),
-        )
+    async def userinfo(self, ctx, *, member: MemberConverter = None):
         if member is None:
             member = ctx.message.member
-        roles = [(await ctx.guild.default_role()).name]
-        roles.extend([(await ctx.guild.get_role(role)).name for role in member._roles])
+        roles = [role.name for role in await member.roles()]
         embed = discord.Embed(title="User Information", colour=self.bot.primary_colour)
         embed.add_field(name="Name", value=str(member))
         embed.add_field(name="ID", value=member.id)

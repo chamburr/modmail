@@ -11,7 +11,7 @@ from discord.channel import DMChannel
 from discord.emoji import Emoji
 from discord.enums import ChannelType, try_enum
 from discord.invite import Invite
-from discord.member import Member, VoiceState
+from discord.member import VoiceState
 from discord.partial_emoji import PartialEmoji
 from discord.raw_models import *
 from discord.role import Role
@@ -19,6 +19,7 @@ from discord.user import ClientUser, User
 
 from classes.channel import TextChannel, _channel_factory
 from classes.guild import Guild
+from classes.member import Member
 from classes.message import Message
 
 log = logging.getLogger(__name__)

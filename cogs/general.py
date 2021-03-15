@@ -138,7 +138,6 @@ class General(commands.Cog):
         embed.add_field(name="Owner", value="CHamburr#2591")
         embed.add_field(name="Bot Version", value=self.bot.version)
         embed.add_field(name="Uptime", value=fmt)
-        embed.add_field(name="Clusters", value=f"{self.bot.cluster}/{self.bot.cluster_count}")
         if ctx.guild:
             embed.add_field(name="Shards", value=f"{ctx.guild.shard_id + 1}/{await self.bot.shard_count()}")
         else:

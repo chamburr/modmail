@@ -1,14 +1,13 @@
 import asyncio
 import datetime
 import logging
+import time
 
 import discord
-import orjson
 
 from discord.ext import commands
 
 from classes.channel import TextChannel
-from classes.message import Message
 
 log = logging.getLogger(__name__)
 
@@ -106,9 +105,10 @@ class Events(commands.Cog):
                 page += 1
             elif payload.emoji.name == "⏭️":
                 page = len(all_pages) - 1
-            await self.bot.http.edit_message(channel, message, embed=all_pages[page])
+            await message.edit(embed=discord.Embed.from_dict(all_pages[page]))
             await self.bot.state.srem("reaction_menus", menu)
             menu["page"] = page
+            menu["end"] = int(time.time()) + 2 * 60
             await self.bot.state.sadd("reaction_menus", menu)
             break
 

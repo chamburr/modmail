@@ -5,12 +5,39 @@ import dateparser
 import discord
 
 from discord.ext import commands
-from discord.ext.commands import NoPrivateMessage, RoleNotFound
+from discord.ext.commands import ChannelNotFound, MemberNotFound, NoPrivateMessage, RoleNotFound
+
+from classes.channel import TextChannel
+from classes.member import Member
 
 log = logging.getLogger(__name__)
 
 
-class DateTime(commands.Converter):
+class ChannelConverter(commands.TextChannelConverter):
+    async def convert(self, ctx, argument):
+        bot = ctx.bot
+
+        match = self._get_id_match(argument) or re.match(r"<#([0-9]+)>$", argument)
+        result = None
+        guild = ctx.guild
+
+        if match is None:
+            for channel in await guild.text_channels():
+                if channel.name == argument:
+                    result = channel
+                    break
+        else:
+            channel_id = int(match.group(1))
+            if guild:
+                result = await guild.get_channel(channel_id)
+            else:
+                result = await bot.get_channel(channel_id)
+
+        if not isinstance(result, TextChannel):
+            raise ChannelNotFound(argument)
+
+
+class DateTimeConverter(commands.Converter):
     async def convert(self, ctx, argument):
         date = dateparser.parse(
             argument,
@@ -27,6 +54,36 @@ class DateTime(commands.Converter):
         return date
 
 
+class GuildConverter(commands.Converter):
+    async def convert(self, ctx, argument):
+        guild = await ctx.bot.get_guild(int(argument))
+        if guild:
+            return guild
+        raise commands.BadArgument("Guild not found")
+
+
+class MemberConverter(commands.MemberConverter):
+    async def convert(self, ctx, argument):
+        bot = ctx.bot
+        match = self._get_id_match(argument) or re.match(r"<@!?([0-9]+)>$", argument)
+        guild = ctx.guild
+        result = None
+
+        if match is None:
+            members = await bot.http.request_guild_members(guild.id, argument)
+            if len(members) > 1:
+                raise commands.BadArgument("Multiple users with the same username/nickname")
+            result = Member(guild=guild, state=bot.state, data=members[0])
+        else:
+            if guild:
+                result = await guild.fetch_member(int(match.group(1)))
+
+        if result is None:
+            raise MemberNotFound(argument)
+
+        return result
+
+
 class RoleConverter(commands.IDConverter):
     async def convert(self, ctx, argument):
         guild = ctx.guild
@@ -34,10 +91,9 @@ class RoleConverter(commands.IDConverter):
             raise NoPrivateMessage()
 
         match = self._get_id_match(argument) or re.match(r"<@&([0-9]+)>$", argument)
+        result = None
         if match:
             result = await guild.get_role(int(match.group(1)))
-        else:
-            result = discord.utils.get(guild._roles.values(), name=argument)
 
         if result is None:
             raise RoleNotFound(argument)
@@ -61,11 +117,3 @@ class UserConverter(commands.UserConverter):
             except discord.NotFound:
                 pass
         raise commands.BadArgument("User not found")
-
-
-class GuildConverter(commands.Converter):
-    async def convert(self, ctx, argument):
-        guild = await ctx.bot.get_guild(int(argument))
-        if guild:
-            return guild
-        raise commands.BadArgument("Guild not found")

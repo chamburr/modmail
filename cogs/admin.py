@@ -6,8 +6,8 @@ import discord
 
 from discord.ext import commands
 
-from classes import abc, converters
-from classes.converters import GlobalGuild
+from classes import abc
+from classes.converters import ChannelConverter, GuildConverter, UserConverter
 from utils import checks
 
 log = logging.getLogger(__name__)
@@ -54,7 +54,7 @@ class Admin(commands.Cog):
         usage="sharedservers <user>",
         hidden=True,
     )
-    async def sharedservers(self, ctx, *, user: converters.UserConverter):
+    async def sharedservers(self, ctx, *, user: UserConverter):
         guilds = [
             f"{guild.name} `{guild.id}` ({guild.member_count} members)"
             for guild in [
@@ -84,7 +84,7 @@ class Admin(commands.Cog):
         usage="createinvite <server ID>",
         hidden=True,
     )
-    async def createinvite(self, ctx, *, guild: GlobalGuild):
+    async def createinvite(self, ctx, *, guild: GuildConverter):
         invite = None
         discord.abc = abc
         try:
@@ -141,8 +141,8 @@ class Admin(commands.Cog):
 
     @checks.is_admin()
     @commands.command(description="Make me say something.", usage="echo [channel] <message>", hidden=True)
-    async def echo(self, ctx, channel: Optional[str], *, content: str):
-        channel = await self.bot.tools.parse_channel(self.bot, ctx.guild, channel) or ctx.channel
+    async def echo(self, ctx, channel: Optional[ChannelConverter], *, content: str):
+        channel = channel or ctx.channel
         await ctx.message.delete()
         await channel.send(content, allowed_mentions=discord.AllowedMentions(everyone=False))
 

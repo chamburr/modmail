@@ -18,6 +18,9 @@ class Member(member.Member):
         self._update_roles(data)
         self.nick = data.get("nick", None)
 
+    async def roles(self):
+        return [await self.default_role()].extend([await self.get_role(role) for role in self._roles])
+
     async def _presence(self):
         return await self._state._get(f"presence:{self.guild.id}:{self._user.id}") or {}
 

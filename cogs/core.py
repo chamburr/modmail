@@ -9,6 +9,7 @@ import discord
 from discord import Member
 from discord.ext import commands
 
+from classes.converters import MemberConverter
 from utils import checks
 
 log = logging.getLogger(__name__)
@@ -214,12 +215,7 @@ class Core(commands.Cog):
         usage="blacklist <member>",
         aliases=["block"],
     )
-    async def blacklist(self, ctx, *, member: str):
-        member = Member(
-            guild=ctx.guild,
-            state=self.bot._connection,
-            data=await self.bot.tools.parse_member(self.bot, ctx.guild.id, member),
-        )
+    async def blacklist(self, ctx, *, member: MemberConverter):
         blacklist = (await self.bot.get_data(ctx.guild.id))[9]
         if member.id in blacklist:
             await ctx.send(
@@ -241,12 +237,7 @@ class Core(commands.Cog):
         usage="whitelist <member>",
         aliases=["unblock"],
     )
-    async def whitelist(self, ctx, *, member: str):
-        member = Member(
-            guild=ctx.guild,
-            state=self.bot._connection,
-            data=await self.bot.tools.parse_member(self.bot, ctx.guild.id, member),
-        )
+    async def whitelist(self, ctx, *, member: MemberConverter):
         blacklist = (await self.bot.get_data(ctx.guild.id))[9]
         if member.id not in blacklist:
             await ctx.send(
