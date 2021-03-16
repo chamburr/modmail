@@ -78,17 +78,16 @@ class State:
             return None
 
     async def sadd(self, key, value):
-        if isinstance(value, dict):
-            return await self.redis.sadd(key, orjson.dumps(value).decode("utf-8"))
-        return await self.redis.sadd(key, value)
+        return await self.redis.sadd(key, orjson.dumps(value).decode("utf-8"))
 
     async def scard(self, key):
         return await self.redis.scard(key)
 
     async def set(self, key, value):
-        if isinstance(value, dict):
-            return await self.redis.set(key, orjson.dumps(value).decode("utf-8"))
-        return await self.redis.set(key, value)
+        return await self.redis.set(key, orjson.dumps(value).decode("utf-8"))
+
+    async def sismember(self, key, value):
+        return await self.redis.sismember(key, orjson.dumps(value).decode("utf-8"))
 
     async def smembers(self, key):
         result = list(await self.redis.smembers(key))
@@ -344,7 +343,7 @@ class State:
             message = self.create_message(channel=channel, data=data)
             self.dispatch("message", message)
         else:
-            channel = DMChannel(me=(await self.user()), state=self, data={"id": int(data["channel_id"])})
+            channel = DMChannel(me=await self.user(), state=self, data={"id": int(data["channel_id"])})
             message = self.create_message(channel=channel, data=data)
             self.dispatch("message", message)
 

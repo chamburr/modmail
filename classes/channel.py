@@ -10,6 +10,8 @@ from discord.enums import ChannelType, try_enum
 from discord.errors import ClientException, InvalidArgument, NoMoreItems
 from discord.permissions import Permissions
 
+from classes.invite import Invite
+
 log = logging.getLogger(__name__)
 
 
@@ -65,6 +67,10 @@ class TextChannel(channel.TextChannel):
     @property
     def _sorting_bucket(self):
         return ChannelType.text.value
+
+    async def create_invite(self, *, reason=None, **fields):
+        data = await self._state.http.create_invite(self.id, reason=reason, **fields)
+        return await Invite.from_incomplete(data=data, state=self._state)
 
     async def _permissions_for(self, member):
         if self.guild.owner_id == member.id:

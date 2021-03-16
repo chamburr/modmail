@@ -8,6 +8,7 @@ import discord
 from discord.ext import commands
 
 from classes.channel import TextChannel
+from classes.message import Message
 
 log = logging.getLogger(__name__)
 

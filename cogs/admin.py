@@ -86,7 +86,6 @@ class Admin(commands.Cog):
     )
     async def createinvite(self, ctx, *, guild: GuildConverter):
         invite = None
-        discord.abc = abc
         try:
             invite = (await guild.invites())[0]
         except (IndexError, discord.Forbidden):

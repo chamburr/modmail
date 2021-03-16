@@ -12,7 +12,7 @@ class Invite(discord.Invite):
         except KeyError:
             guild = None
         else:
-            guild = state._get_guild(guild_id)
+            guild = await state._get_guild(guild_id)
             if guild is None:
                 guild_data = data["guild"]
                 guild = PartialInviteGuild(state, guild_data, guild_id)

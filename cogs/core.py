@@ -6,7 +6,6 @@ import logging
 
 import discord
 
-from discord import Member
 from discord.ext import commands
 
 from classes.converters import MemberConverter

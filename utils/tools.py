@@ -1,5 +1,6 @@
 import logging
 
+from discord import DMChannel
 from discord.ext import commands
 
 log = logging.getLogger(__name__)
@@ -65,8 +66,10 @@ def get_modmail_user(channel):
     return int(channel.topic.replace("ModMail Channel ", "").split(" ")[0])
 
 
-def get_modmail_channel(channel):
-    return int(channel.topic.replace("ModMail Channel ", "").split(" ")[1])
+def get_modmail_channel(bot, channel):
+    return DMChannel(
+        me=await bot.user(), state=bot.state, data={"id": channel.topic.replace("ModMail Channel ", "").split(" ")[1]}
+    )
 
 
 def perm_format(perm):

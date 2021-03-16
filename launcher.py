@@ -103,7 +103,6 @@ class Scheduler:
         self.bot_shard_count = None
 
         self.session = None
-        self.reactions = ["1⃣", "2⃣", "3⃣", "4⃣", "5⃣", "6⃣", "7⃣", "8⃣", "9⃣", "🔟", "◀️", "▶️"]
 
     async def bot_stats_updater(self):
         while True:
@@ -143,70 +142,54 @@ class Scheduler:
             await asyncio.sleep(900)
 
     async def cleanup(self):
-        rm = await self.redis.get("reaction_menus")
-        if rm:
-            rm = orjson.loads(rm)
-            filtered_rm = []
-            for menu in rm:
-                if menu["end"] <= int(time.time()):
-                    try:
-                        await self.http.clear_reactions(menu["channel"], menu["message"])
-                    except discord.Forbidden:
-                        for reaction in ["⏮️", "◀️", "⏹️", "▶️", "⏭️"]:
-                            await self.http.remove_own_reaction(menu["channel"], menu["message"], reaction)
-                    except discord.NotFound:
-                        pass
-                else:
-                    filtered_rm.append(menu)
-            await self.redis.set("reaction_menus", orjson.dumps(filtered_rm).decode("utf-8"))
-        sm = await self.redis.get("selection_menus")
-        if sm:
-            sm = orjson.loads(sm)
-            filtered_sm = []
-            for menu in sm:
-                if menu["end"] <= int(time.time()):
-                    channel_id = menu["channel"]
-                    message_id = menu["message"]
-                    reactions = len(menu["all_pages"][menu["page"]]["fields"])
-                    try:
-                        await self.http.remove_own_reaction(channel_id, message_id, "◀")
-                        await self.http.remove_own_reaction(channel_id, message_id, "▶")
-                        for index in range(reactions):
-                            await self.http.remove_own_reaction(channel_id, message_id, self.reactions[index])
+        rm = await self.redis.smembers("reaction_menus")
+        for menu in rm:
+            menu = orjson.loads(menu)
+            if menu["end"] <= int(time.time()):
+                try:
+                    await self.http.clear_reactions(menu["channel"], menu["message"])
+                except discord.Forbidden:
+                    for reaction in ["⏮️", "◀️", "⏹️", "▶️", "⏭️"]:
+                        await self.http.remove_own_reaction(menu["channel"], menu["message"], reaction)
+                await self.redis.srem("reaction_menus", orjson.dumps(menu).decode("utf-8"))
+        sm = await self.redis.smembers("selection_menus")
+        for menu in sm:
+            menu = orjson.loads(menu)
+            if menu["end"] <= int(time.time()):
+                channel_id = menu["channel"]
+                message_id = menu["message"]
+                reactions = len(menu["all_pages"][menu["page"]]["fields"])
+                await self.http.remove_own_reaction(channel_id, message_id, "◀")
+                await self.http.remove_own_reaction(channel_id, message_id, "▶")
+                for index in range(reactions):
+                    await self.http.remove_own_reaction(
+                        channel_id,
+                        message_id,
+                        ["1⃣", "2⃣", "3⃣", "4⃣", "5⃣", "6⃣", "7⃣", "8⃣", "9⃣", "🔟", "◀️", "▶️"][index],
+                    )
 
-                        await self.http.edit_message(
-                            menu["channel"],
-                            menu["message"],
-                            embed=discord.Embed(
-                                description="Time out. You did not choose anything.", colour=config.error_colour
-                            ).to_dict(),
-                        )
-                    except discord.NotFound:
-                        pass
-                else:
-                    filtered_sm.append(menu)
-            await self.redis.set("selection_menus", orjson.dumps(filtered_sm).decode("utf-8"))
-        cm = await self.redis.get("confirmation_menus")
-        if cm:
-            cm = orjson.loads(cm)
-            filtered_cm = []
-            for menu in cm:
-                if menu["end"] <= int(time.time()):
-                    try:
-                        await self.http.edit_message(
-                            menu["channel"],
-                            menu["message"],
-                            embed=discord.Embed(
-                                description="Time out. You did not choose anything.", colour=config.error_colour
-                            ).to_dict(),
-                        )
-                        for reaction in ["✅", "🔁", "❌"]:
-                            await self.http.remove_own_reaction(menu["channel"], menu["message"], reaction)
-                    except discord.NotFound:
-                        pass
-                else:
-                    filtered_cm.append(menu)
-            await self.redis.set("confirmation_menus", orjson.dumps(filtered_cm).decode("utf-8"))
+                await self.http.edit_message(
+                    menu["channel"],
+                    menu["message"],
+                    embed=discord.Embed(
+                        description="Time out. You did not choose anything.", colour=config.error_colour
+                    ).to_dict(),
+                )
+                await self.redis.srem("selection_menus", orjson.dumps(menu).decode("utf-8"))
+        cm = await self.redis.smembers("confirmation_menus")
+        for menu in cm:
+            menu = orjson.loads(menu)
+            if menu["end"] <= int(time.time()):
+                await self.http.edit_message(
+                    menu["channel"],
+                    menu["message"],
+                    embed=discord.Embed(
+                        description="Time out. You did not choose anything.", colour=config.error_colour
+                    ).to_dict(),
+                )
+                for reaction in ["✅", "🔁", "❌"]:
+                    await self.http.remove_own_reaction(menu["channel"], menu["message"], reaction)
+                await self.redis.srem("confirmation_menus", orjson.dumps(menu).decode("utf-8"))
 
     async def launch(self):
         client = discord.Client()
