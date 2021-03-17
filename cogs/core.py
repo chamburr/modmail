@@ -8,8 +8,11 @@ import discord
 
 from discord.ext import commands
 
-from classes.converters import MemberConverter
-from utils import checks
+import config
+
+from classes.embed import Embed, ErrorEmbed
+from utils import checks, tools
+from utils.converters import MemberConverter
 
 log = logging.getLogger(__name__)
 
@@ -38,111 +41,124 @@ class Core(commands.Cog):
         await self.bot.cogs["ModMailEvents"].send_mail_mod(ctx.message, ctx.prefix, True, message)
 
     async def close_channel(self, ctx, reason, anon: bool = False):
+        await ctx.send(embed=Embed(description="Closing channel..."))
+
+        data = await self.bot.get_data(ctx.guild.id)
+
+        if data[7] is True:
+            messages = await ctx.channel.history(limit=10000).flatten()
+
         try:
-            await ctx.send(embed=discord.Embed(description="Closing channel...", colour=self.bot.primary_colour))
-            data = await self.bot.get_data(ctx.guild.id)
-            if data[7] is True:
-                messages = await ctx.channel.history(limit=10000).flatten()
             await ctx.channel.delete()
-            embed = discord.Embed(
-                title="Ticket Closed",
-                description=(reason if reason else "No reason was provided."),
-                colour=self.bot.error_colour,
-                timestamp=datetime.datetime.utcnow(),
-            )
-            embed.set_author(
-                name=str(ctx.author.name) if anon is False else "Anonymous#0000",
-                icon_url=ctx.author.avatar_url if anon is False else "https://cdn.discordapp.com/embed/avatars/0.png",
-            )
-            embed.set_footer(text=f"{ctx.guild.name} | {ctx.guild.id}", icon_url=ctx.guild.icon_url)
-            member = await ctx.guild.fetch_member(self.bot.tools.get_modmail_user(ctx.channel))
-            if member:
-                try:
-                    data = await self.bot.get_data(ctx.guild.id)
-                    channel = self.bot.tools.get_modmail_channel(ctx.channel)
-                    if data[6]:
-                        embed2 = discord.Embed(
-                            title="Custom Closing Message",
-                            description=self.bot.tools.tag_format(data[6], member),
-                            colour=self.bot.mod_colour,
-                            timestamp=datetime.datetime.utcnow(),
-                        )
-                        embed2.set_footer(
-                            text=f"{ctx.guild.name} | {ctx.guild.id}",
-                            icon_url=ctx.guild.icon_url,
-                        )
-                        await self.bot.http.send_message(channel, content=None, embed=embed2.to_dict())
-                    await self.bot.http.send_message(channel, content=None, embed=embed.to_dict())
-                except discord.Forbidden:
-                    pass
-            if data[4]:
-                channel = await ctx.guild.get_channel(data[4])
-                if channel:
-                    try:
-                        if member is None:
-                            member = await self.bot.fetch_user(self.bot.tools.get_modmail_user(ctx.channel))
-                        if member:
-                            embed.set_footer(text=f"{member} | {member.id}", icon_url=member.avatar_url)
-                        else:
-                            embed.set_footer(
-                                text="Unknown#0000 | 000000000000000000",
-                                icon_url="https://cdn.discordapp.com/embed/avatars/0.png",
-                            )
-                        if data[7] == 1:
-                            history = ""
-                            for m in messages:
-                                if m.author.bot and (
-                                    m.author.id != self.bot.id
-                                    or len(m.embeds) <= 0
-                                    or m.embeds[0].title not in ["Message Received", "Message Sent"]
-                                ):
-                                    continue
-                                if not m.author.bot and m.content == "":
-                                    continue
-                                author = f"{m.author} (Comment)"
-                                description = m.content
-                                if m.author.bot:
-                                    if not m.embeds[0].author.name:
-                                        author = f"{' '.join(m.embeds[0].footer.text.split()[:-2])} (User)"
-                                    else:
-                                        author = f"{m.embeds[0].author.name} (Staff)"
-                                    description = m.embeds[0].description
-                                    for attachment in [
-                                        field.value
-                                        for field in m.embeds[0].fields
-                                        if field.name.startswith("Attachment ")
-                                    ]:
-                                        if not description:
-                                            description = f"(Attachment: {attachment})"
-                                        else:
-                                            description = description + f" (Attachment: {attachment})"
-                                history = (
-                                    f"[{str(m.created_at.replace(microsecond=0))}] {author}: "
-                                    f"{description}\n" + history
-                                )
-                            history = io.BytesIO(history.encode())
-                            file = discord.File(
-                                history, f"modmail_log_{self.bot.tools.get_modmail_user(ctx.channel)}.txt"
-                            )
-                            msg = await channel.send(embed=embed, file=file)
-                            log_url = msg.attachments[0].url[39:-4]
-                            log_url = log_url.replace("modmail_log_", "")
-                            log_url = [hex(int(some_id))[2:] for some_id in log_url.split("/")]
-                            log_url = f"https://modmail.xyz/logs/{'-'.join(log_url)}"
-                            embed.add_field(name="Message Logs", value=log_url, inline=False)
-                            await asyncio.sleep(0.5)
-                            await msg.edit(embed=embed)
-                            return
-                        await channel.send(embed=embed)
-                    except discord.Forbidden:
-                        pass
         except discord.Forbidden:
-            await ctx.send(
-                embed=discord.Embed(
-                    description="Missing permissions to delete this channel.",
-                    colour=self.bot.error_colour,
+            await ctx.send(embed=ErrorEmbed(description="Missing permissions to delete this channel."))
+            return
+
+        embed = ErrorEmbed(
+            title="Ticket Closed",
+            description=(reason if reason else "No reason was provided."),
+            timestamp=datetime.datetime.utcnow(),
+        )
+        embed.set_author(
+            name=str(ctx.author.name) if anon is False else "Anonymous#0000",
+            icon_url=ctx.author.avatar_url if anon is False else "https://cdn.discordapp.com/embed/avatars/0.png",
+        )
+        embed.set_footer(text=f"{ctx.guild.name} | {ctx.guild.id}", icon_url=ctx.guild.icon_url)
+
+        member = await ctx.guild.fetch_member(tools.get_modmail_user(self.bot, ctx.channel).id)
+        if member:
+            try:
+                channel = tools.get_modmail_channel(self.bot, ctx.channel)
+
+                if data[6]:
+                    embed2 = Embed(
+                        title="Custom Closing Message",
+                        description=tools.tag_format(data[6], member),
+                        colour=config.mod_colour,
+                        timestamp=datetime.datetime.utcnow(),
+                    )
+                    embed2.set_footer(
+                        text=f"{ctx.guild.name} | {ctx.guild.id}",
+                        icon_url=ctx.guild.icon_url,
+                    )
+                    await channel.send_message(embed=embed2)
+
+                await channel.send_message(embed=embed)
+            except discord.Forbidden:
+                pass
+
+        if data[4] is None:
+            return
+
+        channel = await ctx.guild.get_channel(data[4])
+        if channel is None:
+            return
+
+        try:
+            if member is None:
+                member = await self.bot.fetch_user(tools.get_modmail_user(self.bot, ctx.channel))
+
+            if member:
+                embed.set_footer(text=f"{member} | {member.id}", icon_url=member.avatar_url)
+            else:
+                embed.set_footer(
+                    text="Unknown#0000 | 000000000000000000",
+                    icon_url="https://cdn.discordapp.com/embed/avatars/0.png",
                 )
-            )
+
+            if data[7] is True:
+                history = ""
+
+                for msg in messages:
+                    if msg.author.bot and (
+                        msg.author.id != self.bot.id
+                        or len(msg.embeds) <= 0
+                        or msg.embeds[0].title not in ["Message Received", "Message Sent"]
+                    ):
+                        continue
+
+                    if not msg.author.bot and msg.content == "":
+                        continue
+
+                    author = f"{msg.author} (Comment)"
+                    description = msg.content
+
+                    if msg.author.bot:
+                        if not msg.embeds[0].author.name:
+                            author = f"{' '.join(msg.embeds[0].footer.text.split()[:-2])} (User)"
+                        else:
+                            author = f"{msg.embeds[0].author.name} (Staff)"
+
+                        description = msg.embeds[0].description
+
+                        for attachment in [
+                            field.value for field in msg.embeds[0].fields if field.name.startswith("Attachment ")
+                        ]:
+                            if not description:
+                                description = f"(Attachment: {attachment})"
+                            else:
+                                description = description + f" (Attachment: {attachment})"
+
+                    history = f"[{str(msg.created_at.replace(microsecond=0))}] {author}: {description}\n" + history
+
+                history = io.BytesIO(history.encode())
+
+                file = discord.File(history, f"modmail_log_{tools.get_modmail_user(self.bot, ctx.channel).id}.txt")
+                msg = await channel.send(embed=embed, file=file)
+
+                log_url = msg.attachments[0].url[39:-4]
+                log_url = log_url.replace("modmail_log_", "")
+                log_url = [hex(int(some_id))[2:] for some_id in log_url.split("/")]
+                log_url = f"https://modmail.xyz/logs/{'-'.join(log_url)}"
+                embed.add_field(name="Message Logs", value=log_url, inline=False)
+
+                await asyncio.sleep(0.5)
+                await msg.edit(embed=embed)
+                return
+
+            await channel.send(embed=embed)
+        except discord.Forbidden:
+            pass
 
     @checks.is_modmail_channel()
     @checks.in_database()
@@ -169,16 +185,16 @@ class Core(commands.Cog):
     @commands.command(description="Close all of the channels.", usage="closeall [reason]")
     async def closeall(self, ctx, *, reason: str = None):
         for channel in await ctx.guild.text_channels():
-            if checks.is_modmail_channel2(self.bot, channel):
+            if tools.is_modmail_channel(self.bot, channel):
                 msg = copy.copy(ctx.message)
                 msg.channel = channel
                 new_ctx = await self.bot.get_context(msg, cls=type(ctx))
                 await self.close_channel(new_ctx, reason)
+
         try:
             await ctx.send(
-                embed=discord.Embed(
+                embed=Embed(
                     description="All channels are successfully closed.",
-                    colour=self.bot.primary_colour,
                 )
             )
         except discord.HTTPException:
@@ -191,16 +207,16 @@ class Core(commands.Cog):
     @commands.command(description="Close all of the channels anonymously.", usage="acloseall [reason]")
     async def acloseall(self, ctx, *, reason: str = None):
         for channel in await ctx.guild.text_channels():
-            if checks.is_modmail_channel2(self.bot, channel):
+            if tools.is_modmail_channel(self.bot, channel):
                 msg = copy.copy(ctx.message)
                 msg.channel = channel
                 new_ctx = await self.bot.get_context(msg, cls=type(ctx))
                 await self.close_channel(new_ctx, reason, True)
+
         try:
             await ctx.send(
-                embed=discord.Embed(
+                embed=Embed(
                     description="All channels are successfully closed anonymously.",
-                    colour=self.bot.primary_colour,
                 )
             )
         except discord.HTTPException:
@@ -217,16 +233,17 @@ class Core(commands.Cog):
     async def blacklist(self, ctx, *, member: MemberConverter):
         blacklist = (await self.bot.get_data(ctx.guild.id))[9]
         if member.id in blacklist:
-            await ctx.send(
-                embed=discord.Embed(description="The user is already blacklisted.", colour=self.bot.error_colour)
-            )
+            await ctx.send(embed=ErrorEmbed(description="The user is already blacklisted."))
             return
-        blacklist.append(member.id)
+
         async with self.bot.pool.acquire() as conn:
-            await conn.execute("UPDATE data SET blacklist=$1 WHERE guild=$2", blacklist, ctx.guild.id)
-        await ctx.send(
-            embed=discord.Embed(description="The user is blacklisted successfully.", colour=self.bot.primary_colour)
-        )
+            await conn.execute(
+                "UPDATE data SET blacklist=array_append(blacklist, $1) WHERE guild=$2",
+                member.id,
+                ctx.guild.id,
+            )
+
+        await ctx.send(embed=Embed(description="The user is blacklisted successfully."))
 
     @checks.in_database()
     @checks.is_mod()
@@ -238,17 +255,19 @@ class Core(commands.Cog):
     )
     async def whitelist(self, ctx, *, member: MemberConverter):
         blacklist = (await self.bot.get_data(ctx.guild.id))[9]
+
         if member.id not in blacklist:
-            await ctx.send(
-                embed=discord.Embed(description="The user is not blacklisted.", colour=self.bot.error_colour)
-            )
+            await ctx.send(embed=ErrorEmbed(description="The user is not blacklisted."))
             return
-        blacklist.remove(member.id)
+
         async with self.bot.pool.acquire() as conn:
-            await conn.execute("UPDATE data SET blacklist=$1 WHERE guild=$2", blacklist, ctx.guild.id)
-        await ctx.send(
-            embed=discord.Embed(description="The user is whitelisted successfully.", colour=self.bot.primary_colour)
-        )
+            await conn.execute(
+                "UPDATE data SET blacklist=array_remove(blacklist, $1) WHERE guild=$2",
+                member.id,
+                ctx.guild.id,
+            )
+
+        await ctx.send(embed=Embed(description="The user is whitelisted successfully."))
 
     @checks.in_database()
     @checks.is_mod()
@@ -257,9 +276,8 @@ class Core(commands.Cog):
     async def blacklistclear(self, ctx):
         async with self.bot.pool.acquire() as conn:
             await conn.execute("UPDATE data SET blacklist=$1 WHERE guild=$2", [], ctx.guild.id)
-        await ctx.send(
-            embed=discord.Embed(description="The blacklist is cleared successfully.", colour=self.bot.primary_colour)
-        )
+
+        await ctx.send(embed=Embed(description="The blacklist is cleared successfully."))
 
     @checks.in_database()
     @checks.is_mod()
@@ -268,22 +286,24 @@ class Core(commands.Cog):
     async def viewblacklist(self, ctx):
         blacklist = (await self.bot.get_data(ctx.guild.id))[9]
         if not blacklist:
-            await ctx.send(embed=discord.Embed(description="No one is blacklisted.", colour=self.bot.primary_colour))
+            await ctx.send(embed=Embed(description="No one is blacklisted."))
             return
+
         all_pages = []
         for chunk in [blacklist[i : i + 25] for i in range(0, len(blacklist), 25)]:
-            page = discord.Embed(
+            page = Embed(
                 title="Blacklist",
                 description="\n".join([f"<@{user}> ({user})" for user in chunk]),
-                colour=self.bot.primary_colour,
             )
             page.set_footer(text="Use the reactions to flip pages.")
             all_pages.append(page.to_dict())
+
         if len(all_pages) == 1:
             embed = discord.Embed.from_dict(all_pages[0])
             embed.set_footer(text=discord.Embed.Empty)
             await ctx.send(embed=embed)
             return
+
         await self.bot.create_reaction_menu(ctx, all_pages)
 
 

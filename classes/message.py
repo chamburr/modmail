@@ -4,10 +4,11 @@ from discord import message, utils
 from discord.embeds import Embed
 from discord.enums import MessageType, try_enum
 from discord.flags import MessageFlags
-from discord.guild import Guild
-from discord.member import Member
 from discord.message import Attachment, MessageReference, flatten_handlers
 from discord.reaction import Reaction
+
+from classes.guild import Guild
+from classes.member import Member
 
 log = logging.getLogger(__name__)
 
@@ -19,9 +20,9 @@ class Message(message.Message):
         self._data = data
         self.id = int(data["id"])
         self.webhook_id = utils._get_as_snowflake(data, "webhook_id")
-        self.reactions = [Reaction(message=self, data=d) for d in data.get("reactions", [])]
-        self.attachments = [Attachment(data=a, state=self._state) for a in data["attachments"]]
-        self.embeds = [Embed.from_dict(a) for a in data["embeds"]]
+        self.reactions = [Reaction(message=self, data=x, emoji="x") for x in data.get("reactions", [])]
+        self.attachments = [Attachment(data=x, state=self._state) for x in data["attachments"]]
+        self.embeds = [Embed.from_dict(x) for x in data["embeds"]]
         self.application = data.get("application")
         self.activity = data.get("activity")
         self.channel = channel
@@ -38,18 +39,16 @@ class Message(message.Message):
         self.reference = MessageReference.with_state(state, ref) if ref is not None else None
 
         try:
-            author = self._data["author"]
-            self._author = self._state.store_user(author)
+            self._author = self._state.store_user(self._data["author"])
         except KeyError:
             self._author = None
 
         try:
-            member = self._data["member"]
             author = self._author
             try:
-                author._update_from_message(member)
+                author._update_from_message(self._data["member"])
             except AttributeError:
-                author = Member._from_message(message=self, data=member)
+                author = Member._from_message(message=self, data=self._data["member"])
             self._member = author
         except KeyError:
             self._member = None
@@ -82,16 +81,19 @@ class Message(message.Message):
             members = []
             guild = self.guild
             state = self._state
+
             if not isinstance(guild, Guild):
                 members = [state.store_user(m) for m in mentions]
             else:
                 for mention in filter(None, mentions):
                     id_search = int(mention["id"])
                     member = await guild.get_member(id_search)
+
                     if member is not None:
                         members.append(member)
                     else:
                         members.append(Member._try_upgrade(data=mention, guild=guild, state=state))
+
             return members
         except KeyError:
             return []
@@ -100,11 +102,14 @@ class Message(message.Message):
         try:
             mentions = self._data["mention_roles"]
             roles = []
+
             if isinstance(self.guild, Guild):
                 for role_id in map(int, mentions):
                     role = await self.guild.get_role(role_id)
+
                     if role is not None:
                         roles.append(role)
+
             return roles
         except KeyError:
             return []

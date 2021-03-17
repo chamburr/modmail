@@ -1,28 +1,32 @@
-import discord
+import logging
 
-from discord import PartialInviteChannel, PartialInviteGuild
-from discord.enums import *
+from discord import invite
+from discord.enums import ChannelType, try_enum
+from discord.invite import PartialInviteChannel, PartialInviteGuild
+
+log = logging.getLogger(__name__)
 
 
-class Invite(discord.Invite):
+class Invite(invite.Invite):
     @classmethod
     async def from_incomplete(cls, *, state, data):
         try:
-            guild_id = int(data["guild"]["id"])
+            guild = await state._get_guild(int(data["guild"]["id"]))
+            if guild is None:
+                guild = PartialInviteGuild(state, data["guild"], int(data["guild"]["id"]))
         except KeyError:
             guild = None
-        else:
-            guild = await state._get_guild(guild_id)
-            if guild is None:
-                guild_data = data["guild"]
-                guild = PartialInviteGuild(state, guild_data, guild_id)
-        channel_data = data["channel"]
-        channel_id = int(channel_data["id"])
-        channel_type = try_enum(ChannelType, channel_data["type"])
-        channel = PartialInviteChannel(id=channel_id, name=channel_data["name"], type=channel_type)
+
+        channel = PartialInviteChannel(
+            id=int(data["channel"]["id"]),
+            name=data["channel"]["name"],
+            type=try_enum(ChannelType, data["channel"]["type"]),
+        )
+
         if guild is not None and not isinstance(guild, PartialInviteGuild):
-            channel = await guild.get_channel(channel_id) or channel
+            channel = await guild.get_channel(int(data["channel"]["id"])) or channel
 
         data["guild"] = guild
         data["channel"] = channel
+
         return cls(state=state, data=data)

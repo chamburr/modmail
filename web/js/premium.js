@@ -1,19 +1,18 @@
 function showAlert(message) {
     $("#alert-toast").text(message);
     $("#alert-toast").alert();
-    $("#alert-toast").fadeTo(5000, 500).slideUp(500, function() {
+    $("#alert-toast").fadeTo(5000, 500).slideUp(500, function () {
         $("#alert-toast").slideUp(500);
     });
 }
 
-$("#payment-modal").on("show.bs.modal", function(e) {
+$("#payment-modal").on("show.bs.modal", function (e) {
     var plan = $(e.relatedTarget).data("plan");
     if (plan == "basic") {
         $("#payment-plan").text("Basic Plan (1 Server)");
         $(this).find("#payment-amount").val("30.00");
         $(this).find("#payment-item").val("ModMail Premium (Basic)");
-    }
-    else if (plan == "pro") {
+    } else if (plan == "pro") {
         $("#payment-plan").text("Pro Plan (3 Servers)");
         $(this).find("#payment-amount").val("60.00");
         $(this).find("#payment-item").val("ModMail Premium (Pro)");
@@ -34,7 +33,7 @@ function getParam(name) {
 }
 
 function updateUser(user) {
-    Cookies.set("user_id", user.id, { expires: 14 });
+    Cookies.set("user_id", user.id, {expires: 14});
     $("#payment-custom").val(user.id);
     $("#premium-user").text(user.username + "#" + user.discriminator);
 }
@@ -46,18 +45,17 @@ if (code) {
     window.history.replaceState({}, document.title, window.location.href.split("?")[0]);
     $.ajax({
         url: "https://api.modmail.xyz/user?code=" + encodeURIComponent(code)
-    }).done(function(data) {
+    }).done(function (data) {
         updateUser(data);
-    }).fail(function(err) {
+    }).fail(function (err) {
         showAlert("Oops! An unknown error occurred. Try refreshing?");
     });
-}
-else if (userId) {
+} else if (userId) {
     $.ajax({
         url: "https://api.modmail.xyz/user?id=" + encodeURIComponent(userId)
-    }).done(function(data) {
+    }).done(function (data) {
         updateUser(data);
-    }).fail(function(err) {
+    }).fail(function (err) {
         Cookies.remove("user_id");
         showAlert("Oops! An unknown error occurred. Try refreshing?");
     });

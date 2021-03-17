@@ -5,6 +5,7 @@ import signal
 import sys
 import time
 
+from datetime import datetime
 from pathlib import Path
 
 import aiohttp
@@ -17,14 +18,7 @@ from aiohttp import web
 
 import config
 
-from utils.tools import parse_redis_config
-
-
-async def migrations(filename, connection):
-    with open(filename, "r") as f:
-        sql = " ".join(f.readlines())
-    async with connection.acquire() as conn:
-        await conn.execute(sql)
+from classes.embed import ErrorEmbed
 
 
 class Instance:
@@ -51,6 +45,7 @@ class Instance:
                 line = await stream.readline()
             except (asyncio.LimitOverrunError, ValueError):
                 continue
+
             if line:
                 line = line.decode("utf-8")[:-1]
                 print(f"[Cluster {self.id}] {line}")
@@ -61,6 +56,7 @@ class Instance:
         if self.is_active:
             print(f"[Cluster {self.id}] Already active.")
             return
+
         self.started_at = time.time()
         self._process = await asyncio.create_subprocess_shell(
             self.command,
@@ -70,18 +66,25 @@ class Instance:
             preexec_fn=os.setsid,
             limit=1024 * 256,
         )
+
         self.status = "running"
         self.started_at = time.time()
+
         print(f"[Cluster {self.id}] The cluster is starting.")
+
         stdout = self.loop.create_task(self.read_stream(self._process.stdout))
         stderr = self.loop.create_task(self.read_stream(self._process.stderr))
+
         await asyncio.wait([stdout, stderr])
+
         return self
 
     async def stop(self):
         self.status = "stopped"
         os.killpg(os.getpgid(self._process.pid), signal.SIGTERM)
+
         print(f"[Cluster {self.id}] The cluster is killed.")
+
         await asyncio.sleep(5)
 
     def kill(self):
@@ -91,121 +94,177 @@ class Instance:
     async def restart(self):
         if self.is_active:
             await self.stop()
+
         await self.start()
 
 
 class Scheduler:
-    def __init__(self, loop):
+    def __init__(self, loop, pool):
         self.loop = loop
+        self.pool = pool
         self.redis = None
         self.http = None
         self.bot_id = None
-        self.bot_shard_count = None
+        self.shard_count = None
 
         self.session = None
 
+    async def premium_updater(self):
+        while True:
+            async with self.pool.acquire() as conn:
+                premium = await conn.fetch(
+                    "SELECT identifier, guild FROM premium WHERE expiry IS NOT NULL AND expiry<$1",
+                    int(datetime.utcnow().timestamp() * 1000),
+                )
+
+                for row in premium:
+                    for guild in row[1]:
+                        await conn.execute(
+                            "UPDATE data SET welcome=$1, goodbye=$2, loggingplus=$3 WHERE guild=$4",
+                            None,
+                            None,
+                            False,
+                            guild,
+                        )
+                        await conn.execute("DELETE FROM snippet WHERE guild=$1", guild)
+
+                    await conn.execute("DELETE FROM premium WHERE identifier=$1", row[0])
+
+            await asyncio.sleep(60)
+
     async def bot_stats_updater(self):
         while True:
-            if not self.bot_id and not self.bot_shard_count:
+            if not self.bot_id and not self.shard_count:
                 continue
+
             guilds = await self.redis.scard("guild_keys")
+
             await self.session.post(
                 f"https://top.gg/api/bots/{self.bot_id}/stats",
-                data=orjson.dumps({"server_count": guilds, "shard_count": await self.bot_shard_count}),
+                data=orjson.dumps({"server_count": guilds, "shard_count": self.shard_count}),
                 headers={"Authorization": config.topgg_token, "Content-Type": "application/json"},
             )
+
             await self.session.post(
                 f"https://discord.bots.gg/api/v1/bots/{self.bot_id}/stats",
-                data=orjson.dumps({"guildCount": guilds, "shardCount": await self.bot_shard_count}),
+                data=orjson.dumps({"guildCount": guilds, "shardCount": self.shard_count}),
                 headers={"Authorization": config.dbots_token, "Content-Type": "application/json"},
             )
+
             await self.session.post(
                 f"https://discordbotlist.com/api/v1/bots/{self.bot_id}/stats",
                 data=orjson.dumps({"guilds": guilds}),
                 headers={"Authorization": config.dbl_token, "Content-Type": "application/json"},
             )
+
             await self.session.post(
                 f"https://bots.ondiscord.xyz/bot-api/bots/{self.bot_id}/guilds",
                 data=orjson.dumps({"guildCount": guilds}),
                 headers={"Authorization": config.bod_token, "Content-Type": "application/json"},
             )
+
             await self.session.post(
                 f"https://botsfordiscord.com/api/bot/{self.bot_id}",
                 data=orjson.dumps({"server_count": guilds}),
                 headers={"Authorization": config.bfd_token, "Content-Type": "application/json"},
             )
+
             await self.session.post(
                 f"https://discord.boats/api/v2/bot/{self.bot_id}",
                 data=orjson.dumps({"server_count": guilds}),
                 headers={"Authorization": config.dboats_token, "Content-Type": "application/json"},
             )
+
             await asyncio.sleep(900)
 
     async def cleanup(self):
-        rm = await self.redis.smembers("reaction_menus")
-        for menu in rm:
-            menu = orjson.loads(menu)
-            if menu["end"] <= int(time.time()):
-                try:
-                    await self.http.clear_reactions(menu["channel"], menu["message"])
-                except discord.Forbidden:
-                    for reaction in ["⏮️", "◀️", "⏹️", "▶️", "⏭️"]:
-                        await self.http.remove_own_reaction(menu["channel"], menu["message"], reaction)
-                await self.redis.srem("reaction_menus", orjson.dumps(menu).decode("utf-8"))
-        sm = await self.redis.smembers("selection_menus")
-        for menu in sm:
-            menu = orjson.loads(menu)
-            if menu["end"] <= int(time.time()):
-                channel_id = menu["channel"]
-                message_id = menu["message"]
-                reactions = len(menu["all_pages"][menu["page"]]["fields"])
-                await self.http.remove_own_reaction(channel_id, message_id, "◀")
-                await self.http.remove_own_reaction(channel_id, message_id, "▶")
-                for index in range(reactions):
-                    await self.http.remove_own_reaction(
-                        channel_id,
-                        message_id,
-                        ["1⃣", "2⃣", "3⃣", "4⃣", "5⃣", "6⃣", "7⃣", "8⃣", "9⃣", "🔟", "◀️", "▶️"][index],
+        while True:
+            for menu in await self.redis.smembers("reaction_menus"):
+                menu = orjson.loads(menu)
+                if menu["end"] <= int(time.time()):
+                    try:
+                        await self.http.clear_reactions(menu["channel"], menu["message"])
+                    except discord.Forbidden:
+                        for reaction in ["⏮️", "◀️", "⏹️", "▶️", "⏭️"]:
+                            try:
+                                await self.http.remove_own_reaction(menu["channel"], menu["message"], reaction)
+                            except discord.NotFound:
+                                pass
+
+                    await self.redis.srem("reaction_menus", orjson.dumps(menu).decode("utf-8"))
+
+            for menu in await self.redis.smembers("selection_menus"):
+                menu = orjson.loads(menu)
+                if menu["end"] <= int(time.time()):
+                    try:
+                        await self.http.remove_own_reaction(menu["channel"], menu["message"], "◀")
+                        await self.http.remove_own_reaction(menu["channel"], menu["message"], "▶")
+                    except discord.NotFound:
+                        pass
+
+                    for reaction in ["1⃣", "2⃣", "3⃣", "4⃣", "5⃣", "6⃣", "7⃣", "8⃣", "9⃣", "🔟"]:
+                        try:
+                            await self.http.remove_own_reaction(reaction, self.bot.id)
+                        except discord.NotFound:
+                            pass
+
+                    await self.http.edit_message(
+                        menu["channel"],
+                        menu["message"],
+                        embed=ErrorEmbed(description="Time out. You did not choose anything.").to_dict(),
                     )
 
-                await self.http.edit_message(
-                    menu["channel"],
-                    menu["message"],
-                    embed=discord.Embed(
-                        description="Time out. You did not choose anything.", colour=config.error_colour
-                    ).to_dict(),
-                )
-                await self.redis.srem("selection_menus", orjson.dumps(menu).decode("utf-8"))
-        cm = await self.redis.smembers("confirmation_menus")
-        for menu in cm:
-            menu = orjson.loads(menu)
-            if menu["end"] <= int(time.time()):
-                await self.http.edit_message(
-                    menu["channel"],
-                    menu["message"],
-                    embed=discord.Embed(
-                        description="Time out. You did not choose anything.", colour=config.error_colour
-                    ).to_dict(),
-                )
-                for reaction in ["✅", "🔁", "❌"]:
-                    await self.http.remove_own_reaction(menu["channel"], menu["message"], reaction)
-                await self.redis.srem("confirmation_menus", orjson.dumps(menu).decode("utf-8"))
+                    await self.redis.srem("selection_menus", orjson.dumps(menu).decode("utf-8"))
+
+            for menu in await self.redis.smembers("confirmation_menus"):
+                menu = orjson.loads(menu)
+                if menu["end"] <= int(time.time()):
+                    for reaction in ["✅", "🔁", "❌"]:
+                        await self.http.remove_own_reaction(menu["channel"], menu["message"], reaction)
+
+                    await self.http.edit_message(
+                        menu["channel"],
+                        menu["message"],
+                        embed=ErrorEmbed(description="Time out. You did not choose anything.").to_dict(),
+                    )
+
+                    await self.redis.srem("confirmation_menus", orjson.dumps(menu).decode("utf-8"))
+
+            await asyncio.sleep(10)
 
     async def launch(self):
         client = discord.Client()
-        await client.http.static_login(config.token, bot=True)
+        user = await client.http.static_login(config.token, bot=True)
+
         self.session = aiohttp.ClientSession(loop=self.loop)
         self.http = client.http
         self.redis = await aioredis.create_redis_pool(
-            parse_redis_config(config.redis), minsize=5, maxsize=10, loop=self.loop
+            (config.redis["host"], config.redis["port"]),
+            password=config.redis["password"],
+            minsize=5,
+            maxsize=10,
+            loop=self.loop,
         )
-        self.bot_id = (orjson.loads(await self.redis.get("bot_user")))["id"]
-        self.bot_shard_count = int(await self.redis.get("gateway_shards"))
+
+        self.bot_id = user["id"]
+        self.shard_count = int(await self.redis.get("gateway_shards"))
+
+        async with self.pool.acquire() as conn:
+            data = await conn.fetch("SELECT guild, prefix FROM data")
+            bans = await conn.fetch("SELECT identifier, category FROM ban")
+
+        if len(data) >= 1:
+            await self.redis.mset(*[y for x in data for y in (f"prefix:{x[0]}", "" if x[1] is None else x[1])])
+        if len([x[0] for x in bans if x[1] == 0]) >= 1:
+            await self.redis.sadd("banned_users", *[x[0] for x in bans if x[1] == 0])
+        if len([x[0] for x in bans if x[1] == 1]) >= 1:
+            await self.redis.sadd("banned_guilds", *[x[0] for x in bans if x[1] == 1])
+
         if config.testing is False:
-            await self.bot_stats_updater()
-        while True:
-            await self.cleanup()
-            await asyncio.sleep(5)
+            self.loop.create_task(self.bot_stats_updater())
+
+        self.loop.create_task(self.premium_updater())
+        self.loop.create_task(self.cleanup())
 
 
 class Main:
@@ -213,21 +272,24 @@ class Main:
         self.loop = loop
         self.instances = []
         self.session = None
-        self._pool = None
+        self.pool = None
 
     def dead_process_handler(self, result):
         instance = result.result()
         print(f"[Cluster {instance.id}] The cluster exited with code {instance._process.returncode}.")
-        if instance._process.returncode == 0 or instance._process.returncode == -15:
+
+        if instance._process.returncode in [0, -15]:
             print(f"[Cluster {instance.id}] The cluster stopped gracefully.")
-        else:
-            print(f"[Cluster {instance.id}] The cluster is restarting.")
-            instance.loop.create_task(instance.start())
+            return
+
+        print(f"[Cluster {instance.id}] The cluster is restarting.")
+        instance.loop.create_task(instance.start())
 
     def get_instance(self, iterable, instance_id):
         for element in iterable:
             if getattr(element, "id") == instance_id:
                 return element
+
         return None
 
     async def handler(self, request):
@@ -242,40 +304,44 @@ class Main:
 
     def write_targets(self, clusters):
         data = []
+
         for i in range(len(clusters)):
             data.append({"labels": {"cluster": f"{i}"}, "targets": [f"localhost:{6000 + i}"]})
-        with open("targets.json", "w") as f:
-            json.dump(data, f, indent=4)
+
+        with open("targets.json", "w") as file:
+            json.dump(data, file, indent=4)
 
     async def launch(self):
         print(f"[Cluster Manager] Starting a total of {config.clusters} clusters.")
+
         self.session = aiohttp.ClientSession(loop=self.loop)
-        self._pool = await asyncpg.create_pool(**config.database, max_size=10, command_timeout=60)
-        await migrations("schema.sql", self._pool)
-        while True:
-            try:
-                resp = await self.session.get(f"http://{config.td_host}:{config.td_port}/healthcheck")
-                async with resp:
-                    if await resp.json() == {"status": "OK"}:
-                        break
-            except Exception:
-                pass
-            await asyncio.sleep(5)
+        self.pool = await asyncpg.create_pool(**config.database, max_size=10, command_timeout=60)
+
+        async with self.pool.acquire() as conn:
+            exists = await conn.fetchrow("SELECT EXISTS (SELECT relname FROM pg_class WHERE relname = 'data')")
+            if exists[0] is False:
+                with open("schema.sql", "r") as file:
+                    await conn.execute(file.read())
+
+        scheduler = Scheduler(loop=loop, pool=self.pool)
+        loop.create_task(scheduler.launch())
+
         for i in range(config.clusters):
             self.instances.append(Instance(i + 1, self.loop, main=self, cluster_count=config.clusters))
+
+        self.write_targets(self.instances)
 
         server = web.Server(self.handler)
         runner = web.ServerRunner(server)
         await runner.setup()
-        site = web.TCPSite(runner, config.http_host, config.http_port)
+
+        site = web.TCPSite(runner, config.http_api["host"], config.http_api["port"])
         await site.start()
 
 
 loop = asyncio.get_event_loop()
 main = Main(loop=loop)
 loop.create_task(main.launch())
-scheduler = Scheduler(loop=loop)
-loop.create_task(scheduler.launch())
 
 try:
     loop.run_forever()
@@ -286,9 +352,11 @@ except KeyboardInterrupt:
             _loop.default_exception_handler(context)
 
     loop.set_exception_handler(shutdown_handler)
+
     for instance in main.instances:
         instance.task.remove_done_callback(main.dead_process_handler)
         instance.kill()
+
     tasks = asyncio.gather(*asyncio.all_tasks(loop=loop), return_exceptions=True)
     tasks.add_done_callback(lambda t: loop.stop())
     tasks.cancel()

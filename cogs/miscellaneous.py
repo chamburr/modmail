@@ -1,12 +1,10 @@
 import logging
 
-import discord
-
-from discord import Member
 from discord.ext import commands
 
-from classes.converters import ChannelConverter, MemberConverter
-from utils import checks
+from classes.embed import Embed
+from utils import checks, tools
+from utils.converters import ChannelConverter, MemberConverter
 
 log = logging.getLogger(__name__)
 
@@ -23,20 +21,22 @@ class Miscellaneous(commands.Cog):
         aliases=["perms"],
     )
     async def permissions(self, ctx, member: MemberConverter = None, channel: ChannelConverter = None):
-        channel = channel or ctx.channel
         if member is None:
             member = await ctx.message.member()
-        permissions = await channel.permissions_for(member)
-        embed = discord.Embed(title="Permission Information", colour=self.bot.primary_colour)
+
+        permissions = await (channel or ctx.channel).permissions_for(member)
+
+        embed = Embed(title="Permission Information")
         embed.add_field(name="User", value=str(member), inline=False)
         embed.add_field(
             name="Allowed",
-            value="\n".join([self.bot.tools.perm_format(name) for name, value in permissions if value]),
+            value="\n".join([tools.perm_format(name) for name, value in permissions if value]),
         )
         embed.add_field(
             name="Denied",
-            value="\n".join([self.bot.tools.perm_format(name) for name, value in permissions if not value]),
+            value="\n".join([tools.perm_format(name) for name, value in permissions if not value]),
         )
+
         await ctx.send(embed=embed)
 
     @commands.guild_only()
@@ -48,8 +48,10 @@ class Miscellaneous(commands.Cog):
     async def userinfo(self, ctx, *, member: MemberConverter = None):
         if member is None:
             member = ctx.message.member
+
         roles = [role.name for role in await member.roles()]
-        embed = discord.Embed(title="User Information", colour=self.bot.primary_colour)
+
+        embed = Embed(title="User Information")
         embed.add_field(name="Name", value=str(member))
         embed.add_field(name="ID", value=member.id)
         embed.add_field(
@@ -62,17 +64,15 @@ class Miscellaneous(commands.Cog):
         embed.add_field(name="Account Created", value=member.created_at.replace(microsecond=0))
         embed.add_field(name="Roles", value=f"{len(roles)} roles" if len(", ".join(roles)) > 1000 else ", ".join(roles))
         embed.set_thumbnail(url=member.avatar_url)
+
         await ctx.send(embed=embed)
 
     @commands.guild_only()
-    @commands.command(
-        description="Get some information about this server.",
-        usage="serverinfo",
-        aliases=["guildinfo"],
-    )
+    @commands.command(description="Get some information about this server.", usage="serverinfo", aliases=["guildinfo"])
     async def serverinfo(self, ctx):
         guild = await self.bot.get_guild(ctx.guild.id)
-        embed = discord.Embed(title="Server Information", colour=self.bot.primary_colour)
+
+        embed = Embed(title="Server Information")
         embed.add_field(name="Name", value=guild.name)
         embed.add_field(name="ID", value=guild.id)
         embed.add_field(name="Owner", value=f"<@{guild.owner_id}>" if guild.owner_id else "Unknown")
@@ -81,11 +81,13 @@ class Miscellaneous(commands.Cog):
         )
         embed.add_field(name="Server Created", value=guild.created_at.replace(microsecond=0))
         embed.add_field(name="Members", value=guild.member_count)
-        embed.add_field(name="Channels", value=len(await guild.channels()))
-        embed.add_field(name="Roles", value=len(await guild.roles()))
-        embed.add_field(name="Emojis", value=len(await guild.emojis()))
+        embed.add_field(name="Channels", value=str(len(await guild.channels())))
+        embed.add_field(name="Roles", value=str(len(await guild.roles())))
+        embed.add_field(name="Emojis", value=str(len(await guild.emojis())))
+
         if guild.icon:
             embed.set_thumbnail(url=guild.icon_url)
+
         await ctx.send(embed=embed)
 
 

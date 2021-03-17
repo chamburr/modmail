@@ -1,11 +1,10 @@
 import logging
 
-import discord
-
 from discord.ext import commands
 
-from classes.converters import GlobalGuild
-from utils import checks
+from classes.embed import Embed, ErrorEmbed
+from utils import checks, tools
+from utils.converters import GuildConverter
 
 log = logging.getLogger(__name__)
 
@@ -20,12 +19,11 @@ class Premium(commands.Cog):
         aliases=["donate", "patron"],
     )
     async def premium(self, ctx):
-        embed = discord.Embed(
+        embed = Embed(
             title="Premium",
             description="Purchasing premium is the best way you can show support to us. As hosting this bot for all "
             "the servers and users costs much money, your donation will certainly help us a lot in keeping the bot "
             "running. You will also get access to the premium features listed below.",
-            colour=self.bot.primary_colour,
         )
         embed.add_field(
             name="Premium Features",
@@ -39,6 +37,7 @@ class Premium(commands.Cog):
             value="Please join our support server and go to https://modmail.xyz/premium.",
             inline=False,
         )
+
         await ctx.send(embed=embed)
 
     @checks.is_premium()
@@ -46,99 +45,80 @@ class Premium(commands.Cog):
     @commands.command(description="Get the premium status of this server.", usage="premiumstatus")
     async def premiumstatus(self, ctx):
         async with self.bot.pool.acquire() as conn:
-            res = await conn.fetch("SELECT identifier, guild FROM premium")
-        premium_servers = []
-        for row in res:
-            premium_servers.extend(row[1])
-            if ctx.guild.id in premium_servers:
-                await ctx.send(
-                    embed=discord.Embed(
-                        description=f"This server has premium. Offered by: <@{row[0]}>.",
-                        colour=self.bot.primary_colour,
-                    )
-                )
-                return
+            res = await conn.fetchrow("SELECT identifier FROM premium WHERE $1=any(guild)", ctx.guild.id)
+
+        await ctx.send(embed=Embed(description=f"This server has premium. Offered by: <@{res[0]}>."))
 
     @checks.is_patron()
     @commands.command(
-        description="Get a list of servers you assigned premium to.",
-        usage="premiumlist",
-        aliases=["premiumservers", "premiumguilds"],
+        description="View a list of servers you assigned premium to.",
+        usage="viewpremium",
+        aliases=["premiumlist"],
     )
-    async def premiumlist(self, ctx):
+    async def viewpremium(self, ctx):
         async with self.bot.pool.acquire() as conn:
             res = await conn.fetchrow("SELECT guild FROM premium WHERE identifier=$1", ctx.author.id)
+
         if not res or not res[0]:
-            await ctx.send(
-                embed=discord.Embed(
-                    description="You did not assign premium to any server currently.",
-                    colour=self.bot.primary_colour,
-                )
-            )
+            await ctx.send(embed=Embed(description="You have not assigned premium to any server."))
             return
-        to_send = ""
-        for server in res[0]:
-            guild = await self.bot.get_guild(ctx.guild.id)
-            if not guild:
-                to_send += f"\nUnknown server `{server}`"
-            else:
-                to_send += f"\n{guild.name} `{server}`"
-        await ctx.send(embed=discord.Embed(description=to_send, colour=self.bot.primary_colour))
+
+        guilds = []
+        for guild_id in res[0]:
+            guild = await self.bot.get_guild(guild_id)
+            guilds.append(f"{guild.name if guild else 'Unknown server'} `{guild_id}`")
+
+        await ctx.send(embed=Embed(description="\n".join(guilds)))
 
     @checks.is_patron()
     @commands.command(description="Assign premium slot to a server.", usage="premiumassign <server ID>")
-    async def premiumassign(self, ctx, *, guild: GlobalGuild):
+    async def premiumassign(self, ctx, *, guild: GuildConverter):
         async with self.bot.pool.acquire() as conn:
-            res = await conn.fetch("SELECT guild FROM premium")
-        all_premium = []
-        for row in res:
-            all_premium.extend(row[0])
-        if guild.id in all_premium:
-            await ctx.send(
-                embed=discord.Embed(description="That server already has premium.", colour=self.bot.error_colour)
-            )
+            res = await conn.fetchrow("SELECT identifier FROM premium WHERE $1=any(guild)", guild.id)
+
+        if res:
+            await ctx.send(embed=ErrorEmbed(description="That server already has premium."))
             return
-        slots = await self.bot.tools.get_premium_slots(self.bot, ctx.author.id)
+
         async with self.bot.pool.acquire() as conn:
-            servers = await conn.fetchrow("SELECT guild FROM premium WHERE identifier=$1", ctx.author.id)
-        if len(servers[0]) >= slots:
+            res = await conn.fetchrow("SELECT array_length(guild, 1) FROM premium WHERE identifier=$1", ctx.author.id)
+
+        if res[0] >= await tools.get_premium_slots(self.bot, ctx.author.id):
             await ctx.send(
-                embed=discord.Embed(
+                embed=ErrorEmbed(
                     description="You have reached the maximum number of slots that can be assigned. Please upgrade "
-                    "your premium to increase the slots.",
-                    colour=self.bot.error_colour,
+                    "your premium to increase the slots."
                 )
             )
             return
-        servers[0].append(guild.id)
+
         async with self.bot.pool.acquire() as conn:
-            await conn.execute("UPDATE premium SET guild=$1 WHERE identifier=$2", servers[0], ctx.author.id)
-        await ctx.send(embed=discord.Embed(description="That server now has premium.", colour=self.bot.primary_colour))
+            await conn.execute(
+                "UPDATE premium SET guild=array_append(guild, $1) WHERE identifier=$2", guild.id, ctx.author.id
+            )
+
+        await ctx.send(embed=Embed(description="That server now has premium."))
 
     @checks.is_patron()
     @commands.command(description="Remove premium slot from a server.", usage="premiumremove <server ID>")
-    async def premiumremove(self, ctx, *, guild: GlobalGuild):
+    async def premiumremove(self, ctx, *, guild: GuildConverter):
         async with self.bot.pool.acquire() as conn:
-            res = await conn.fetchrow("SELECT guild FROM premium WHERE identifier=$1", ctx.author.id)
-        if guild.id not in res[0]:
-            await ctx.send(
-                embed=discord.Embed(
-                    description="You did not assign premium to that server.",
-                    colour=self.bot.error_colour,
-                )
+            res = await conn.fetchrow(
+                "SELECT identifier FROM premium WHERE identifier=$1 AND $1=any(guild)", ctx.author.id, guild.id
             )
+
+        if not res:
+            await ctx.send(embed=ErrorEmbed(description="You did not assign premium to that server."))
             return
-        servers = res[0]
-        servers.remove(guild.id)
+
         async with self.bot.pool.acquire() as conn:
-            await conn.execute("UPDATE premium SET guild=$1 WHERE identifier=$2", servers, ctx.author.id)
             await conn.execute(
-                "UPDATE data SET welcome=$1, goodbye=$2, loggingplus=$3 WHERE guild=$4", None, None, False, guild.id
+                "UPDATE premium SET guild=array_remove(guild, $1) WHERE identifier=$2", guild.id, ctx.author.id
             )
-            await conn.execute("DELETE FROM snippet WHERE guild=$1", guild.id)
-        await ctx.send(
-            embed=discord.Embed(description="That server no longer has premium.", colour=self.bot.primary_colour)
-        )
+
+        await tools.remove_premium(self.bot, guild.id)
+
+        await ctx.send(embed=Embed(description="That server no longer has premium."))
 
 
 def setup(bot):

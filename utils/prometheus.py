@@ -57,33 +57,25 @@ class Prometheus:
         for name, value in vars(self).items():
             if issubclass(type(value), Collector):
                 self.msvr.register(getattr(self, name))
+
         await self.msvr.start(addr="127.0.0.1", port=6000 + self.bot.cluster)
         self.msvr._runner._server._kwargs["access_log"] = None
-        self.bot.loop.create_task(self.update_bot_stats())
 
         if platform.system() == "Linux":
             self.bot.loop.create_task(self.update_process_stats())
             self.bot.loop.create_task(self.update_platform_stats())
 
-    async def update_bot_stats(self):
-        while True:
-            await self.bot.wait_until_ready()
-            await asyncio.sleep(60)
-            self.shards.set({}, len(self.bot.shards))
-            self.guilds.set({}, len(self.bot.guilds))
-            self.users.set({}, len(self.bot.users))
-            self.latency.set({}, self.bot.latency)
-            await asyncio.sleep(10)
-
     async def update_process_stats(self):
         while True:
             with open(os.path.join(self.pid, "stat"), "rb") as stat:
                 parts = stat.read().split(b")")[-1].split()
+
             self.vmem.set({}, float(parts[20]))
             self.rss.set({}, float(parts[21]) * self.pagesize)
             self.start_time.set({}, float(parts[19]) / self.ticks + self.btime)
             self.cpu.set({}, float(parts[11]) / self.ticks + float(parts[12]) / self.ticks)
             self.fds.set({}, len(os.listdir(os.path.join(self.pid, "fd"))))
+
             await asyncio.sleep(5)
 
     async def update_platform_stats(self):
@@ -98,8 +90,10 @@ class Prometheus:
                 },
                 1,
             )
+
             for gen, stat in enumerate(gc.get_stats()):
                 self.collected.set({"generation": str(gen)}, stat["collected"])
                 self.uncollectable.set({"generation": str(gen)}, stat["uncollectable"])
                 self.collections.set({"generation": str(gen)}, stat["collections"])
+
             await asyncio.sleep(5)

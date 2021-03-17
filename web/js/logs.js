@@ -5,9 +5,9 @@ if (id == "logs") {
 } else {
     $.ajax({
         url: "https://modmail.xyz/_functions/fetch-logs?id=" + id
-    }).done(function(data) {
+    }).done(function (data) {
         $("#logs-content").text("");
-        data.forEach(function(value) {
+        data.forEach(function (value) {
             var colour = value.role == "Staff" ? "FF4500" : value.role == "User" ? "00FF00" : "6C757D";
             var content = '<div class="card bg-dark my-2 border-0"> \
     <div class="card-title mb-1"> \
@@ -45,7 +45,7 @@ if (id == "logs") {
 </div>';
             $("#logs-content").append(content)
         });
-    }).fail(function(data) {
+    }).fail(function (data) {
         $("#logs-content").text("Error: " + data.responseJSON.error);
     });
 }

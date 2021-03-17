@@ -6,27 +6,31 @@ import logging
 
 import orjson
 
-from discord import Reaction, utils
-from discord.channel import DMChannel
+from discord import utils
 from discord.emoji import Emoji
 from discord.enums import ChannelType, try_enum
 from discord.invite import Invite
 from discord.member import VoiceState
 from discord.partial_emoji import PartialEmoji
-from discord.raw_models import *
+from discord.raw_models import (
+    RawBulkMessageDeleteEvent, RawMessageDeleteEvent, RawMessageUpdateEvent, RawReactionActionEvent,
+    RawReactionClearEmojiEvent, RawReactionClearEvent,
+)
+from discord.reaction import Reaction
 from discord.role import Role
 from discord.user import ClientUser, User
 
-from classes.channel import TextChannel, _channel_factory
+from classes.channel import DMChannel, TextChannel, _channel_factory
 from classes.guild import Guild
 from classes.member import Member
 from classes.message import Message
+from utils import tools
 
 log = logging.getLogger(__name__)
 
 
 class State:
-    def __init__(self, *, dispatch, handlers, hooks, http, loop, redis=None, shard_count=None, **options):
+    def __init__(self, *, dispatch, handlers, hooks, http, loop, redis=None, shard_count=None, id, **options):
         self.dispatch = dispatch
         self.handlers = handlers
         self.hooks = hooks
@@ -34,6 +38,7 @@ class State:
         self.loop = loop
         self.redis = redis
         self.shard_count = shard_count
+        self.id = id
 
         self._ready_task = None
         self._ready_state = None
@@ -49,59 +54,66 @@ class State:
             if attr.startswith("parse_"):
                 self.parsers[attr[6:].upper()] = func
 
+    def _loads(self, value):
+        if value is None:
+            return value
+
+        try:
+            return orjson.loads(value)
+        except orjson.JSONDecodeError:
+            return value.decode("utf-8")
+
+    def _dumps(self, value):
+        if isinstance(value, (str, int, float)):
+            return value
+        return orjson.dumps(value).decode("utf-8")
+
     async def delete(self, key):
         return await self.redis.delete(key)
 
     async def get(self, keys):
-        result = await self.redis.mget(*keys)
-        if set(result) != {None}:
-            for index in range(len(result)):
-                res = orjson.loads(result[index])
-                if isinstance(res, dict):
-                    res["_key"] = keys[index]
-                    if res.get("permission_overwrites"):
-                        res["permission_overwrites"] = [
-                            {
-                                "id": x["id"],
-                                "type": "role" if x["type"] == 0 else "member",
-                                "allow": int(x["allow"]),
-                                "deny": int(x["deny"]),
-                            }
-                            for x in res["permission_overwrites"]
-                        ]
-                    result[index] = res
-        if isinstance(keys, str):
-            return result[0]
-        elif isinstance(keys, list):
-            return result
+        results = []
+        if isinstance(keys, (list, tuple)):
+            results.extend([self._loads(x) for x in await self.redis.mget(*keys)])
         else:
-            return None
+            results.append(self._loads(await self.redis.get(keys)))
+
+        for index, value in enumerate(results):
+            if isinstance(value, dict):
+                value["_key"] = keys[index] if isinstance(keys, (list, tuple)) else keys
+                value = tools.upgrade_payload(value)
+
+                results[index] = value
+
+        if isinstance(keys, (list, tuple)):
+            return results
+
+        return results[0]
+
+    async def set(self, key, value):
+        return await self.redis.set(key, self._dumps(value))
 
     async def sadd(self, key, value):
-        return await self.redis.sadd(key, orjson.dumps(value).decode("utf-8"))
+        return await self.redis.sadd(key, self._dumps(value))
+
+    async def srem(self, key, value):
+        return await self.redis.srem(key, self._dumps(value))
+
+    async def smembers(self, key):
+        return [self._loads(x) for x in await self.redis.smembers(key)]
+
+    async def sismember(self, key, value):
+        return await self.redis.sismember(key, self._dumps(value))
 
     async def scard(self, key):
         return await self.redis.scard(key)
 
-    async def set(self, key, value):
-        return await self.redis.set(key, orjson.dumps(value).decode("utf-8"))
-
-    async def sismember(self, key, value):
-        return await self.redis.sismember(key, orjson.dumps(value).decode("utf-8"))
-
-    async def smembers(self, key):
-        result = list(await self.redis.smembers(key))
-        for index in range(len(result)):
-            result[index] = orjson.loads(result[index])
-        return set(result)
-
-    async def srem(self, key, value):
-        return await self.redis.srem(key, orjson.dumps(value).decode("utf-8"))
-
     async def _members(self, key, key_id=None):
         key += "_keys"
+
         if key_id:
             key += f":{key_id}"
+
         return [x.decode("utf-8") for x in await self.redis.smembers(key)]
 
     async def _members_get(self, key, key_id=None, name=None, first=None, second=None, predicate=None):
@@ -112,6 +124,7 @@ class State:
                     if second is None or (len(keys) >= 3 and keys[2] == str(second)):
                         if predicate is None or predicate(match) is True:
                             return await self.get(match)
+
         return None
 
     async def _members_get_all(self, key, key_id=None, name=None, first=None, second=None, predicate=None):
@@ -123,6 +136,7 @@ class State:
                     if second is None or (len(keys) >= 2 and keys[2] == str(second)):
                         if predicate is None or predicate(match) is True:
                             matches.append(match)
+
         return await self.get(matches)
 
     def _key_first(self, obj):
@@ -130,20 +144,19 @@ class State:
         return int(keys[1])
 
     async def _users(self):
-        user_ids = set()
-        for match in await self._members("member"):
-            user_id = match.split(":")[2]
-            user_ids.add(user_id)
-        results = await self.get(list(user_ids))
-        return [User(state=self, data=x["user"]) for x in results]
+        user_ids = set([x.split(":")[2] for x in await self._members("member")])
+        return [User(state=self, data=x["user"]) for x in await self.get(user_ids)]
 
     async def _emojis(self):
         results = await self._members_get_all("emoji")
         emojis = []
+
         for result in results:
             guild = await self._get_guild(self._key_first(result))
+
             if guild:
                 emojis.append(Emoji(guild=guild, state=self, data=result))
+
         return emojis
 
     async def _guilds(self):
@@ -154,13 +167,14 @@ class State:
         return [DMChannel(me=self.user, state=self, data=x) for x in results if not x["guild_id"]]
 
     async def _messages(self):
-        results = await self._members_get_all("message")
         messages = []
-        for result in results:
+        for result in await self._members_get_all("message"):
             channel = await self.get_channel(int(result["channel_id"]))
+
             if channel:
                 message = Message(channel=channel, state=self, data=result)
                 messages.append(message)
+
         return messages
 
     def process_chunk_requests(self, guild_id, nonce, members, complete):
@@ -185,11 +199,12 @@ class State:
     async def user(self):
         result = await self.get("bot_user")
         if result:
-            result = ClientUser(state=self, data=result)
-        return result
+            return ClientUser(state=self, data=result)
+        return None
 
-    async def self_id(self):
-        return (await self.user()).id
+    @property
+    def self_id(self):
+        return self.id
 
     @property
     def intents(self):
@@ -216,9 +231,11 @@ class State:
 
     async def get_user(self, user_id):
         result = await self._members_get("member", second=user_id)
+
         if result:
-            result = User(state=self, data=result["user"])
-        return result
+            return User(state=self, data=result["user"])
+
+        return None
 
     def store_emoji(self, guild, data):
         return Emoji(guild=guild, state=self, data=data)
@@ -228,9 +245,11 @@ class State:
 
     async def _get_guild(self, guild_id):
         result = await self.get(f"guild:{guild_id}")
+
         if result:
-            result = Guild(state=self, data=result)
-        return result
+            return Guild(state=self, data=result)
+
+        return None
 
     def _add_guild(self, guild):
         return
@@ -243,21 +262,24 @@ class State:
 
     async def get_emoji(self, emoji_id):
         result = await self._members_get("emoji", second=emoji_id)
+
         if result:
             guild = await self._get_guild(self._key_first(result))
+
             if guild:
-                result = Emoji(guild=guild, state=self, data=result)
-            else:
-                result = None
-        return result
+                return Emoji(guild=guild, state=self, data=result)
+
+        return None
 
     async def private_channels(self):
         return await self._private_channels()
 
     async def _get_private_channel(self, channel_id):
         result = await self.get(f"channel:{channel_id}")
+
         if result:
             result = DMChannel(me=self.user, state=self, data=result)
+
         return result
 
     async def _get_private_channel_by_user(self, user_id):
@@ -274,10 +296,13 @@ class State:
 
     async def _get_message(self, msg_id):
         result = await self._members_get("message", second=msg_id)
+
         if result:
             channel = await self.get_channel(self._key_first(result))
+
             if channel:
                 result = Message(channel=channel, state=self, data=result)
+
         return result
 
     def _add_guild_from_data(self, guild):
@@ -288,14 +313,15 @@ class State:
 
     async def _get_guild_channel(self, channel_id):
         result = await self._members_get("channel", second=channel_id)
+
         if result:
             factory, _ = _channel_factory(result["type"])
             guild = await self._get_guild(self._key_first(result))
+
             if guild:
-                result = factory(guild=guild, state=self, data=result)
-            else:
-                result = None
-        return result
+                return factory(guild=guild, state=self, data=result)
+
+        return None
 
     async def chunker(self, guild_id, query="", limit=0, *, nonce=None):
         return
@@ -330,6 +356,7 @@ class State:
     async def parse_ready(self, data, old):
         if self._ready_task is not None:
             self._ready_task.cancel()
+
         self.dispatch("connect")
         self._ready_state = asyncio.Queue()
         self._ready_task = asyncio.ensure_future(self._delay_ready(), loop=self.loop)
@@ -339,38 +366,43 @@ class State:
 
     async def parse_message_create(self, data, old):
         channel = await self.get_channel(int(data["channel_id"]))
-        if channel:
-            message = self.create_message(channel=channel, data=data)
-            self.dispatch("message", message)
-        else:
+
+        if not channel:
             channel = DMChannel(me=await self.user(), state=self, data={"id": int(data["channel_id"])})
-            message = self.create_message(channel=channel, data=data)
-            self.dispatch("message", message)
+
+        message = self.create_message(channel=channel, data=data)
+        self.dispatch("message", message)
 
     async def parse_message_delete(self, data, old):
         raw = RawMessageDeleteEvent(data)
+
         if old:
             channel = await self.get_channel(int(data["channel_id"]))
             if channel:
                 old = self.create_message(channel=channel, data=old)
                 raw.cached_message = old
                 self.dispatch("message_delete", old)
+
         self.dispatch("raw_message_delete", raw)
 
     async def parse_message_delete_bulk(self, data, old):
         raw = RawBulkMessageDeleteEvent(data)
+
         if old:
             messages = []
             for old_message in old:
                 channel = await self.get_channel(int(old_message["channel_id"]))
                 if channel:
                     messages.append(self.create_message(channel=channel, data=old_message))
+
             raw.cached_messages = old
             self.dispatch("bulk_message_delete", old)
+
         self.dispatch("raw_bulk_message_delete", raw)
 
     async def parse_message_update(self, data, old):
         raw = RawMessageUpdateEvent(data)
+
         if old:
             channel = await self.get_channel(int(data["channel_id"]))
             if channel:
@@ -379,6 +411,7 @@ class State:
                 new = copy.copy(old)
                 new._update(data)
                 self.dispatch("message_edit", old, new)
+
         self.dispatch("raw_message_edit", raw)
 
     async def parse_message_reaction_add(self, data, old):
@@ -388,26 +421,29 @@ class State:
             animated=data["emoji"].get("animated", False),
             name=data["emoji"]["name"],
         )
+
         raw = RawReactionActionEvent(data, emoji, "REACTION_ADD")
+
         member = data.get("member")
         if member:
             guild = await self._get_guild(raw.guild_id)
             if guild:
                 raw.member = Member(guild=guild, state=self, data=member)
+
         self.dispatch("raw_reaction_add", raw)
+
         message = await self._get_message(raw.message_id)
         if message:
             reaction = Reaction(message=message, data=data, emoji=await self._upgrade_partial_emoji(emoji))
-            try:
-                user = raw.member or await self._get_reaction_user(message.channel, raw.user_id)
-                if user:
-                    self.dispatch("reaction_add", reaction, user)
-            except AttributeError:
-                pass
+            user = raw.member or await self._get_reaction_user(message.channel, raw.user_id)
+
+            if user:
+                self.dispatch("reaction_add", reaction, user)
 
     async def parse_message_reaction_remove_all(self, data, old):
         raw = RawReactionClearEvent(data)
         self.dispatch("raw_reaction_clear", raw)
+
         message = await self._get_message(raw.message_id)
         if message:
             self.dispatch("reaction_clear", message, None)
@@ -418,17 +454,17 @@ class State:
             id=utils._get_as_snowflake(data["emoji"], "id"),
             name=data["emoji"]["name"],
         )
+
         raw = RawReactionActionEvent(data, emoji, "REACTION_REMOVE")
         self.dispatch("raw_reaction_remove", raw)
+
         message = await self._get_message(raw.message_id)
         if message:
             reaction = Reaction(message=message, data=data, emoji=await self._upgrade_partial_emoji(emoji))
-            try:
-                user = await self._get_reaction_user(message.channel, raw.user_id)
-                if user:
-                    self.dispatch("reaction_remove", reaction, user)
-            except AttributeError:
-                pass
+            user = await self._get_reaction_user(message.channel, raw.user_id)
+
+            if user:
+                self.dispatch("reaction_remove", reaction, user)
 
     async def parse_message_reaction_remove_emoji(self, data, old):
         emoji = PartialEmoji.with_state(
@@ -436,8 +472,10 @@ class State:
             id=utils._get_as_snowflake(data["emoji"], "id"),
             name=data["emoji"]["name"],
         )
+
         raw = RawReactionClearEmojiEvent(data, emoji)
         self.dispatch("raw_reaction_clear_emoji", raw)
+
         message = await self._get_message(raw.message_id)
         if message:
             reaction = Reaction(message=message, data=data, emoji=await self._upgrade_partial_emoji(emoji))
@@ -445,15 +483,19 @@ class State:
 
     async def parse_presence_update(self, data, old):
         guild = await self._get_guild(utils._get_as_snowflake(data, "guild_id"))
+
         if not guild:
             return
+
         old_member = None
         member = await guild.get_member(int(data["user"]["id"]))
         if member and old:
             old_member = Member._copy(member)
             user_update = old_member._presence_update(data=old, user=old["user"])
+
             if user_update:
                 self.dispatch("user_update", user_update[1], user_update[0])
+
         self.dispatch("member_update", old_member, member)
 
     async def parse_user_update(self, data, old):
@@ -507,6 +549,7 @@ class State:
     async def parse_channel_pins_update(self, data, old):
         channel = await self.get_channel(int(data["channel_id"]))
         last_pin = utils.parse_time(data["last_pin_timestamp"]) if data["last_pin_timestamp"] else None
+
         try:
             channel.guild
         except AttributeError:
@@ -541,8 +584,10 @@ class State:
                 old_member = Member._copy(member)
                 old_member._update(old)
                 user_update = old_member._update_inner_user(data["user"])
+
                 if user_update:
                     self.dispatch("user_update", user_update[1], user_update[0])
+
                 self.dispatch("member_update", old_member, member)
 
     async def parse_guild_emojis_update(self, data, old):
@@ -551,6 +596,7 @@ class State:
             before_emojis = None
             if old:
                 before_emojis = [self.store_emoji(guild, x) for x in old]
+
             after_emojis = tuple(map(lambda x: self.store_emoji(guild, x), data["emojis"]))
             self.dispatch("guild_emojis_update", guild, before_emojis, after_emojis)
 
@@ -565,8 +611,10 @@ class State:
 
     async def parse_guild_create(self, data, old):
         unavailable = data.get("unavailable")
+
         if unavailable is True:
             return
+
         guild = self._get_create_guild(data)
         try:
             self._ready_state.put_nowait(guild)
@@ -583,9 +631,11 @@ class State:
         guild = await self._get_guild(int(data["id"]))
         if guild:
             old_guild = None
+
             if old:
                 old_guild = copy.copy(guild)
                 old_guild = old_guild._from_data(old)
+
             self.dispatch("guild_update", old_guild, guild)
 
     async def parse_guild_delete(self, data, old):
@@ -653,8 +703,10 @@ class State:
                     before = None
                     after = VoiceState(data=data, channel=channel)
                     old_channel = await self.get_channel(old["channel_id"])
+
                     if old and old_channel:
                         before = VoiceState(data=data, channel=old_channel)
+
                     self.dispatch("voice_state_update", member, before, after)
 
     def parse_voice_server_update(self, data, old):
@@ -664,12 +716,14 @@ class State:
         channel = await self._get_guild_channel(int(data["channel_id"]))
         if channel:
             member = None
+
             if isinstance(channel, DMChannel):
                 member = channel.recipient
             elif isinstance(channel, TextChannel):
                 guild = await self._get_guild(int(data["guild_id"]))
                 if guild:
                     member = await guild.get_member(utils._get_as_snowflake(data, "user_id"))
+
             if member:
                 self.dispatch("typing", channel, member, datetime.datetime.utcfromtimestamp(data.get("timestamp")))
 
@@ -686,18 +740,22 @@ class State:
 
     async def get_reaction_emoji(self, data):
         emoji_id = utils._get_as_snowflake(data, "id")
+
         if not emoji_id:
             return data["name"]
+
         return await self.get_emoji(emoji_id)
 
     async def _upgrade_partial_emoji(self, emoji):
         if not emoji.id:
             return emoji.name
+
         return await self.get_emoji(emoji.id)
 
     async def get_channel(self, channel_id):
         if not channel_id:
             return None
+
         return await self._get_private_channel(channel_id) or await self._get_guild_channel(channel_id)
 
     def create_message(self, *, channel, data):

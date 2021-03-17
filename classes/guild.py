@@ -1,12 +1,14 @@
 import logging
 
-from discord import CategoryChannel, Emoji, InvalidArgument, PermissionOverwrite, guild, utils
-from discord.enums import *
-from discord.enums import try_enum
-from discord.member import Member, VoiceState
+from discord import guild, utils
+from discord.channel import CategoryChannel
+from discord.emoji import Emoji
+from discord.enums import ChannelType, ContentFilter, NotificationLevel, VerificationLevel, VoiceRegion, try_enum
+from discord.member import VoiceState
 from discord.role import Role
 
 from classes.channel import TextChannel, _channel_factory
+from classes.member import Member
 
 log = logging.getLogger(__name__)
 
@@ -15,18 +17,6 @@ class Guild(guild.Guild):
     def __init__(self, *, data, state):
         self._state = state
         self._from_data(data)
-
-    async def default_role(self):
-        return await self.get_role(self.id)
-
-    async def me(self):
-        self_id = (await self._state.user()).id
-        return await self.get_member(self_id)
-
-    async def text_channels(self):
-        r = [ch for ch in await self._channels() if isinstance(ch, TextChannel)]
-        r.sort(key=lambda c: (c.position, c.id))
-        return r
 
     def _add_channel(self, channel):
         return
@@ -83,75 +73,39 @@ class Guild(guild.Guild):
         self.owner_id = utils._get_as_snowflake(guild, "owner_id")
         self._afk_channel_id = utils._get_as_snowflake(guild, "afk_channel_id")
 
-    async def _create_channel(self, name, overwrites, channel_type, category=None, **options):
-        if overwrites is None:
-            overwrites = {}
-        elif not isinstance(overwrites, dict):
-            raise InvalidArgument("overwrites parameter expects a dict.")
-
-        perms = []
-        for target, perm in overwrites.items():
-            if not isinstance(perm, PermissionOverwrite):
-                raise InvalidArgument(f"Expected PermissionOverwrite received {type(perm).__name__}")
-
-            allow, deny = perm.pair()
-            payload = {"allow": allow.value, "deny": deny.value, "id": target.id}
-
-            if isinstance(target, Role):
-                payload["type"] = "role"
-            else:
-                payload["type"] = "member"
-
-            perms.append(payload)
-
-        try:
-            options["rate_limit_per_user"] = options.pop("slowmode_delay")
-        except KeyError:
-            pass
-
-        parent_id = category.id if category else None
-        return await self._state.http.create_channel(
-            self.id, channel_type.value, name=name, parent_id=parent_id, permission_overwrites=perms, **options
-        )
-
     async def create_text_channel(self, name, *, overwrites=None, category=None, reason=None, **options):
         data = await self._create_channel(name, overwrites, ChannelType.text, category, reason=reason, **options)
-        channel = TextChannel(state=self._state, guild=self, data=data)
-
-        return channel
+        return TextChannel(state=self._state, guild=self, data=data)
 
     async def create_category(self, name, *, overwrites=None, reason=None, position=None):
         data = await self._create_channel(name, overwrites, ChannelType.category, reason=reason, position=position)
-        channel = CategoryChannel(state=self._state, guild=self, data=data)
-
-        return channel
-
-    create_category_channel = create_category
+        return CategoryChannel(state=self._state, guild=self, data=data)
 
     async def _channels(self):
         channels = []
         for channel in await self._state._members_get_all("guild", key_id=self.id, name="channel"):
             factory, _ = _channel_factory(channel["type"])
             channels.append(factory(guild=self, state=self._state, data=channel))
+
         return channels
 
     async def _emojis(self):
-        emojis = []
-        for emoji in await self._state._members_get_all("guild", key_id=self.id, name="emoji"):
-            emojis.append(Emoji(guild=self, state=self._state, data=emoji))
-        return emojis
+        return [
+            Emoji(guild=self, state=self._state, data=x)
+            for x in await self._state._members_get_all("guild", key_id=self.id, name="emoji")
+        ]
 
     async def _members(self):
-        members = []
-        for member in await self._state._members_get_all("guild", key_id=self.id, name="member"):
-            members.append(Member(guild=self, state=self._state, data=member))
-        return members
+        return [
+            Member(guild=self, state=self._state, data=x)
+            for x in await self._state._members_get_all("guild", key_id=self.id, name="member")
+        ]
 
     async def _roles(self):
-        roles = []
-        for role in await self._state._members_get_all("guild", key_id=self.id, name="role"):
-            roles.append(Role(guild=self, state=self._state, data=role))
-        return roles
+        return [
+            Role(guild=self, state=self._state, data=x)
+            for x in await self._state._members_get_all("guild", key_id=self.id, name="role")
+        ]
 
     async def _voice_states(self):
         voices = []
@@ -165,24 +119,31 @@ class Guild(guild.Guild):
         return voices
 
     async def _voice_state_for(self, user_id):
-        result = await self._state._get(f"voice:{self.id}:{user_id}")
-        if result and result["channel_id"]:
-            channel = await self.get_channel(int(result["channel_id"]))
+        state = await self._state.get(f"voice:{self.id}:{user_id}")
+        if state and state["channel_id"]:
+            channel = await self.get_channel(int(state["channel_id"]))
             if channel:
-                result = VoiceState(channel=channel, data=result)
-        elif result:
-            result = VoiceState(channel=None, data=result)
-        return result
+                return VoiceState(channel=channel, data=state)
+        elif state:
+            return VoiceState(channel=None, data=state)
+        return None
 
     async def channels(self):
         return await self._channels()
 
+    async def text_channels(self):
+        channels = [x for x in await self._channels() if isinstance(x, TextChannel)]
+        channels.sort(key=lambda x: (x.position, x.id))
+        return channels
+
     async def get_channel(self, channel_id):
-        result = await self._state._get(f"channel:{self.id}:{channel_id}")
-        if not result:
+        channel = await self._state.get(f"channel:{self.id}:{channel_id}")
+
+        if not channel:
             return None
-        factory, _ = _channel_factory(result["type"])
-        return factory(guild=self, state=self._state, data=result)
+
+        factory, _ = _channel_factory(channel["type"])
+        return factory(guild=self, state=self._state, data=channel)
 
     async def afk_channel(self):
         channel_id = self._afk_channel_id
@@ -207,17 +168,28 @@ class Guild(guild.Guild):
         return await self._members()
 
     async def get_member(self, user_id):
-        result = await self._state._get(f"member:{self.id}:{user_id}")
+        result = await self._state.get(f"member:{self.id}:{user_id}")
+
         if result:
-            result = Member(guild=self, state=self._state, data=result)
-        return result
+            return Member(guild=self, state=self._state, data=result)
+
+        return None
+
+    async def me(self):
+        return await self.get_member(self._state.id)
 
     async def roles(self):
         return await self._roles()
 
     async def get_role(self, role_id):
-        result = await self._state._get(f"role:{self.id}:{role_id}")
-        if result:
-            result["permissions"] = int(result["permissions"])
-            result = Role(guild=self, state=self._state, data=result)
-        return result
+        role = await self._state.get(f"role:{self.id}:{role_id}")
+
+        if role:
+            role["permissions"] = int(role["permissions"])
+            role["permissions_new"] = role["permissions"]
+            return Role(guild=self, state=self._state, data=role)
+
+        return None
+
+    async def default_role(self):
+        return await self.get_role(self.id)

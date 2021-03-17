@@ -1,25 +1,13 @@
 import asyncio
 import logging
-import weakref
 
-from urllib.parse import quote as _uriquote
+from urllib.parse import quote
 
-import orjson
-
-from discord import DiscordServerError, Forbidden, HTTPException, NotFound, http, utils
-from discord.http import MaybeUnlock, Route
+from discord import http, utils
+from discord.errors import DiscordServerError, Forbidden, HTTPException, NotFound
+from discord.http import MaybeUnlock, Route, json_or_text
 
 log = logging.getLogger(__name__)
-
-
-async def json_or_text(response):
-    text = await response.text(encoding="utf-8")
-    try:
-        if response.headers["content-type"] == "application/json":
-            return orjson.loads(text)
-    except KeyError:
-        pass
-    return text
 
 
 class HTTPClient(http.HTTPClient):
@@ -51,7 +39,7 @@ class HTTPClient(http.HTTPClient):
             pass
         else:
             if reason:
-                headers["X-Audit-Log-Reason"] = _uriquote(reason, safe="/ ")
+                headers["X-Audit-Log-Reason"] = quote(reason, safe="/ ")
 
         kwargs["headers"] = headers
 
@@ -92,13 +80,13 @@ class HTTPClient(http.HTTPClient):
 
                             retry_after = data["retry_after"] / 1000.0
                             log.warning(
-                                f"We are being rate limited. Retrying in {retry_after}.2f seconds."
-                                f"Handled under the bucket '{bucket}'"
+                                f"We are being rate limited. Retrying in {retry_after:.2f} seconds. Handled under the "
+                                f"bucket '{bucket}'"
                             )
 
                             is_global = data.get("global", False)
                             if is_global:
-                                log.warning(f"Global rate limit has been hit. Retrying in {retry_after}.2f seconds.")
+                                log.warning(f"Global rate limit has been hit. Retrying in {retry_after:.2f} seconds.")
                                 self._global_over.clear()
 
                             await asyncio.sleep(retry_after)

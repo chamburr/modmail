@@ -1,4 +1,4 @@
-CREATE TABLE IF NOT EXISTS public.data
+CREATE TABLE public.data
 (
     guild       bigint   NOT NULL,
     prefix      text,
@@ -14,14 +14,15 @@ CREATE TABLE IF NOT EXISTS public.data
     PRIMARY KEY (guild)
 );
 
-CREATE TABLE IF NOT EXISTS public.snippet
+CREATE TABLE public.snippet
 (
     guild   bigint NOT NULL,
     name    text   NOT NULL,
-    content text   NOT NULL
+    content text   NOT NULL,
+    PRIMARY KEY (guild, name)
 );
 
-CREATE TABLE IF NOT EXISTS public.premium
+CREATE TABLE public.premium
 (
     identifier bigint   NOT NULL,
     guild      bigint[] NOT NULL,
@@ -29,14 +30,14 @@ CREATE TABLE IF NOT EXISTS public.premium
     PRIMARY KEY (identifier)
 );
 
-CREATE TABLE IF NOT EXISTS public.ban
+CREATE TABLE public.ban
 (
     identifier bigint  NOT NULL,
     category   integer NOT NULL,
-    PRIMARY KEY (identifier)
+    PRIMARY KEY (identifier, category)
 );
 
-CREATE TABLE IF NOT EXISTS public.preference
+CREATE TABLE public.preference
 (
     identifier   bigint  NOT NULL,
     confirmation boolean NOT NULL,

@@ -1,5 +1,4 @@
 import asyncio
-import inspect
 import logging
 import sys
 import time
@@ -11,36 +10,25 @@ import aioredis
 import asyncpg
 import orjson
 
-from discord import utils
 from discord.ext import commands
-from discord.ext.commands import Context
 from discord.ext.commands.core import _CaseInsensitiveDict
-from discord.ext.commands.view import StringView
 from discord.gateway import DiscordWebSocket
-from discord.utils import parse_time, to_json
+from discord.user import User
+from discord.utils import parse_time
 
 import config
 
 from classes.http import HTTPClient
 from classes.misc import Session, Status
 from classes.state import State
+from utils.prometheus import Prometheus
 from utils import tools
-from utils.tools import parse_rabbitmq_config, parse_redis_config
 
 log = logging.getLogger(__name__)
 
 
-def when_mentioned_or(*prefixes):
-    def inner(bot):
-        r = list(prefixes)
-        r = [f"{bot.mention}", f"<@!{bot.id}> "] + r
-        return r
-
-    return inner
-
-
 class ModMail(commands.AutoShardedBot):
-    def __init__(self, command_prefix, description=None, **kwargs):
+    def __init__(self, command_prefix, **kwargs):
         self.command_prefix = command_prefix
         self.extra_events = {}
         self._BotBase__cogs = {}
@@ -50,11 +38,11 @@ class ModMail(commands.AutoShardedBot):
         self._before_invoke = None
         self._after_invoke = None
         self._help_command = None
-        self.description = inspect.cleandoc(description) if description else ""
-        self.owner_id = kwargs.get("owner_id")
-        self.owner_ids = kwargs.get("owner_ids", set())
+        self.description = ""
+        self.owner_id = None
+        self.owner_ids = set()
         self._skip_check = lambda x, y: x == y
-        self.case_insensitive = kwargs.get("case_insensitive", False)
+        self.case_insensitive = True
         self.all_commands = _CaseInsensitiveDict() if self.case_insensitive else {}
 
         self.ws = None
@@ -74,10 +62,13 @@ class ModMail(commands.AutoShardedBot):
         self._amqp_queue = None
 
         self.session = aiohttp.ClientSession(loop=self.loop)
-        self.http_uri = f"http://{self.config.http_host}:{self.config.http_port}"
+        self.http_uri = f"http://{self.config.http_api['host']}:{self.config.http_api['port']}"
         self.cluster = kwargs.get("cluster_id")
         self.cluster_count = kwargs.get("cluster_count")
         self.version = kwargs.get("version")
+        self.id = None
+        self.pool = None
+        self.prom = None
 
         self._cogs = [
             "admin",
@@ -103,26 +94,18 @@ class ModMail(commands.AutoShardedBot):
         return config
 
     @property
-    def tools(self):
-        return tools
+    def user(self):
+        return User(
+            state=None,
+            data={
+                "username": "",
+                "id": str(self.id),
+                "discriminator": "",
+                "avatar": "",
+            },
+        )
 
-    @property
-    def primary_colour(self):
-        return self.config.primary_colour
-
-    @property
-    def user_colour(self):
-        return self.config.user_colour
-
-    @property
-    def mod_colour(self):
-        return self.config.mod_colour
-
-    @property
-    def error_colour(self):
-        return self.config.error_colour
-
-    async def user(self):
+    async def real_user(self):
         return await self._connection.user()
 
     async def users(self):
@@ -162,7 +145,7 @@ class ModMail(commands.AutoShardedBot):
         return await self._connection.get_user(user_id)
 
     async def get_emoji(self, emoji_id):
-        pass
+        return await self._connection.get_emoji(emoji_id)
 
     async def get_all_channels(self):
         pass
@@ -178,51 +161,68 @@ class ModMail(commands.AutoShardedBot):
             http=self.http,
             loop=self.loop,
             redis=self._redis,
-            shard_count=await self.shard_count(),
+            shard_count=int(await self._redis.get("gateway_shards")),
+            id=self.id,
             **options,
         )
 
-    async def get_context(self, message, *, cls=Context):
-        view = StringView(message.content)
-        ctx = cls(prefix=None, view=view, bot=self, message=message)
+    async def receive_message(self, msg):
+        self.ws._dispatch("socket_raw_receive", msg)
+        msg = orjson.loads(msg)
+        self.ws._dispatch("socket_response", msg)
 
-        if self._skip_check(message.author.id, self.id):
-            return ctx
+        op = msg.get("op")
+        data = msg.get("d")
+        event = msg.get("t")
+        old = msg.get("old")
 
-        prefix = await self.get_prefix(message)
-        invoked_prefix = prefix
+        if op != self.ws.DISPATCH:
+            return
 
-        if isinstance(prefix, str):
-            if not view.skip_string(prefix):
-                return ctx
+        data = tools.upgrade_payload(data)
+
+        try:
+            func = self.ws._discord_parsers[event]
+        except KeyError:
+            log.debug(f"Unknown event {event}.")
         else:
             try:
-                if message.content.startswith(tuple(prefix)):
-                    invoked_prefix = utils.find(view.skip_string, prefix)
-                else:
-                    return ctx
+                await func(data, old)
+            except asyncio.CancelledError:
+                pass
+            except Exception:
+                try:
+                    await self.on_error(event)
+                except asyncio.CancelledError:
+                    pass
 
-            except TypeError:
-                if not isinstance(prefix, list):
-                    raise TypeError(
-                        "get_prefix must return either a string or a list of string, "
-                        f"not {prefix.__class__.__name__}"
-                    )
+        removed = []
+        for index, entry in enumerate(self.ws._dispatch_listeners):
+            if entry.event != event:
+                continue
 
-                for value in prefix:
-                    if not isinstance(value, str):
-                        raise TypeError(
-                            "Iterable command_prefix or list returned from get_prefix must "
-                            f"contain only strings, not {value.__class__.__name__}"
-                        )
+            if entry.future.cancelled():
+                removed.append(index)
+                continue
 
-                raise
+            try:
+                valid = entry.predicate(data)
+            except Exception as exc:
+                entry.future.set_exception(exc)
+                removed.append(index)
+            else:
+                if valid:
+                    ret = data if entry.result is None else entry.result(data)
+                    entry.future.set_result(ret)
+                    removed.append(index)
 
-        invoker = view.get_word()
-        ctx.invoked_with = invoker
-        ctx.prefix = invoked_prefix
-        ctx.command = self.all_commands.get(invoker)
-        return ctx
+        for index in reversed(removed):
+            del self.ws._dispatch_listeners[index]
+
+    async def send_message(self, msg):
+        data = orjson.dumps(msg)
+        self.ws._dispatch("socket_raw_send", data)
+        await self._amqp_channel.default_exchange.publish(aio_pika.Message(body=data), routing_key="gateway.send")
 
     async def get_data(self, guild):
         async with self.pool.acquire() as conn:
@@ -242,79 +242,15 @@ class ModMail(commands.AutoShardedBot):
                     [],
                     False,
                 )
+
         return res
-
-    async def process_commands(self, message):
-        if message.author.bot:
-            return
-
-        ctx = await self.get_context(message)
-        await self.invoke(ctx)
-
-    async def receive_message(self, msg):
-        self.ws._dispatch("socket_raw_receive", msg)
-
-        msg = orjson.loads(msg)
-
-        self.ws._dispatch("socket_response", msg)
-
-        op = msg.get("op")
-        data = msg.get("d")
-        event = msg.get("t")
-        old = msg.get("old")
-
-        if op != self.ws.DISPATCH:
-            return
-
-        try:
-            func = self.ws._discord_parsers[event]
-        except KeyError:
-            log.debug(f"Unknown event {event}.")
-        else:
-            try:
-                await func(data, old)
-            except asyncio.CancelledError:
-                pass
-            except Exception:
-                try:
-                    await self.on_error(event)
-                except asyncio.CancelledError:
-                    pass
-
-        removed = []
-
-        for index, entry in enumerate(self.ws._dispatch_listeners):
-            if entry.event != event:
-                continue
-
-            future = entry.future
-            if future.cancelled():
-                removed.append(index)
-                continue
-
-            try:
-                valid = entry.predicate(data)
-            except Exception as exc:
-                future.set_exception(exc)
-                removed.append(index)
-            else:
-                if valid:
-                    ret = data if entry.result is None else entry.result(data)
-                    future.set_result(ret)
-                    removed.append(index)
-
-        for index in reversed(removed):
-            del self.ws._dispatch_listeners[index]
-
-    async def send_message(self, msg):
-        data = to_json(msg)
-        self.ws._dispatch("socket_raw_send", data)
-        await self._amqp_channel.default_exchange.publish(aio_pika.Message(body=data), routing_key="gateway.send")
 
     async def create_reaction_menu(self, ctx, pages):
         msg = await ctx.send(embed=pages[0])
+
         for reaction in ["⏮️", "◀️", "⏹️", "▶️", "⏭️"]:
             await msg.add_reaction(reaction)
+
         await self.state.sadd(
             "reaction_menus",
             {
@@ -322,33 +258,47 @@ class ModMail(commands.AutoShardedBot):
                 "message": msg.id,
                 "page": 0,
                 "all_pages": [page.to_dict() for page in pages],
-                "end": int(time.time()) + 2 * 60,
+                "end": int(time.time()) + 180,
             },
-        )
-
-    all_prefix = {}
-    banned_guilds = []
-    banned_users = []
-
-    async def connect_amqp(self):
-        self._amqp = await aio_pika.connect_robust(**parse_rabbitmq_config(self.config.rabbitmq))
-        self._amqp_channel = await self._amqp.channel()
-        self._amqp_queue = await self._amqp_channel.get_queue("gateway.recv")
-
-    async def connect_redis(self):
-        self._redis = await aioredis.create_redis_pool(
-            parse_redis_config(self.config.redis), minsize=5, maxsize=10, loop=self.loop
         )
 
     async def connect_postgres(self):
         self.pool = await asyncpg.create_pool(**self.config.database, max_size=10, command_timeout=60)
 
+    async def connect_redis(self):
+        self._redis = await aioredis.create_redis_pool(
+            (self.config.redis["host"], self.config.redis["port"]),
+            password=self.config.redis["password"],
+            minsize=5,
+            maxsize=10,
+            loop=self.loop,
+        )
+
+    async def connect_amqp(self):
+        self._amqp = await aio_pika.connect_robust(
+            login=self.config.rabbitmq["username"],
+            password=self.config.rabbitmq["password"],
+            host=self.config.rabbitmq["host"],
+            port=self.config.rabbitmq["port"],
+        )
+        self._amqp_channel = await self._amqp.channel()
+        self._amqp_queue = await self._amqp_channel.get_queue("gateway.recv")
+
+    async def connect_prometheus(self):
+        self.prom = Prometheus(self)
+        if self.config.testing is False:
+            await self.prom.start()
+
     async def start(self):
         log.info("Starting...")
 
-        await self.connect_amqp()
-        await self.connect_redis()
+        user = await self.http.static_login(self.config.token, bot=True)
+        self.id = int(user["id"])
+
         await self.connect_postgres()
+        await self.connect_redis()
+        await self.connect_amqp()
+        await self.connect_prometheus()
 
         self._connection = await self._get_state()
         self._connection._get_client = lambda: self
@@ -359,8 +309,6 @@ class ModMail(commands.AutoShardedBot):
         self.ws._discord_parsers = self._connection.parsers
         self.ws._dispatch = self.dispatch
         self.ws.call_hooks = self._connection.call_hooks
-
-        await self.http.static_login(self.config.token, bot=True)
 
         for extension in self._cogs:
             try:

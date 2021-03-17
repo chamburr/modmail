@@ -6,8 +6,8 @@ import sentry_sdk
 
 import config
 
-from classes.bot import ModMail, when_mentioned_or
-from utils.tools import get_guild_prefix
+from classes.bot import ModMail
+from utils import tools
 
 if config.testing is False:
     sentry_sdk.init(config.sentry_url)
@@ -29,15 +29,13 @@ logger.addHandler(handler)
 log = logging.getLogger(__name__)
 
 
-def _get_guild_prefix(bot2, message):
-    prefix = get_guild_prefix(bot2, message.guild)
-    return when_mentioned_or(prefix)(bot2)
+async def command_prefix(bot2, message):
+    prefix = await tools.get_guild_prefix(bot2, message.guild)
+    return [f"<@{bot.id}> ", f"<@!{bot.id}> ", prefix]
 
 
 bot = ModMail(
-    command_prefix=_get_guild_prefix,
-    case_insensitive=True,
-    help_command=None,
+    command_prefix=command_prefix,
     cluster_id=cluster_id,
     cluster_count=cluster_count,
     version="2.1.1",

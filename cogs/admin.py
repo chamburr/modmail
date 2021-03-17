@@ -1,14 +1,12 @@
 import logging
 
-from typing import Optional
-
 import discord
 
 from discord.ext import commands
 
-from classes import abc
-from classes.converters import ChannelConverter, GuildConverter, UserConverter
+from classes.embed import Embed, ErrorEmbed
 from utils import checks
+from utils.converters import ChannelConverter, GuildConverter, UserConverter
 
 log = logging.getLogger(__name__)
 
@@ -17,43 +15,46 @@ class Admin(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
-    @checks.is_admin()
-    @commands.command(
-        description="Get a list of servers with the specified name.",
-        usage="findserver <name>",
-        hidden=True,
-    )
-    async def findserver(self, ctx, *, name: str):
-        guilds = [
-            f"{guild.name} `{guild.id}` ({guild.member_count} members)"
-            for guild in [guild for guild in await self.bot.guilds() if guild.name.lower().count(name.lower()) > 0]
-        ]
+    async def _send_guilds(self, ctx, guilds, title):
         if len(guilds) == 0:
-            await ctx.send(embed=discord.Embed(description="No such guild was found.", colour=self.bot.error_colour))
+            await ctx.send(embed=ErrorEmbed(description="No such guild was found."))
             return
+
         all_pages = []
+
         for chunk in [guilds[i : i + 20] for i in range(0, len(guilds), 20)]:
-            page = discord.Embed(title="Servers", colour=self.bot.primary_colour)
+            page = Embed(title=title)
+
             for guild in chunk:
                 if page.description == discord.Embed.Empty:
                     page.description = guild
                 else:
                     page.description += f"\n{guild}"
+
             page.set_footer(text="Use the reactions to flip pages.")
             all_pages.append(page)
+
         if len(all_pages) == 1:
             embed = all_pages[0]
             embed.set_footer(text=discord.Embed.Empty)
             await ctx.send(embed=embed)
             return
+
         await self.bot.create_reaction_menu(ctx, all_pages)
 
     @checks.is_admin()
-    @commands.command(
-        description="Get a list of servers the bot shares with the user.",
-        usage="sharedservers <user>",
-        hidden=True,
-    )
+    @commands.command(description="Get a list of servers with the specified name.", usage="findserver <name>")
+    async def findserver(self, ctx, *, name: str):
+        guilds = [
+            f"{guild.name} `{guild.id}` ({guild.member_count} members)"
+            for guild in await self.bot.guilds()
+            if guild.name.lower().count(name.lower()) > 0
+        ]
+
+        await self._send_guilds(ctx, guilds, "Servers")
+
+    @checks.is_admin()
+    @commands.command(description="Get a list of servers the bot shares with the user.", usage="sharedservers <user>")
     async def sharedservers(self, ctx, *, user: UserConverter):
         guilds = [
             f"{guild.name} `{guild.id}` ({guild.member_count} members)"
@@ -61,94 +62,46 @@ class Admin(commands.Cog):
                 await self.bot.get_guild(int(guild)) for guild in await self.bot.state.smembers(f"user:{user.id}")
             ]
         ]
-        all_pages = []
-        for chunk in [guilds[i : i + 20] for i in range(0, len(guilds), 20)]:
-            page = discord.Embed(title="Servers", colour=self.bot.primary_colour)
-            for guild in chunk:
-                if page.description == discord.Embed.Empty:
-                    page.description = guild
-                else:
-                    page.description += f"\n{guild}"
-            page.set_footer(text="Use the reactions to flip pages.")
-            all_pages.append(page)
-        if len(all_pages) == 1:
-            embed = all_pages[0]
-            embed.set_footer(text=discord.Embed.Empty)
-            await ctx.send(embed=embed)
-            return
-        await self.bot.create_reaction_menu(ctx, all_pages)
+
+        await self._send_guilds(ctx, guilds, "Shared Servers")
 
     @checks.is_admin()
-    @commands.command(
-        description="Create an invite to the specified server.",
-        usage="createinvite <server ID>",
-        hidden=True,
-    )
+    @commands.command(description="Get the top servers using the bot.", usage="topservers [count]")
+    async def topservers(self, ctx, *, count: int = 20):
+        guilds = [
+            f"#{index + 1} {guild.name} `{guild.id}` ({guild.member_count} members)"
+            for index, guild in enumerate(
+                sorted(await self.bot.guilds(), key=lambda x: x.member_count, reverse=True)[:count]
+            )
+        ]
+
+        await self._send_guilds(ctx, guilds, "Top Servers")
+
+    @checks.is_admin()
+    @commands.command(description="Create an invite to the specified server.", usage="createinvite <server ID>")
     async def createinvite(self, ctx, *, guild: GuildConverter):
-        invite = None
         try:
             invite = (await guild.invites())[0]
         except (IndexError, discord.Forbidden):
             try:
                 invite = (await guild.text_channels())[0].create_invite(max_age=120)
-            except discord.Forbidden:
-                pass
+            except (IndexError, discord.Forbidden):
+                await ctx.send(embed=ErrorEmbed(description="No permissions to create an invite link."))
+                return
 
-        if not invite:
-            await ctx.send(
-                embed=discord.Embed(
-                    description="No permissions to create an invite link.",
-                    colour=self.bot.primary_colour,
-                )
-            )
-        else:
-            await ctx.send(
-                embed=discord.Embed(
-                    description=f"Here is the invite link: https://discord.gg/{invite.code}",
-                    colour=self.bot.primary_colour,
-                )
-            )
+        await ctx.send(embed=Embed(description=f"Here is the invite link: {invite.url}"))
 
     @checks.is_admin()
-    @commands.command(
-        description="Get the top servers using the bot.",
-        aliases=["topguilds"],
-        usage="topservers [count]",
-        hidden=True,
-    )
-    async def topservers(self, ctx, *, count: int = 20):
-        guilds = sorted(await self.bot.guilds(), key=lambda x: x.member_count, reverse=True)[:count]
-        top_guilds = []
-        for index, guild in enumerate(guilds):
-            top_guilds.append(f"#{index + 1} {guild.name} `{guild.id}` ({guild.member_count} members)")
-        all_pages = []
-        for chunk in [top_guilds[i : i + 20] for i in range(0, len(top_guilds), 20)]:
-            page = discord.Embed(title="Top Servers", colour=self.bot.primary_colour)
-            for guild in chunk:
-                if page.description == discord.Embed.Empty:
-                    page.description = guild
-                else:
-                    page.description += f"\n{guild}"
-            page.set_footer(text="Use the reactions to flip pages.")
-            all_pages.append(page)
-        if len(all_pages) == 1:
-            embed = all_pages[0]
-            embed.set_footer(text=discord.Embed.Empty)
-            await ctx.send(embed=embed)
-            return
-        await self.bot.create_reaction_menu(ctx, all_pages)
-
-    @checks.is_admin()
-    @commands.command(description="Make me say something.", usage="echo [channel] <message>", hidden=True)
-    async def echo(self, ctx, channel: Optional[ChannelConverter], *, content: str):
+    @commands.command(description="Make me say something.", usage="echo [channel] <message>")
+    async def echo(self, ctx, channel: ChannelConverter = None, *, content: str):
         channel = channel or ctx.channel
         await ctx.message.delete()
         await channel.send(content, allowed_mentions=discord.AllowedMentions(everyone=False))
 
     @checks.is_admin()
-    @commands.command(description="Restart all clusters.", usage="restart", hidden=True)
+    @commands.command(description="Restart all clusters.", usage="restart")
     async def restart(self, ctx):
-        await ctx.send(embed=discord.Embed(description="Restarting...", colour=self.bot.primary_colour))
+        await ctx.send(embed=Embed(description="Restarting..."))
         await self.bot.session.post(f"{self.bot.http_uri}/restart")
 
 
