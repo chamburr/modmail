@@ -12,17 +12,14 @@ from utils import tools
 if config.testing is False:
     sentry_sdk.init(config.sentry_url)
 
-if len(sys.argv) < 3:
-    cluster_id = 1
-    cluster_count = 1
-else:
-    cluster_id = int(sys.argv[1])
-    cluster_count = int(sys.argv[2])
+cluster_id = int(sys.argv[1])
+cluster_count = int(sys.argv[2])
+bot_id = int(sys.argv[3])
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
-handler = logging.FileHandler(filename=f"discord-{cluster_id}.log", encoding="utf-8", mode="w")
+handler = logging.FileHandler(filename=f"logs/cluster-{cluster_id}.log", encoding="utf-8", mode="w")
 handler.setFormatter(logging.Formatter("%(asctime)s:%(levelname)s:%(name)s: %(message)s"))
 logger.addHandler(handler)
 
@@ -36,6 +33,7 @@ async def command_prefix(bot2, message):
 
 bot = ModMail(
     command_prefix=command_prefix,
+    bot_id=bot_id,
     cluster_id=cluster_id,
     cluster_count=cluster_count,
     version="2.1.1",

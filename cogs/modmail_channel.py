@@ -35,17 +35,17 @@ class ModMailEvents(commands.Cog):
             await message.channel.send(embed=ErrorEmbed(description="You are banned from this bot."))
             return
 
-        if (await self.bot.get_data(message.guild.id))[10] is True:
-            await self.send_mail_mod(message, prefix, True)
+        if (await tools.get_data(self.bot, message.guild.id))[10] is True:
+            await self.send_mail_mod(message, prefix, anon=True)
             return
 
         await self.send_mail_mod(message, prefix)
 
-    async def send_mail_mod(self, message, prefix, anon=False, msg=None, snippet=False):
+    async def send_mail_mod(self, message, prefix, anon=False, snippet=False):
         self.bot.prom.tickets_message.inc({})
 
-        data = await self.bot.get_data(message.guild.id)
-        user = tools.get_modmail_user(self.bot, message.channel)
+        data = await tools.get_data(self.bot, message.guild.id)
+        user = tools.get_modmail_user(message.channel)
 
         if user.id in data[9]:
             await message.channel.send(
@@ -66,42 +66,30 @@ class ModMailEvents(commands.Cog):
             return
 
         if snippet is True:
-            msg = tools.tag_format(msg, member)
+            message.content = tools.tag_format(message.content, member)
+
+        embed = Embed(
+            title="Message Received",
+            description=message.content,
+            colour=config.mod_colour,
+            timestamp=datetime.datetime.utcnow(),
+        )
+        embed.set_author(
+            name=str(message.author) if anon is False else "Anonymous#0000",
+            icon_url=message.author.avatar_url if anon is False else "https://cdn.discordapp.com/embed/avatars/0.png",
+        )
+        embed.set_footer(text=f"{message.guild.name} | {message.guild.id}", icon_url=message.guild.icon_url)
+
+        files = []
+        for file in message.attachments:
+            saved_file = io.BytesIO()
+            await file.save(saved_file)
+            files.append(discord.File(saved_file, file.filename))
+
+        dm_channel = tools.get_modmail_channel(self.bot, message.channel)
 
         try:
-            embed = Embed(
-                title="Message Received",
-                description=message.content if msg is None else msg,
-                colour=config.mod_colour,
-                timestamp=datetime.datetime.utcnow(),
-            )
-            embed.set_author(
-                name=str(message.author) if anon is False else "Anonymous#0000",
-                icon_url=message.author.avatar_url
-                if anon is False
-                else "https://cdn.discordapp.com/embed/avatars/0.png",
-            )
-            embed.set_footer(text=f"{message.guild.name} | {message.guild.id}", icon_url=message.guild.icon_url)
-
-            files = []
-            for file in message.attachments:
-                saved_file = io.BytesIO()
-                await file.save(saved_file)
-                files.append(discord.File(saved_file, file.filename))
-
-            channel = tools.get_modmail_channel(self.bot, message.channel)
-            message2 = await channel.send(embed=embed, files=files)
-
-            embed.title = "Message Sent"
-            embed.set_footer(text=f"{member} | {member.id}", icon_url=member.avatar_url)
-
-            for count, attachment in enumerate([attachment["url"] for attachment in message2.attachments], start=1):
-                embed.add_field(name=f"Attachment {count}", value=attachment, inline=False)
-
-            for file in files:
-                file.reset()
-
-            await message.channel.send(embed=embed, files=files)
+            dm_message = await dm_channel.send(embed=embed, files=files)
         except discord.Forbidden:
             await message.channel.send(
                 embed=ErrorEmbed(
@@ -109,6 +97,21 @@ class ModMailEvents(commands.Cog):
                 )
             )
             return
+
+        embed.title = "Message Sent"
+        embed.set_author(
+            name=str(message.author) if anon is False else f"{message.author} (Anonymous)",
+            icon_url=message.author.avatar_url,
+        )
+        embed.set_footer(text=f"{member} | {member.id}", icon_url=member.avatar_url)
+
+        for count, attachment in enumerate([attachment["url"] for attachment in dm_message.attachments], start=1):
+            embed.add_field(name=f"Attachment {count}", value=attachment, inline=False)
+
+        for file in files:
+            file.reset()
+
+        await message.channel.send(embed=embed, files=files)
 
         try:
             await message.delete()

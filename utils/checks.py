@@ -5,6 +5,7 @@ from discord.ext.commands import BotMissingPermissions, MissingPermissions
 
 from classes.channel import TextChannel
 from classes.embed import ErrorEmbed
+from utils import tools
 
 log = logging.getLogger(__name__)
 
@@ -75,7 +76,7 @@ def is_patron():
         if res:
             return True
 
-        if await ctx.bot.tools.get_premium_slots(ctx.bot, ctx.author.id) is False:
+        if await tools.get_premium_slots(ctx.bot, ctx.author.id) is False:
             await ctx.send(
                 embed=ErrorEmbed(
                     description="This command requires you to be a patron. Want to become a patron? More information "
@@ -94,7 +95,7 @@ def is_patron():
 
 def is_modmail_channel():
     async def predicate(ctx):
-        if not ctx.bot.tools.is_modmail_channel(ctx.channel):
+        if not tools.is_modmail_channel(ctx.channel):
             await ctx.send(embed=ErrorEmbed(description="This channel is not a ModMail channel."))
             return False
 
@@ -105,14 +106,14 @@ def is_modmail_channel():
 
 def is_mod():
     async def predicate(ctx):
-        if ctx.message.member.guild_permissions.administrator:
+        if (await ctx.message.member.guild_permissions()).administrator:
             return True
 
-        for role in (await ctx.bot.get_data(ctx.guild.id))[3]:
+        for role in (await tools.get_data(ctx.bot, ctx.guild.id))[3]:
             if role in ctx.message.member._roles:
                 return True
 
-        await ctx.send(embed=ErrorEmbed(description="You do not have access to use this command."))
+        await ctx.send(embed=ErrorEmbed(description="You do not have access to this command."))
         return False
 
     return commands.check(predicate)

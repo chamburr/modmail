@@ -1,7 +1,7 @@
 import asyncio
 import logging
+import re
 import sys
-import time
 import traceback
 
 import aio_pika
@@ -12,8 +12,7 @@ import orjson
 
 from discord.ext import commands
 from discord.ext.commands.core import _CaseInsensitiveDict
-from discord.gateway import DiscordWebSocket
-from discord.user import User
+from discord.gateway import DiscordClientWebSocketResponse, DiscordWebSocket
 from discord.utils import parse_time
 
 import config
@@ -21,8 +20,8 @@ import config
 from classes.http import HTTPClient
 from classes.misc import Session, Status
 from classes.state import State
-from utils.prometheus import Prometheus
 from utils import tools
+from utils.prometheus import Prometheus
 
 log = logging.getLogger(__name__)
 
@@ -63,10 +62,10 @@ class ModMail(commands.AutoShardedBot):
 
         self.session = aiohttp.ClientSession(loop=self.loop)
         self.http_uri = f"http://{self.config.http_api['host']}:{self.config.http_api['port']}"
+        self.id = kwargs.get("bot_id")
         self.cluster = kwargs.get("cluster_id")
         self.cluster_count = kwargs.get("cluster_count")
         self.version = kwargs.get("version")
-        self.id = None
         self.pool = None
         self.prom = None
 
@@ -95,15 +94,7 @@ class ModMail(commands.AutoShardedBot):
 
     @property
     def user(self):
-        return User(
-            state=None,
-            data={
-                "username": "",
-                "id": str(self.id),
-                "discriminator": "",
-                "avatar": "",
-            },
-        )
+        return tools.create_fake_user(self.id)
 
     async def real_user(self):
         return await self._connection.user()
@@ -224,48 +215,44 @@ class ModMail(commands.AutoShardedBot):
         self.ws._dispatch("socket_raw_send", data)
         await self._amqp_channel.default_exchange.publish(aio_pika.Message(body=data), routing_key="gateway.send")
 
-    async def get_data(self, guild):
-        async with self.pool.acquire() as conn:
-            res = await conn.fetchrow("SELECT * FROM data WHERE guild=$1", guild)
-            if not res:
-                res = await conn.fetchrow(
-                    "INSERT INTO data VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11) RETURNING *",
-                    guild,
-                    None,
-                    None,
-                    [],
-                    None,
-                    None,
-                    None,
-                    False,
-                    [],
-                    [],
-                    False,
-                )
+    async def on_http_request_start(self, _session, trace_config_ctx, _params):
+        trace_config_ctx.start = asyncio.get_event_loop().time()
 
-        return res
+    async def on_http_request_end(self, _session, trace_config_ctx, params):
+        elapsed = asyncio.get_event_loop().time() - trace_config_ctx.start
 
-    async def create_reaction_menu(self, ctx, pages):
-        msg = await ctx.send(embed=pages[0])
+        if elapsed > 1:
+            log.info(f"{params.method} {params.url} took {round(elapsed, 2)} seconds")
 
-        for reaction in ["⏮️", "◀️", "⏹️", "▶️", "⏭️"]:
-            await msg.add_reaction(reaction)
+        route = str(params.url)
+        route = re.sub(r"https:\/\/[a-z\.]+\/api\/v[0-9]+", "", route)
+        route = re.sub(r"\/[%A-Z0-9]+", "/_id", route)
+        route = re.sub(r"\?.+", "", route)
 
-        await self.state.sadd(
-            "reaction_menus",
+        if not route.startswith("/"):
+            return
+
+        self.prom.http.inc(
             {
-                "channel": msg.channel.id,
-                "message": msg.id,
-                "page": 0,
-                "all_pages": [page.to_dict() for page in pages],
-                "end": int(time.time()) + 180,
-            },
+                "method": params.method,
+                "route": route,
+                "status": str(params.response.status),
+            }
         )
 
-    async def connect_postgres(self):
+    async def start(self):
+        trace_config = aiohttp.TraceConfig()
+        trace_config.on_request_start.append(self.on_http_request_start)
+        trace_config.on_request_end.append(self.on_http_request_end)
+        self.http._HTTPClient__session = aiohttp.ClientSession(
+            connector=self.http.connector,
+            ws_response_class=DiscordClientWebSocketResponse,
+            trace_configs=[trace_config],
+        )
+        self.http._token(self.config.token, bot=True)
+
         self.pool = await asyncpg.create_pool(**self.config.database, max_size=10, command_timeout=60)
 
-    async def connect_redis(self):
         self._redis = await aioredis.create_redis_pool(
             (self.config.redis["host"], self.config.redis["port"]),
             password=self.config.redis["password"],
@@ -274,7 +261,6 @@ class ModMail(commands.AutoShardedBot):
             loop=self.loop,
         )
 
-    async def connect_amqp(self):
         self._amqp = await aio_pika.connect_robust(
             login=self.config.rabbitmq["username"],
             password=self.config.rabbitmq["password"],
@@ -284,21 +270,8 @@ class ModMail(commands.AutoShardedBot):
         self._amqp_channel = await self._amqp.channel()
         self._amqp_queue = await self._amqp_channel.get_queue("gateway.recv")
 
-    async def connect_prometheus(self):
         self.prom = Prometheus(self)
-        if self.config.testing is False:
-            await self.prom.start()
-
-    async def start(self):
-        log.info("Starting...")
-
-        user = await self.http.static_login(self.config.token, bot=True)
-        self.id = int(user["id"])
-
-        await self.connect_postgres()
-        await self.connect_redis()
-        await self.connect_amqp()
-        await self.connect_prometheus()
+        await self.prom.start()
 
         self._connection = await self._get_state()
         self._connection._get_client = lambda: self
@@ -316,6 +289,8 @@ class ModMail(commands.AutoShardedBot):
             except Exception:
                 log.error(f"Failed to load extension {extension}.", file=sys.stderr)
                 log.error(traceback.print_exc())
+
+        log.info("Running...")
 
         async with self._amqp_queue.iterator() as queue_iter:
             async for message in queue_iter:

@@ -15,7 +15,7 @@ from discord.ext import commands
 
 from classes.embed import Embed, ErrorEmbed
 from utils import checks, tools
-from utils.converters import ChannelConverter, DateTimeConverter, GuildConverter, UserConverter
+from utils.converters import ChannelConverter, DateTimeConverter, GuildConverter, MemberConverter, UserConverter
 
 log = logging.getLogger(__name__)
 
@@ -97,13 +97,14 @@ class Owner(commands.Cog):
     @checks.is_owner()
     @commands.command(
         description="Invoke the command as another user and optionally in another channel.",
-        usage="invoke [channel] <user> <command>",
+        usage="invoke [channel] <member> <command>",
     )
-    async def invoke(self, ctx, channel: typing.Optional[ChannelConverter], user: UserConverter, *, command: str):
+    async def invoke(self, ctx, channel: typing.Optional[ChannelConverter], member: MemberConverter, *, command: str):
         msg = copy.copy(ctx.message)
         channel = channel or ctx.channel
         msg.channel = channel
-        msg.author = user
+        msg.author = member
+        msg.member = member
         msg.content = ctx.prefix + command
 
         await self.bot.invoke(await self.bot.get_context(msg, cls=type(ctx)))
@@ -128,12 +129,12 @@ class Owner(commands.Cog):
     @commands.command(description="Remove a user's premium.", usage="wipepremium <user>")
     async def wipepremium(self, ctx, *, user: UserConverter):
         async with self.bot.pool.acquire() as conn:
-            res = await conn.fetchrow("SELECT guild FROM premium WHERE identifier=$1", user)
+            res = await conn.fetchrow("SELECT guild FROM premium WHERE identifier=$1", user.id)
             if res:
                 for guild in res[0]:
                     await tools.remove_premium(self.bot, guild)
 
-            await conn.execute("DELETE FROM premium WHERE identifier=$1", user)
+            await conn.execute("DELETE FROM premium WHERE identifier=$1", user.id)
 
         await ctx.send(embed=Embed(description="Successfully removed that user's premium."))
 
@@ -160,12 +161,6 @@ class Owner(commands.Cog):
         await self.bot.state.srem("banned_users", user.id)
 
         await ctx.send(embed=Embed(description="Successfully unbanned that user from the bot."))
-
-    @checks.is_owner()
-    @commands.command(description="Make the bot leave a server.", usage="leaveserver <server ID>")
-    async def leaveserver(self, ctx, *, guild: GuildConverter):
-        await guild.leave()
-        await ctx.send(embed=Embed(description="The bot has left that server."))
 
     @checks.is_owner()
     @commands.command(description="Ban a server from the bot", usage="banserver <server ID>")

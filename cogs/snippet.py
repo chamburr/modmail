@@ -6,7 +6,7 @@ import discord
 from discord.ext import commands
 
 from classes.embed import Embed, ErrorEmbed
-from utils import checks
+from utils import checks, tools
 
 log = logging.getLogger(__name__)
 
@@ -31,7 +31,8 @@ class Snippet(commands.Cog):
             await ctx.send(embed=ErrorEmbed(description="The snippet was not found."))
             return
 
-        await self.bot.cogs["ModMailEvents"].send_mail_mod(ctx.message, ctx.prefix, False, res[0], True)
+        ctx.message.content = res[0]
+        await self.bot.cogs["ModMailEvents"].send_mail_mod(ctx.message, ctx.prefix, anon=False, snippet=True)
 
     @checks.is_modmail_channel()
     @checks.in_database()
@@ -49,7 +50,8 @@ class Snippet(commands.Cog):
             await ctx.send(embed=ErrorEmbed(description="The snippet was not found."))
             return
 
-        await self.bot.cogs["ModMailEvents"].send_mail_mod(ctx.message, ctx.prefix, True, res[0], True)
+        ctx.message.content = res[0]
+        await self.bot.cogs["ModMailEvents"].send_mail_mod(ctx.message, ctx.prefix, anon=True, snippet=True)
 
     @checks.in_database()
     @checks.is_premium()
@@ -159,7 +161,7 @@ class Snippet(commands.Cog):
             await ctx.send(embed=embed)
             return
 
-        await self.bot.create_reaction_menu(ctx, all_pages)
+        await tools.create_paginator(self.bot, ctx, all_pages)
 
 
 def setup(bot):

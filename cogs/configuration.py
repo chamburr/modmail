@@ -6,8 +6,8 @@ from discord.permissions import PermissionOverwrite
 from discord.role import Role
 
 from classes.embed import Embed, ErrorEmbed
-from utils import checks
-from utils.converters import RoleConverter
+from utils import checks, tools
+from utils.converters import PingRoleConverter, RoleConverter
 
 log = logging.getLogger(__name__)
 
@@ -17,13 +17,12 @@ class Configuration(commands.Cog):
         self.bot = bot
 
     async def _get_overwrites(self, ctx, roles):
-        overwrites = {
-            ctx.guild.id: PermissionOverwrite(read_messages=False),
-        }
+        overwrites = {await ctx.guild.default_role(): PermissionOverwrite(read_messages=False)}
 
-        for role in [await ctx.guild.get_role(role) for role in roles]:
+        for role in roles:
+            role = await ctx.guild.get_role(role)
             if role:
-                overwrites[role.id] = PermissionOverwrite(
+                overwrites[role] = PermissionOverwrite(
                     read_messages=True,
                     read_message_history=True,
                     send_messages=True,
@@ -50,7 +49,7 @@ class Configuration(commands.Cog):
     async def setup(self, ctx):
         msg = await ctx.send(embed=Embed(description="Setting up..."))
 
-        data = await self.bot.get_data(ctx.guild.id)
+        data = await tools.get_data(self.bot, ctx.guild.id)
         overwrites = await self._get_overwrites(ctx, data[3])
         category = await ctx.guild.create_category(name="ModMail", overwrites=overwrites)
         logging_channel = await ctx.guild.create_text_channel(name="modmail-log", category=category)
@@ -92,7 +91,7 @@ class Configuration(commands.Cog):
             await ctx.send(embed=Embed(description=f"The prefix for this server is `{ctx.prefix}`."))
             return
 
-        if ctx.message.member.guild_permissions.administrator is False:
+        if (await ctx.message.member.guild_permissions()).administrator is False:
             raise commands.MissingPermissions(["administrator"])
 
         if len(prefix) > 10:
@@ -102,7 +101,7 @@ class Configuration(commands.Cog):
         if prefix == self.bot.config.default_prefix:
             prefix = None
 
-        await self.bot.get_data(ctx.guild.id)
+        await tools.get_data(self.bot, ctx.guild.id)
         async with self.bot.pool.acquire() as conn:
             await conn.execute("UPDATE data SET prefix=$1 WHERE guild=$2", prefix, ctx.guild.id)
 
@@ -125,7 +124,7 @@ class Configuration(commands.Cog):
             await ctx.send(embed=ErrorEmbed(description="The category name cannot be longer than 100 characters"))
             return
 
-        data = await self.bot.get_data(ctx.guild.id)
+        data = await tools.get_data(self.bot, ctx.guild.id)
         if await ctx.guild.get_channel(data[2]):
             await ctx.send(
                 embed=ErrorEmbed(
@@ -167,7 +166,9 @@ class Configuration(commands.Cog):
             )
             return
 
-        old_data = await self.bot.get_data(ctx.guild.id)
+        msg = await ctx.send(embed=Embed(description="Updating roles..."))
+
+        old_data = await tools.get_data(self.bot, ctx.guild.id)
 
         async with self.bot.pool.acquire() as conn:
             await conn.execute(
@@ -176,18 +177,21 @@ class Configuration(commands.Cog):
                 ctx.guild.id,
             )
 
-        data = await self.bot.get_data(ctx.guild.id)
+        data = await tools.get_data(self.bot, ctx.guild.id)
         category = await ctx.guild.get_channel(data[2])
 
         if category and roles:
             try:
                 for role in old_data[3]:
-                    await category.set_permissions(target=role, overwrite=None)
+                    role = await ctx.guild.get_role(role)
 
-                for role, permission in await self._get_overwrites(ctx, data[3]):
+                    if role:
+                        await category.set_permissions(target=role, overwrite=None)
+
+                for role, permission in (await self._get_overwrites(ctx, data[3])).items():
                     await category.set_permissions(target=role, overwrite=permission)
             except Forbidden:
-                await ctx.send(
+                await msg.edit(
                     embed=ErrorEmbed(
                         description="The role(s) are updated successfully. The permission overwrites for the category "
                         "failed to be changed. Update my permissions and try again or set the overwrites manually."
@@ -195,7 +199,7 @@ class Configuration(commands.Cog):
                 )
                 return
 
-        await ctx.send(embed=Embed(description="The role(s) are updated successfully."))
+        await msg.edit(embed=Embed(description="The role(s) are updated successfully."))
 
     @checks.in_database()
     @checks.has_permissions(administrator=True)
@@ -205,7 +209,7 @@ class Configuration(commands.Cog):
         aliases=["mentionrole"],
         usage="pingrole [roles]",
     )
-    async def pingrole(self, ctx, roles: commands.Greedy[RoleConverter] = None):
+    async def pingrole(self, ctx, roles: commands.Greedy[PingRoleConverter] = None):
         if roles is None:
             roles = []
 
@@ -248,7 +252,7 @@ class Configuration(commands.Cog):
         usage="logging",
     )
     async def logging(self, ctx):
-        data = await self.bot.get_data(ctx.guild.id)
+        data = await tools.get_data(self.bot, ctx.guild.id)
         channel = await ctx.guild.get_channel(data[4])
 
         if channel:
@@ -324,7 +328,7 @@ class Configuration(commands.Cog):
         usage="loggingplus",
     )
     async def loggingplus(self, ctx):
-        data = await self.bot.get_data(ctx.guild.id)
+        data = await tools.get_data(self.bot, ctx.guild.id)
 
         async with self.bot.pool.acquire() as conn:
             await conn.execute(
@@ -344,7 +348,7 @@ class Configuration(commands.Cog):
     @commands.guild_only()
     @commands.command(description="Toggle default anonymous messages.", usage="anonymous")
     async def anonymous(self, ctx):
-        data = await self.bot.get_data(ctx.guild.id)
+        data = await tools.get_data(self.bot, ctx.guild.id)
 
         async with self.bot.pool.acquire() as conn:
             await conn.execute(
@@ -364,7 +368,7 @@ class Configuration(commands.Cog):
     @commands.guild_only()
     @commands.command(description="View the configurations for the current server.", usage="viewconfig")
     async def viewconfig(self, ctx):
-        data = await self.bot.get_data(ctx.guild.id)
+        data = await tools.get_data(self.bot, ctx.guild.id)
         category = await ctx.guild.get_channel(data[2])
         logging_channel = await ctx.guild.get_channel(data[4])
 

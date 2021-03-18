@@ -1,88 +1,75 @@
-# Bot's token
+# Bot token
 token = ""
 
-# Top.gg token
+# Bot list tokens
 topgg_token = ""
-
-# Discord Bots token
 dbots_token = ""
-
-# Discord Bot List token
 dbl_token = ""
-
-# Bots on Discord token
 bod_token = ""
-
-# Bots for Discord token
 bfd_token = ""
-
-# Discord Boats token
 dboats_token = ""
 
 # Sentry URL
 sentry_url = ""
 
-# Whether the bot is for testing, if true, stats and errors will not be posted
-testing = True
+# Number of clusters
+clusters = 1
 
-# RabbitMQ credentials
-rabbitmq = {
-    "username": "",
+# Whether the bot is for testing, if true, stats and errors will not be posted
+testing = False
+
+# Postgres credentials
+database = {
+    "database": "modmail",
+    "user": "postgres",
     "password": "",
-    "host": "",
-    "port": 5672,
+    "host": "127.0.0.1",
+    "port": 5432,
 }
 
 # Redis credentials
 redis = {
-    "host": "",
+    "host": "127.0.0.1",
     "port": 6379,
+    "password": None,
 }
 
-# Postgres credentials
-database = {
-    "database": "",
-    "user": "",
-    "password": "",
-    "host": "",
-    "port": 5432,
+# RabbitMQ credentials
+rabbitmq = {
+    "username": "guest",
+    "password": "guest",
+    "host": "127.0.0.1",
+    "port": 5672,
 }
 
 # HTTP API Server
-http_host = ""
-http_port = ""
+http_api = {
+    "host": "127.0.0.1",
+    "port": 6000,
+}
 
-# Twilight-dispatch HTTP Server
-td_host = ""
-td_port = ""
-
-# Number of clusters
-clusters = 1
-
-# The default prefix for commands
+# Default prefix for commands
 default_prefix = "="
 
-# The server to send tickets to, no confirmation messages if set
+# Server to send tickets to, no confirmation messages if set
 default_server = None
 
-# Bot owners that have access to owner commands
+# Bot owners
 owners = []
 
-# Bot admins that have access to admin commands
+# Bot admins
 admins = []
 
-# Channel to send logs
+# Admin logs channel
 admin_channel = None
 
-# This is where patron roles are at
+# Premium server and roles
 main_server = None
-
-# Patron roles for premium servers
 premium1 = None
 premium3 = None
 premium5 = None
 
-# The colour used in embeds
+# Embed colours
 primary_colour = 0x1E90FF
 user_colour = 0x00FF00
 mod_colour = 0xFF4500

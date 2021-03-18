@@ -1,10 +1,23 @@
 import logging
+import time
 
 from discord.user import User
 
 from classes.channel import DMChannel
 
 log = logging.getLogger(__name__)
+
+
+def create_fake_user(user_id):
+    return User(
+        state=None,
+        data={
+            "username": "",
+            "id": str(user_id),
+            "discriminator": "",
+            "avatar": "",
+        },
+    )
 
 
 def upgrade_payload(data):
@@ -21,7 +34,65 @@ def upgrade_payload(data):
             for x in data["permission_overwrites"]
         ]
 
+    if data.get("permissions"):
+        data["permissions_new"] = data["permissions"]
+        data["permissions"] = int(data["permissions"])
+
     return data
+
+
+async def create_paginator(bot, ctx, pages):
+    msg = await ctx.send(embed=pages[0])
+
+    for reaction in ["⏮️", "◀️", "⏹️", "▶️", "⏭️"]:
+        await msg.add_reaction(reaction)
+
+    await bot.state.sadd(
+        "reaction_menus",
+        {
+            "kind": "paginator",
+            "channel": msg.channel.id,
+            "message": msg.id,
+            "end": int(time.time()) + 180,
+            "data": {
+                "page": 0,
+                "all_pages": [page.to_dict() for page in pages],
+            },
+        },
+    )
+
+
+async def get_reaction_menu(bot, payload, kind):
+    for menu in await bot.state.smembers("reaction_menus"):
+        if menu["channel"] == payload.channel_id and menu["message"] == payload.message_id and menu["kind"] == kind:
+            channel = DMChannel(me=bot.user, state=bot.state, data={"id": menu["channel"]})
+            message = channel.get_partial_message(menu["message"])
+
+            return menu, channel, message
+
+    return None, None, None
+
+
+async def get_data(bot, guild):
+    async with bot.pool.acquire() as conn:
+        res = await conn.fetchrow("SELECT * FROM data WHERE guild=$1", guild)
+        if not res:
+            res = await conn.fetchrow(
+                "INSERT INTO data VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11) RETURNING *",
+                guild,
+                None,
+                None,
+                [],
+                None,
+                None,
+                None,
+                False,
+                [],
+                [],
+                False,
+            )
+
+    return res
 
 
 async def get_guild_prefix(bot, guild):
@@ -51,12 +122,12 @@ async def get_user_settings(bot, user):
 
 
 async def get_premium_slots(bot, user):
-    if user.id in bot.config.owners + bot.config.admins:
+    if user in bot.config.owners + bot.config.admins:
         return 1000
 
     guild = await bot.get_guild(bot.config.main_server)
     if guild:
-        member = await guild.get_member(user.id)
+        member = await guild.get_member(user)
         if member:
             if bot.config.premium5 in member._roles:
                 return 5
@@ -103,25 +174,15 @@ def is_modmail_channel(channel, user_id=None):
     )
 
 
-def get_modmail_user(bot, channel):
-    return User(
-        state=bot.state,
-        data={
-            "username": "",
-            "id": int(channel.topic.replace("ModMail Channel ", "").split(" ")[0]),
-            "discriminator": "",
-            "avatar": "",
-        },
-    )
+def get_modmail_user(channel):
+    return create_fake_user(channel.topic.replace("ModMail Channel ", "").split(" ")[0])
 
 
 def get_modmail_channel(bot, channel):
     return DMChannel(
         me=bot.user,
         state=bot.state,
-        data={
-            "id": int(channel.topic.replace("ModMail Channel ", "").split(" ")[1]),
-        },
+        data={"id": int(channel.topic.replace("ModMail Channel ", "").split(" ")[1])},
     )
 
 

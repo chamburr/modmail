@@ -58,7 +58,7 @@ class ErrorHandler(commands.Cog):
                 embed=ErrorEmbed(
                     title="Permission Denied",
                     description="You do not have permission to use this command. Permissions needed: "
-                    + f"{', '.join([tools.perm_format(p) for p in error.missing_perms])}.",
+                    + f"{', '.join([tools.perm_format(x) for x in error.missing_perms])}.",
                 )
             )
         elif isinstance(error, commands.BotMissingPermissions):
@@ -66,7 +66,7 @@ class ErrorHandler(commands.Cog):
                 embed=ErrorEmbed(
                     title="Bot Missing Permissions",
                     description="Bot is missing permissions to perform that action. Permissions needed: "
-                    + f"{', '.join([tools.perm_format(p) for p in error.missing_perms])}.",
+                    + f"{', '.join([tools.perm_format(x) for x in error.missing_perms])}.",
                 )
             )
         elif isinstance(error, discord.HTTPException):

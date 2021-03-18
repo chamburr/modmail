@@ -13,8 +13,12 @@ from discord.invite import Invite
 from discord.member import VoiceState
 from discord.partial_emoji import PartialEmoji
 from discord.raw_models import (
-    RawBulkMessageDeleteEvent, RawMessageDeleteEvent, RawMessageUpdateEvent, RawReactionActionEvent,
-    RawReactionClearEmojiEvent, RawReactionClearEvent,
+    RawBulkMessageDeleteEvent,
+    RawMessageDeleteEvent,
+    RawMessageUpdateEvent,
+    RawReactionActionEvent,
+    RawReactionClearEmojiEvent,
+    RawReactionClearEvent,
 )
 from discord.reaction import Reaction
 from discord.role import Role

@@ -37,18 +37,7 @@ class Prometheus:
         self.uncollectable = Counter("python_gc_objects_uncollectable", "Uncollectable objects found during GC.")
         self.collections = Counter("python_gc_collections", "Number of times this generation was collected.")
 
-        self.latency = Gauge("modmail_latency", "The average latency for shards on this cluster")
-        self.events = Counter("modmail_discord_events", "The total number of processed events.")
-        self.dispatch = Counter("modmail_dispatch_events", "The total number of dispatched events.")
         self.http = Counter("modmail_http_requests", "The number of http requests sent to Discord.")
-
-        self.guilds_join = Counter("modmail_guilds_join", "The number of guilds ModMail is added to.")
-        self.guilds_leave = Counter("modmail_guilds_leave", "The number of guilds ModMail is removed from.")
-
-        self.shards = Gauge("modmail_shards", "The total number of shards on this cluster.")
-        self.guilds = Gauge("modmail_guilds", "The total number of guilds on this cluster.")
-        self.users = Gauge("modmail_users", "The total number of users on this cluster.")
-
         self.commands = Counter("modmail_commands", "The total number of commands used on the bot.")
         self.tickets = Counter("modmail_tickets", "The total number of tickets created by the bot.")
         self.tickets_message = Counter("modmail_tickets_message", "The total number of messages sent in tickets.")

@@ -1,11 +1,12 @@
 import logging
+import typing
 
 import discord
 
 from discord.ext import commands
 
 from classes.embed import Embed, ErrorEmbed
-from utils import checks
+from utils import checks, tools
 from utils.converters import ChannelConverter, GuildConverter, UserConverter
 
 log = logging.getLogger(__name__)
@@ -40,7 +41,7 @@ class Admin(commands.Cog):
             await ctx.send(embed=embed)
             return
 
-        await self.bot.create_reaction_menu(ctx, all_pages)
+        await tools.create_paginator(self.bot, ctx, all_pages)
 
     @checks.is_admin()
     @commands.command(description="Get a list of servers with the specified name.", usage="findserver <name>")
@@ -93,7 +94,7 @@ class Admin(commands.Cog):
 
     @checks.is_admin()
     @commands.command(description="Make me say something.", usage="echo [channel] <message>")
-    async def echo(self, ctx, channel: ChannelConverter = None, *, content: str):
+    async def echo(self, ctx, channel: typing.Optional[ChannelConverter], *, content: str):
         channel = channel or ctx.channel
         await ctx.message.delete()
         await channel.send(content, allowed_mentions=discord.AllowedMentions(everyone=False))

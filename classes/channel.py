@@ -43,7 +43,7 @@ class TextChannel(channel.TextChannel):
 
         for role in roles:
             if role.id in member._roles:
-                base.value |= role.permissions.value
+                base.value |= role._permissions
 
         if base.administrator:
             return Permissions.all()

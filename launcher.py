@@ -22,16 +22,12 @@ from classes.embed import ErrorEmbed
 
 
 class Instance:
-    def __init__(self, instance_id, loop, main, cluster_count):
+    def __init__(self, instance_id, loop, main):
         self.id = instance_id
         self.loop = loop
         self.main = main
-        self.cluster_count = cluster_count
-        self.started_at = None
-        self.command = f"{sys.executable} \"{Path.cwd() / 'main.py'}\" {self.id} {cluster_count}"
         self._process = None
         self.status = "initialized"
-        self.started_at = 0.0
         self.task = self.loop.create_task(self.start())
         self.task.add_done_callback(self.main.dead_process_handler)
 
@@ -57,9 +53,8 @@ class Instance:
             print(f"[Cluster {self.id}] Already active.")
             return
 
-        self.started_at = time.time()
         self._process = await asyncio.create_subprocess_shell(
-            self.command,
+            f"{sys.executable} \"{Path.cwd() / 'main.py'}\" {self.id} {config.clusters} {self.main.bot_id}",
             stdin=asyncio.subprocess.DEVNULL,
             stdout=asyncio.subprocess.PIPE,
             stderr=asyncio.subprocess.PIPE,
@@ -68,7 +63,6 @@ class Instance:
         )
 
         self.status = "running"
-        self.started_at = time.time()
 
         print(f"[Cluster {self.id}] The cluster is starting.")
 
@@ -79,35 +73,27 @@ class Instance:
 
         return self
 
-    async def stop(self):
-        self.status = "stopped"
-        os.killpg(os.getpgid(self._process.pid), signal.SIGTERM)
-
-        print(f"[Cluster {self.id}] The cluster is killed.")
-
-        await asyncio.sleep(5)
-
     def kill(self):
         self.status = "stopped"
         os.killpg(os.getpgid(self._process.pid), signal.SIGTERM)
 
     async def restart(self):
         if self.is_active:
-            await self.stop()
+            self.kill()
+            await asyncio.sleep(1)
 
         await self.start()
 
 
 class Scheduler:
-    def __init__(self, loop, pool):
+    def __init__(self, loop, main):
         self.loop = loop
-        self.pool = pool
-        self.redis = None
-        self.http = None
-        self.bot_id = None
-        self.shard_count = None
-
-        self.session = None
+        self.pool = main.pool
+        self.redis = main.redis
+        self.http = main.http
+        self.bot_id = main.bot_id
+        self.shard_count = main.shard_count
+        self.session = aiohttp.ClientSession()
 
     async def premium_updater(self):
         while True:
@@ -181,7 +167,11 @@ class Scheduler:
         while True:
             for menu in await self.redis.smembers("reaction_menus"):
                 menu = orjson.loads(menu)
-                if menu["end"] <= int(time.time()):
+
+                if menu["end"] > int(time.time()):
+                    continue
+
+                if menu["kind"] == "paginator":
                     try:
                         await self.http.clear_reactions(menu["channel"], menu["message"])
                     except discord.Forbidden:
@@ -190,21 +180,22 @@ class Scheduler:
                                 await self.http.remove_own_reaction(menu["channel"], menu["message"], reaction)
                             except discord.NotFound:
                                 pass
+                elif menu["kind"] == "confirmation":
+                    for reaction in ["✅", "🔁", "❌"]:
+                        await self.http.remove_own_reaction(menu["channel"], menu["message"], reaction)
 
-                    await self.redis.srem("reaction_menus", orjson.dumps(menu).decode("utf-8"))
-
-            for menu in await self.redis.smembers("selection_menus"):
-                menu = orjson.loads(menu)
-                if menu["end"] <= int(time.time()):
-                    try:
-                        await self.http.remove_own_reaction(menu["channel"], menu["message"], "◀")
-                        await self.http.remove_own_reaction(menu["channel"], menu["message"], "▶")
-                    except discord.NotFound:
-                        pass
+                    await self.http.edit_message(
+                        menu["channel"],
+                        menu["message"],
+                        embed=ErrorEmbed(description="Time out. You did not choose anything.").to_dict(),
+                    )
+                elif menu["kind"] == "selection":
+                    await self.http.remove_own_reaction(menu["channel"], menu["message"], "◀")
+                    await self.http.remove_own_reaction(menu["channel"], menu["message"], "▶")
 
                     for reaction in ["1⃣", "2⃣", "3⃣", "4⃣", "5⃣", "6⃣", "7⃣", "8⃣", "9⃣", "🔟"]:
                         try:
-                            await self.http.remove_own_reaction(reaction, self.bot.id)
+                            await self.http.remove_own_reaction(menu["channel"], menu["message"], reaction)
                         except discord.NotFound:
                             pass
 
@@ -214,49 +205,21 @@ class Scheduler:
                         embed=ErrorEmbed(description="Time out. You did not choose anything.").to_dict(),
                     )
 
-                    await self.redis.srem("selection_menus", orjson.dumps(menu).decode("utf-8"))
-
-            for menu in await self.redis.smembers("confirmation_menus"):
-                menu = orjson.loads(menu)
-                if menu["end"] <= int(time.time()):
-                    for reaction in ["✅", "🔁", "❌"]:
-                        await self.http.remove_own_reaction(menu["channel"], menu["message"], reaction)
-
-                    await self.http.edit_message(
-                        menu["channel"],
-                        menu["message"],
-                        embed=ErrorEmbed(description="Time out. You did not choose anything.").to_dict(),
-                    )
-
-                    await self.redis.srem("confirmation_menus", orjson.dumps(menu).decode("utf-8"))
+                await self.redis.srem("reaction_menus", orjson.dumps(menu).decode("utf-8"))
 
             await asyncio.sleep(10)
 
     async def launch(self):
-        client = discord.Client()
-        user = await client.http.static_login(config.token, bot=True)
-
-        self.session = aiohttp.ClientSession(loop=self.loop)
-        self.http = client.http
-        self.redis = await aioredis.create_redis_pool(
-            (config.redis["host"], config.redis["port"]),
-            password=config.redis["password"],
-            minsize=5,
-            maxsize=10,
-            loop=self.loop,
-        )
-
-        self.bot_id = user["id"]
-        self.shard_count = int(await self.redis.get("gateway_shards"))
-
         async with self.pool.acquire() as conn:
             data = await conn.fetch("SELECT guild, prefix FROM data")
             bans = await conn.fetch("SELECT identifier, category FROM ban")
 
         if len(data) >= 1:
             await self.redis.mset(*[y for x in data for y in (f"prefix:{x[0]}", "" if x[1] is None else x[1])])
+
         if len([x[0] for x in bans if x[1] == 0]) >= 1:
             await self.redis.sadd("banned_users", *[x[0] for x in bans if x[1] == 0])
+
         if len([x[0] for x in bans if x[1] == 1]) >= 1:
             await self.redis.sadd("banned_guilds", *[x[0] for x in bans if x[1] == 1])
 
@@ -271,8 +234,11 @@ class Main:
     def __init__(self, loop):
         self.loop = loop
         self.instances = []
-        self.session = None
         self.pool = None
+        self.redis = None
+        self.http = None
+        self.bot_id = None
+        self.shard_count = None
 
     def dead_process_handler(self, result):
         instance = result.result()
@@ -285,28 +251,19 @@ class Main:
         print(f"[Cluster {instance.id}] The cluster is restarting.")
         instance.loop.create_task(instance.start())
 
-    def get_instance(self, iterable, instance_id):
-        for element in iterable:
-            if getattr(element, "id") == instance_id:
-                return element
-
-        return None
-
     async def handler(self, request):
         if request.path == "/restart":
             for instance in self.instances:
                 self.loop.create_task(instance.restart())
+            return web.Response(body='{"status":"Restarting"}', content_type="application/json")
         elif request.path == "/healthcheck":
-            return web.Response(body={"status": "OK"}, content_type="application/json")
-        elif request.path == "/status":
-            data = [{"cluster": x.id, "status": "OK" if x.status == "running" else "ERROR"} for x in self.instances]
-            return web.Response(body=data, content_type="application/json")
+            return web.Response(body='{"status":"Ok"}', content_type="application/json")
 
     def write_targets(self, clusters):
         data = []
 
         for i in range(len(clusters)):
-            data.append({"labels": {"cluster": f"{i}"}, "targets": [f"localhost:{6000 + i}"]})
+            data.append({"labels": {"cluster": str(i)}, "targets": [f"localhost:{6000 + i}"]})
 
         with open("targets.json", "w") as file:
             json.dump(data, file, indent=4)
@@ -314,8 +271,14 @@ class Main:
     async def launch(self):
         print(f"[Cluster Manager] Starting a total of {config.clusters} clusters.")
 
-        self.session = aiohttp.ClientSession(loop=self.loop)
         self.pool = await asyncpg.create_pool(**config.database, max_size=10, command_timeout=60)
+        self.redis = await aioredis.create_redis_pool(
+            (config.redis["host"], config.redis["port"]),
+            password=config.redis["password"],
+            minsize=5,
+            maxsize=10,
+            loop=self.loop,
+        )
 
         async with self.pool.acquire() as conn:
             exists = await conn.fetchrow("SELECT EXISTS (SELECT relname FROM pg_class WHERE relname = 'data')")
@@ -323,18 +286,21 @@ class Main:
                 with open("schema.sql", "r") as file:
                     await conn.execute(file.read())
 
-        scheduler = Scheduler(loop=loop, pool=self.pool)
-        loop.create_task(scheduler.launch())
+        self.http = discord.Client().http
+        self.bot_id = (await self.http.static_login(config.token, bot=True))["id"]
+        self.shard_count = int(await self.redis.get("gateway_shards"))
 
         for i in range(config.clusters):
-            self.instances.append(Instance(i + 1, self.loop, main=self, cluster_count=config.clusters))
+            self.instances.append(Instance(i + 1, loop=self.loop, main=self))
 
         self.write_targets(self.instances)
+
+        scheduler = Scheduler(loop=self.loop, main=self)
+        loop.create_task(scheduler.launch())
 
         server = web.Server(self.handler)
         runner = web.ServerRunner(server)
         await runner.setup()
-
         site = web.TCPSite(runner, config.http_api["host"], config.http_api["port"])
         await site.start()
 

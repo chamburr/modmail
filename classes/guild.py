@@ -9,6 +9,7 @@ from discord.role import Role
 
 from classes.channel import TextChannel, _channel_factory
 from classes.member import Member
+from utils import tools
 
 log = logging.getLogger(__name__)
 
@@ -81,11 +82,15 @@ class Guild(guild.Guild):
         data = await self._create_channel(name, overwrites, ChannelType.category, reason=reason, position=position)
         return CategoryChannel(state=self._state, guild=self, data=data)
 
+    async def fetch_member(self, member_id):
+        data = await self._state.http.get_member(self.id, member_id)
+        return Member(data=data, state=self._state, guild=self)
+
     async def _channels(self):
         channels = []
         for channel in await self._state._members_get_all("guild", key_id=self.id, name="channel"):
             factory, _ = _channel_factory(channel["type"])
-            channels.append(factory(guild=self, state=self._state, data=channel))
+            channels.append(factory(guild=self, state=self._state, data=tools.upgrade_payload(channel)))
 
         return channels
 
@@ -103,7 +108,7 @@ class Guild(guild.Guild):
 
     async def _roles(self):
         return [
-            Role(guild=self, state=self._state, data=x)
+            Role(guild=self, state=self._state, data=tools.upgrade_payload(x))
             for x in await self._state._members_get_all("guild", key_id=self.id, name="role")
         ]
 
@@ -185,9 +190,7 @@ class Guild(guild.Guild):
         role = await self._state.get(f"role:{self.id}:{role_id}")
 
         if role:
-            role["permissions"] = int(role["permissions"])
-            role["permissions_new"] = role["permissions"]
-            return Role(guild=self, state=self._state, data=role)
+            return Role(guild=self, state=self._state, data=tools.upgrade_payload(role))
 
         return None
 

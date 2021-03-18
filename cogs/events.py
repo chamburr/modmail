@@ -6,7 +6,6 @@ import discord
 
 from discord.ext import commands
 
-from classes.channel import TextChannel, DMChannel
 from classes.embed import Embed, ErrorEmbed
 from utils import tools
 
@@ -19,8 +18,7 @@ class Events(commands.Cog):
 
     @commands.Cog.listener()
     async def on_ready(self):
-        log.info(f"{await self.bot.real_user()} is online!")
-        log.info("--------")
+        pass
 
     @commands.Cog.listener()
     async def on_socket_response(self, message):
@@ -45,7 +43,7 @@ class Events(commands.Cog):
             await self.bot.state.srem(f"user:{message['d']['user']['id']}", message["d"]["guild_id"])
 
             if await self.bot.state.scard(f"user:{message['d']['user']['id']}") == 0:
-                await self.bot.state.srem(f"user_keys", f"user:{message['d']['user']['id']}")
+                await self.bot.state.srem("user_keys", f"user:{message['d']['user']['id']}")
         elif message["t"] == "GUILD_MEMBER_UPDATE":
             if int(message["d"]["user"]["id"]) == self.bot.id:
                 member = await self.bot.state.get(f"member:{message['d']['guild_id']}:{self.bot.id}")
@@ -67,28 +65,15 @@ class Events(commands.Cog):
 
     @commands.Cog.listener()
     async def on_raw_reaction_add(self, payload):
-        if payload.member.bot:
+        if payload.member and payload.member.bot:
             return
 
         if payload.emoji.name not in ["⏮️", "◀️", "⏹️", "▶️", "⏭️"]:
             return
 
-        menus = [
-            x
-            for x in await self.bot.state.smembers("reaction_menus")
-            if payload.channel_id == x["channel"] and payload.message_id == x["message"]
-        ]
-
-        if len(menus) == 0:
+        menu, channel, message = await tools.get_reaction_menu(self.bot, payload, "paginator")
+        if menu is None:
             return
-
-        menu = menus[0]
-
-        page = menu["page"]
-        all_pages = menu["all_pages"]
-
-        channel = DMChannel(me=self.bot.user, state=self.bot.state, data={"id": menu["channel"]})
-        message = channel.get_partial_message(menu["message"])
 
         if payload.emoji.name == "⏹️":
             try:
@@ -96,12 +81,15 @@ class Events(commands.Cog):
             except discord.Forbidden:
                 for emoji in ["⏮️", "◀️", "⏹️", "▶️", "⏭️"]:
                     try:
-                        await message.remove_reaction(emoji, self.bot.id)
+                        await message.remove_reaction(emoji, self.bot.user)
                     except discord.NotFound:
                         pass
 
             await self.bot.state.srem("reaction_menus", menu)
             return
+
+        page = menu["data"]["page"]
+        all_pages = menu["data"]["all_pages"]
 
         if payload.emoji.name == "⏮️":
             page = 0
@@ -114,11 +102,15 @@ class Events(commands.Cog):
 
         await message.edit(embed=discord.Embed.from_dict(all_pages[page]))
 
+        try:
+            member = tools.create_fake_user(payload.user_id)
+            await message.remove_reaction(payload.emoji, member)
+        except (discord.Forbidden, discord.NotFound):
+            pass
+
         await self.bot.state.srem("reaction_menus", menu)
-
-        menu["page"] = page
+        menu["data"]["page"] = page
         menu["end"] = int(time.time()) + 180
-
         await self.bot.state.sadd("reaction_menus", menu)
 
     @commands.Cog.listener()

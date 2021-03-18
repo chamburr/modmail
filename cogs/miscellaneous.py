@@ -4,7 +4,7 @@ from discord.ext import commands
 
 from classes.embed import Embed
 from utils import checks, tools
-from utils.converters import ChannelConverter, MemberConverter
+from utils.converters import MemberConverter
 
 log = logging.getLogger(__name__)
 
@@ -16,15 +16,15 @@ class Miscellaneous(commands.Cog):
     @checks.has_permissions(administrator=True)
     @commands.guild_only()
     @commands.command(
-        description="Show a member's permission in a channel when specified.",
-        usage="permissions [member] [channel]",
+        description="Show your permissions or the member specified.",
+        usage="permissions [member]",
         aliases=["perms"],
     )
-    async def permissions(self, ctx, member: MemberConverter = None, channel: ChannelConverter = None):
+    async def permissions(self, ctx, member: MemberConverter = None):
         if member is None:
-            member = await ctx.message.member()
+            member = ctx.message.member
 
-        permissions = await (channel or ctx.channel).permissions_for(member)
+        permissions = await ctx.channel.permissions_for(member)
 
         embed = Embed(title="Permission Information")
         embed.add_field(name="User", value=str(member), inline=False)
@@ -54,9 +54,7 @@ class Miscellaneous(commands.Cog):
         embed = Embed(title="User Information")
         embed.add_field(name="Name", value=str(member))
         embed.add_field(name="ID", value=member.id)
-        embed.add_field(
-            name="Status", value=str(member.status).title() + (" (mobile)" if member.is_on_mobile() else "")
-        )
+        embed.add_field(name="Nickname", value=member.nick if member.nick else "*Not set*")
         embed.add_field(name="Avatar", value=f"[Link]({member.avatar_url_as(static_format='png')})")
         embed.add_field(
             name="Joined Server", value=member.joined_at.replace(microsecond=0) if member.joined_at else "Unknown"

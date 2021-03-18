@@ -68,7 +68,7 @@ class Premium(commands.Cog):
             guild = await self.bot.get_guild(guild_id)
             guilds.append(f"{guild.name if guild else 'Unknown server'} `{guild_id}`")
 
-        await ctx.send(embed=Embed(description="\n".join(guilds)))
+        await ctx.send(embed=Embed(title="Premium Servers", description="\n".join(guilds)))
 
     @checks.is_patron()
     @commands.command(description="Assign premium slot to a server.", usage="premiumassign <server ID>")
@@ -83,7 +83,7 @@ class Premium(commands.Cog):
         async with self.bot.pool.acquire() as conn:
             res = await conn.fetchrow("SELECT array_length(guild, 1) FROM premium WHERE identifier=$1", ctx.author.id)
 
-        if res[0] >= await tools.get_premium_slots(self.bot, ctx.author.id):
+        if res[0] and res[0] >= await tools.get_premium_slots(self.bot, ctx.author.id):
             await ctx.send(
                 embed=ErrorEmbed(
                     description="You have reached the maximum number of slots that can be assigned. Please upgrade "
@@ -104,7 +104,7 @@ class Premium(commands.Cog):
     async def premiumremove(self, ctx, *, guild: GuildConverter):
         async with self.bot.pool.acquire() as conn:
             res = await conn.fetchrow(
-                "SELECT identifier FROM premium WHERE identifier=$1 AND $1=any(guild)", ctx.author.id, guild.id
+                "SELECT identifier FROM premium WHERE identifier=$1 AND $2=any(guild)", ctx.author.id, guild.id
             )
 
         if not res:

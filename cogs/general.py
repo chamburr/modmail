@@ -4,12 +4,13 @@ import time
 
 from datetime import datetime
 
+import distro
 import psutil
 
 from discord.ext import commands
 
 from classes.embed import Embed
-from utils import checks
+from utils import checks, tools
 
 log = logging.getLogger(__name__)
 
@@ -94,7 +95,7 @@ class General(commands.Cog):
 
             page = Embed(
                 title=cog_name,
-                description=f"My prefix is `{ctx.prefix}`. Use `{ctx.prefix} help <command>` for more information on a "
+                description=f"My prefix is `{ctx.prefix}`. Use `{ctx.prefix}help <command>` for more information on a "
                 "command.",
             )
 
@@ -110,7 +111,7 @@ class General(commands.Cog):
         for page in range(len(all_pages)):
             all_pages[page].set_footer(text=f"Use the reactions to flip pages. (Page {page + 1}/{len(all_pages)})")
 
-        await self.bot.create_reaction_menu(ctx, all_pages)
+        await tools.create_paginator(self.bot, ctx, all_pages)
 
     @commands.command(description="Pong! Get my latency.", usage="ping")
     async def ping(self, ctx):
@@ -138,8 +139,11 @@ class General(commands.Cog):
         minutes, seconds = divmod(remainder, 60)
         days, hours = divmod(hours, 24)
 
+        bot_user = await self.bot.real_user()
+
         embed = Embed(
-            title=f"{(await self.bot.real_user()).username} Statistics",
+            title=f"{bot_user.name} Statistics",
+            description="Visit the bot status page [here](https://status.modmail.xyz) for more information.",
         )
         embed.add_field(name="Owner", value="CHamburr#2591")
         embed.add_field(name="Bot Version", value=self.bot.version)
@@ -147,6 +151,7 @@ class General(commands.Cog):
             embed.add_field(name="Uptime", value=f"{days}d {hours}h {minutes}m {seconds}s")
         else:
             embed.add_field(name="Uptime", value=f"{hours}h {minutes}m {seconds}s")
+        embed.add_field(name="Clusters", value=self.bot.cluster_count)
         if ctx.guild:
             embed.add_field(name="Shards", value=f"{ctx.guild.shard_id + 1}/{await self.bot.shard_count()}")
         else:
@@ -156,8 +161,9 @@ class General(commands.Cog):
         embed.add_field(name="Users", value=str(await self.bot.state.scard("user_keys")))
         embed.add_field(name="CPU Usage", value=f"{psutil.cpu_percent(interval=None)}%")
         embed.add_field(name="RAM Usage", value=f"{psutil.virtual_memory().percent}%")
+        embed.add_field(name="Platform", value=" ".join(distro.linux_distribution()[:2]))
         embed.add_field(name="Python Version", value=platform.python_version())
-        embed.set_thumbnail(url=self.bot.avatar_url)
+        embed.set_thumbnail(url=bot_user.avatar_url)
 
         await ctx.send(embed=embed)
 
@@ -283,7 +289,7 @@ class General(commands.Cog):
             all_pages[page].set_author(name=f"{bot_user.name} partners", icon_url=bot_user.avatar_url)
             all_pages[page].set_footer(text=f"Use the reactions to flip pages. (Page {page + 1}/{len(all_pages)})")
 
-        await self.bot.create_reaction_menu(ctx, all_pages)
+        await tools.create_paginator(self.bot, ctx, all_pages)
 
     @commands.command(description="Get a link to invite me.", usage="invite")
     async def invite(self, ctx):

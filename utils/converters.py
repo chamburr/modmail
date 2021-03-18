@@ -23,14 +23,15 @@ log = logging.getLogger(__name__)
 class ChannelConverter(commands.TextChannelConverter):
     async def convert(self, ctx, argument):
         match = self._get_id_match(argument) or re.match(r"<#([0-9]+)>$", argument)
-        if match is None:
-            for channel in await ctx.guild.text_channels():
-                if channel.name == argument:
-                    return channel
-        else:
+        if match:
             channel_id = int(match.group(1))
             channel = await ctx.bot.get_channel(channel_id)
+
             if isinstance(channel, TextChannel):
+                return channel
+
+        for channel in await ctx.guild.text_channels():
+            if channel.name == argument:
                 return channel
 
         raise ChannelNotFound(argument)
@@ -70,12 +71,15 @@ class GuildConverter(commands.GuildConverter):
 class MemberConverter(commands.MemberConverter):
     async def convert(self, ctx, argument):
         match = self._get_id_match(argument) or re.match(r"<@!?([0-9]+)>$", argument)
-        if match is None:
-            members = await ctx.bot.http.request_guild_members(ctx.guild.id, argument)
-            return Member(guild=ctx.guild, state=ctx.bot.state, data=members[0])
-        else:
-            if ctx.guild:
+        if match:
+            try:
                 return await ctx.guild.fetch_member(int(match.group(1)))
+            except discord.NotFound:
+                pass
+
+        members = await ctx.bot.http.request_guild_members(ctx.guild.id, argument)
+        if len(members) > 0:
+            return Member(guild=ctx.guild, state=ctx.bot.state, data=members[0])
 
         raise MemberNotFound(argument)
 
@@ -87,12 +91,18 @@ class RoleConverter(commands.RoleConverter):
 
         match = self._get_id_match(argument) or re.match(r"<@&([0-9]+)>$", argument)
         if match:
-            return await ctx.guild.get_role(int(match.group(1)))
+            role = await ctx.guild.get_role(int(match.group(1)))
+            if role:
+                return role
+
+        for role in await ctx.guild.roles():
+            if role.name == argument:
+                return role
 
         raise RoleNotFound(argument)
 
 
-class PingRole(RoleConverter):
+class PingRoleConverter(RoleConverter):
     async def convert(self, ctx, argument):
         try:
             return await super().convert(ctx, argument)
@@ -103,7 +113,7 @@ class PingRole(RoleConverter):
 class UserConverter(commands.UserConverter):
     async def convert(self, ctx, argument):
         match = self._get_id_match(argument) or re.match(r"<@!?([0-9]+)>$", argument)
-        if match is not None:
+        if match:
             try:
                 return await ctx.bot.fetch_user(int(match.group(1)))
             except discord.NotFound:
