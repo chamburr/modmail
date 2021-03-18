@@ -36,7 +36,7 @@ bot = ModMail(
     bot_id=bot_id,
     cluster_id=cluster_id,
     cluster_count=cluster_count,
-    version="2.1.1",
+    version="3.0.0",
 )
 
 
