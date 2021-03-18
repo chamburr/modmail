@@ -1,14 +1,13 @@
-import asyncio
 import datetime
-import json
 import logging
-import re
+import time
 
-import aiohttp
 import discord
 
 from discord.ext import commands
-from discord.gateway import DiscordClientWebSocketResponse
+
+from classes.embed import Embed, ErrorEmbed
+from utils import tools
 
 log = logging.getLogger(__name__)
 
@@ -16,224 +15,153 @@ log = logging.getLogger(__name__)
 class Events(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
-        if self.bot.config.testing is False and self.bot.cluster == 1:
-            self.bot_stats_updater = bot.loop.create_task(self.bot_stats_updater())
-        self.bot_misc_updater = bot.loop.create_task(self.bot_misc_updater())
-
-    async def bot_stats_updater(self):
-        while True:
-            guilds = await self.bot.comm.handler("guild_count", self.bot.cluster_count)
-            if len(guilds) < self.bot.cluster_count:
-                await asyncio.sleep(300)
-                continue
-            guilds = sum(guilds)
-            await self.bot.session.post(
-                f"https://top.gg/api/bots/{self.bot.user.id}/stats",
-                data=json.dumps({"server_count": guilds, "shard_count": self.bot.shard_count}),
-                headers={"Authorization": self.bot.config.topgg_token, "Content-Type": "application/json"},
-            )
-            await self.bot.session.post(
-                f"https://discord.bots.gg/api/v1/bots/{self.bot.user.id}/stats",
-                data=json.dumps({"guildCount": guilds, "shardCount": self.bot.shard_count}),
-                headers={"Authorization": self.bot.config.dbots_token, "Content-Type": "application/json"},
-            )
-            await self.bot.session.post(
-                f"https://discordbotlist.com/api/v1/bots/{self.bot.user.id}/stats",
-                data=json.dumps({"guilds": guilds}),
-                headers={"Authorization": self.bot.config.dbl_token, "Content-Type": "application/json"},
-            )
-            await self.bot.session.post(
-                f"https://bots.ondiscord.xyz/bot-api/bots/{self.bot.user.id}/guilds",
-                data=json.dumps({"guildCount": guilds}),
-                headers={"Authorization": self.bot.config.bod_token, "Content-Type": "application/json"},
-            )
-            await self.bot.session.post(
-                f"https://botsfordiscord.com/api/bot/{self.bot.user.id}",
-                data=json.dumps({"server_count": guilds}),
-                headers={"Authorization": self.bot.config.bfd_token, "Content-Type": "application/json"},
-            )
-            await self.bot.session.post(
-                f"https://discord.boats/api/v2/bot/{self.bot.user.id}",
-                data=json.dumps({"server_count": guilds}),
-                headers={"Authorization": self.bot.config.dboats_token, "Content-Type": "application/json"},
-            )
-            await asyncio.sleep(900)
-
-    async def bot_misc_updater(self):
-        while True:
-            async with self.bot.pool.acquire() as conn:
-                data = await conn.fetch("SELECT guild, prefix FROM data")
-                bans = await conn.fetch("SELECT identifier, category FROM ban")
-                premium = await conn.fetch("SELECT identifier, expiry FROM premium WHERE expiry IS NOT NULL")
-            for row in data:
-                self.bot.all_prefix[row[0]] = row[1]
-            self.bot.banned_users = [row[0] for row in bans if row[1] == 0]
-            self.bot.banned_guilds = [row[0] for row in bans if row[1] == 1]
-            if self.bot.cluster == 1:
-                for row in premium:
-                    if row[1] < int(datetime.datetime.utcnow().timestamp() * 1000):
-                        await self.bot.tools.wipe_premium(self.bot, row[0])
-            await asyncio.sleep(60)
-
-    async def on_http_request_start(self, session, trace_config_ctx, params):
-        trace_config_ctx.start = asyncio.get_event_loop().time()
-
-    async def on_http_request_end(self, session, trace_config_ctx, params):
-        elapsed = asyncio.get_event_loop().time() - trace_config_ctx.start
-        if elapsed > 1:
-            log.info(f"{params.method} {params.url} took {round(elapsed, 2)} seconds")
-        route = str(params.url)
-        route = re.sub(r"https:\/\/[a-z\.]+\/api\/v[0-9]+", "", route)
-        route = re.sub(r"\/[%A-Z0-9]+", "/_id", route)
-        route = re.sub(r"\?.+", "", route)
-        status = str(params.response.status)
-        if not route.startswith("/"):
-            return
-        self.bot.prom.http.inc({"method": params.method, "route": route, "status": status})
 
     @commands.Cog.listener()
     async def on_ready(self):
-        log.info(f"{self.bot.user.name}#{self.bot.user.discriminator} is online!")
-        log.info("--------")
-        trace_config = aiohttp.TraceConfig()
-        trace_config.on_request_start.append(self.on_http_request_start)
-        trace_config.on_request_end.append(self.on_http_request_end)
-        self.bot.http._HTTPClient__session = aiohttp.ClientSession(
-            connector=self.bot.http.connector,
-            ws_response_class=DiscordClientWebSocketResponse,
-            trace_configs=[trace_config],
-        )
-        embed = discord.Embed(
-            title=f"[Cluster {self.bot.cluster}] Bot Ready",
-            colour=0x00FF00,
-            timestamp=datetime.datetime.utcnow(),
-        )
-        if self.bot.config.event_channel:
-            await self.bot.http.send_message(self.bot.config.event_channel, None, embed=embed.to_dict())
-        await self.bot.change_presence(activity=discord.Game(name=self.bot.config.activity))
+        pass
 
     @commands.Cog.listener()
-    async def on_shard_ready(self, shard):
-        self.bot.prom.events.inc({"type": "READY"})
-        embed = discord.Embed(
-            title=f"[Cluster {self.bot.cluster}] Shard {shard} Ready",
-            colour=0x00FF00,
-            timestamp=datetime.datetime.utcnow(),
-        )
-        if self.bot.config.event_channel:
-            await self.bot.http.send_message(self.bot.config.event_channel, None, embed=embed.to_dict())
+    async def on_socket_response(self, message):
+        if message["t"] == "PRESENCE_UPDATE":
+            if int(message["d"]["user"]["id"]) == self.bot.id:
+                return
+
+            await self.bot.state.sadd(f"user:{message['d']['user']['id']}", message["d"]["guild_id"])
+            await self.bot.state.sadd("user_keys", f"user:{message['d']['user']['id']}")
+        elif message["t"] == "GUILD_MEMBER_ADD":
+            if int(message["d"]["user"]["id"]) == self.bot.id:
+                await self.bot.state.set(f"member:{message['d']['guild_id']}:{self.bot.id}", message["d"])
+                return
+
+            await self.bot.state.sadd(f"user:{message['d']['user']['id']}", message["d"]["guild_id"])
+            await self.bot.state.sadd("user_keys", f"user:{message['d']['user']['id']}")
+        elif message["t"] == "GUILD_MEMBER_REMOVE":
+            if int(message["d"]["user"]["id"]) == self.bot.id:
+                await self.bot.state.delete(f"member:{message['d']['guild_id']}:{self.bot.id}")
+                return
+
+            await self.bot.state.srem(f"user:{message['d']['user']['id']}", message["d"]["guild_id"])
+
+            if await self.bot.state.scard(f"user:{message['d']['user']['id']}") == 0:
+                await self.bot.state.srem("user_keys", f"user:{message['d']['user']['id']}")
+        elif message["t"] == "GUILD_MEMBER_UPDATE":
+            if int(message["d"]["user"]["id"]) == self.bot.id:
+                member = await self.bot.state.get(f"member:{message['d']['guild_id']}:{self.bot.id}")
+                if member:
+                    member["roles"] = message["d"]["roles"]
+                    await self.bot.state.set(f"member:{message['d']['guild_id']}:{self.bot.id}", member)
+                return
+
+            await self.bot.state.sadd(f"user:{message['d']['user']['id']}", message["d"]["guild_id"])
+            await self.bot.state.sadd("user_keys", f"user:{message['d']['user']['id']}")
+        elif message["t"] == "GUILD_CREATE":
+            for member in message["d"]["members"]:
+                if int(member["user"]["id"]) == self.bot.id:
+                    await self.bot.state.set(f"member:{message['d']['id']}:{self.bot.id}", member)
+                    continue
+
+                await self.bot.state.sadd(f"user:{member['user']['id']}", message["d"]["id"])
+                await self.bot.state.sadd("user_keys", f"user:{member['user']['id']}")
 
     @commands.Cog.listener()
-    async def on_shard_connect(self, shard):
-        self.bot.prom.events.inc({"type": "CONNECT"})
-        embed = discord.Embed(
-            title=f"[Cluster {self.bot.cluster}] Shard {shard} Connected",
-            colour=0x00FF00,
-            timestamp=datetime.datetime.utcnow(),
-        )
-        if self.bot.config.event_channel:
-            await self.bot.http.send_message(self.bot.config.event_channel, None, embed=embed.to_dict())
+    async def on_raw_reaction_add(self, payload):
+        if payload.member and payload.member.bot:
+            return
 
-    @commands.Cog.listener()
-    async def on_shard_disconnect(self, shard):
-        self.bot.prom.events.inc({"type": "DISCONNECT"})
-        embed = discord.Embed(
-            title=f"[Cluster {self.bot.cluster}] Shard {shard} Disconnected",
-            colour=0xFF0000,
-            timestamp=datetime.datetime.utcnow(),
-        )
-        if self.bot.config.event_channel:
-            await self.bot.http.send_message(self.bot.config.event_channel, None, embed=embed.to_dict())
+        if payload.emoji.name not in ["⏮️", "◀️", "⏹️", "▶️", "⏭️"]:
+            return
 
-    @commands.Cog.listener()
-    async def on_shard_resumed(self, shard):
-        self.bot.prom.events.inc({"type": "RESUME"})
-        embed = discord.Embed(
-            title=f"[Cluster {self.bot.cluster}] Shard {shard} Resumed",
-            colour=self.bot.config.primary_colour,
-            timestamp=datetime.datetime.utcnow(),
-        )
-        if self.bot.config.event_channel:
-            await self.bot.http.send_message(self.bot.config.event_channel, None, embed=embed.to_dict())
+        menu, channel, message = await tools.get_reaction_menu(self.bot, payload, "paginator")
+        if menu is None:
+            return
 
-    @commands.Cog.listener()
-    async def on_guild_join(self, guild):
-        self.bot.prom.guilds_join.inc({})
-        embed = discord.Embed(
-            title="Server Join",
-            description=f"{guild.name} ({guild.id})",
-            colour=0x00FF00,
-            timestamp=datetime.datetime.utcnow(),
-        )
-        guilds = sum(await self.bot.comm.handler("guild_count", self.bot.cluster_count))
-        embed.set_footer(text=f"{guilds} servers")
-        if self.bot.config.join_channel:
-            await self.bot.http.send_message(self.bot.config.join_channel, None, embed=embed.to_dict())
-        if guild.id in self.bot.banned_guilds:
-            await guild.leave()
+        if payload.emoji.name == "⏹️":
+            try:
+                await message.clear_reactions()
+            except discord.Forbidden:
+                for emoji in ["⏮️", "◀️", "⏹️", "▶️", "⏭️"]:
+                    try:
+                        await message.remove_reaction(emoji, self.bot.user)
+                    except discord.NotFound:
+                        pass
 
-    @commands.Cog.listener()
-    async def on_guild_remove(self, guild):
-        self.bot.prom.guilds_leave.inc({})
-        async with self.bot.pool.acquire() as conn:
-            await conn.execute("DELETE FROM data WHERE guild=$1", guild.id)
-        embed = discord.Embed(
-            title="Server Leave",
-            description=f"{guild.name} ({guild.id})",
-            colour=0xFF0000,
-            timestamp=datetime.datetime.utcnow(),
-        )
-        guilds = sum(await self.bot.comm.handler("guild_count", self.bot.cluster_count))
-        embed.set_footer(text=f"{guilds} servers")
-        if self.bot.config.join_channel:
-            await self.bot.http.send_message(self.bot.config.join_channel, None, embed=embed.to_dict())
+            await self.bot.state.srem("reaction_menus", menu)
+            return
+
+        page = menu["data"]["page"]
+        all_pages = menu["data"]["all_pages"]
+
+        if payload.emoji.name == "⏮️":
+            page = 0
+        elif payload.emoji.name == "◀️" and page > 0:
+            page -= 1
+        elif payload.emoji.name == "▶️" and page < len(all_pages) - 1:
+            page += 1
+        elif payload.emoji.name == "⏭️":
+            page = len(all_pages) - 1
+
+        await message.edit(embed=discord.Embed.from_dict(all_pages[page]))
+
+        try:
+            member = tools.create_fake_user(payload.user_id)
+            await message.remove_reaction(payload.emoji, member)
+        except (discord.Forbidden, discord.NotFound):
+            pass
+
+        await self.bot.state.srem("reaction_menus", menu)
+        menu["data"]["page"] = page
+        menu["end"] = int(time.time()) + 180
+        await self.bot.state.sadd("reaction_menus", menu)
 
     @commands.Cog.listener()
     async def on_message(self, message):
         if message.author.bot:
             return
+
         ctx = await self.bot.get_context(message)
         if not ctx.command:
             return
+
         self.bot.prom.commands.inc({"name": ctx.command.name})
+
         if message.guild:
-            if message.guild.id in self.bot.banned_guilds:
+            if await tools.is_guild_banned(self.bot, message.guild):
                 await message.guild.leave()
                 return
-            permissions = message.channel.permissions_for(message.guild.me)
+
+            permissions = await message.channel.permissions_for(await ctx.guild.me())
+
             if permissions.send_messages is False:
                 return
-            elif permissions.embed_links is False:
+
+            if permissions.embed_links is False:
                 await message.channel.send("The Embed Links permission is needed for basic commands to work.")
                 return
-        if message.author.id in self.bot.banned_users:
-            await ctx.send(
-                embed=discord.Embed(description="You are banned from the bot.", colour=self.bot.error_colour)
-            )
+
+        if await tools.is_user_banned(self.bot, message.author):
+            await ctx.send(embed=ErrorEmbed(description="You are banned from the bot."))
             return
-        if ctx.command.cog_name in ["Owner", "Admin"] and (
-            ctx.author.id in self.bot.config.admins or ctx.author.id in self.bot.config.owners
+
+        if (
+            ctx.command.cog_name in ["Owner", "Admin"]
+            and ctx.author.id in self.bot.config.admins + self.bot.config.owners
         ):
-            embed = discord.Embed(
+            embed = Embed(
                 title=ctx.command.name.title(),
                 description=ctx.message.content,
-                colour=self.bot.primary_colour,
                 timestamp=datetime.datetime.utcnow(),
             )
             embed.set_author(name=f"{ctx.author} ({ctx.author.id})", icon_url=ctx.author.avatar_url)
-            if self.bot.config.admin_channel:
-                await self.bot.http.send_message(self.bot.config.admin_channel, None, embed=embed.to_dict())
-        if ctx.prefix == f"<@{self.bot.user.id}> " or ctx.prefix == f"<@!{self.bot.user.id}> ":
-            ctx.prefix = self.bot.tools.get_guild_prefix(self.bot, message.guild)
-        await self.bot.invoke(ctx)
 
-    @commands.Cog.listener()
-    async def on_socket_response(self, message):
-        if message.get("op") == 0:
-            t = message.get("t")
-            if t == "PRESENCE_UPDATE":
-                return
-            self.bot.prom.dispatch.inc({"type": t})
+            if self.bot.config.admin_channel:
+                channel = await self.bot.get_channel(self.bot.config.admin_channel)
+                if channel:
+                    await channel.send(embed=embed)
+
+        if ctx.prefix in [f"<@{self.bot.id}> ", f"<@!{self.bot.id}> "]:
+            ctx.prefix = await tools.get_guild_prefix(self.bot, message.guild)
+
+        await self.bot.invoke(ctx)
 
 
 def setup(bot):
