@@ -69,6 +69,11 @@ class ModMail(commands.AutoShardedBot):
         self.pool = None
         self.prom = None
 
+        self._enabled_events = [
+            "MESSAGE_CREATE",
+            "READY",
+        ]
+
         self._cogs = [
             "admin",
             "direct_message",
@@ -176,39 +181,20 @@ class ModMail(commands.AutoShardedBot):
             func = self.ws._discord_parsers[event]
         except KeyError:
             log.debug(f"Unknown event {event}.")
-        else:
+            return
+
+        if event not in self._enabled_events:
+            return
+
+        try:
+            await func(data, old)
+        except asyncio.CancelledError:
+            pass
+        except Exception:
             try:
-                await func(data, old)
+                await self.on_error(event)
             except asyncio.CancelledError:
                 pass
-            except Exception:
-                try:
-                    await self.on_error(event)
-                except asyncio.CancelledError:
-                    pass
-
-        removed = []
-        for index, entry in enumerate(self.ws._dispatch_listeners):
-            if entry.event != event:
-                continue
-
-            if entry.future.cancelled():
-                removed.append(index)
-                continue
-
-            try:
-                valid = entry.predicate(data)
-            except Exception as exc:
-                entry.future.set_exception(exc)
-                removed.append(index)
-            else:
-                if valid:
-                    ret = data if entry.result is None else entry.result(data)
-                    entry.future.set_result(ret)
-                    removed.append(index)
-
-        for index in reversed(removed):
-            del self.ws._dispatch_listeners[index]
 
     async def send_message(self, msg):
         data = orjson.dumps(msg)
