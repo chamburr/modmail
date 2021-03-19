@@ -21,8 +21,9 @@ class Events(commands.Cog):
 
     async def execute_pipe(self):
         while True:
-            await self.pipe.execute()
+            old_pipe = self.pipe
             self.pipe = self.bot._redis.pipeline()
+            await old_pipe.execute()
             await asyncio.sleep(1)
 
     @commands.Cog.listener()
