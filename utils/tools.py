@@ -170,6 +170,7 @@ def is_modmail_channel(channel, user_id=None):
         channel.topic
         and channel.topic.startswith("ModMail Channel ")
         and channel.topic.replace("ModMail Channel ", "").split(" ")[0].isdigit()
+        and channel.topic.replace("ModMail Channel ", "").split(" ")[1].isdigit()
         and (channel.topic.replace("ModMail Channel ", "").split(" ")[0] == str(user_id) if user_id else True)
     )
 
