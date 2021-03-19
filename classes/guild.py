@@ -173,15 +173,20 @@ class Guild(guild.Guild):
         return await self._members()
 
     async def get_member(self, user_id):
-        result = await self._state.get(f"member:{self.id}:{user_id}")
+        member = await self._state.get(f"member:{self.id}:{user_id}")
 
-        if result:
-            return Member(guild=self, state=self._state, data=result)
+        if member:
+            return Member(guild=self, state=self._state, data=member)
 
         return None
 
     async def me(self):
-        return await self.get_member(self._state.id)
+        member = await self.get_member(self._state.id)
+
+        if member:
+            return member
+
+        return await self.fetch_member(self._state.id)
 
     async def roles(self):
         return await self._roles()
