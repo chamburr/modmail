@@ -16,13 +16,14 @@ log = logging.getLogger(__name__)
 class Events(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
-        self.pipe = self.bot.redis.pipeline()
+        self.pipe = self.bot._redis.pipeline()
         self.bot.loop.create_task(self.execute_pipe())
 
     async def execute_pipe(self):
         while True:
             await self.pipe.execute()
-            await asyncio.sleep(0.5)
+            self.pipe = self.bot._redis.pipeline()
+            await asyncio.sleep(1)
 
     @commands.Cog.listener()
     async def on_ready(self):
