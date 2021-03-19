@@ -371,11 +371,12 @@ class State:
     async def parse_message_create(self, data, old):
         channel = await self.get_channel(int(data["channel_id"]))
 
-        if not channel:
+        if not channel and not data.get("guild_id"):
             channel = DMChannel(me=await self.user(), state=self, data={"id": int(data["channel_id"])})
 
-        message = self.create_message(channel=channel, data=data)
-        self.dispatch("message", message)
+        if channel:
+            message = self.create_message(channel=channel, data=data)
+            self.dispatch("message", message)
 
     async def parse_message_delete(self, data, old):
         raw = RawMessageDeleteEvent(data)
