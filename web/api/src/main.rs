@@ -1,13 +1,17 @@
 #![deny(clippy::all, nonstandard_style, rust_2018_idioms, unused, warnings)]
 
 use crate::config::Environment;
+use crate::config::CONFIG;
+use crate::routes::errors;
 
 use actix_web::http::StatusCode;
 use actix_web::middleware::errhandlers::ErrorHandlers;
 use actix_web::middleware::normalize::TrailingSlash;
 use actix_web::middleware::{Logger, NormalizePath};
 use actix_web::{web, App, HttpServer};
+use config::get_api_address;
 use dotenv::dotenv;
+use routes::ApiResult;
 use tracing::error;
 use tracing_log::env_logger;
 
@@ -35,8 +39,6 @@ pub async fn real_main() -> ApiResult<()> {
 
     let redis_pool = get_redis_pool()?;
 
-    run_migrations(&pool).await?;
-
     init_cache(pool.clone(), redis_pool.clone());
 
     HttpServer::new(move || {
@@ -55,19 +57,15 @@ pub async fn real_main() -> ApiResult<()> {
                     )
                     .handler(StatusCode::SERVICE_UNAVAILABLE, errors::service_unavailable),
             )
-            .wrap(Metrics)
             .wrap(Logger::default())
             .wrap(NormalizePath::new(TrailingSlash::Trim))
-            .service(
-                web::scope("/api")
-            )
+            .service(web::scope("/api"))
             .default_service(web::to(errors::default_service))
     })
-        .workers(CONFIG.api_workers as usize)
-        .bind(get_api_address()?)?
-        .run()
-        .await?;
+    .workers(CONFIG.api_workers as usize)
+    .bind(get_api_address()?)?
+    .run()
+    .await?;
 
     Ok(())
 }
-

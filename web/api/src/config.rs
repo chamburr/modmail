@@ -58,9 +58,9 @@ fn get_env(name: &str) -> String {
 }
 
 fn get_env_as<T>(name: &str) -> T
-    where
-        T: std::str::FromStr,
-        <T as std::str::FromStr>::Err: std::fmt::Debug,
+where
+    T: std::str::FromStr,
+    <T as std::str::FromStr>::Err: std::fmt::Debug,
 {
     get_env(name)
         .parse::<T>()

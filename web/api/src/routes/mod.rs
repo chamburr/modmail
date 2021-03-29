@@ -1,29 +1,14 @@
-use actix_web::client::HttpError;
 use actix_web::cookie::Cookie;
-use actix_web::error::BlockingError;
 use actix_web::http::StatusCode;
 use actix_web::{HttpMessage, HttpRequest, HttpResponse, Responder, ResponseError};
 use futures::future::{ok, Ready};
-use redis::RedisError;
 use serde::Serialize;
-use serde::export::Formatter;
-use serde_json::{Value, json};
-use std::fmt::{self, Debug, Display};
-use std::io;
-use std::net::AddrParseError;
-use std::num::ParseIntError;
-use std::str::Utf8Error;
-use std::string::FromUtf8Error;
-use std::sync::PoisonError;
-use twilight_oauth2::client::RedirectUriInvalidError;
+use serde_json::{json, Value};
 use url::ParseError;
+use std::{fmt::{self, Debug, Display, Formatter}, net::AddrParseError};
+use std::io;
 
-pub mod admin;
 pub mod errors;
-pub mod guilds;
-pub mod index;
-pub mod tracks;
-pub mod users;
 
 pub type ApiResult<T> = Result<T, ApiError>;
 
@@ -174,31 +159,12 @@ impl Responder for ApiResponse {
 
 #[derive(Debug)]
 pub enum ApiError {
-    ActixWebError(()),
     AddrParseError(AddrParseError),
     CustomError((StatusCode, Value)),
-    DieselR2d2Error(diesel::r2d2::Error),
-    DieselResultError(diesel::result::Error),
     EmptyError(()),
-    FromUtf8Error(FromUtf8Error),
-    HttpError(HttpError),
     IoError(io::Error),
-    JsonWebTokenError(jsonwebtoken::errors::Error),
-    LapinError(lapin::Error),
     ParseError(ParseError),
-    ParseIntError(ParseIntError),
-    PoisonError(PoisonError<()>),
-    PrometheusError(prometheus::Error),
-    R2d2Error(r2d2::Error),
-    RedirectUriInvalidError(RedirectUriInvalidError<'static>),
-    RedisError(RedisError),
-    ReqwestError(reqwest::Error),
-    RunMigrationsError(RunMigrationsError),
     SerdeJsonError(serde_json::Error),
-    ToStrError(ToStrError),
-    TrySendError(TrySendError<String>),
-    TwilightHttpError(twilight_http::Error),
-    Utf8Error(Utf8Error),
 }
 
 impl Display for ApiError {
@@ -214,15 +180,8 @@ impl ResponseError for ApiError {
             _ => {
                 let res = ApiResponse::internal_server_error();
                 HttpResponse::build(res.status).json(&res.data)
-            },
+            }
         }
-    }
-}
-
-impl From<actix_web::Error> for ApiError {
-    fn from(err: actix_web::Error) -> Self {
-        sentry::capture_error(&err);
-        Self::ActixWebError(())
     }
 }
 
@@ -233,73 +192,15 @@ impl From<AddrParseError> for ApiError {
     }
 }
 
-impl From<BlockingError<ApiError>> for ApiError {
-    fn from(err: BlockingError<ApiError>) -> Self {
-        sentry::capture_error(&err);
-        match err {
-            BlockingError::Error(error) => error,
-            BlockingError::Canceled => Self::EmptyError(()),
-        }
-    }
-}
-
-impl From<BlockingError<r2d2::Error>> for ApiError {
-    fn from(err: BlockingError<r2d2::Error>) -> Self {
-        sentry::capture_error(&err);
-        match err {
-            BlockingError::Error(error) => Self::R2d2Error(error),
-            BlockingError::Canceled => Self::EmptyError(()),
-        }
-    }
-}
-
-impl From<BlockingError<RedisError>> for ApiError {
-    fn from(err: BlockingError<RedisError>) -> Self {
-        sentry::capture_error(&err);
-        match err {
-            BlockingError::Error(error) => Self::RedisError(error),
-            BlockingError::Canceled => Self::EmptyError(()),
-        }
-    }
-}
-
 impl From<ApiResponse> for ApiError {
     fn from(err: ApiResponse) -> Self {
         Self::CustomError((err.status, err.data))
     }
 }
 
-impl From<diesel::r2d2::Error> for ApiError {
-    fn from(err: diesel::r2d2::Error) -> Self {
-        sentry::capture_error(&err);
-        Self::DieselR2d2Error(err)
-    }
-}
-
-impl From<diesel::result::Error> for ApiError {
-    fn from(err: diesel::result::Error) -> Self {
-        sentry::capture_error(&err);
-        Self::DieselResultError(err)
-    }
-}
-
 impl From<()> for ApiError {
     fn from(_: ()) -> Self {
         Self::EmptyError(())
-    }
-}
-
-impl From<FromUtf8Error> for ApiError {
-    fn from(err: FromUtf8Error) -> Self {
-        sentry::capture_error(&err);
-        Self::FromUtf8Error(err)
-    }
-}
-
-impl From<HttpError> for ApiError {
-    fn from(err: HttpError) -> Self {
-        sentry::capture_error(&err);
-        Self::HttpError(err)
     }
 }
 
@@ -310,20 +211,6 @@ impl From<io::Error> for ApiError {
     }
 }
 
-impl From<jsonwebtoken::errors::Error> for ApiError {
-    fn from(err: jsonwebtoken::errors::Error) -> Self {
-        sentry::capture_error(&err);
-        Self::JsonWebTokenError(err)
-    }
-}
-
-impl From<lapin::Error> for ApiError {
-    fn from(err: lapin::Error) -> Self {
-        sentry::capture_error(&err);
-        Self::LapinError(err)
-    }
-}
-
 impl From<ParseError> for ApiError {
     fn from(err: ParseError) -> Self {
         sentry::capture_error(&err);
@@ -331,141 +218,9 @@ impl From<ParseError> for ApiError {
     }
 }
 
-impl From<ParseIntError> for ApiError {
-    fn from(err: ParseIntError) -> Self {
-        sentry::capture_error(&err);
-        Self::ParseIntError(err)
-    }
-}
-
-impl<T> From<PoisonError<T>> for ApiError {
-    fn from(err: PoisonError<T>) -> Self {
-        sentry::capture_error(&err);
-        Self::PoisonError(PoisonError::new(()))
-    }
-}
-
-impl From<prometheus::Error> for ApiError {
-    fn from(err: prometheus::Error) -> Self {
-        sentry::capture_error(&err);
-        Self::PrometheusError(err)
-    }
-}
-
-impl From<r2d2::Error> for ApiError {
-    fn from(err: r2d2::Error) -> Self {
-        sentry::capture_error(&err);
-        Self::R2d2Error(err)
-    }
-}
-
-impl From<RedirectUriInvalidError<'_>> for ApiError {
-    fn from(err: RedirectUriInvalidError<'_>) -> Self {
-        sentry::capture_error(&err);
-        match err {
-            RedirectUriInvalidError::Invalid { source, .. } => {
-                Self::RedirectUriInvalidError(RedirectUriInvalidError::Invalid { source, uri: "" })
-            },
-            RedirectUriInvalidError::Unconfigured { uri } => {
-                Self::RedirectUriInvalidError(RedirectUriInvalidError::Unconfigured { uri })
-            },
-            _ => Self::EmptyError(()),
-        }
-    }
-}
-
-impl From<RedisError> for ApiError {
-    fn from(err: RedisError) -> Self {
-        sentry::capture_error(&err);
-        Self::RedisError(err)
-    }
-}
-
-impl From<reqwest::Error> for ApiError {
-    fn from(err: reqwest::Error) -> Self {
-        sentry::capture_error(&err);
-        Self::ReqwestError(err)
-    }
-}
-
-impl From<RunMigrationsError> for ApiError {
-    fn from(err: RunMigrationsError) -> Self {
-        sentry::capture_error(&err);
-        Self::RunMigrationsError(err)
-    }
-}
-
 impl From<serde_json::Error> for ApiError {
     fn from(err: serde_json::Error) -> Self {
         sentry::capture_error(&err);
         Self::SerdeJsonError(err)
-    }
-}
-
-impl From<ToStrError> for ApiError {
-    fn from(err: ToStrError) -> Self {
-        sentry::capture_error(&err);
-        Self::ToStrError(err)
-    }
-}
-
-impl From<TrySendError<String>> for ApiError {
-    fn from(err: TrySendError<String>) -> Self {
-        sentry::capture_error(&err);
-        Self::TrySendError(err)
-    }
-}
-
-impl From<twilight_http::Error> for ApiError {
-    fn from(err: twilight_http::Error) -> Self {
-        sentry::capture_error(&err);
-        Self::TwilightHttpError(err)
-    }
-}
-
-impl From<Utf8Error> for ApiError {
-    fn from(err: Utf8Error) -> Self {
-        sentry::capture_error(&err);
-        Self::Utf8Error(err)
-    }
-}
-
-pub trait OptionExt<T> {
-    fn or_bad_request(self) -> ApiResult<T>;
-    fn or_not_found(self) -> ApiResult<T>;
-    fn or_internal_error(self) -> ApiResult<T>;
-}
-
-impl<T> OptionExt<T> for Option<T> {
-    fn or_bad_request(self) -> ApiResult<T> {
-        self.ok_or_else(|| ApiResponse::bad_request().into())
-    }
-
-    fn or_not_found(self) -> ApiResult<T> {
-        self.ok_or_else(|| ApiResponse::not_found().into())
-    }
-
-    fn or_internal_error(self) -> ApiResult<T> {
-        self.ok_or_else(|| ApiResponse::internal_server_error().into())
-    }
-}
-
-pub trait ResultExt<T, E> {
-    fn or_bad_request(self) -> ApiResult<T>;
-    fn or_not_found(self) -> ApiResult<T>;
-    fn or_internal_error(self) -> ApiResult<T>;
-}
-
-impl<T, E> ResultExt<T, E> for Result<T, E> {
-    fn or_bad_request(self) -> ApiResult<T> {
-        self.map_err(|_| ApiResponse::bad_request().into())
-    }
-
-    fn or_not_found(self) -> ApiResult<T> {
-        self.map_err(|_| ApiResponse::not_found().into())
-    }
-
-    fn or_internal_error(self) -> ApiResult<T> {
-        self.map_err(|_| ApiResponse::internal_server_error().into())
     }
 }
