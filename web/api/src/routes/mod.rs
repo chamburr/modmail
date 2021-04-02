@@ -1,18 +1,24 @@
-use actix_web::{cookie::Cookie, error::BlockingError};
 use actix_web::http::StatusCode;
+use actix_web::{cookie::Cookie, error::BlockingError};
 use actix_web::{HttpMessage, HttpRequest, HttpResponse, Responder, ResponseError};
 use futures::future::{ok, Ready};
 use http::header::ToStrError;
 use redis::RedisError;
 use serde::Serialize;
 use serde_json::{json, Value};
+use std::io;
+use std::fmt::{self, Debug, Display, Formatter};
+use std::{
+    net::AddrParseError,
+    num::ParseIntError,
+    str::Utf8Error,
+};
 use twilight_oauth2::client::RedirectUriInvalidError;
 use url::ParseError;
-use std::{fmt::{self, Debug, Display, Formatter}, net::AddrParseError, num::ParseIntError};
-use std::io;
 
 pub mod errors;
 pub mod index;
+pub mod users;
 
 pub type ApiResult<T> = Result<T, ApiError>;
 
@@ -178,6 +184,7 @@ pub enum ApiError {
     SerdeJsonError(serde_json::Error),
     ToStrError(ToStrError),
     TwilightHttpError(twilight_http::Error),
+    Utf8Error(Utf8Error),
 }
 
 impl Display for ApiError {
@@ -275,10 +282,10 @@ impl From<RedirectUriInvalidError<'_>> for ApiError {
         match err {
             RedirectUriInvalidError::Invalid { source, .. } => {
                 Self::RedirectUriInvalidError(RedirectUriInvalidError::Invalid { source, uri: "" })
-            },
+            }
             RedirectUriInvalidError::Unconfigured { uri } => {
                 Self::RedirectUriInvalidError(RedirectUriInvalidError::Unconfigured { uri })
-            },
+            }
             _ => Self::EmptyError(()),
         }
     }
@@ -316,6 +323,13 @@ impl From<twilight_http::Error> for ApiError {
     fn from(err: twilight_http::Error) -> Self {
         sentry::capture_error(&err);
         Self::TwilightHttpError(err)
+    }
+}
+
+impl From<Utf8Error> for ApiError {
+    fn from(err: Utf8Error) -> Self {
+        sentry::capture_error(&err);
+        Self::Utf8Error(err)
     }
 }
 
@@ -358,4 +372,3 @@ impl<T, E> ResultExt<T, E> for Result<T, E> {
         self.map_err(|_| ApiResponse::internal_server_error().into())
     }
 }
-

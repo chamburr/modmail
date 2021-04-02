@@ -12,7 +12,7 @@ use actix_web::{web, App, HttpServer};
 use cache::get_redis_pool;
 use config::get_api_address;
 use dotenv::dotenv;
-use routes::ApiResult;
+use routes::{index, users, ApiResult};
 use tracing::error;
 use tracing_log::env_logger;
 
@@ -61,7 +61,20 @@ pub async fn real_main() -> ApiResult<()> {
             )
             .wrap(Logger::default())
             .wrap(NormalizePath::new(TrailingSlash::Trim))
-            .service(web::scope("/api"))
+            .service(
+                web::scope("/api")
+                    .service(index::index)
+                    .service(index::get_login)
+                    .service(index::get_invite),
+            )
+            .service(index::get_authorize)
+            .service(index::get_status)
+            .service(
+                web::scope("/users")
+                    .service(users::get_user_me)
+                    .service(users::get_user_me_guilds)
+                    .service(users::post_user_me_logout),
+            )
             .default_service(web::to(errors::default_service))
     })
     .workers(CONFIG.api_workers as usize)

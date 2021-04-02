@@ -163,7 +163,7 @@ pub async fn get_token_cookie(exchange: AccessTokenExchangeResponse) -> ApiResul
     Ok(cookie)
 }
 
-#[derive(Debug)]
+#[derive(Debug, Serialize)]
 pub struct Account {
     pub id: u64,
     pub username: String,

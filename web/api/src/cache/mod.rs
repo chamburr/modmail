@@ -6,6 +6,7 @@ use redis::{Client, IntoConnectionInfo, RedisError};
 use tokio::runtime::Runtime;
 
 pub mod commands;
+pub mod models;
 
 lazy_static! {
     static ref RUNTIME: Runtime = Runtime::new().unwrap();
