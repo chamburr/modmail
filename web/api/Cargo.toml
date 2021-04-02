@@ -10,33 +10,26 @@ license = "AGPL-3.0"
 
 [dependencies]
 actix-web = { version = "3.3.2", default-features = false }
-# chrono = { version = "0.4.19", default-features = false, features = ["serde"] }
-# diesel = { version = "1.4.5", default-features = false, features = ["chrono", "postgres", "r2d2"] }
-# diesel_migrations = { version = "1.4.0", default-features = false }
+chrono = { version = "0.4.19", default-features = false, features = ["serde"] }
 dotenv = { version = "0.15.0", default-features = false }
-# event-listener = { version = "2.5.1", default-features = false }
 futures = { version = "0.3.8", default-features = false }
-# http = { version = "0.2.2", default-features = false }
-# jsonwebtoken = { version = "7.2.0", default-features = false }
-# lapin = { version = "1.6.6", default-features = false }
+http = { version = "0.2.2", default-features = false }
+jsonwebtoken = { version = "7.2.0", default-features = false }
 lazy_static = { version = "1.4.0", default-features = false }
-# nanoid = { version = "0.3.0", default-features = false }
-# percent-encoding = { version = "2.1.0", default-features = false }
-# pin-project = { version = "1.0.2", default-features = false }
-# prometheus = { version = "0.11.0", default-features = false, features = ["process"] }
+nanoid = { version = "0.3.0", default-features = false }
+percent-encoding = { version = "2.1.0", default-features = false }
 r2d2 = { version = "0.8.9", default-features = false }
-# rand = { version = "0.8.0", default-features = false, features = ["std", "std_rng"] }
 redis = { version = "0.19.0", default-features = false, features = ["tokio-comp"] }
-# reqwest = { version = "0.10.8", default-features = false, features = ["json"] }
+reqwest = { version = "0.10.8", default-features = false, features = ["json"] }
 sentry = { version = "0.21.0", default-features = false, features = ["backtrace", "transport"] }
 serde = { version = "1.0.117", default-features = false, features = ["derive"] }
 serde_json = { version = "1.0.61", default-features = false }
-# tokio = { version = "1.0.1", default-features = false, features = ["rt", "rt-multi-thread"] }
+tokio = { version = "1.0.1", default-features = false, features = ["rt", "rt-multi-thread"] }
 tracing = { version = "0.1.22", default-features = false }
 tracing-log = { version = "0.1.1", default-features = false, features = ["env_logger"] }
 tracing-subscriber = { version = "0.2.15", default-features = false, features = ["ansi", "fmt"] }
-# twilight-http = { version = "0.2.7", default-features = false, features = ["rustls"] }
-# twilight-model = { version = "0.2.7", default-features = false }
+twilight-http = { version = "0.2.7", default-features = false, features = ["rustls"] }
+twilight-model = { version = "0.2.7", default-features = false }
 url = { version = "2.1.1", default-features = false }
 
 [dependencies.twilight-oauth2]

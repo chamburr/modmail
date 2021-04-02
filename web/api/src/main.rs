@@ -9,13 +9,17 @@ use actix_web::middleware::errhandlers::ErrorHandlers;
 use actix_web::middleware::normalize::TrailingSlash;
 use actix_web::middleware::{Logger, NormalizePath};
 use actix_web::{web, App, HttpServer};
+use cache::get_redis_pool;
 use config::get_api_address;
 use dotenv::dotenv;
 use routes::ApiResult;
 use tracing::error;
 use tracing_log::env_logger;
 
+mod auth;
+mod cache;
 mod config;
+mod constants;
 mod routes;
 
 #[actix_web::main]
@@ -38,8 +42,6 @@ pub async fn real_main() -> ApiResult<()> {
     }
 
     let redis_pool = get_redis_pool()?;
-
-    init_cache(pool.clone(), redis_pool.clone());
 
     HttpServer::new(move || {
         App::new()
