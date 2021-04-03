@@ -1,0 +1,9 @@
+User-agent: *
+Disallow: /dashboard/
+Disallow: /users/
+Disallow: /callback
+Disallow: /github
+Disallow: /invite
+Disallow: /login
+Disallow: /logout
+Disallow: /support

@@ -1,0 +1,271 @@
+$font-family-base: $font-family-sans-serif;
+$font-family-alt: $font-family-sans-serif;
+
+html {
+  font-size: 16px;
+  word-spacing: 1px;
+  -ms-text-size-adjust: 100%;
+  -webkit-text-size-adjust: 100%;
+  -moz-osx-font-smoothing: grayscale;
+  -webkit-font-smoothing: antialiased;
+  box-sizing: border-box;
+}
+
+body {
+  color: white !important;
+  background-color: #2d2f33;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+}
+
+p {
+  font-weight: 500 !important;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+.h1,
+.h2,
+.h3,
+.h4,
+.h5,
+.h6,
+.display-1,
+.display-2,
+.display-3,
+.display-4 {
+  color: white;
+}
+
+hr {
+  border-color: $light !important;
+}
+
+a {
+  color: lighten($primary, 5%);
+}
+
+a:hover {
+  color: darken($primary, 5%);
+  cursor: pointer;
+}
+
+[type='number'] {
+  -moz-appearance: textfield;
+}
+
+[type='number']::-webkit-inner-spin-button,
+[type='number']::-webkit-outer-spin-button {
+  display: none;
+  -webkit-appearance: none;
+}
+
+.icon {
+  display: inline !important;
+  padding: 0 5px;
+}
+
+.form-control {
+  font-size: 1rem;
+}
+
+.btn {
+  text-transform: none !important;
+}
+
+.btn-success,
+.btn-success:focus {
+  border-color: darken($success, 5%);
+  background-color: darken($success, 5%);
+}
+
+.btn-primary:focus {
+  border-color: $primary;
+  background-color: $primary;
+}
+
+.btn-danger:focus {
+  border-color: $danger;
+  background-color: $danger;
+}
+
+.btn-gray {
+  color: white;
+  border-color: $gray-700;
+  background-color: $gray-700;
+}
+
+.btn-gray:hover {
+  color: white;
+  border-color: lighten($gray-700, 5%);
+  background-color: lighten($gray-700, 5%);
+}
+
+.btn-sm {
+  font-size: 0.9em !important;
+}
+
+.bg-gray {
+  background-color: #2d2f33 !important;
+}
+
+.custom-select {
+  color: white;
+  background-color: $dark;
+  border: none;
+  background-image: url("data:image/svg+xml;charset=utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 4 5'%3E%3Cpath fill='white' d='M2 0L0 2h4zm0 5L0 3h4z'/%3E%3C/svg%3E");
+}
+
+.overflow-scroll {
+  overflow: scroll !important;
+}
+
+.overflow-scroll-x {
+  overflow-x: scroll !important;
+}
+
+.overflow-scroll-y {
+  overflow-y: scroll !important;
+}
+
+.scrollbar-none {
+  scrollbar-width: none;
+}
+
+.scrollbar-none::-webkit-scrollbar {
+  display: none;
+}
+
+.popover-body {
+  color: white !important;
+  background-color: $dark;
+  border-radius: 0.25rem;
+}
+
+.bs-popover-top .arrow::after,
+.bs-popover-top .arrow::before {
+  border-top-color: $dark !important;
+}
+
+.bs-popover-left .arrow::after,
+.bs-popover-left .arrow::before {
+  border-left-color: $dark !important;
+}
+
+.bs-popover-right .arrow::after,
+.bs-popover-right .arrow::before {
+  border-right-color: $dark !important;
+}
+
+.bs-popover-bottom .arrow::after,
+.bs-popover-bottom .arrow::before {
+  border-bottom-color: $dark !important;
+}
+
+.dropdown-menu {
+  background-color: $dark !important;
+}
+
+.dropdown-menu.show {
+  animation: show-dropdown-menu 0.2s ease forwards;
+}
+
+.dropdown-item {
+  color: white;
+}
+
+.dropdown-item:hover,
+.dropdown-item:focus {
+  color: white !important;
+  background-color: $gray-700;
+}
+
+.dropdown-item:focus {
+  outline: 0;
+}
+
+@keyframes show-dropdown-menu {
+  0% {
+    opacity: 0;
+    transform: scale(0.95);
+    transform-origin: 100% 0;
+  }
+
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.b-toaster {
+  margin-top: 90px !important;
+  margin-left: 1em !important;
+  margin-right: 1em !important;
+}
+
+.b-toast {
+  .toast {
+    border: none !important;
+  }
+
+  .toast-header {
+    border: none !important;
+    color: white !important;
+  }
+
+  .toast-body {
+    padding-top: 0 !important;
+    color: white !important;
+    border-radius: 0 0 calc(0.25rem - 1px) calc(0.25rem - 1px);
+  }
+
+  .close {
+    color: white !important;
+  }
+}
+
+.b-toast-success {
+  .toast-header,
+  .toast-body {
+    background-color: darken($success, 5%) !important;
+  }
+}
+
+.b-toast-danger {
+  .toast-header,
+  .toast-body {
+    background-color: $danger !important;
+  }
+}
+
+.modal-header {
+  display: flex;
+  align-items: center;
+  border-color: $gray-700;
+
+  .close {
+    padding: 0;
+    margin: 0;
+    color: white;
+    opacity: 0.8;
+  }
+}
+
+.modal-title {
+  font-weight: 500;
+}
+
+.modal-footer {
+  padding-top: 1rem;
+  padding-bottom: 1rem;
+  border-color: $gray-700;
+}
