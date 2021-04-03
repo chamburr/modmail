@@ -17,60 +17,10 @@ class Events(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         self.pipe = self.bot._redis.pipeline()
-        self.bot.loop.create_task(self.execute_pipe())
-
-    async def execute_pipe(self):
-        while True:
-            old_pipe = self.pipe
-            self.pipe = self.bot._redis.pipeline()
-            await old_pipe.execute()
-            await asyncio.sleep(1)
 
     @commands.Cog.listener()
-    async def on_ready(self):
+    async def on_ready(_):
         pass
-
-    @commands.Cog.listener()
-    async def on_socket_response(self, message):
-        if message["t"] == "PRESENCE_UPDATE":
-            if int(message["d"]["user"]["id"]) == self.bot.id:
-                return
-
-            await self.bot.state.sadd(f"user:{message['d']['user']['id']}", message["d"]["guild_id"], pipe=self.pipe)
-            await self.bot.state.sadd("user_keys", f"user:{message['d']['user']['id']}", pipe=self.pipe)
-        elif message["t"] == "GUILD_MEMBER_ADD":
-            if int(message["d"]["user"]["id"]) == self.bot.id:
-                await self.bot.state.set(
-                    f"member:{message['d']['guild_id']}:{self.bot.id}", message["d"], pipe=self.pipe
-                )
-                return
-
-            await self.bot.state.sadd(f"user:{message['d']['user']['id']}", message["d"]["guild_id"], pipe=self.pipe)
-            await self.bot.state.sadd("user_keys", f"user:{message['d']['user']['id']}", pipe=self.pipe)
-        elif message["t"] == "GUILD_MEMBER_REMOVE":
-            if int(message["d"]["user"]["id"]) == self.bot.id:
-                await self.bot.state.delete(f"member:{message['d']['guild_id']}:{self.bot.id}", pipe=self.pipe)
-                return
-
-            await self.bot.state.srem(f"user:{message['d']['user']['id']}", message["d"]["guild_id"], pipe=self.pipe)
-        elif message["t"] == "GUILD_MEMBER_UPDATE":
-            if int(message["d"]["user"]["id"]) == self.bot.id:
-                member = await self.bot.state.get(f"member:{message['d']['guild_id']}:{self.bot.id}")
-                if member:
-                    member["roles"] = message["d"]["roles"]
-                    await self.bot.state.set(f"member:{message['d']['guild_id']}:{self.bot.id}", member, pipe=self.pipe)
-                return
-
-            await self.bot.state.sadd(f"user:{message['d']['user']['id']}", message["d"]["guild_id"], pipe=self.pipe)
-            await self.bot.state.sadd("user_keys", f"user:{message['d']['user']['id']}", pipe=self.pipe)
-        elif message["t"] == "GUILD_CREATE":
-            for member in message["d"]["members"]:
-                if int(member["user"]["id"]) == self.bot.id:
-                    await self.bot.state.set(f"member:{message['d']['id']}:{self.bot.id}", member, pipe=self.pipe)
-                    continue
-
-                await self.bot.state.sadd(f"user:{member['user']['id']}", message["d"]["id"], pipe=self.pipe)
-                await self.bot.state.sadd("user_keys", f"user:{member['user']['id']}", pipe=self.pipe)
 
     @commands.Cog.listener()
     async def on_raw_reaction_add(self, payload):

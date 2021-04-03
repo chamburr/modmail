@@ -15,7 +15,6 @@ export default {
       .then(async res => {
         const user = await this.$axios.$get('/users/@me').catch(this.$fatal)
         this.$store.commit('user/set', user)
-        await this.$router.push(res.uri || '/dashboard')
       })
       .catch(this.$fatal)
   },

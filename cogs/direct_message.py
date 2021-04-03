@@ -185,7 +185,17 @@ class DirectMessageEvents(commands.Cog, name="Direct Message"):
     async def select_guild(self, message, msg=None):
         guilds = {}
 
-        for guild in await self.bot.state.smembers(f"user:{message.author.id}"):
+        user_guilds = await tools.get_user_guilds(self.bot, message.author.id)
+        if len(user_guilds) == 0:
+            await message.channel.send(
+                embed=ErrorEmbed(
+                    description=f"Oops, you don't seem to be in our database. Please login at [this link](https://{self.bot.config.base_uri})."
+                )
+            )
+            return
+
+        for guild in await tools.get_user_guilds(self.bot, message.author.id):
+
             guild = await self.bot.get_guild(int(guild))
 
             channel = None

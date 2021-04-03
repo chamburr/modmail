@@ -65,12 +65,12 @@ pub async fn get_invite(Query(query): Query<HashMap<String, String>>) -> ApiResu
 }
 
 #[post("/authorize")]
-pub async fn get_authorize(
+pub async fn post_authorize(
     redis_pool: Data<RedisPool>,
     Json(auth): Json<SimpleAuth>,
 ) -> ApiResult<ApiResponse> {
     let token = token_exchange(auth.code.as_str()).await.or_bad_request()?;
-
+    println!("{:?}", token);
     let uri = if let Some(state) = auth.state {
         get_csrf_redirect(&redis_pool, state.as_str()).await?
     } else {
@@ -79,6 +79,8 @@ pub async fn get_authorize(
 
     let redirect = SimpleRedirect { uri };
     let cookie = get_token_cookie(token).await?;
+
+    println!("{:?}", cookie);
 
     ApiResponse::ok().data(redirect).set_cookie(cookie).finish()
 }

@@ -1,6 +1,8 @@
 import logging
 import time
 
+import aiohttp
+
 from discord.user import User
 
 from classes.channel import DMChannel
@@ -163,6 +165,23 @@ async def is_user_banned(bot, user):
 
 async def is_guild_banned(bot, guild):
     return await bot.state.sismember("banned_guilds", guild.id)
+
+async def get_user_guilds(bot, member):
+    headers = {
+        "User-Id": member.id,
+        "User-Username": member.name,
+        "User-Discriminator": member.discriminator,
+        "User-Avatar": member.avatar if member.avatar else ""
+    }
+
+    resp = (await bot.session.get(f"{bot.config.base_uri}/api/users/@me/guilds", headers=headers))
+
+    if resp.status == 400:
+        return []
+
+    resp = resp.json()
+
+    return [x["id"] for x in resp]
 
 
 def is_modmail_channel(channel, user_id=None):

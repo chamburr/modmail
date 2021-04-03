@@ -65,15 +65,15 @@ pub async fn real_main() -> ApiResult<()> {
                 web::scope("/api")
                     .service(index::index)
                     .service(index::get_login)
-                    .service(index::get_invite),
-            )
-            .service(index::get_authorize)
-            .service(index::get_status)
-            .service(
-                web::scope("/users")
-                    .service(users::get_user_me)
-                    .service(users::get_user_me_guilds)
-                    .service(users::post_user_me_logout),
+                    .service(index::get_invite)
+                    .service(index::post_authorize)
+                    .service(index::get_status)
+                    .service(
+                    web::scope("/users")
+                        .service(users::get_user_me)
+                        .service(users::get_user_me_guilds)
+                        .service(users::post_user_me_logout),
+                    )
             )
             .default_service(web::to(errors::default_service))
     })
