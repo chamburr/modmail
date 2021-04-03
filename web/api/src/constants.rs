@@ -3,6 +3,7 @@ pub const CALLBACK_PATH: &str = "/callback";
 
 pub const BLACKLIST_KEY: &str = "banned_users";
 pub const CSRF_TOKEN_KEY: &str = "csrf_token";
+pub const STATS_KEY: &str = "bot_stats";
 pub const STATUS_KEY: &str = "gateway_statuses";
 pub const USER_GUILDS_KEY: &str = "user_guilds";
 pub const USER_TOKEN_KEY: &str = "user_token";

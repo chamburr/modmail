@@ -21,7 +21,7 @@
             src="~/static/icon.png"
             alt="Icon"
           />
-          <span class="h4 font-weight-bold mb-0 text-capitalize">Wyvor</span>
+          <span class="h4 font-weight-bold mb-0 text-capitalize">ModMail</span>
         </div>
       </NuxtLink>
     </template>
@@ -104,13 +104,6 @@
         >
           <span>Support</span>
         </a>
-      </li>
-    </ul>
-    <ul v-if="!dashboard" class="navbar-nav ml-auto mt-3 mt-lg-0">
-      <li>
-        <NuxtLink to="/dashboard" @click.native="closeMenu">
-          <BaseButton type="primary">Dashboard</BaseButton>
-        </NuxtLink>
       </li>
     </ul>
   </BaseNav>

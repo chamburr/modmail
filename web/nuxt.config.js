@@ -14,9 +14,9 @@ export default {
     htmlAttrs: {
       lang: 'en',
     },
-    title: 'Wyvor - The Discord Music Bot',
+    title: 'ModMail - The Best Discord Bot',
     titleTemplate(titleChunk) {
-      return titleChunk === 'Wyvor - The Discord Music Bot' ? titleChunk : `${titleChunk} - Wyvor`
+      return titleChunk === 'ModMail - The Discord Bot' ? titleChunk : `${titleChunk} - ModMail`
     },
     meta: [
       { charset: 'utf-8' },
@@ -25,26 +25,26 @@ export default {
         hid: 'description',
         name: 'description',
         content:
-          'The best feature-rich Discord music bot. Take control over your music with an intuitive dashboard, custom effects and more!',
+          'A feature-rich Discord bot for easy communication between server staff and users.',
       },
-      { name: 'theme-color', content: '#ff4500' },
-      { name: 'og:title', content: 'Wyvor - The Discord Music Bot' },
+      { name: 'theme-color', content: '#1e90ff' },
+      { name: 'og:title', content: 'ModMail - The Best Discord Bot' },
       { name: 'og:type', content: 'website' },
       { name: 'og:url', content: process.env.BASE_URI },
       { name: 'og:image', content: `${process.env.BASE_URI}/icon.png` },
-      { name: 'og:site_name', content: 'Wyvor' },
+      { name: 'og:site_name', content: 'ModMail' },
       {
         name: 'og:description',
         content:
-          'The best feature-rich Discord music bot. Take control over your music with an intuitive dashboard, custom effects and more!',
+          'A feature-rich Discord bot for easy communication between server staff and users.',
       },
       { name: 'twitter:card', content: 'summary' },
-      { name: 'twitter:title', content: 'Wyvor - The Discord Music Bot' },
+      { name: 'twitter:title', content: 'ModMail - The Best Discord Bot' },
       { name: 'twitter:image', content: `${process.env.BASE_URI}/icon.png` },
       {
         name: 'twitter:description',
         content:
-          'The best feature-rich Discord music bot. Take control over your music with an intuitive dashboard, custom effects and more!',
+          'A feature-rich Discord bot for easy communication between server staff and users.',
       },
     ],
     link: [

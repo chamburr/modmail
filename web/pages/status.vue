@@ -18,8 +18,6 @@
       <br />
       Servers: {{ stats.guilds }}
       <br />
-      Players: {{ playerStats.players }}
-      <br />
       Uptime: {{ durationSince(stats.started) }}
     </p>
     <p class="mt-4 h4">Legend</p>
@@ -56,7 +54,6 @@ export default {
     return {
       status: await $axios.$get('/status').catch($fatal),
       stats: await $axios.$get('/stats').catch($fatal),
-      playerStats: await $axios.$get('/stats/player').catch($fatal),
     }
   },
   data() {

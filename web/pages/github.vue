@@ -10,7 +10,7 @@ export default {
     title: 'GitHub',
   },
   mounted() {
-    window.location.href = 'https://github.com/chamburr/wyvor'
+    window.location.href = 'https://github.com/chamburr/modmail'
   },
 }
 </script>

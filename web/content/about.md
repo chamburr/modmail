@@ -9,6 +9,13 @@ Developer, Administrator
 - Reddit: https://www.reddit.com/user/chamburr22
 - LinkedIn: https://linkedin.com/in/chamburr
 
+# waterflamev8
+
+Developer, Support
+
+- Image: https://cdn.discordapp.com/avatars/723794074498367498/04ef2c02bd3341e42bda2ec5d6d2dcd2.png
+- GitHub: https://github.com/waterflamev8
+
 # FlareonIsCute
 
 Administrator
@@ -40,15 +47,14 @@ Moderator
 - GitHub: https://github.com/SnowyJaguar1034
 - Reddit: https://www.reddit.com/u/NinthTurtle1034
 
+# dyl
+
+Support
+
+- Image: https://cdn.discordapp.com/avatars/332314562575597579/a_570931cb720a4f40ec7c9375193df21b.gif
+
 # Mikhail
 
 Support
 
 - Image: https://cdn.discordapp.com/avatars/247151607647698947/b03f1c497694a8d5484c8723a7e4a2ef.png
-
-# waterflamev8
-
-Support
-
-- Image: https://cdn.discordapp.com/avatars/723794074498367498/ee283f0360cfaaf1790d6e29f7d4549a.png
-- GitHub: https://github.com/waterflamev8

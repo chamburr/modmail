@@ -1,9 +1,9 @@
 use crate::auth::{
     get_csrf_redirect, get_invite_uri, get_redirect_uri, get_token_cookie, token_exchange,
 };
-use crate::cache::models::Status;
+use crate::cache::models::{Stats, Status};
 use crate::cache::{commands as cache, RedisPool};
-use crate::constants::STATUS_KEY;
+use crate::constants::{STATS_KEY, STATUS_KEY};
 use crate::routes::{ApiResponse, ApiResult, OptionExt, ResultExt};
 
 use actix_web::web::{Data, Json, Query};
@@ -81,6 +81,15 @@ pub async fn get_authorize(
     let cookie = get_token_cookie(token).await?;
 
     ApiResponse::ok().data(redirect).set_cookie(cookie).finish()
+}
+
+#[get("/stats")]
+pub async fn get_stats(redis_pool: Data<RedisPool>) -> ApiResult<ApiResponse> {
+    let stats: Stats = cache::get(&redis_pool, STATS_KEY)
+        .await?
+        .or_internal_error()?;
+
+    ApiResponse::ok().data(stats).finish()
 }
 
 #[get("/status")]

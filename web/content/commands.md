@@ -1,237 +1,281 @@
+# Configuration
+
+## setup
+
+Set up ModMail with an interactive guide.
+
+## prefix
+
+Change the prefix or view the current prefix.
+
+- Usage: `prefix [new prefix]`
+- Alias: setprefix
+
+## category
+
+Re-create the category for the ModMail channels.
+
+- Usage: `[name]`
+
+## accessrole
+
+Set or clear the roles that have access to ticket related commands and replying to tickets.
+
+- Usage: `[roles]`
+- Alias: modrole, supportrole
+
+## pingrole
+
+Set or clear the roles mentioned when a ticket is opened. You can also use `everyone` and `here`.
+
+- Usage: `[roles]`
+- Alias: mentionrole
+
+## logging
+
+Toggle between enable and disable for ModMail logs.
+
+- Alias: logs
+
+## greetingmessage
+
+Set or clear the message that is sent when a new ticket is opened. Tags `{username}`, `{usertag}`, `{userid}` and `{usermention}` can be used.
+
+- Usage: `[text]`
+- Alias: welcomemessage, greetmessage
+
+## closingmessage
+
+Set or clear the message that is sent when a ticket is closed. Tags `{username}`, `{usertag}`, `{userid}` and `{usermention}` can be used.
+
+- Usage: `[text]`
+- Alias: goodbyemessage, closemessage
+
+## loggingplus
+
+Toggle advanced logging which includes messages sent and received.
+
+- Alias: advancedlogging, advancedlogs
+
+## anonymous
+
+Toggle default anonymous messages.
+
+## viewconfig
+
+View the configurations for the current server.
+
+# Core
+
+## reply
+
+Reply to the ticket, useful when anonymous messaging is enabled.
+
+- Usage: `<message>`
+
+## areply
+
+Reply to the ticket anonymously.
+
+- Usage: `<message>`
+
+## close
+
+Close the channel.
+
+- Usage: `[reason]`
+
+## aclose
+
+Close the channel anonymously.
+
+- Usage: `[reason]`
+
+## closeall
+
+Close all of the channels.
+
+- Usage: `[reason]`
+
+## acloseall
+
+Close all of the channels anonymously.
+
+- Usage: `[reason]`
+
+## blacklist
+
+Blacklist a user to prevent them from creating tickets.
+
+- Usage: `<member>`
+- Alias: block
+
+## whitelist
+
+Whitelist a user to allow them to creating tickets.
+
+- Usage: `<member>`
+- Alias: unblock
+
+## blacklistclear
+
+Remove all users from the blacklist.
+
+## viewblacklist
+
+View the blacklist.
+
+# Direct Message
+
+## new
+
+Send message to another server, useful when confirmation messages are disabled.
+
+- Usage: `<message>`
+- Alias: create, switch, change
+
+## send
+
+Shortcut to send message to a server.
+
+- Usage: `<server ID> <message>`
+
+## confirmation
+
+Enable or disable the confirmation message.
+
 # General
 
 ## help
 
-Show the help menu.
+Shows the help menu or information for a specific command when specified.
 
-- Alias: about, info, commands
+- Usage: `[command]`
+- Alias: h, commands
 
 ## ping
 
-Show the bot latency.
+Pong! Get my latency.
 
 ## stats
 
-Show the bot statistics.
+See some super cool statistics about me.
 
-- Alias: statistics
+- Alias: statistics, info
 
-## dashboard
+## partners
 
-Get a link to the dashboard.
+See the amazing stuff we have partnered with.
 
-- Alias: website
+- Alias: partner
 
 ## invite
 
-Get a link to invite the bot.
+Get a link to invite me.
 
 ## support
 
-Get a link to the support server.
+Get a link to my support server.
 
 - Alias: server
 
-## prefix
+## website
 
-View or change the bot prefix.
+Get the link to ModMail's website.
 
-- Usage: `[new prefix]`
-- Permission: Manage Server
+## source
 
-# Core
+Get the link to ModMail's GitHub repository.
 
-## connect
+- Alias: github
 
-Have the bot connect to your channel.
+# Miscellaneous
 
-- Alias: join
+## permissions
 
-## disconnect
+Show a member's permission in a channel when specified.
 
-Have the bot disconnect from your channel.
+- Usage: `[member] [channel]`
+- Alias: perms
 
-- Alias: leave, dc
-- Permission: Manage Player
+## userinfo
 
-## play
+Show some information about yourself or the member specified.
 
-Play a song or add it to the queue.
+- Usage: `[member]`
+- Alias: memberinfo
 
-- Usage: `<query>`
-- Alias: p
-- Permission: Add to Queue
+## serverinfo
 
-## playfile
+Get some information about this server.
 
-Play a song or add it to the queue from file upload.
+- Alias: guildinfo
 
-- Alias: pf
-- Permission: Add to Queue
+# Premium
 
-## nowplaying
+## premium
 
-Display the currently playing track.
+Get some information about ModMail premium.
 
-- Alias: np, playing
+- Alias: donate, patron
 
-## queue
+## premiumstatus
 
-Display the queue.
+Get the premium status of this server.
 
-- Alias: q
+## premiumlist
 
-## effects
+Get a list of servers you assigned premium to.
 
-Display the player effects.
+- Alias: premiumservers, premiumguilds
 
-- Alias: filters
+## premiumassign
 
-## equalizer
+Assign premium slot to a server.
 
-Display the player equalizer.
+- Usage: `<server ID>`
 
-- Alias: eq
+## premiumremove
 
-## lyrics
+Remove premium slot from a server.
 
-Display the lyrics for the current track.
+- Usage: `<server ID>`
 
-- Alias: l
+# Snippet
 
-# Player
+## snippet
 
-## pause
-
-Pause the player.
-
-- Alias: stop
-- Permission: Manage Player
-
-## resume
-
-Resume the player.
-
-- Alias: unpause, continue
-- Permission: Manage Player
-
-## forward
-
-Fast forward the player.
-
-- Usage: `<amount>`
-- Alias: fw, fwd
-- Permission: Manage Player
-
-## rewind
-
-Rewind the player.
-
-- Usage: `<amount>`
-- Alias: rw, rwd
-- Permission: Manage Player
-
-## seek
-
-Seek the player to a position.
-
-- Usage: `<position>`
-- Permission: Manage Player
-
-## loop
-
-Change the player loop.
-
-- Permission: Manage Player
-
-## volume
-
-Change the volume of the player.
-
-- Usage: `<loudness>`
-- Alias: vol
-- Permission: Manage Player
-
-# Queue
-
-## next
-
-Skip to the next track.
-
-- Alias: skip, s
-- Permission: Manage Player
-
-## previous
-
-Go back to the previous track.
-
-- Alias: back, prev
-- Permission: Manage Player
-
-## jump
-
-Jump to a certain track.
-
-- Usage: `<item>`
-- Alias: goto, j
-- Permission: Manage Player
-
-## remove
-
-Remove a track from the queue.
-
-- Usage: `<item>`
-- Alias: rm, delete, del
-- Permission: Manage Queue
-
-## shuffle
-
-Shuffle the tracks in the queue.
-
-- Alias: shuf
-- Permission: Manage Queue
-
-## clear
-
-Remove all the tracks in the queue.
-
-- Permission: Manage Queue
-
-# Playlist
-
-## playlists
-
-View the server's playlists.
-
-- Alias: playlist, pl
-
-## playlist create
-
-Create a new playlist.
+Use a snippet.
 
 - Usage: `<name>`
-- Alias: pl create, playlist new, pl new
-- Permission: Manage Playlist
+- Alias: s
 
-## playlist delete
+## asnippet
 
-Delete a playlist.
-
-- Usage: `<name>`
-- Alias: pl delete, playlist del, pl del
-- Permission: Manage Playlist
-
-## playlist show
-
-Show the tracks in a playlist.
+Use a snippet anonymously.
 
 - Usage: `<name>`
-- Alias: pl show, playlist view, pl view
+- Alias: as
 
-## playlist load
+## snippetadd
 
-Load a playlist into the queue.
+Add a snippet. Tags `{username}`, `{usertag}`, `{userid}` and `{usermention}` can be used.
+
+- Usage: `<name> <content>`
+
+## snippetremove
+
+Remove a snippet.
 
 - Usage: `<name>`
-- Alias: pl load
-- Permission: Add to Queue
+
+## snippetclear
+
+Remove all the snippets.
+
+## viewsnippet
+
+View all the snippets or a specific one if specified.
+
+- Usage: `[name]`
+- Alias: viewsnippets, snippetlist

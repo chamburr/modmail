@@ -5,12 +5,15 @@
 </template>
 
 <script>
+import { mapGetters } from 'vuex'
+
 export default {
+  layout: 'auth',
   head: {
-    title: 'Premium',
+    title: 'Profile',
   },
-  mounted() {
-    window.location.href = 'https://www.youtube.com/watch/dQw4w9WgXcQ'
+  computed: {
+    ...mapGetters('user', ['user']),
   },
 }
 </script>

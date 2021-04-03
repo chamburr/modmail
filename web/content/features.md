@@ -1,26 +1,26 @@
-# Intuitive Dashboard
+# Intuitive Commands
 
-Check out our intuitive and feature-packed dashboard like no other. Not only can you play tracks and
-manage the queue, customizing the effects and settings are just at your fingertips too. Say bye-bye
-to old-fashioned commands!
+Our goal is to make the end-user experience as good as possible, be it the moderators or the users. 
+No more fumbling to find that command you wrote down and instead, use our interactive help with the 
+=help command!
 
-# Effects and Equalizer
+# Feature Rich
 
-Fine tune all the fancy effects and the equalizer to make your music unique! Want to adjust speed or
-pitch? We've got you. Feeling in the mood for a little "Nightcore"? Be our guest! You can even
-manually adjust the equalizer!
+We believe that a ModMail bot should not only fulfill the roles of relaying messages, it should also 
+be packed with loads of other great features. A great example is our beautiful logs viewer which allows 
+server moderators to read through the transcripts presented in a pleasing manner.
 
 # Reliable and High Quality
 
 With our revolutionary gateway implementation written in the fastest language in the world, we're
-proud to achieve absolute 100% uptime! Wyvor can bring you the top-notch sound quality, whenever you
-like and wherever you go!
+proud to achieve absolute 100% uptime! ModMail can help relay messages to and fro between your staff 
+and users at any time!
 
 # Customizable Settings
 
-Adjust the settings to fit your server. Choose the modules a user can access, log player controls
-and announce the playing track with our advanced administration system. Prevent duplicated tracks
-and toggle the 24/7 mode too!
+Adjust the settings to fit your server. Choose the who can access the tickets, the bot's prefix and
+even whether you want staff to reply anonymously! You can even move tickets out of its original 
+category if you want! 
 
 # Open Source
 
@@ -30,5 +30,5 @@ worry about privacy concerns.
 
 # And Much More...
 
-There are many more goodies available in Wyvor, such as saved playlists, music lyrics, usage
-statistics and audit logs. Discover the rest of the features on your own!
+There are many more goodies available in Wyvor, such as advanced logging, snippets, greeting and 
+closing messages, just to name a few. Discover the rest of the features on your own!

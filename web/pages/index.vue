@@ -12,7 +12,7 @@
             </div>
             <h1 class="display-1">
               <span class="d-none d-md-inline font-weight-bold">Meet</span>
-              Wyvor<span class="d-none d-md-inline font-weight-bold">.</span>
+              ModMail<span class="d-none d-md-inline font-weight-bold">.</span>
             </h1>
             <h2 class="display-4">
               The best feature-rich Discord music bot.
@@ -25,11 +25,11 @@
                   <span class="h6 font-weight-bold">Add to Discord</span>
                 </BaseButton>
               </a>
-              <NuxtLink to="/dashboard">
-                <BaseButton type="primary" size="lg" class="mt-3 mx-2 mr-md-0">
-                  <span class="h6 font-weight-bold">Dashboard</span>
+              <a target="_blank" href="/github" class="mx-2 ml-md-0">
+                <BaseButton type="primary" size="lg" class="mt-3">
+                  <span class="h6 font-weight-bold">GitHub</span>
                 </BaseButton>
-              </NuxtLink>
+              </a>
             </div>
           </div>
           <div class="hero-top-column col-md-5 d-none d-md-flex align-items-center">
@@ -40,12 +40,11 @@
       <img id="hero-top-wave" src="~/assets/images/hero-1.svg" alt="Hero" />
     </div>
     <div class="container text-center pb-5">
-      <h2 class="display-2 mt-5 pb-3">About Wyvor</h2>
+      <h2 class="display-2 mt-5 pb-3">About ModMail</h2>
       <p>
-        Wyvor is a feature-rich Discord music bot focussed on bringing you the best music
-        experience. We want to build something that people can enjoy as much as we do, and here we
-        are! As you may wonder, how does this bot differ from the others? Well, there's a lot!
-        Please read on to find out more.
+        ModMail is a feature-rich Discord bot designed to enable your server members to contact
+        staff easily. A new channel is created whenever a user messages the bot, and the channel
+        will serve as a shared inbox for seamless communication between staff and the user.
       </p>
       <h2 class="display-2 mt-5 pb-3">Features</h2>
       <div
@@ -81,8 +80,8 @@
       <div class="container text-center px-5 pb-5 pt-4">
         <h2 class="display-3">What are you waiting for?</h2>
         <p class="h5">
-          Dive into the best music experience today! Feel free to join our support server if you
-          have any questions or have some feedback to let us know. Have fun and enjoy! :)
+          Dive into the best moderation experience today! Feel free to join our support server if
+          you have any questions or have some feedback to let us know. Have fun and enjoy! :)
         </p>
         <a href="/invite" target="_blank">
           <BaseButton type="primary" size="lg" class="mt-3 mx-2 ml-md-0">

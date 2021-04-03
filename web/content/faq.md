@@ -1,90 +1,92 @@
-# What is Wyvor?
+# What is ModMail?
 
-Wyvor is the best feature-rich Discord music bot. Take control over your music with an intuitive
-dashboard, custom effects and more! Learn more about the bot on the home page.
+ModMail is a feature-rich Discord bot designed to enable your server members to contact staff easily.
 
-# How do I get started with the bot?
+# How do I set up ModMail?
 
-Use .help to get started with Wyvor! The command list can be found on the commands page. We also
-recommend you to use our feature-rich and intuitive dashboard for the best experience.
+Simply run \`=setup\` in your server.
 
-# Are there any Wyvor premium plans?
+# How do I use ModMail to contact staff?
 
-Yes, scroll down to the footer.
+Message the bot what you would like to send.
 
-Long answer: No, we do not have any premium plans. Thanks to our robust infrastructure and efficient
-implementations, we are able to keep resource usage at the very low. Thus, we currently do not
-require any funding.
+# Where do I get ModMail premium?
 
-# How do I change the bot prefix?
+Please go to https://modmail.xyz/premium.
 
-You can change the bot prefix in the dashboard settings, or with the .prefix [new prefix] command.
+# Why is the bot not responding?
 
-# How do I change the bot settings?
+Please check the following before asking for help.
 
-You can do this through the dashboard settings.
+\- The bot has Read Messages, Send Messages, and Embed Links permissions.
 
-# What platforms does Wyvor support?
+\- You are using the correct prefix. Use @ModMail prefix to check the prefix.
 
-We support YouTube, SoundCloud, Bandcamp, Vimeo, Twitch streams, files and HTTP URLs.
+\- The command you are using is valid. Check using =help \<command\>.
 
-Why don't you support Spotify? Well, other bots which falsely claim to "support" Spotify only
-searches the track there, but actually plays from other platforms like YouTube. For legal reasons,
-we cannot play tracks from Spotify.
+\- The bot is online. Discord might be having issues, or the bot might be restarting.
 
-# Why is the bot appearing to be offline?
+# The bot says that a category is not found, what should I do?
 
-This is because of a Discord issue, or a third-party issue such as our hosting provider. For more
-information, you should check out the Discord status page or join our support server.
+If you are a server admin, this is telling you that the bot is not set up properly. If you have 
+previously used =setup, you might have deleted the category. Either use =category \[name\] to create 
+the category or =setup to set up everything again.
 
-# Why is the bot not responding to commands?
+# How do I change the server I want to send the message to?
 
-Please ensure that the bot has the read messages, send messages and embed links permission. In
-addition, check that you are using a valid command with the correct prefix. Let us know on the
-support server if it still does not respond!
+Simply react with 🔁 on the confirmation message and you will be asked to choose. If you have 
+confirmation message disabled, use =new \<message\> instead. There is also a shortcut to that: 
+=send \<server ID\> \<message\>.
 
-# Why is the bot not playing anything?
+# Why is the custom emote I sent not working?
 
-Please ensure that there is a currently playing track, the track is not paused, and that the volume
-is set correctly. Also, check that the equalizer is not making an impact on the volume.
+Due to Discord requirements, the bot needs to be in the server where the emote is from in order to use it.
 
-# Why is the sound lagging?
+# Why is the ModMail log not working?
 
-If the bot is consistently lagging, please try to switch the server region and kindly let us know,
-so we will be able to look into the issue!
+This is most likely due to a lack of permission. If it still does not work with full permissions, you can try 
+deleting the channel and run =logging to enable it again.
 
-# Why is the sound so weird?
+# How do I change the prefix of the bot?
 
-This is likely because you have some effects set, or the equalizer is adjusted. Please try to reset
-the filters and attempt to play another track if it is still abnormal.
+Use the command =prefix \<new prefix\>.
 
-# Why is the dashboard not working?
+# Can I rename the ModMail channel?
 
-This is a known bug with Google Chrome when you open multiple tabs of the same dashboard. To
-mitigate, please only open the dashboard in one tab.
+Yes. you can.
 
-# Can I invite a second Wyvor bot?
+# How can I become a moderator/support?
 
-Unfortunately, due to how the dashboard currently works, it is not possible to have multiple
-instances. Please wait patiently as we are working on implementing this!
+You can apply for staff with this link: https://forms.gle/GngEAQzj9Rh8MSjj9
 
-# Can I change the username or avatar?
+# Can I appeal infractions?
 
-No, Discord does not support this. You could however change the nickname in your server.
+Please message ModMail and choose the support server. Include why you were given the infraction, and the reason to appeal.
 
-# How do I report a bug or suggest something?
+# Can I get an invite to this server?
 
-Please use the issue tracker on our GitHub repository. If you do not have a GitHub account, you may
-also let us know through our support server.
+You can find that in the #rules-and-info channel of the support server.
 
-# Can the bot be self-hosted?
+# Is the bot open source?
 
-Yes, the bot is open source on GitHub and you can self-host it.
+Yes! See https://github.com/CHamburr/modmail. However, we will not provide any help for self-hosting.
 
-Here's the catch: The bot has a complex infrastructure written in multiple languages, and unless you
-are very familiar with all of them, self-hosting could be very challenging. We are currently working
-on a way to run the bot with Docker.
+# Can I partner with you?
+
+Please see the pinned message in #partners of the support server. There is a form for you to apply for partnership.
+
+# How can I suggest something?
+
+Please see the channel description of #suggestions channel of support server.
+
+# How do I report a bug?
+
+Please see the channel description of #bug-reports channel of support server.
+
+# I donated, but did not get my patron role?
+
+Please ensure that the payment was successful, and that you bought it for the correct account. If you believe that something is wrong on our end, send your email address, together with some evidence to CHamburr#2591.
 
 # None of these helped me!
 
-If your question is not answered here, please join our support server!
+If your question is not answered, please join our support server and ask in the #support channel!

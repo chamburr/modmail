@@ -5,13 +5,12 @@
         <div class="row">
           <div class="col-12 col-md-5 mb-2">
             <img id="footer-icon" class="mb-2 mr-2" src="~/static/icon.png" alt="Icon" />
-            <p class="d-inline display-4">Wyvor</p>
+            <p class="d-inline display-4">ModMail</p>
             <p class="mt-3">
-              The best feature-rich Discord music bot. Take control over your music with an
-              intuitive dashboard, custom effects and more!
+              A feature-rich Discord bot for easy communication between server staff and users.
             </p>
             <p class="mb-0">
-              Copyright © 2020-2021
+              Copyright © 2019-2021
               <a class="footer-link" target="_blank" rel="noopener" href="https://chamburr.xyz">
                 CHamburr
               </a>
