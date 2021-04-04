@@ -67,7 +67,7 @@ export default {
     return {
       search: '',
       category: 'All',
-      prefix: this.$route.query.prefix || '.',
+      prefix: this.$route.query.prefix || '=',
     }
   },
   head: {
