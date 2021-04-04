@@ -90,7 +90,7 @@
           class="nav-link d-block font-weight-bolder py-2 mr-1"
           target="_blank"
           href="/invite"
-          @click.native="closeMenu"
+          @click="closeMenu"
         >
           <span>Invite</span>
         </a>
@@ -111,7 +111,6 @@
 
 <script>
 import { mapGetters } from 'vuex'
-
 export default {
   name: 'TheHeader',
   props: {
@@ -175,15 +174,12 @@ export default {
   /deep/ .navbar-toggler {
     order: 1;
   }
-
   /deep/ .navbar-brand {
     order: 2;
   }
-
   /deep/ #header-user {
     order: 3;
   }
-
   @include media-breakpoint-down(md) {
     /deep/ .navbar-collapse {
       width: 100%;
@@ -193,7 +189,6 @@ export default {
       animation: none;
       overflow: hidden;
     }
-
     /deep/ .navbar-collapse.show {
       opacity: 1;
       padding-top: 1em !important;
@@ -208,7 +203,6 @@ export default {
     /deep/ .navbar-brand {
       order: 1;
     }
-
     /deep/ .navbar-collapse {
       order: 2;
     }
@@ -219,13 +213,11 @@ export default {
   height: 75px;
   background-color: $gray-900;
   z-index: 1000;
-
   /deep/ .navbar-collapse {
     display: block;
     background-color: $dark;
     top: 75px;
   }
-
   @include media-breakpoint-down(md) {
     /deep/ .navbar-collapse:not(.show) {
       pointer-events: none;

@@ -12,7 +12,7 @@ use actix_web::{web, App, HttpServer};
 use cache::get_redis_pool;
 use config::get_api_address;
 use dotenv::dotenv;
-use routes::{index, users, ApiResult};
+use routes::{ApiResult, index, logs, users};
 use tracing::error;
 use tracing_log::env_logger;
 
@@ -73,6 +73,10 @@ pub async fn real_main() -> ApiResult<()> {
                         .service(users::get_user_me)
                         .service(users::get_user_me_guilds)
                         .service(users::post_user_me_logout),
+                    )
+                    .service(
+                        web::scope("/logs")
+                        .service(logs::get_log_item)
                     )
             )
             .default_service(web::to(errors::default_service))

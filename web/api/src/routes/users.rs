@@ -7,7 +7,7 @@ use actix_web::web::Data;
 use actix_web::{get, post};
 
 #[get("/@me")]
-pub async fn get_user_me(user: User) -> ApiResult<ApiResponse> {
+pub async fn get_user_me(user: User, _redis_pool: Data<RedisPool>) -> ApiResult<ApiResponse> {
     ApiResponse::ok().data(user.user).finish()
 }
 

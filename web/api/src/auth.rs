@@ -1,5 +1,5 @@
-use crate::cache::RedisPool;
 use crate::cache::commands::{self as cache, get_blacklist_item};
+use crate::cache::RedisPool;
 use crate::config::CONFIG;
 use crate::constants::{
     csrf_token_key, user_guilds_key, user_token_key, CALLBACK_PATH, COOKIE_NAME,
@@ -157,7 +157,7 @@ pub async fn get_token_cookie(exchange: AccessTokenExchangeResponse) -> ApiResul
                 .unwrap_or_default(),
         )
         .same_site(SameSite::Lax)
-        .secure(true)
+        // .secure(true)
         .finish();
 
     Ok(cookie)
@@ -182,7 +182,7 @@ pub struct Guild {
 }
 
 impl User {
-    async fn from_token(pool: &RedisPool, token: &str, token_ttl: usize) -> ApiResult<Self> {
+    async fn from_token(pool: &RedisPool, token: &str) -> ApiResult<Self> {
         let client = twilight_http::Client::new(format!("Bearer {}", token));
         let user = client.current_user().await?;
         let user = Account {
@@ -192,7 +192,7 @@ impl User {
             avatar: user.avatar.unwrap_or_else(|| "".to_owned()),
         };
 
-        cache::set_and_expire(pool, user_token_key(user.id), &token, token_ttl).await?;
+        cache::set_and_expire(pool, user_token_key(user.id), &token, 604800 * 1000).await?;
 
         Ok(Self {
             token: token.to_owned(),
@@ -289,12 +289,7 @@ impl FromRequest for User {
                     &DecodingKey::from_base64_secret(CONFIG.api_secret.as_str())?,
                     &Validation::default(),
                 ) {
-                    let user = Self::from_token(
-                        &pool,
-                        token.claims.token.as_str(),
-                        cookie.max_age().or_bad_request()?.whole_milliseconds() as usize
-                    )
-                    .await?;
+                    let user = Self::from_token(&pool, token.claims.token.as_str()).await?;
                     if get_blacklist_item(&pool, user.user.id as u64)
                         .await?
                         .is_some()

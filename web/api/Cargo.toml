@@ -20,6 +20,7 @@ nanoid = { version = "0.3.0", default-features = false }
 percent-encoding = { version = "2.1.0", default-features = false }
 r2d2 = { version = "0.8.9", default-features = false }
 redis = { version = "0.19.0", default-features = false, features = ["tokio-comp"] }
+regex = { version = "1.4.5", default-features = false }
 reqwest = { version = "0.10.8", default-features = false, features = ["json"] }
 sentry = { version = "0.21.0", default-features = false, features = ["backtrace", "transport"] }
 serde = { version = "1.0.117", default-features = false, features = ["derive"] }

@@ -18,6 +18,7 @@ use url::ParseError;
 
 pub mod errors;
 pub mod index;
+pub mod logs;
 pub mod users;
 
 pub type ApiResult<T> = Result<T, ApiError>;
@@ -180,6 +181,7 @@ pub enum ApiError {
     R2d2Error(r2d2::Error),
     RedirectUriInvalidError(RedirectUriInvalidError<'static>),
     RedisError(RedisError),
+    RegexError(regex::Error),
     ReqwestError(reqwest::Error),
     SerdeJsonError(serde_json::Error),
     ToStrError(ToStrError),
@@ -295,6 +297,13 @@ impl From<RedisError> for ApiError {
     fn from(err: RedisError) -> Self {
         sentry::capture_error(&err);
         Self::RedisError(err)
+    }
+}
+
+impl From<regex::Error> for ApiError {
+    fn from(err: regex::Error) -> Self {
+        sentry::capture_error(&err);
+        Self::RegexError(err)
     }
 }
 
