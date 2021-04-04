@@ -161,6 +161,19 @@ class Scheduler:
                 headers={"Authorization": config.dboats_token, "Content-Type": "application/json"},
             )
 
+            await self.redis.set(
+                "bot_stats",
+                orjson.dumps({
+                    "version": "3.0.0",
+                    "started": await self.redis.get("gateway_started"),
+                    "shards": await self.redis.get("gateway_shards"),
+                    "guilds": guilds,
+                    "roles": await self.redis.scard("role_keys"),
+                    "channels": await self.redis.scard("channel_keys"),
+                    "members": await self.redis.scard("member_keys")
+                }).decode("utf-8")
+            )
+
             await asyncio.sleep(900)
 
     async def cleanup(self):

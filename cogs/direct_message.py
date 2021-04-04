@@ -189,7 +189,8 @@ class DirectMessageEvents(commands.Cog, name="Direct Message"):
         if len(user_guilds) == 0:
             await message.channel.send(
                 embed=ErrorEmbed(
-                    description=f"Oops, you don't seem to be in our database. Please login at [this link](https://{self.bot.config.base_uri})."
+                    description=f"Oops, you don't seem to be in our database. "
+                    "Please login at [this link](https://{self.bot.config.base_uri})."
                 )
             )
             return
