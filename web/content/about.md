@@ -13,7 +13,7 @@ Developer, Administrator
 
 Developer, Support
 
-- Image: https://cdn.discordapp.com/avatars/723794074498367498/04ef2c02bd3341e42bda2ec5d6d2dcd2.png
+- Image: https://cdn.discordapp.com/avatars/723794074498367498/a_04ef2c02bd3341e42bda2ec5d6d2dcd2.gif
 - GitHub: https://github.com/waterflamev8
 
 # FlareonIsCute
