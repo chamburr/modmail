@@ -6,9 +6,9 @@ body {
 }
 
 body::after {
-  content: '';
-  display: block;
-  height: 6rem;
+    content: '';
+    display: block;
+    height: 6rem;
 }
 
 hr {
@@ -111,8 +111,8 @@ footer {
 }
 
 #scroll-button.show {
-  opacity: 1;
-  visibility: visible;
+    opacity: 1;
+    visibility: visible;
 }
 
 #scroll-button:hover {

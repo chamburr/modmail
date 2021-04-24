@@ -1,41 +1,90 @@
-# Contributing to ModMail
+# Contributing Guide
 
-Thank you for your interest in contributing!
+Hi, thanks for your interest in contributing to ModMail! We'd love your help to make ModMail even
+better than it is today. As a contributor, please be sure follow our set of guidelines below.
 
-The following is a set of guidelines, and it should provide a good overview of how you can get involved in contributing to ModMail.
+- [Issues and Bugs](#issues-and-bugs)
+- [Pull Requests](#pull-requests)
+- [Commit Convention](#commit-convention)
+- [Development Environment](#development-environment)
+- [Questions](#questions)
+- [Code of Conduct](#code-of-conduct)
 
-## Reporting Bugs and Suggesting Features
+## Issues and Bugs
 
-We track bugs and features using the [GitHub issue tracker](https://github.com/chamburr/modmail/issues).
+We track bugs and features using the GitHub issue tracker. If you come across any bugs or have
+feature suggestions, please let us know by submitting an issue, or even better, making a pull
+request.
 
-Before submitting a bug or a feature, please perform a search on the list of [issues](https://github.com/chamburr/modmail/issues) and check whether it has already been reported or suggested to prevent duplicates. In the case that you find the issue is closed however, read up on the issue and create a new one if necessary.
+## Pull Requests
 
-When writing the report or suggestion, please provide as much information as possible. For bugs, provide clear steps on how to reproduce the bug and include screenshots. For suggestions, provide a concise description on the feature. Generally, filling in the template would work well.
+Please follow these guidelines related to submitting a pull request.
 
-Following these guidelines will help maintainers and the community understand the bug or feature, and fix or implement them more quickly.
+We use [black](https://github.com/psf/black) and [isort](https://github.com/timothycrosley/isort)
+for code style, and use [flake8](https://github.com/PyCQA/flake8) for linting. Please always
+run `scripts/format.sh` and ensure that `scripts/lint.sh` returns no error before submitting a pull
+request.
 
-## Writing Code
+Please follow our commit conventions below. For subsequent commits to a pull request, it is okay not
+to follow them, because they will be eventually squashed.
 
-Don't know where to begin? You can try looking at the list of [issues](https://github.com/chamburr/modmail/issues). We use the tags `bug` and `enhancement` to differientiate between bugs and features.
+## Development Environment
 
-If you want to implement a new feature, you should always create an issue about it first. This will prevent situations where contributions are not helpful.
+To set up your development environment, follow the self-hosting
+guide [here](https://github.com/chamburr/modmail/blob/master/README.md). When you successfully
+self-host the bot, your development environment should more or less be ready.
 
-### Development Environment
+## Commit Convention
 
-To set up your local development environment, follow the self-hosting guide [here](https://github.com/chamburr/modmail/blob/master/README.md). When you successfully self-host the bot, your development environment should more or less be ready.
+We follow the [Conventional Commits](https://www.conventionalcommits.org) to allow for more readable
+messages in the commit history.
 
-[Flake8](https://gitlab.com/pycqa/flake8) is a useful code analysis tool you may want to use.
+The commit message must follow this format:
 
-### Coding Style
+```
+<type>(<scope>): <description>
+<BLANK LINE>
+<body>
+<BLANK LINE>
+<footer>
+```
 
-We use [black](https://github.com/psf/black) for code style and enforce a maximum of 120 characters per line. We also use [isort](https://github.com/timothycrosley/isort) to sort imports and keep them neat. Therefore, please always run `format.sh` before submitting a pull request.
+Additionally, the maximum length of each line must not exceed 72 characters.
 
-### Submitting Pull Requests
+### Header
 
-When submitting a pull request, please write a clear title and description as it will help in the reviewing process. If your pull request fixes a bug or implements a feature in the issue tracker, please link that issue.
+The header is mandatory.
 
-Take note that verbs in git commit messages should always be in present tense and use imperative mood.
+The type must be one of the following, the scope is optional and can be decided at your discretion.
+
+- `build`: Changes to the build system or dependencies.
+- `ci`: Changes to our CI configuration files and scripts.
+- `chore`: Miscellaneous change.
+- `docs`: Changes only the documentation.
+- `feat`: Implements a new feature.
+- `fix`: Fixes an existing bug.
+- `perf`: Improves the performance of the code.
+- `refactor`: Changes to code neither fixes a bug nor adds a feature.
+- `style`: Changes to code that do not affect its functionality.
+- `test`: Adding missing tests or correcting existing tests.
+
+### Body
+
+The body is optional and can contain additional information, such as motivation for the commit.
+
+### Footer
+
+The footer is optional and should contain any information about breaking changes. It is also the
+place to reference GitHub issues that the commit closes.
+
+Breaking changes should start with `BREAKING CHANGE:` with a space or two newlines. The rest of the
+commit message is then used for explaining the change.
 
 ## Questions
 
-Have a question? Instead of opening an issues, please ask in our [Discord server](https://discord.gg/wjWJwJB) instead.
+Have a question? Please avoid opening issues for general questions. Instead, it is much better to
+ask your question on our [Discord server](https://discord.gg/wjWJwJB).
+
+## Code of Conduct
+
+This project is governed by [Contributor Covenant Code of Conduct](CODE_OF_CONDUCT.md).
