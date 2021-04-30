@@ -32,14 +32,18 @@ class Snippet(commands.Cog):
             return
 
         ctx.message.content = res[0]
-        await self.bot.cogs["ModMailEvents"].send_mail_mod(ctx.message, ctx.prefix, anon=False, snippet=True)
+        await self.bot.cogs["ModMailEvents"].send_mail_mod(
+            ctx.message, ctx.prefix, anon=False, snippet=True
+        )
 
     @checks.is_modmail_channel()
     @checks.in_database()
     @checks.is_premium()
     @checks.is_mod()
     @commands.guild_only()
-    @commands.command(description="Use a snippet anonymously.", aliases=["as"], usage="asnippet <name>")
+    @commands.command(
+        description="Use a snippet anonymously.", aliases=["as"], usage="asnippet <name>"
+    )
     async def asnippet(self, ctx, *, name: str):
         async with self.bot.pool.acquire() as conn:
             res = await conn.fetchrow(
@@ -51,7 +55,9 @@ class Snippet(commands.Cog):
             return
 
         ctx.message.content = res[0]
-        await self.bot.cogs["ModMailEvents"].send_mail_mod(ctx.message, ctx.prefix, anon=True, snippet=True)
+        await self.bot.cogs["ModMailEvents"].send_mail_mod(
+            ctx.message, ctx.prefix, anon=True, snippet=True
+        )
 
     @checks.in_database()
     @checks.is_premium()
@@ -63,18 +69,26 @@ class Snippet(commands.Cog):
     )
     async def snippetadd(self, ctx, name: str, *, content: str):
         if len(name) > 100:
-            await ctx.send(embed=ErrorEmbed(description="The snippet name cannot exceed 100 characters."))
+            await ctx.send(
+                embed=ErrorEmbed(description="The snippet name cannot exceed 100 characters.")
+            )
             return
 
         if len(content) > 1000:
-            await ctx.send(embed=ErrorEmbed(description="The snippet content cannot exceed 1000 characters."))
+            await ctx.send(
+                embed=ErrorEmbed(description="The snippet content cannot exceed 1000 characters.")
+            )
             return
 
         async with self.bot.pool.acquire() as conn:
             try:
-                await conn.execute("INSERT INTO snippet VALUES ($1, $2, $3)", ctx.guild.id, name.lower(), content)
+                await conn.execute(
+                    "INSERT INTO snippet VALUES ($1, $2, $3)", ctx.guild.id, name.lower(), content
+                )
             except asyncpg.UniqueViolationError:
-                await ctx.send(embed=ErrorEmbed(description="A snippet with that name already exists."))
+                await ctx.send(
+                    embed=ErrorEmbed(description="A snippet with that name already exists.")
+                )
                 return
 
         await ctx.send(embed=Embed(description="The snippet was added successfully."))
@@ -86,7 +100,9 @@ class Snippet(commands.Cog):
     @commands.command(description="Remove a snippet.", usage="snippetremove <name>")
     async def snippetremove(self, ctx, *, name: str):
         async with self.bot.pool.acquire() as conn:
-            res = await conn.execute("DELETE FROM snippet WHERE name=$1 AND guild=$2", name, ctx.guild.id)
+            res = await conn.execute(
+                "DELETE FROM snippet WHERE name=$1 AND guild=$2", name, ctx.guild.id
+            )
 
         if res == "DELETE 0":
             await ctx.send(embed=ErrorEmbed(description="A snippet with that name was not found."))
@@ -125,7 +141,9 @@ class Snippet(commands.Cog):
                 )
 
             if not res:
-                await ctx.send(embed=ErrorEmbed(description="A snippet with that name was not found."))
+                await ctx.send(
+                    embed=ErrorEmbed(description="A snippet with that name was not found.")
+                )
                 return
 
             embed = Embed(title="Snippet")

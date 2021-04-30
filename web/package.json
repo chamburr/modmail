@@ -1,16 +1,16 @@
 {
-  "name": "wyvor",
-  "version": "1.0.3",
-  "homepage": "https://wyvor.xyz",
+  "name": "modmail",
+  "version": "1.0.0",
+  "homepage": "https://modmail.xyz",
   "bugs": {
-    "url": "https://github.com/chamburr/wyvor/issues",
-    "email": "hi@wyvor.xyz"
+    "url": "https://github.com/chamburr/modmail/issues",
+    "email": "hi@modmail.xyz"
   },
   "license": "AGPL-3.0",
   "author": "CHamburr <hi@chamburr.xyz>",
   "repository": {
     "type": "git",
-    "url": "https://github.com/chamburr/wyvor.git"
+    "url": "https://github.com/chamburr/modmail.git"
   },
   "scripts": {
     "dev": "cross-env NODE_ENV=development nuxt",

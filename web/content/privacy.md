@@ -69,4 +69,4 @@ practices or for other operational, legal or regulatory reasons.
 For more information about our privacy practices, if you have any questions, or if you would like to
 make a complaint, please contact us through sending email to hi@modmail.xyz.
 
-_Last updated: 1 December 2020_
+_Last updated: 10 April 2021_

@@ -1,3 +1,12 @@
 #!/bin/bash
-isort .
-black . --line-length 120
+
+WORKDIR=$(pwd)
+
+echo "Formatting Rust..."
+cd "$WORKDIR/web" && cargo fmt
+
+echo "Formatting Node..."
+cd "$WORKDIR/web" && yarn --silent format --loglevel warn
+
+echo "Formatting Python..."
+cd "$WORKDIR" && isort . && black . --line-length 100

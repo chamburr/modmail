@@ -1,7 +1,6 @@
 import datetime
 import logging
 import time
-import asyncio
 
 import discord
 
@@ -94,7 +93,9 @@ class Events(commands.Cog):
                 return
 
             if permissions.embed_links is False:
-                await message.channel.send("The Embed Links permission is needed for basic commands to work.")
+                await message.channel.send(
+                    "The Embed Links permission is needed for basic commands to work."
+                )
                 return
 
         if await tools.is_user_banned(self.bot, message.author):

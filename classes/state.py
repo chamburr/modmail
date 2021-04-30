@@ -34,7 +34,9 @@ log = logging.getLogger(__name__)
 
 
 class State:
-    def __init__(self, *, dispatch, handlers, hooks, http, loop, redis=None, shard_count=None, id, **options):
+    def __init__(
+        self, *, dispatch, handlers, hooks, http, loop, redis=None, shard_count=None, id, **options
+    ):
         self.dispatch = dispatch
         self.handlers = handlers
         self.hooks = hooks
@@ -128,7 +130,9 @@ class State:
 
         return [x.decode("utf-8") for x in await self.redis.smembers(key)]
 
-    async def _members_get(self, key, key_id=None, name=None, first=None, second=None, predicate=None):
+    async def _members_get(
+        self, key, key_id=None, name=None, first=None, second=None, predicate=None
+    ):
         for match in await self._members(key, key_id):
             keys = match.split(":")
             if name is None or keys[0] == str(name):
@@ -139,7 +143,9 @@ class State:
 
         return None
 
-    async def _members_get_all(self, key, key_id=None, name=None, first=None, second=None, predicate=None):
+    async def _members_get_all(
+        self, key, key_id=None, name=None, first=None, second=None, predicate=None
+    ):
         matches = []
         for match in await self._members(key, key_id):
             keys = match.split(":")
@@ -345,7 +351,9 @@ class State:
         try:
             while True:
                 try:
-                    guild = await asyncio.wait_for(self._ready_state.get(), timeout=self._ready_timeout)
+                    guild = await asyncio.wait_for(
+                        self._ready_state.get(), timeout=self._ready_timeout
+                    )
                 except asyncio.TimeoutError:
                     break
                 else:
@@ -380,7 +388,9 @@ class State:
         channel = await self.get_channel(int(data["channel_id"]))
 
         if not channel and not data.get("guild_id"):
-            channel = DMChannel(me=await self.user(), state=self, data={"id": int(data["channel_id"])})
+            channel = DMChannel(
+                me=await self.user(), state=self, data={"id": int(data["channel_id"])}
+            )
 
         if channel:
             message = self.create_message(channel=channel, data=data)
@@ -447,7 +457,9 @@ class State:
 
         message = await self._get_message(raw.message_id)
         if message:
-            reaction = Reaction(message=message, data=data, emoji=await self._upgrade_partial_emoji(emoji))
+            reaction = Reaction(
+                message=message, data=data, emoji=await self._upgrade_partial_emoji(emoji)
+            )
             user = raw.member or await self._get_reaction_user(message.channel, raw.user_id)
 
             if user:
@@ -473,7 +485,9 @@ class State:
 
         message = await self._get_message(raw.message_id)
         if message:
-            reaction = Reaction(message=message, data=data, emoji=await self._upgrade_partial_emoji(emoji))
+            reaction = Reaction(
+                message=message, data=data, emoji=await self._upgrade_partial_emoji(emoji)
+            )
             user = await self._get_reaction_user(message.channel, raw.user_id)
 
             if user:
@@ -491,7 +505,9 @@ class State:
 
         message = await self._get_message(raw.message_id)
         if message:
-            reaction = Reaction(message=message, data=data, emoji=await self._upgrade_partial_emoji(emoji))
+            reaction = Reaction(
+                message=message, data=data, emoji=await self._upgrade_partial_emoji(emoji)
+            )
             self.dispatch("reaction_clear_emoji", reaction)
 
     async def parse_presence_update(self, data, old):
@@ -561,7 +577,9 @@ class State:
 
     async def parse_channel_pins_update(self, data, old):
         channel = await self.get_channel(int(data["channel_id"]))
-        last_pin = utils.parse_time(data["last_pin_timestamp"]) if data["last_pin_timestamp"] else None
+        last_pin = (
+            utils.parse_time(data["last_pin_timestamp"]) if data["last_pin_timestamp"] else None
+        )
 
         try:
             channel.guild
@@ -738,7 +756,12 @@ class State:
                     member = await guild.get_member(utils._get_as_snowflake(data, "user_id"))
 
             if member:
-                self.dispatch("typing", channel, member, datetime.datetime.utcfromtimestamp(data.get("timestamp")))
+                self.dispatch(
+                    "typing",
+                    channel,
+                    member,
+                    datetime.datetime.utcfromtimestamp(data.get("timestamp")),
+                )
 
     async def parse_relationship_add(self, data, old):
         return
@@ -769,7 +792,9 @@ class State:
         if not channel_id:
             return None
 
-        return await self._get_private_channel(channel_id) or await self._get_guild_channel(channel_id)
+        return await self._get_private_channel(channel_id) or await self._get_guild_channel(
+            channel_id
+        )
 
     def create_message(self, *, channel, data):
         message = Message(state=self, channel=channel, data=data)

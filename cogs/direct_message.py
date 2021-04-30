@@ -34,7 +34,9 @@ class DirectMessageEvents(commands.Cog, name="Direct Message"):
         member = await guild.fetch_member(message.author.id)
         if not member:
             message.channel.send(
-                embed=ErrorEmbed(description="You are not in that server, and the message is not sent.")
+                embed=ErrorEmbed(
+                    description="You are not in that server, and the message is not sent."
+                )
             )
             return
 
@@ -51,7 +53,9 @@ class DirectMessageEvents(commands.Cog, name="Direct Message"):
 
         if message.author.id in data[9]:
             await message.channel.send(
-                embed=ErrorEmbed(description="That server has blacklisted you from sending a message there.")
+                embed=ErrorEmbed(
+                    description="That server has blacklisted you from sending a message there."
+                )
             )
             return
 
@@ -64,7 +68,13 @@ class DirectMessageEvents(commands.Cog, name="Direct Message"):
         if channel is None:
             self.bot.prom.tickets.inc({})
 
-            name = "".join([x for x in message.author.name.lower() if x not in string.punctuation and x.isprintable()])
+            name = "".join(
+                [
+                    x
+                    for x in message.author.name.lower()
+                    if x not in string.punctuation and x.isprintable()
+                ]
+            )
 
             if name:
                 name = name + f"-{message.author.discriminator}"
@@ -114,7 +124,9 @@ class DirectMessageEvents(commands.Cog, name="Direct Message"):
             )
             embed.add_field(name="User", value=f"<@{message.author.id}> ({message.author.id})")
             embed.add_field(name="Roles", value=" ".join([f"<@&{x}>" for x in member._roles]))
-            embed.set_footer(text=f"{message.author} | {message.author.id}", icon_url=message.author.avatar_url)
+            embed.set_footer(
+                text=f"{message.author} | {message.author.id}", icon_url=message.author.avatar_url
+            )
 
             roles = []
             for role in data[8]:
@@ -168,7 +180,9 @@ class DirectMessageEvents(commands.Cog, name="Direct Message"):
             icon_url=message.author.avatar_url,
         )
 
-        for count, attachment in enumerate([attachment.url for attachment in dm_message.attachments], start=1):
+        for count, attachment in enumerate(
+            [attachment.url for attachment in dm_message.attachments], start=1
+        ):
             embed.add_field(name=f"Attachment {count}", value=attachment, inline=False)
 
         for file in files:
@@ -179,7 +193,9 @@ class DirectMessageEvents(commands.Cog, name="Direct Message"):
         except discord.Forbidden:
             await dm_message.delete()
             await message.channel.send(
-                embed=ErrorEmbed(description="The bot is missing permissions. Please contact an admin on the server.")
+                embed=ErrorEmbed(
+                    description="The bot is missing permissions. Please contact an admin on the server."
+                )
             )
 
     async def select_guild(self, message, msg=None):
@@ -189,8 +205,8 @@ class DirectMessageEvents(commands.Cog, name="Direct Message"):
         if len(user_guilds) == 0:
             await message.channel.send(
                 embed=ErrorEmbed(
-                    description=f"Oops, you don't seem to be in our database. "
-                    "Please login at [this link](https://{self.bot.config.base_uri})."
+                    description="Oops, you don't seem to be in our database. Please login at "
+                    f"[this link](https://{self.bot.config.base_uri})."
                 )
             )
             return
@@ -242,7 +258,9 @@ class DirectMessageEvents(commands.Cog, name="Direct Message"):
 
         await msg.add_reaction("◀")
         await msg.add_reaction("▶")
-        for reaction in ["1⃣", "2⃣", "3⃣", "4⃣", "5⃣", "6⃣", "7⃣", "8⃣", "9⃣", "🔟"][: len(embeds[0].fields)]:
+        for reaction in ["1⃣", "2⃣", "3⃣", "4⃣", "5⃣", "6⃣", "7⃣", "8⃣", "9⃣", "🔟"][
+            : len(embeds[0].fields)
+        ]:
             await msg.add_reaction(reaction)
 
         await self.bot.state.sadd(
@@ -269,7 +287,9 @@ class DirectMessageEvents(commands.Cog, name="Direct Message"):
             return
 
         if payload.emoji.name in ["✅", "🔁", "❌"]:
-            menu, channel, message = await tools.get_reaction_menu(self.bot, payload, "confirmation")
+            menu, channel, message = await tools.get_reaction_menu(
+                self.bot, payload, "confirmation"
+            )
             if menu is None:
                 return
 
@@ -286,12 +306,27 @@ class DirectMessageEvents(commands.Cog, name="Direct Message"):
                 if payload.emoji.name == "🔁":
                     await self.select_guild(msg, message)
                 elif payload.emoji.name == "❌":
-                    await message.edit(embed=ErrorEmbed(description="Request cancelled successfully."))
+                    await message.edit(
+                        embed=ErrorEmbed(description="Request cancelled successfully.")
+                    )
 
             await self.bot.state.srem("reaction_menus", menu)
             return
 
-        if payload.emoji.name in ["1⃣", "2⃣", "3⃣", "4⃣", "5⃣", "6⃣", "7⃣", "8⃣", "9⃣", "🔟", "◀️", "▶️"]:
+        if payload.emoji.name in [
+            "1⃣",
+            "2⃣",
+            "3⃣",
+            "4⃣",
+            "5⃣",
+            "6⃣",
+            "7⃣",
+            "8⃣",
+            "9⃣",
+            "🔟",
+            "◀️",
+            "▶️",
+        ]:
             menu, channel, message = await tools.get_reaction_menu(self.bot, payload, "selection")
             if menu is None:
                 return
@@ -300,7 +335,9 @@ class DirectMessageEvents(commands.Cog, name="Direct Message"):
             all_pages = menu["data"]["all_pages"]
 
             if payload.emoji.name not in ["◀️", "▶️"]:
-                chosen = ["1⃣", "2⃣", "3⃣", "4⃣", "5⃣", "6⃣", "7⃣", "8⃣", "9⃣", "🔟"].index(payload.emoji.name)
+                chosen = ["1⃣", "2⃣", "3⃣", "4⃣", "5⃣", "6⃣", "7⃣", "8⃣", "9⃣", "🔟"].index(
+                    payload.emoji.name
+                )
                 await message.delete()
 
                 fields = all_pages[page]["fields"]
@@ -320,7 +357,9 @@ class DirectMessageEvents(commands.Cog, name="Direct Message"):
                 new_page = discord.Embed.from_dict(all_pages[page])
                 await message.edit(embed=new_page)
 
-                for reaction in ["1⃣", "2⃣", "3⃣", "4⃣", "5⃣", "6⃣", "7⃣", "8⃣", "9⃣", "🔟"][: len(new_page.fields)]:
+                for reaction in ["1⃣", "2⃣", "3⃣", "4⃣", "5⃣", "6⃣", "7⃣", "8⃣", "9⃣", "🔟"][
+                    : len(new_page.fields)
+                ]:
                     await message.add_reaction(reaction)
 
             if payload.emoji.name == "▶️" and page < len(all_pages) - 1:
@@ -329,7 +368,9 @@ class DirectMessageEvents(commands.Cog, name="Direct Message"):
                 new_page = discord.Embed.from_dict(all_pages[page])
                 await message.edit(embed=new_page)
 
-                for reaction in ["1⃣", "2⃣", "3⃣", "4⃣", "5⃣", "6⃣", "7⃣", "8⃣", "9⃣", "🔟"][len(new_page.fields) :]:
+                for reaction in ["1⃣", "2⃣", "3⃣", "4⃣", "5⃣", "6⃣", "7⃣", "8⃣", "9⃣", "🔟"][
+                    len(new_page.fields) :
+                ]:
                     try:
                         await message.remove_reaction(reaction, self.bot.user)
                     except discord.NotFound:
@@ -350,7 +391,9 @@ class DirectMessageEvents(commands.Cog, name="Direct Message"):
                 return
 
         if await tools.is_user_banned(self.bot, message.author):
-            await message.channel.send(embed=ErrorEmbed(description="You are banned from this bot."))
+            await message.channel.send(
+                embed=ErrorEmbed(description="You are banned from this bot.")
+            )
             return
 
         if self.bot.config.default_server:
@@ -418,13 +461,17 @@ class DirectMessageEvents(commands.Cog, name="Direct Message"):
         await self.select_guild(msg)
 
     @commands.dm_only()
-    @commands.command(description="Shortcut to send message to a server.", usage="send <server ID> <message>")
+    @commands.command(
+        description="Shortcut to send message to a server.", usage="send <server ID> <message>"
+    )
     async def send(self, ctx, guild: GuildConverter, *, message: str):
         ctx.message.content = message
         await self.send_mail(ctx.message, guild)
 
     @commands.dm_only()
-    @commands.command(description="Enable or disable the confirmation message.", usage="confirmation")
+    @commands.command(
+        description="Enable or disable the confirmation message.", usage="confirmation"
+    )
     async def confirmation(self, ctx):
         data = await tools.get_user_settings(self.bot, ctx.author.id)
 

@@ -129,7 +129,9 @@ class ModMail(commands.AutoShardedBot):
         return [Status(x) for x in await self._connection.get("gateway_statuses")]
 
     async def sessions(self):
-        return {int(x): Session(y) for x, y in (await self._connection.get("gateway_sessions")).items()}
+        return {
+            int(x): Session(y) for x, y in (await self._connection.get("gateway_sessions")).items()
+        }
 
     async def get_channel(self, channel_id):
         return await self._connection.get_channel(channel_id)
@@ -199,7 +201,9 @@ class ModMail(commands.AutoShardedBot):
     async def send_message(self, msg):
         data = orjson.dumps(msg)
         self.ws._dispatch("socket_raw_send", data)
-        await self._amqp_channel.default_exchange.publish(aio_pika.Message(body=data), routing_key="gateway.send")
+        await self._amqp_channel.default_exchange.publish(
+            aio_pika.Message(body=data), routing_key="gateway.send"
+        )
 
     async def on_http_request_start(self, _session, trace_config_ctx, _params):
         trace_config_ctx.start = asyncio.get_event_loop().time()
@@ -237,7 +241,9 @@ class ModMail(commands.AutoShardedBot):
         )
         self.http._token(self.config.token, bot=True)
 
-        self.pool = await asyncpg.create_pool(**self.config.database, max_size=10, command_timeout=60)
+        self.pool = await asyncpg.create_pool(
+            **self.config.database, max_size=10, command_timeout=60
+        )
 
         self._redis = await aioredis.create_redis_pool(
             (self.config.redis["host"], self.config.redis["port"]),

@@ -45,7 +45,9 @@ class Member(member.Member):
 
     async def _client_status(self):
         presence = await self._presence()
-        status = {sys.intern(x): sys.intern(y) for x, y in presence.get("client_status", {}).items()}
+        status = {
+            sys.intern(x): sys.intern(y) for x, y in presence.get("client_status", {}).items()
+        }
         status[None] = sys.intern(presence["status"]) if presence.get("status") else "offline"
         return status
 

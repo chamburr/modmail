@@ -29,16 +29,20 @@ class ErrorHandler(commands.Cog):
         elif isinstance(error, commands.NoPrivateMessage):
             await ctx.send(
                 embed=ErrorEmbed(
-                    title="Command Unavailable", description="This command cannot be used in direct message."
+                    title="Command Unavailable",
+                    description="This command cannot be used in direct message.",
                 )
             )
         elif isinstance(error, commands.PrivateMessageOnly):
             await ctx.send(
                 embed=ErrorEmbed(
-                    title="Command Unavailable", description="This command can only be used in direct message."
+                    title="Command Unavailable",
+                    description="This command can only be used in direct message.",
                 )
             )
-        elif isinstance(error, commands.MissingRequiredArgument) or isinstance(error, commands.BadArgument):
+        elif isinstance(error, commands.MissingRequiredArgument) or isinstance(
+            error, commands.BadArgument
+        ):
             embed = ErrorEmbed(
                 title="Invalid Arguments",
                 description=f"Please check the usage below or join the support server with `{ctx.prefix}support` if "
@@ -50,7 +54,8 @@ class ErrorHandler(commands.Cog):
         elif isinstance(error, commands.NotOwner):
             await ctx.send(
                 embed=ErrorEmbed(
-                    title="Permission Denied", description="You do not have permission to use this command."
+                    title="Permission Denied",
+                    description="You do not have permission to use this command.",
                 )
             )
         elif isinstance(error, commands.MissingPermissions):

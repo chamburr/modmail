@@ -67,4 +67,4 @@ website you are agreeing to be bound by the then current version of these terms 
 These terms and conditions are governed by and construed in accordance with the laws of Singapore
 and you irrevocably submit to the exclusive jurisdiction of the courts in that State or location.
 
-_Last updated: 1 December 2020_
+_Last updated: 10 April 2021_

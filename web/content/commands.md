@@ -39,14 +39,16 @@ Toggle between enable and disable for ModMail logs.
 
 ## greetingmessage
 
-Set or clear the message that is sent when a new ticket is opened. Tags `{username}`, `{usertag}`, `{userid}` and `{usermention}` can be used.
+Set or clear the message that is sent when a new ticket is opened. Tags `{username}`, `{usertag}`,
+`{userid}` and `{usermention}` can be used.
 
 - Usage: `[text]`
 - Alias: welcomemessage, greetmessage
 
 ## closingmessage
 
-Set or clear the message that is sent when a ticket is closed. Tags `{username}`, `{usertag}`, `{userid}` and `{usermention}` can be used.
+Set or clear the message that is sent when a ticket is closed. Tags `{username}`, `{usertag}`,
+`{userid}` and `{usermention}` can be used.
 
 - Usage: `[text]`
 - Alias: goodbyemessage, closemessage

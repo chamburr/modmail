@@ -45,9 +45,13 @@ class Premium(commands.Cog):
     @commands.command(description="Get the premium status of this server.", usage="premiumstatus")
     async def premiumstatus(self, ctx):
         async with self.bot.pool.acquire() as conn:
-            res = await conn.fetchrow("SELECT identifier FROM premium WHERE $1=any(guild)", ctx.guild.id)
+            res = await conn.fetchrow(
+                "SELECT identifier FROM premium WHERE $1=any(guild)", ctx.guild.id
+            )
 
-        await ctx.send(embed=Embed(description=f"This server has premium. Offered by: <@{res[0]}>."))
+        await ctx.send(
+            embed=Embed(description=f"This server has premium. Offered by: <@{res[0]}>.")
+        )
 
     @checks.is_patron()
     @commands.command(
@@ -57,7 +61,9 @@ class Premium(commands.Cog):
     )
     async def viewpremium(self, ctx):
         async with self.bot.pool.acquire() as conn:
-            res = await conn.fetchrow("SELECT guild FROM premium WHERE identifier=$1", ctx.author.id)
+            res = await conn.fetchrow(
+                "SELECT guild FROM premium WHERE identifier=$1", ctx.author.id
+            )
 
         if not res or not res[0]:
             await ctx.send(embed=Embed(description="You have not assigned premium to any server."))
@@ -71,17 +77,23 @@ class Premium(commands.Cog):
         await ctx.send(embed=Embed(title="Premium Servers", description="\n".join(guilds)))
 
     @checks.is_patron()
-    @commands.command(description="Assign premium slot to a server.", usage="premiumassign <server ID>")
+    @commands.command(
+        description="Assign premium slot to a server.", usage="premiumassign <server ID>"
+    )
     async def premiumassign(self, ctx, *, guild: GuildConverter):
         async with self.bot.pool.acquire() as conn:
-            res = await conn.fetchrow("SELECT identifier FROM premium WHERE $1=any(guild)", guild.id)
+            res = await conn.fetchrow(
+                "SELECT identifier FROM premium WHERE $1=any(guild)", guild.id
+            )
 
         if res:
             await ctx.send(embed=ErrorEmbed(description="That server already has premium."))
             return
 
         async with self.bot.pool.acquire() as conn:
-            res = await conn.fetchrow("SELECT array_length(guild, 1) FROM premium WHERE identifier=$1", ctx.author.id)
+            res = await conn.fetchrow(
+                "SELECT array_length(guild, 1) FROM premium WHERE identifier=$1", ctx.author.id
+            )
 
         if res[0] and res[0] >= await tools.get_premium_slots(self.bot, ctx.author.id):
             await ctx.send(
@@ -94,26 +106,36 @@ class Premium(commands.Cog):
 
         async with self.bot.pool.acquire() as conn:
             await conn.execute(
-                "UPDATE premium SET guild=array_append(guild, $1) WHERE identifier=$2", guild.id, ctx.author.id
+                "UPDATE premium SET guild=array_append(guild, $1) WHERE identifier=$2",
+                guild.id,
+                ctx.author.id,
             )
 
         await ctx.send(embed=Embed(description="That server now has premium."))
 
     @checks.is_patron()
-    @commands.command(description="Remove premium slot from a server.", usage="premiumremove <server ID>")
+    @commands.command(
+        description="Remove premium slot from a server.", usage="premiumremove <server ID>"
+    )
     async def premiumremove(self, ctx, *, guild: GuildConverter):
         async with self.bot.pool.acquire() as conn:
             res = await conn.fetchrow(
-                "SELECT identifier FROM premium WHERE identifier=$1 AND $2=any(guild)", ctx.author.id, guild.id
+                "SELECT identifier FROM premium WHERE identifier=$1 AND $2=any(guild)",
+                ctx.author.id,
+                guild.id,
             )
 
         if not res:
-            await ctx.send(embed=ErrorEmbed(description="You did not assign premium to that server."))
+            await ctx.send(
+                embed=ErrorEmbed(description="You did not assign premium to that server.")
+            )
             return
 
         async with self.bot.pool.acquire() as conn:
             await conn.execute(
-                "UPDATE premium SET guild=array_remove(guild, $1) WHERE identifier=$2", guild.id, ctx.author.id
+                "UPDATE premium SET guild=array_remove(guild, $1) WHERE identifier=$2",
+                guild.id,
+                ctx.author.id,
             )
 
         await tools.remove_premium(self.bot, guild.id)

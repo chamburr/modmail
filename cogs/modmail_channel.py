@@ -32,7 +32,9 @@ class ModMailEvents(commands.Cog):
             return
 
         if await tools.is_user_banned(self.bot, message.author):
-            await message.channel.send(embed=ErrorEmbed(description="You are banned from this bot."))
+            await message.channel.send(
+                embed=ErrorEmbed(description="You are banned from this bot.")
+            )
             return
 
         if (await tools.get_data(self.bot, message.guild.id))[10] is True:
@@ -76,9 +78,13 @@ class ModMailEvents(commands.Cog):
         )
         embed.set_author(
             name=str(message.author) if anon is False else "Anonymous#0000",
-            icon_url=message.author.avatar_url if anon is False else "https://cdn.discordapp.com/embed/avatars/0.png",
+            icon_url=message.author.avatar_url
+            if anon is False
+            else "https://cdn.discordapp.com/embed/avatars/0.png",
         )
-        embed.set_footer(text=f"{message.guild.name} | {message.guild.id}", icon_url=message.guild.icon_url)
+        embed.set_footer(
+            text=f"{message.guild.name} | {message.guild.id}", icon_url=message.guild.icon_url
+        )
 
         files = []
         for file in message.attachments:
@@ -105,7 +111,9 @@ class ModMailEvents(commands.Cog):
         )
         embed.set_footer(text=f"{member} | {member.id}", icon_url=member.avatar_url)
 
-        for count, attachment in enumerate([attachment["url"] for attachment in dm_message.attachments], start=1):
+        for count, attachment in enumerate(
+            [attachment["url"] for attachment in dm_message.attachments], start=1
+        ):
             embed.add_field(name=f"Attachment {count}", value=attachment, inline=False)
 
         for file in files:

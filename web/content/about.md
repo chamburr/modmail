@@ -2,7 +2,8 @@
 
 Developer, Administrator
 
-- Image: https://cdn.discordapp.com/avatars/446290930723717120/a_a23dcacf8b9d10dd3f3ebced4e5f7ffd.gif
+- Image:
+  https://cdn.discordapp.com/avatars/446290930723717120/a_a23dcacf8b9d10dd3f3ebced4e5f7ffd.gif
 - Website: https://chamburr.xyz
 - GitHub: https://github.com/chamburr
 - Twitter: https://twitter.com/chamburr22
@@ -13,7 +14,8 @@ Developer, Administrator
 
 Developer, Support
 
-- Image: https://cdn.discordapp.com/avatars/723794074498367498/a_04ef2c02bd3341e42bda2ec5d6d2dcd2.gif
+- Image:
+  https://cdn.discordapp.com/avatars/723794074498367498/a_04ef2c02bd3341e42bda2ec5d6d2dcd2.gif
 - GitHub: https://github.com/waterflamev8
 
 # FlareonIsCute
@@ -51,7 +53,8 @@ Moderator
 
 Support
 
-- Image: https://cdn.discordapp.com/avatars/332314562575597579/a_570931cb720a4f40ec7c9375193df21b.gif
+- Image:
+  https://cdn.discordapp.com/avatars/332314562575597579/a_570931cb720a4f40ec7c9375193df21b.gif
 
 # Mikhail
 
