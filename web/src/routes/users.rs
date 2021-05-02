@@ -8,8 +8,10 @@ use crate::{
 use actix_web::{get, post, web::Data};
 
 #[get("/@me")]
-pub async fn get_user_me(user: User, _redis_pool: Data<RedisPool>) -> ApiResult<ApiResponse> {
-    ApiResponse::ok().data(user.user).finish()
+pub async fn get_user_me(mut user: User, _redis_pool: Data<RedisPool>) -> ApiResult<ApiResponse> {
+    user.token.clear();
+
+    ApiResponse::ok().data(user).finish()
 }
 
 #[post("/@me/logout")]

@@ -16,27 +16,22 @@ futures = { version = "0.3.14", default-features = false }
 http = { version = "0.2.4", default-features = false }
 jsonwebtoken = { version = "7.2.0", default-features = false }
 lazy_static = { version = "1.4.0", default-features = false }
-nanoid = { version = "0.4.0", default-features = false }
+oauth2 = { version = "4.0.0", default-features = false, features = ["reqwest"]}
 percent-encoding = { version = "2.1.0", default-features = false }
 r2d2 = { version = "0.8.9", default-features = false }
 redis = { version = "0.20.0", default-features = false, features = ["tokio-comp"] }
-regex = { version = "1.4.5", default-features = false }
-reqwest = { version = "0.11.2", default-features = false, features = ["json"] }
+regex = { version = "1.5.3", default-features = false }
+reqwest = { version = "0.11.3", default-features = false, features = ["json"] }
 sentry = { version = "0.22.0", default-features = false, features = ["backtrace", "transport"] }
 serde = { version = "1.0.117", default-features = false, features = ["derive"] }
 serde_json = { version = "1.0.61", default-features = false }
-tokio = { version = "1.0.1", default-features = false, features = ["rt", "rt-multi-thread"] }
-tracing = { version = "0.1.22", default-features = false }
+tokio = { version = "1.5.0", default-features = false, features = ["rt", "rt-multi-thread"] }
+tracing = { version = "0.1.26", default-features = false }
 tracing-log = { version = "0.1.1", default-features = false, features = ["env_logger"] }
-tracing-subscriber = { version = "0.2.15", default-features = false, features = ["ansi", "fmt"] }
+tracing-subscriber = { version = "0.2.18", default-features = false, features = ["ansi", "fmt"] }
 twilight-http = { version = "0.2.10", default-features = false, features = ["rustls"] }
 twilight-model = { version = "0.2.9", default-features = false }
 url = { version = "2.1.1", default-features = false }
-
-[dependencies.twilight-oauth2]
-git = "https://github.com/twilight-rs/oauth2"
-branch = "trunk"
-default-features = false
 
 [profile.release]
 lto = "thin"

@@ -3,18 +3,19 @@ use actix_web::{
     Responder, ResponseError,
 };
 use futures::future::{ok, Ready};
-use http::header::ToStrError;
+use oauth2::{
+    basic::BasicErrorResponseType, RequestTokenError, RevocationErrorResponseType,
+    StandardErrorResponse,
+};
 use redis::RedisError;
 use serde::Serialize;
 use serde_json::{json, Value};
 use std::{
     fmt::{self, Debug, Display, Formatter},
     io,
-    net::AddrParseError,
     num::ParseIntError,
     str::Utf8Error,
 };
-use twilight_oauth2::client::RedirectUriInvalidError;
 use url::ParseError;
 
 pub mod errors;
@@ -172,7 +173,6 @@ impl Responder for ApiResponse {
 #[derive(Debug)]
 pub enum ApiError {
     ActixWebError(()),
-    AddrParseError(AddrParseError),
     CustomError((StatusCode, Value)),
     EmptyError(()),
     IoError(io::Error),
@@ -180,12 +180,21 @@ pub enum ApiError {
     ParseError(ParseError),
     ParseIntError(ParseIntError),
     R2d2Error(r2d2::Error),
-    RedirectUriInvalidError(RedirectUriInvalidError<'static>),
     RedisError(RedisError),
-    RegexError(regex::Error),
+    RequestTokenErrorBasic(
+        RequestTokenError<
+            oauth2::reqwest::Error<reqwest::Error>,
+            StandardErrorResponse<BasicErrorResponseType>,
+        >,
+    ),
+    RequestTokenErrorRevocation(
+        RequestTokenError<
+            oauth2::reqwest::Error<reqwest::Error>,
+            StandardErrorResponse<RevocationErrorResponseType>,
+        >,
+    ),
     ReqwestError(reqwest::Error),
     SerdeJsonError(serde_json::Error),
-    ToStrError(ToStrError),
     TwilightHttpError(twilight_http::Error),
     Utf8Error(Utf8Error),
 }
@@ -215,13 +224,6 @@ impl From<actix_web::Error> for ApiError {
     }
 }
 
-impl From<AddrParseError> for ApiError {
-    fn from(err: AddrParseError) -> Self {
-        sentry::capture_error(&err);
-        Self::AddrParseError(err)
-    }
-}
-
 impl From<BlockingError<r2d2::Error>> for ApiError {
     fn from(err: BlockingError<r2d2::Error>) -> Self {
         sentry::capture_error(&err);
@@ -235,12 +237,6 @@ impl From<BlockingError<r2d2::Error>> for ApiError {
 impl From<ApiResponse> for ApiError {
     fn from(err: ApiResponse) -> Self {
         Self::CustomError((err.status, err.data))
-    }
-}
-
-impl From<()> for ApiError {
-    fn from(_: ()) -> Self {
-        Self::EmptyError(())
     }
 }
 
@@ -279,21 +275,6 @@ impl From<r2d2::Error> for ApiError {
     }
 }
 
-impl From<RedirectUriInvalidError<'_>> for ApiError {
-    fn from(err: RedirectUriInvalidError<'_>) -> Self {
-        sentry::capture_error(&err);
-        match err {
-            RedirectUriInvalidError::Invalid { source, .. } => {
-                Self::RedirectUriInvalidError(RedirectUriInvalidError::Invalid { source, uri: "" })
-            }
-            RedirectUriInvalidError::Unconfigured { uri } => {
-                Self::RedirectUriInvalidError(RedirectUriInvalidError::Unconfigured { uri })
-            }
-            _ => Self::EmptyError(()),
-        }
-    }
-}
-
 impl From<RedisError> for ApiError {
     fn from(err: RedisError) -> Self {
         sentry::capture_error(&err);
@@ -301,10 +282,41 @@ impl From<RedisError> for ApiError {
     }
 }
 
-impl From<regex::Error> for ApiError {
-    fn from(err: regex::Error) -> Self {
+impl
+    From<
+        RequestTokenError<
+            oauth2::reqwest::Error<reqwest::Error>,
+            StandardErrorResponse<BasicErrorResponseType>,
+        >,
+    > for ApiError
+{
+    fn from(
+        err: RequestTokenError<
+            oauth2::reqwest::Error<reqwest::Error>,
+            StandardErrorResponse<BasicErrorResponseType>,
+        >,
+    ) -> Self {
         sentry::capture_error(&err);
-        Self::RegexError(err)
+        Self::RequestTokenErrorBasic(err)
+    }
+}
+
+impl
+    From<
+        RequestTokenError<
+            oauth2::reqwest::Error<reqwest::Error>,
+            StandardErrorResponse<RevocationErrorResponseType>,
+        >,
+    > for ApiError
+{
+    fn from(
+        err: RequestTokenError<
+            oauth2::reqwest::Error<reqwest::Error>,
+            StandardErrorResponse<RevocationErrorResponseType>,
+        >,
+    ) -> Self {
+        sentry::capture_error(&err);
+        Self::RequestTokenErrorRevocation(err)
     }
 }
 
@@ -322,13 +334,6 @@ impl From<serde_json::Error> for ApiError {
     }
 }
 
-impl From<ToStrError> for ApiError {
-    fn from(err: ToStrError) -> Self {
-        sentry::capture_error(&err);
-        Self::ToStrError(err)
-    }
-}
-
 impl From<twilight_http::Error> for ApiError {
     fn from(err: twilight_http::Error) -> Self {
         sentry::capture_error(&err);
@@ -340,45 +345,5 @@ impl From<Utf8Error> for ApiError {
     fn from(err: Utf8Error) -> Self {
         sentry::capture_error(&err);
         Self::Utf8Error(err)
-    }
-}
-
-pub trait OptionExt<T> {
-    fn or_bad_request(self) -> ApiResult<T>;
-    fn or_not_found(self) -> ApiResult<T>;
-    fn or_internal_error(self) -> ApiResult<T>;
-}
-
-impl<T> OptionExt<T> for Option<T> {
-    fn or_bad_request(self) -> ApiResult<T> {
-        self.ok_or_else(|| ApiResponse::bad_request().into())
-    }
-
-    fn or_not_found(self) -> ApiResult<T> {
-        self.ok_or_else(|| ApiResponse::not_found().into())
-    }
-
-    fn or_internal_error(self) -> ApiResult<T> {
-        self.ok_or_else(|| ApiResponse::internal_server_error().into())
-    }
-}
-
-pub trait ResultExt<T, E> {
-    fn or_bad_request(self) -> ApiResult<T>;
-    fn or_not_found(self) -> ApiResult<T>;
-    fn or_internal_error(self) -> ApiResult<T>;
-}
-
-impl<T, E> ResultExt<T, E> for Result<T, E> {
-    fn or_bad_request(self) -> ApiResult<T> {
-        self.map_err(|_| ApiResponse::bad_request().into())
-    }
-
-    fn or_not_found(self) -> ApiResult<T> {
-        self.map_err(|_| ApiResponse::not_found().into())
-    }
-
-    fn or_internal_error(self) -> ApiResult<T> {
-        self.map_err(|_| ApiResponse::internal_server_error().into())
     }
 }

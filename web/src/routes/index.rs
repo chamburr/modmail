@@ -1,29 +1,28 @@
 use crate::{
-    auth::{get_csrf_redirect, get_invite_uri, get_redirect_uri, get_token_cookie, token_exchange},
+    auth,
     cache::{
         self,
         models::{Stats, Status},
         RedisPool,
     },
     constants::{STATS_KEY, STATUS_KEY},
-    routes::{ApiResponse, ApiResult, OptionExt, ResultExt},
+    routes::{ApiResponse, ApiResult},
 };
 
 use actix_web::{
     get, post,
     web::{Data, Json, Query},
 };
-use percent_encoding::percent_decode_str;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
 #[derive(Debug, Serialize)]
-pub struct SimpleRedirect {
+pub struct Redirect {
     pub uri: Option<String>,
 }
 
 #[derive(Debug, Deserialize)]
-pub struct SimpleAuth {
+pub struct Authorization {
     pub code: String,
     pub state: Option<String>,
 }
@@ -41,29 +40,15 @@ pub async fn get_login(
     let uri = query
         .get("redirect")
         .map(|redirect| {
-            percent_decode_str(redirect.as_str())
+            percent_encoding::percent_decode_str(redirect.as_str())
                 .decode_utf8()
                 .map(|uri| uri.to_string())
         })
         .transpose()?
         .filter(|redirect| redirect.starts_with('/'));
 
-    let redirect = SimpleRedirect {
-        uri: Some(get_redirect_uri(&redis_pool, uri).await?),
-    };
-
-    ApiResponse::ok().data(redirect).finish()
-}
-
-#[get("/invite")]
-pub async fn get_invite(Query(query): Query<HashMap<String, String>>) -> ApiResult<ApiResponse> {
-    let guild = query
-        .get("guild")
-        .map(|guild| guild.parse().or_bad_request())
-        .transpose()?;
-
-    let redirect = SimpleRedirect {
-        uri: Some(get_invite_uri(guild)?),
+    let redirect = Redirect {
+        uri: Some(auth::get_redirect_uri(&redis_pool, uri).await?),
     };
 
     ApiResponse::ok().data(redirect).finish()
@@ -72,17 +57,20 @@ pub async fn get_invite(Query(query): Query<HashMap<String, String>>) -> ApiResu
 #[post("/authorize")]
 pub async fn post_authorize(
     redis_pool: Data<RedisPool>,
-    Json(auth): Json<SimpleAuth>,
+    Json(auth): Json<Authorization>,
 ) -> ApiResult<ApiResponse> {
-    let token = token_exchange(auth.code.as_str()).await.or_bad_request()?;
+    let token = auth::token_exchange(&redis_pool, auth.code.as_str())
+        .await
+        .map_err(|_| ApiResponse::bad_request())?;
+
     let uri = if let Some(state) = auth.state {
-        get_csrf_redirect(&redis_pool, state.as_str()).await?
+        auth::get_csrf_redirect(&redis_pool, state.as_str()).await?
     } else {
         None
     };
 
-    let redirect = SimpleRedirect { uri };
-    let cookie = get_token_cookie(token).await?;
+    let redirect = Redirect { uri };
+    let cookie = auth::get_token_cookie(token).await?;
 
     ApiResponse::ok().data(redirect).set_cookie(cookie).finish()
 }
@@ -91,7 +79,7 @@ pub async fn post_authorize(
 pub async fn get_stats(redis_pool: Data<RedisPool>) -> ApiResult<ApiResponse> {
     let stats: Stats = cache::get(&redis_pool, STATS_KEY)
         .await?
-        .or_internal_error()?;
+        .ok_or_else(ApiResponse::internal_server_error)?;
 
     ApiResponse::ok().data(stats).finish()
 }
@@ -100,7 +88,7 @@ pub async fn get_stats(redis_pool: Data<RedisPool>) -> ApiResult<ApiResponse> {
 pub async fn get_status(redis_pool: Data<RedisPool>) -> ApiResult<ApiResponse> {
     let status: Vec<Status> = cache::get(&redis_pool, STATUS_KEY)
         .await?
-        .or_internal_error()?;
+        .ok_or_else(ApiResponse::internal_server_error)?;
 
     ApiResponse::ok().data(status).finish()
 }

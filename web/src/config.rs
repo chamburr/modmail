@@ -1,13 +1,6 @@
-use crate::routes::ApiResult;
-
 use lazy_static::lazy_static;
 use serde::Deserialize;
-use std::{
-    env,
-    net::{IpAddr, SocketAddr},
-    str::FromStr,
-};
-use url::Url;
+use std::{env, str::FromStr};
 
 lazy_static! {
     pub static ref CONFIG: Config = Config {
@@ -67,19 +60,4 @@ where
     get_env(name)
         .parse::<T>()
         .unwrap_or_else(|_| panic!("Invalid environmental variable: {}", name))
-}
-
-pub fn get_api_address() -> ApiResult<SocketAddr> {
-    let addr = SocketAddr::new(IpAddr::from_str(CONFIG.api_host.as_str())?, CONFIG.api_port);
-
-    Ok(addr)
-}
-
-pub fn get_redis_uri() -> ApiResult<String> {
-    let mut uri = Url::parse("redis://")?;
-
-    uri.set_host(Some(CONFIG.redis_host.as_str()))?;
-    uri.set_port(Some(CONFIG.redis_port))?;
-
-    Ok(uri.into_string())
 }

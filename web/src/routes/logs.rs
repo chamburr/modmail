@@ -1,11 +1,18 @@
-use crate::routes::{ApiResponse, ApiResult, ResultExt};
+use crate::routes::{ApiResponse, ApiResult};
 
-use actix_web::get;
+use actix_web::{get, web::Path};
+use lazy_static::lazy_static;
 use regex::Regex;
 use serde::Serialize;
+use std::num::ParseIntError;
+
+lazy_static! {
+    static ref RE: Regex =
+        Regex::new(r"^\[[0-9-]{10} [0-9:]{8}\] [^\n]*#[0-9]{4} \((User|Staff|Comment)\):").unwrap();
+}
 
 #[derive(Debug, Serialize)]
-pub struct MsgEntry {
+pub struct Entry {
     pub timestamp: String,
     pub username: String,
     pub discriminator: String,
@@ -14,91 +21,87 @@ pub struct MsgEntry {
     pub attachments: Vec<String>,
 }
 
-#[get("/{item}")]
-pub async fn get_log_item(item: String) -> ApiResult<ApiResponse> {
-    let ids: Vec<&str> = item.split('-').collect();
+#[get("/{id}")]
+pub async fn get_log(Path(id): Path<String>) -> ApiResult<ApiResponse> {
+    let ids = id
+        .split('-')
+        .map(|item| u64::from_str_radix(item, 16))
+        .collect::<Result<Vec<u64>, ParseIntError>>()
+        .map_err(|_| ApiResponse::not_found())?;
 
     if ids.len() != 3 {
         return ApiResponse::not_found().finish();
     }
 
-    let mut new_ids = vec![];
-
-    for id in ids {
-        new_ids.push(u64::from_str_radix(id, 16).or_not_found()?);
-    }
-
     let response = reqwest::get(
         format!(
             "https://cdn.discordapp.com/attachments/{}/{}/modmail_log_{}.txt",
-            new_ids[0], new_ids[2], new_ids[3]
+            ids[0], ids[1], ids[2]
         )
         .as_str(),
     )
     .await?;
 
-    if response.status().as_str() != "200" {
+    if response.status() != 200 {
         return ApiResponse::not_found().finish();
     }
 
     let body = response.text().await?;
-    let mut messages: Vec<MsgEntry> = vec![];
-    let re = Regex::new(r"^\[[0-9-]{10} [0-9:]{8}\] [^\n]*#[0-9]{4} \((User|Staff|Comment)\):")?;
+    let mut messages: Vec<Entry> = vec![];
 
     for line in body.split('\n') {
-        if !re.is_match(line) {
-            let i = messages.len();
-
-            if i > 0 {
-                messages[i - 1].message += format!("\n{}", line).as_str();
+        if !RE.is_match(line) {
+            if let Some(last) = messages.last_mut() {
+                last.message += format!("\n{}", line).as_str()
             }
-
             continue;
         }
 
-        let new_line: Vec<&str> = line.split('#').collect();
-        let part_one = new_line[0];
-        let part_two = &new_line[1..].join("#");
-        let timestamp = part_one[1..20].to_string();
-        let username = part_one[22..].to_string();
-        let discriminator = part_two[..4].to_string();
+        let mut line_iter = line.splitn(2, '#');
+        let part_one = line_iter.next().unwrap_or_default();
+        let part_two = line_iter.next().unwrap_or_default();
 
-        let mut role = "User".to_string();
+        let timestamp = part_one.get(1..20).unwrap_or_default();
+        let username = part_one.get(22..).unwrap_or_default();
+        let discriminator = part_two.get(..4).unwrap_or_default();
 
-        if part_two[6..].starts_with("Staff") {
-            role = "Staff".to_string();
-        } else if part_two[6..].starts_with("Comment") {
-            role = "Comment".to_string();
-        }
+        let role = match part_two.get(6..).unwrap_or_default() {
+            item if item.starts_with("Staff") => "Staff",
+            item if item.starts_with("Comment") => "Comment",
+            _ => "User",
+        };
 
-        let mut message = part_two.split(": ").collect::<Vec<&str>>()[1..].join(": ");
-
+        let mut message = part_two
+            .splitn(2, ": ")
+            .last()
+            .unwrap_or_default()
+            .to_owned();
         if message.starts_with("(Attachment: ") {
             message = format!(" {}", message);
         }
 
-        let attachment =
-            message.split("(Attachment: ").collect::<Vec<&str>>()[1..].join(" (Attachment: ");
-        message = message.split(" (Attachment: ").collect::<Vec<&str>>()[0].to_string();
+        let mut message_iter = message.splitn(2, "(Attachment: ");
+        let message = message_iter.next().unwrap_or_default();
+        let attachment = message_iter.next().unwrap_or_default();
 
-        let mut attachments: Vec<String> = vec![];
+        let attachments = attachment
+            .split(") (Attachment: ")
+            .map(|item| {
+                let mut item = item.to_owned();
+                if item.ends_with(')') {
+                    item.pop();
+                }
+                item
+            })
+            .filter(|item| !item.is_empty())
+            .collect();
 
-        for mut element in attachment.split(") (Attachment: ") {
-            if element.ends_with(')') {
-                element = &element[..element.len() - 1];
-            }
-
-            if element.is_empty() {
-                attachments.push(element.to_string());
-            }
-        }
-
-        messages.push(MsgEntry {
-            timestamp,
-            username,
-            discriminator,
-            role,
-            message,
+        messages.push(Entry {
+            timestamp: timestamp.to_owned(),
+            username: username.to_owned(),
+            discriminator: discriminator.to_owned(),
+            role: role.to_owned(),
+            message: message.to_owned(),
             attachments,
         })
     }

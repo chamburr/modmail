@@ -2,7 +2,7 @@
 
 use crate::{
     config::{Environment, CONFIG},
-    routes::errors,
+    routes::{errors, index, logs, users, ApiResult},
 };
 
 use actix_web::{
@@ -10,10 +10,6 @@ use actix_web::{
     middleware::{errhandlers::ErrorHandlers, normalize::TrailingSlash, Logger, NormalizePath},
     web, App, HttpServer,
 };
-use cache::get_redis_pool;
-use config::get_api_address;
-use routes::{index, logs, users, ApiResult};
-use tracing::error;
 
 mod auth;
 mod cache;
@@ -30,7 +26,7 @@ pub async fn main() {
     let result = real_main().await;
 
     if let Err(err) = result {
-        error!("{:?}", err);
+        tracing::error!("{:?}", err);
     }
 }
 
@@ -40,7 +36,7 @@ pub async fn real_main() -> ApiResult<()> {
         _guard = sentry::init(CONFIG.sentry_dsn.clone());
     }
 
-    let redis_pool = get_redis_pool()?;
+    let redis_pool = cache::get_redis_pool()?;
 
     HttpServer::new(move || {
         App::new()
@@ -63,8 +59,8 @@ pub async fn real_main() -> ApiResult<()> {
             .service(
                 web::scope("/api")
                     .service(index::index)
-                    .service(index::get_invite)
                     .service(index::get_login)
+                    .service(index::get_stats)
                     .service(index::get_status)
                     .service(index::post_authorize)
                     .service(
@@ -72,12 +68,12 @@ pub async fn real_main() -> ApiResult<()> {
                             .service(users::get_user_me)
                             .service(users::post_user_me_logout),
                     )
-                    .service(web::scope("/logs").service(logs::get_log_item)),
+                    .service(web::scope("/logs").service(logs::get_log)),
             )
             .default_service(web::to(errors::default_service))
     })
     .workers(CONFIG.api_workers as usize)
-    .bind(get_api_address()?)?
+    .bind((CONFIG.api_host.as_str(), CONFIG.api_port))?
     .run()
     .await?;
 

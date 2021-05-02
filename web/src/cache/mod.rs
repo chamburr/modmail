@@ -1,4 +1,4 @@
-use crate::{config::get_redis_uri, routes::ApiResult};
+use crate::{config::CONFIG, routes::ApiResult};
 
 use actix_web::web::block;
 use lazy_static::lazy_static;
@@ -18,7 +18,7 @@ pub struct RedisConnectionManager {
 }
 
 impl RedisConnectionManager {
-    pub fn new(info: String) -> Result<RedisConnectionManager, RedisError> {
+    pub fn new(info: impl IntoConnectionInfo) -> Result<RedisConnectionManager, RedisError> {
         Ok(RedisConnectionManager {
             inner: Client::open(info.into_connection_info()?)?,
         })
@@ -45,8 +45,10 @@ impl ManageConnection for RedisConnectionManager {
 pub type RedisPool = Pool<RedisConnectionManager>;
 
 pub fn get_redis_pool() -> ApiResult<RedisPool> {
-    let uri = get_redis_uri()?;
-    let pool = Pool::builder().build(RedisConnectionManager::new(uri)?)?;
+    let pool = Pool::builder().build(RedisConnectionManager::new((
+        CONFIG.redis_host.as_str(),
+        CONFIG.redis_port,
+    ))?)?;
 
     Ok(pool)
 }
@@ -57,35 +59,29 @@ pub async fn get<T: DeserializeOwned>(
 ) -> ApiResult<Option<T>> {
     let pool = pool.clone();
     let mut conn = block(move || pool.get()).await?;
+
     let res: Option<String> = conn.get(key.to_string()).await?;
 
-    let res: Option<T> = res
+    Ok(res
         .map(|value| serde_json::from_str(value.as_str()))
-        .transpose()?;
-
-    Ok(res)
+        .transpose()?)
 }
 
-pub async fn set<T: Serialize>(pool: &RedisPool, key: impl ToString, value: &T) -> ApiResult<()> {
-    let pool = pool.clone();
-    let mut conn = block(move || pool.get()).await?;
-    conn.set(key.to_string(), serde_json::to_string(value)?)
-        .await?;
-
-    Ok(())
-}
-
-pub async fn set_and_expire<T: Serialize>(
+pub async fn set<T: Serialize>(
     pool: &RedisPool,
     key: impl ToString,
     value: &T,
     expiry: usize,
 ) -> ApiResult<()> {
-    set(pool, key.to_string(), value).await?;
-
     let pool = pool.clone();
     let mut conn = block(move || pool.get()).await?;
-    conn.expire(key.to_string(), expiry / 1000).await?;
+
+    conn.set(key.to_string(), serde_json::to_string(value)?)
+        .await?;
+
+    if expiry != 0 {
+        conn.expire(key.to_string(), expiry / 1000).await?;
+    }
 
     Ok(())
 }
