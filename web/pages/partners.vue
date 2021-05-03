@@ -10,7 +10,7 @@
         :key="element.name"
         class="partner-card text-center text-lg-left col-12 col-md-6 mt-4 mt-md-0 pb-4"
       >
-        <Card class="bg-dark h-100">
+        <Card class="h-100">
           <div class="row h-100">
             <div class="col-12 col-lg-4 pb-4 px-3 pb-lg-0">
               <img

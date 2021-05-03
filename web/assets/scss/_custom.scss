@@ -118,33 +118,6 @@ a:hover {
   background-color: #2d2f33 !important;
 }
 
-.custom-select {
-  color: white;
-  background-color: $dark;
-  border: none;
-  background-image: url("data:image/svg+xml;charset=utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 4 5'%3E%3Cpath fill='white' d='M2 0L0 2h4zm0 5L0 3h4z'/%3E%3C/svg%3E");
-}
-
-.overflow-scroll {
-  overflow: scroll !important;
-}
-
-.overflow-scroll-x {
-  overflow-x: scroll !important;
-}
-
-.overflow-scroll-y {
-  overflow-y: scroll !important;
-}
-
-.scrollbar-none {
-  scrollbar-width: none;
-}
-
-.scrollbar-none::-webkit-scrollbar {
-  display: none;
-}
-
 .popover-body {
   color: white !important;
   background-color: $dark;
@@ -169,41 +142,6 @@ a:hover {
 .bs-popover-bottom .arrow::after,
 .bs-popover-bottom .arrow::before {
   border-bottom-color: $dark !important;
-}
-
-.dropdown-menu {
-  background-color: $dark !important;
-}
-
-.dropdown-menu.show {
-  animation: show-dropdown-menu 0.2s ease forwards;
-}
-
-.dropdown-item {
-  color: white;
-}
-
-.dropdown-item:hover,
-.dropdown-item:focus {
-  color: white !important;
-  background-color: $gray-700;
-}
-
-.dropdown-item:focus {
-  outline: 0;
-}
-
-@keyframes show-dropdown-menu {
-  0% {
-    opacity: 0;
-    transform: scale(0.95);
-    transform-origin: 100% 0;
-  }
-
-  100% {
-    opacity: 1;
-    transform: scale(1);
-  }
 }
 
 .b-toaster {

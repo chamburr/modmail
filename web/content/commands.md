@@ -39,16 +39,16 @@ Toggle between enable and disable for ModMail logs.
 
 ## greetingmessage
 
-Set or clear the message that is sent when a new ticket is opened. Tags `{username}`, `{usertag}`,
-`{userid}` and `{usermention}` can be used.
+Set or clear the message that is sent when a new ticket is opened. Tags \`{username}\`, \`
+{usertag}\`, \`{userid}\` and \`{usermention}\` can be used.
 
 - Usage: `[text]`
 - Alias: welcomemessage, greetmessage
 
 ## closingmessage
 
-Set or clear the message that is sent when a ticket is closed. Tags `{username}`, `{usertag}`,
-`{userid}` and `{usermention}` can be used.
+Set or clear the message that is sent when a ticket is closed. Tags \`{username}\`, \`{usertag}\`,
+\`{userid}\` and \`{usermention}\` can be used.
 
 - Usage: `[text]`
 - Alias: goodbyemessage, closemessage
@@ -169,8 +169,6 @@ See some super cool statistics about me.
 
 See the amazing stuff we have partnered with.
 
-- Alias: partner
-
 ## invite
 
 Get a link to invite me.
@@ -225,11 +223,11 @@ Get some information about ModMail premium.
 
 Get the premium status of this server.
 
-## premiumlist
+## viewpremium
 
 Get a list of servers you assigned premium to.
 
-- Alias: premiumservers, premiumguilds
+- Alias: premiumlist
 
 ## premiumassign
 
@@ -261,7 +259,7 @@ Use a snippet anonymously.
 
 ## snippetadd
 
-Add a snippet. Tags `{username}`, `{usertag}`, `{userid}` and `{usermention}` can be used.
+Add a snippet. Tags \`{username}\`, \`{usertag}\`, \`{userid}\` and \`{usermention}\` can be used.
 
 - Usage: `<name> <content>`
 

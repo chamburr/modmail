@@ -9,7 +9,7 @@
         :key="element.name"
         class="about-card col-12 col-md-6 col-lg-4 mt-4 mt-md-0 pb-4"
       >
-        <Card class="bg-dark h-100" body-classes="d-flex flex-column text-center">
+        <Card class="h-100" body-classes="d-flex flex-column text-center">
           <div class="pb-4">
             <img
               class="about-icon mw-100 mh-100 rounded-circle"

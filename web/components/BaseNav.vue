@@ -1,20 +1,7 @@
 <template>
-  <nav
-    class="navbar navbar-dark"
-    :class="[
-      { 'navbar-expand-lg': expand },
-      { 'navbar-transparent': transparent },
-      { [`bg-${type}`]: type },
-      { rounded: round },
-    ]"
-  >
+  <nav class="navbar navbar-dark navbar-expand-lg" :class="[{ [`bg-${type}`]: type }]">
     <div class="container">
-      <slot name="container-pre"></slot>
-      <slot name="brand">
-        <a class="navbar-brand" href="#" @click.prevent="onTitleClick">
-          {{ title }}
-        </a>
-      </slot>
+      <slot name="brand"></slot>
       <button
         class="navbar-toggler"
         type="button"
@@ -47,18 +34,6 @@ export default {
     type: {
       type: String,
       default: 'primary',
-    },
-    title: {
-      type: String,
-      default: '',
-    },
-    round: {
-      type: Boolean,
-      default: false,
-    },
-    transparent: {
-      type: Boolean,
-      default: false,
     },
     expand: {
       type: Boolean,

@@ -4,9 +4,8 @@
       <input
         v-model="realValue"
         v-bind="$attrs"
-        class="form-control"
-        :class="inputClasses"
-        :type="type"
+        class="form-control bg-dark border-0 text-white"
+        type="text"
         aria-describedby="addon-right addon-left"
         v-on="listeners"
       />
@@ -18,27 +17,10 @@
 export default {
   name: 'BaseInput',
   inheritAttrs: false,
-  props: {
-    required: {
-      type: Boolean,
-      default: false,
-    },
-    inputClasses: {
-      type: String,
-      default: 'bg-dark border-0 text-white',
-    },
-    type: {
-      type: String,
-      default: 'text',
-    },
-    value: {
-      default: '',
-    },
-  },
   data() {
     return {
       focused: false,
-      realValue: this.value,
+      value: '',
     }
   },
   computed: {
@@ -58,22 +40,6 @@ export default {
   },
   watch: {
     value(newValue) {
-      if (typeof newValue === 'string' || typeof newValue === 'number') {
-        this.realValue = newValue
-      }
-    },
-    realValue(newValue) {
-      if (this.type === 'number') {
-        if (typeof newValue === 'string' && newValue.startsWith('0')) {
-          while (newValue.charAt(0) === '0') {
-            newValue = newValue.substring(1)
-          }
-          newValue = parseInt(newValue, 10) || ''
-        }
-        if (this.required && newValue === '') {
-          newValue = 0
-        }
-      }
       this.realValue = newValue
       this.$emit('input', this.realValue)
     },

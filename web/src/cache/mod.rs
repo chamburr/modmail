@@ -63,7 +63,10 @@ pub async fn get<T: DeserializeOwned>(
     let res: Option<String> = conn.get(key.to_string()).await?;
 
     Ok(res
-        .map(|value| serde_json::from_str(value.as_str()))
+        .map(|value| {
+            serde_json::from_str(value.as_str())
+                .or_else(|_| serde_json::from_str(format!("\"{}\"", value).as_str()))
+        })
         .transpose()?)
 }
 
@@ -76,8 +79,11 @@ pub async fn set<T: Serialize>(
     let pool = pool.clone();
     let mut conn = block(move || pool.get()).await?;
 
-    conn.set(key.to_string(), serde_json::to_string(value)?)
-        .await?;
+    conn.set(
+        key.to_string(),
+        serde_json::to_string(value)?.trim_matches('"'),
+    )
+    .await?;
 
     if expiry != 0 {
         conn.expire(key.to_string(), expiry).await?;
@@ -93,4 +99,13 @@ pub async fn del(pool: &RedisPool, key: impl ToString) -> ApiResult<()> {
     conn.del(key.to_string()).await?;
 
     Ok(())
+}
+
+pub async fn len(pool: &RedisPool, key: impl ToString) -> ApiResult<u32> {
+    let pool = pool.clone();
+    let mut conn = block(move || pool.get()).await?;
+
+    let res: u32 = conn.scard(key.to_string()).await?;
+
+    Ok(res)
 }

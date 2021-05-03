@@ -7,9 +7,9 @@
     <Card
       v-for="(element, index) in questions"
       :key="element.name"
-      class="faq-card bg-dark mb-4"
+      class="faq-card mb-4"
       body-classes="py-0"
-      header-classes="bg-dark border-0 p-0"
+      header-classes="border-0 p-0"
     >
       <template #header>
         <div v-b-toggle="`faq-question-${index}`" class="font-weight-bolder px-4 py-3">

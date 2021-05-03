@@ -36,33 +36,32 @@ export default ({ $content }, inject) => {
       return data
     }
 
-    if (!json) {
-      content.body.children.forEach((element, index) => {
-        if (element.tag === 'h1') {
-          element.tag = 'h2'
-          if (index !== 0) {
-            element.props.class = 'mt-4'
-          }
-        } else if (element.tag === 'p' || element.tag === 'ul') {
-          element.children.forEach(element2 => {
-            if (element2.tag === 'em') {
-              element2.tag = 'span'
-              element2.props.class = 'text-light'
-            } else if (element2.tag === 'a') {
-              element2.tag = 'span'
-              element2.props = {}
-            } else if (element2.tag === 'li') {
-              element2.children.forEach(element3 => {
-                if (element3.tag === 'a') {
-                  element3.tag = 'span'
-                  element3.props = {}
-                }
-              })
-            }
-          })
+    content.body.children.forEach((element, index) => {
+      if (element.tag === 'h1') {
+        element.tag = 'h2'
+        if (index !== 0) {
+          element.props.class = 'mt-4'
         }
-      })
-      return content
-    }
+      } else if (element.tag === 'p' || element.tag === 'ul') {
+        element.children.forEach(element2 => {
+          if (element2.tag === 'em') {
+            element2.tag = 'span'
+            element2.props.class = 'text-light'
+          } else if (element2.tag === 'a') {
+            element2.tag = 'span'
+            element2.props = {}
+          } else if (element2.tag === 'li') {
+            element2.children.forEach(element3 => {
+              if (element3.tag === 'a') {
+                element3.tag = 'span'
+                element3.props = {}
+              }
+            })
+          }
+        })
+      }
+    })
+
+    return content
   })
 }

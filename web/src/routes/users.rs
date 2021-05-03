@@ -12,8 +12,7 @@ use actix_web::{get, post, web::Data};
 pub async fn get_user_me(mut user: User, _pool: Data<RedisPool>) -> ApiResult<ApiResponse> {
     user.token.clear();
 
-    return ApiResponse::forbidden().message("bruh").finish();
-    //ApiResponse::ok().data(user).finish()
+    ApiResponse::ok().data(user).finish()
 }
 
 #[post("/@me/logout")]

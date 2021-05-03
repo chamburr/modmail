@@ -24,12 +24,11 @@
                 <NuxtLink class="footer-link d-block" to="/">Home</NuxtLink>
                 <NuxtLink class="footer-link d-block" to="/commands">Commands</NuxtLink>
                 <NuxtLink class="footer-link d-block" to="/faq">FAQ</NuxtLink>
-                <NuxtLink class="footer-link d-block" to="/dashboard">Dashboard</NuxtLink>
-                <a class="footer-link d-block" target="_blank" href="/premium">Premium</a>
+                <NuxtLink class="footer-link d-block" to="/premium">Premium</NuxtLink>
+                <a class="footer-link d-block" target="_blank" href="/invite">Invite</a>
               </div>
               <div class="col-6 col-md-4 mb-2">
                 <p class="font-weight-bolder mb-2">&#8203;</p>
-                <a class="footer-link d-block" target="_blank" href="/invite">Invite</a>
                 <a class="footer-link d-block" target="_blank" href="/support">Support</a>
                 <a class="footer-link d-block" target="_blank" href="/github">GitHub</a>
                 <NuxtLink class="footer-link d-block" to="/partners">Partners</NuxtLink>
@@ -40,7 +39,7 @@
                 <NuxtLink class="footer-link d-block" to="/about">About Us</NuxtLink>
                 <NuxtLink class="footer-link d-block" to="/terms">Terms</NuxtLink>
                 <NuxtLink class="footer-link d-block" to="/privacy">Privacy</NuxtLink>
-                <a class="footer-link d-block" target="_blank" href="mailto:hi@wyvor.xyz">
+                <a class="footer-link d-block" target="_blank" href="mailto:hi@modmail.xyz">
                   Contact
                 </a>
               </div>

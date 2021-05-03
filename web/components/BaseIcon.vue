@@ -2,7 +2,6 @@
   <div class="icon icon-shape" :class="[{ [`text-${color}`]: color }]" v-on="$listeners">
     <slot>
       <FontAwesomeIcon v-if="name !== ''" :icon="realName" class="icon-fa" />
-      <img v-else class="icon-img" :src="require(`~/assets/icons/${path}.svg`)" alt="Icon" />
     </slot>
   </div>
 </template>
@@ -12,10 +11,6 @@ export default {
   name: 'BaseIcon',
   props: {
     name: {
-      type: String,
-      default: '',
-    },
-    path: {
       type: String,
       default: '',
     },
@@ -38,12 +33,6 @@ export default {
   height: 100%;
   width: 2rem;
   vertical-align: text-bottom;
-}
-
-.icon-img {
-  height: 1.75em;
-  width: 1.5em;
-  vertical-align: middle;
 }
 
 .icon-fa {

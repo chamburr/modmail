@@ -1,30 +1,35 @@
 use crate::{
     auth,
-    cache::{
-        self,
-        models::{Stats, Status},
-        RedisPool,
-    },
-    constants::{STATS_KEY, STATUS_KEY},
+    cache::{self, models::Status, RedisPool},
+    constants::STATUS_KEY,
     routes::{ApiResponse, ApiResult},
 };
 
+use crate::constants::{GUILDS_KEY, SHARDS_KEY, STARTED_KEY};
 use actix_web::{
     get, post,
     web::{Data, Json, Query},
 };
+use chrono::NaiveDateTime;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
+
+#[derive(Debug, Deserialize)]
+pub struct Authorization {
+    pub code: String,
+    pub state: Option<String>,
+}
 
 #[derive(Debug, Serialize)]
 pub struct Redirect {
     pub uri: Option<String>,
 }
 
-#[derive(Debug, Deserialize)]
-pub struct Authorization {
-    pub code: String,
-    pub state: Option<String>,
+#[derive(Debug, Serialize)]
+pub struct Stats {
+    pub started: NaiveDateTime,
+    pub shards: u32,
+    pub guilds: u32,
 }
 
 #[get("")]
@@ -77,9 +82,19 @@ pub async fn post_authorize(
 
 #[get("/stats")]
 pub async fn get_stats(pool: Data<RedisPool>) -> ApiResult<ApiResponse> {
-    let stats: Stats = cache::get(&pool, STATS_KEY)
+    let started = cache::get(&pool, STARTED_KEY)
         .await?
         .ok_or_else(ApiResponse::internal_server_error)?;
+    let shards = cache::get(&pool, SHARDS_KEY)
+        .await?
+        .ok_or_else(ApiResponse::internal_server_error)?;
+    let guilds = cache::len(&pool, GUILDS_KEY).await?;
+
+    let stats = Stats {
+        started,
+        shards,
+        guilds,
+    };
 
     ApiResponse::ok().data(stats).finish()
 }

@@ -14,9 +14,9 @@ export default {
     htmlAttrs: {
       lang: 'en',
     },
-    title: 'ModMail - The Best Discord Bot',
+    title: 'ModMail',
     titleTemplate(titleChunk) {
-      return titleChunk === 'ModMail - The Discord Bot' ? titleChunk : `${titleChunk} - ModMail`
+      return titleChunk === 'ModMail' ? titleChunk : `${titleChunk} - ModMail`
     },
     meta: [
       { charset: 'utf-8' },
@@ -28,7 +28,7 @@ export default {
           'A feature-rich Discord bot for easy communication between server staff and users.',
       },
       { name: 'theme-color', content: '#1e90ff' },
-      { name: 'og:title', content: 'ModMail - The Best Discord Bot' },
+      { name: 'og:title', content: 'ModMail' },
       { name: 'og:type', content: 'website' },
       { name: 'og:url', content: process.env.BASE_URI },
       { name: 'og:image', content: `${process.env.BASE_URI}/icon.png` },
@@ -39,7 +39,7 @@ export default {
           'A feature-rich Discord bot for easy communication between server staff and users.',
       },
       { name: 'twitter:card', content: 'summary' },
-      { name: 'twitter:title', content: 'ModMail - The Best Discord Bot' },
+      { name: 'twitter:title', content: 'ModMail' },
       { name: 'twitter:image', content: `${process.env.BASE_URI}/icon.png` },
       {
         name: 'twitter:description',
@@ -87,7 +87,6 @@ export default {
     '~/plugins/click-outside.js',
     '~/plugins/content.js',
     '~/plugins/modal.js',
-    '~/plugins/utils.js',
   ],
 
   modules: [

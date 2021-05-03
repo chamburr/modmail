@@ -2,7 +2,7 @@
   <div>
     <Heading title="Privacy Policy">
       This Privacy Policy describes our policies and procedures on the collection, use, and
-      disclosure of your personal information when you access or use Wyvor's website and services.
+      disclosure of your personal information when you access or use ModMail's website and services.
     </Heading>
     <NuxtContent :document="privacy" />
   </div>

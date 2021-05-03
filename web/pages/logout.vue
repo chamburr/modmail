@@ -9,9 +9,9 @@ export default {
   async mounted() {
     await this.$axios
       .post('/users/@me/logout')
-      .then(() => {
+      .then(async () => {
         this.$store.commit('user/reset')
-        this.$router.push('/')
+        await this.$router.push('/')
       })
       .catch(this.$fatal)
   },

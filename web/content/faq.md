@@ -72,7 +72,7 @@ You can find that in the #rules-and-info channel of the support server.
 
 # Is the bot open source?
 
-Yes! See https://github.com/CHamburr/modmail. However, we will not provide any help for
+Yes! See https://github.com/chamburr/modmail. However, we will not provide any help for
 self-hosting.
 
 # Can I partner with you?

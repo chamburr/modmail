@@ -20,13 +20,5 @@ export default (context, inject) => {
       if (process.server) return
       showToast('An Error Occurred', description, 'danger')
     },
-    successComplex(title, description) {
-      if (process.server) return
-      showToast(title, description, 'success')
-    },
-    dangerComplex(title, description) {
-      if (process.server) return
-      showToast(title, description, 'danger')
-    },
   })
 }

@@ -129,9 +129,7 @@ export default {
   }
 }
 
-.status-alert {
-  /deep/ .alert-success {
-    background-color: darken($success, 5%);
-  }
+.status-alert.alert-success {
+  background-color: darken($success, 5%);
 }
 </style>

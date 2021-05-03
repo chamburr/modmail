@@ -48,7 +48,6 @@ lazy_static! {
 
 pub async fn get_csrf_redirect(pool: &RedisPool, token: &str) -> ApiResult<Option<String>> {
     let token: Option<String> = cache::get(pool, csrf_token_key(token)).await?;
-
     Ok(token)
 }
 
@@ -130,7 +129,9 @@ pub async fn get_token_cookie(exchange: BasicTokenResponse) -> ApiResult<Cookie<
         .domain(domain)
         .http_only(true)
         .max_age(
-            Duration::from_secs(expire_timestamp - timestamp).try_into().unwrap_or_default()
+            Duration::from_secs(expire_timestamp - timestamp)
+                .try_into()
+                .unwrap_or_default(),
         )
         .same_site(SameSite::Lax)
         .path("/")

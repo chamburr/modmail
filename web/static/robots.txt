@@ -1,6 +1,6 @@
 User-agent: *
-Disallow: /dashboard/
-Disallow: /users/
+Disallow: /logs/
+Disallow: /authorized
 Disallow: /callback
 Disallow: /github
 Disallow: /invite

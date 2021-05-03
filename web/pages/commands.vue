@@ -5,7 +5,7 @@
     </Heading>
     <div class="row">
       <div class="col-12 col-md-4">
-        <Card class="command-tabs bg-dark" body-classes="py-0">
+        <Card class="command-tabs" body-classes="py-0">
           <Tab @change="updateCategory">
             <TabPane
               v-for="element in categories"
@@ -22,9 +22,9 @@
           <Card
             v-for="(element, index) in activeCommands"
             :key="element.name"
-            class="commands-card bg-dark mb-4"
+            class="commands-card mb-4"
             body-classes="py-0"
-            header-classes="bg-dark border-0 p-0"
+            header-classes="border-0 p-0"
           >
             <template #header>
               <div v-b-toggle="`commands-${index}`" class="px-4 py-3">
