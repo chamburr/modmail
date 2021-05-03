@@ -36,11 +36,11 @@ pub async fn real_main() -> ApiResult<()> {
         _guard = sentry::init(CONFIG.sentry_dsn.clone());
     }
 
-    let redis_pool = cache::get_redis_pool()?;
+    let pool = cache::get_pool()?;
 
     HttpServer::new(move || {
         App::new()
-            .data(redis_pool.clone())
+            .data(pool.clone())
             .wrap(
                 ErrorHandlers::new()
                     .handler(StatusCode::BAD_REQUEST, errors::bad_request)

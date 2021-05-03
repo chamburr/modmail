@@ -44,7 +44,7 @@ impl ManageConnection for RedisConnectionManager {
 
 pub type RedisPool = Pool<RedisConnectionManager>;
 
-pub fn get_redis_pool() -> ApiResult<RedisPool> {
+pub fn get_pool() -> ApiResult<RedisPool> {
     let pool = Pool::builder().build(RedisConnectionManager::new((
         CONFIG.redis_host.as_str(),
         CONFIG.redis_port,
@@ -80,8 +80,17 @@ pub async fn set<T: Serialize>(
         .await?;
 
     if expiry != 0 {
-        conn.expire(key.to_string(), expiry / 1000).await?;
+        conn.expire(key.to_string(), expiry).await?;
     }
+
+    Ok(())
+}
+
+pub async fn del(pool: &RedisPool, key: impl ToString) -> ApiResult<()> {
+    let pool = pool.clone();
+    let mut conn = block(move || pool.get()).await?;
+
+    conn.del(key.to_string()).await?;
 
     Ok(())
 }

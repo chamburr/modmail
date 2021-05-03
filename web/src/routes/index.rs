@@ -34,7 +34,7 @@ pub async fn index() -> ApiResult<ApiResponse> {
 
 #[get("/login")]
 pub async fn get_login(
-    redis_pool: Data<RedisPool>,
+    pool: Data<RedisPool>,
     Query(query): Query<HashMap<String, String>>,
 ) -> ApiResult<ApiResponse> {
     let uri = query
@@ -48,7 +48,7 @@ pub async fn get_login(
         .filter(|redirect| redirect.starts_with('/'));
 
     let redirect = Redirect {
-        uri: Some(auth::get_redirect_uri(&redis_pool, uri).await?),
+        uri: Some(auth::get_redirect_uri(&pool, uri).await?),
     };
 
     ApiResponse::ok().data(redirect).finish()
@@ -56,15 +56,15 @@ pub async fn get_login(
 
 #[post("/authorize")]
 pub async fn post_authorize(
-    redis_pool: Data<RedisPool>,
+    pool: Data<RedisPool>,
     Json(auth): Json<Authorization>,
 ) -> ApiResult<ApiResponse> {
-    let token = auth::token_exchange(&redis_pool, auth.code.as_str())
+    let token = auth::token_exchange(&pool, auth.code.as_str())
         .await
         .map_err(|_| ApiResponse::bad_request())?;
 
     let uri = if let Some(state) = auth.state {
-        auth::get_csrf_redirect(&redis_pool, state.as_str()).await?
+        auth::get_csrf_redirect(&pool, state.as_str()).await?
     } else {
         None
     };
@@ -76,8 +76,8 @@ pub async fn post_authorize(
 }
 
 #[get("/stats")]
-pub async fn get_stats(redis_pool: Data<RedisPool>) -> ApiResult<ApiResponse> {
-    let stats: Stats = cache::get(&redis_pool, STATS_KEY)
+pub async fn get_stats(pool: Data<RedisPool>) -> ApiResult<ApiResponse> {
+    let stats: Stats = cache::get(&pool, STATS_KEY)
         .await?
         .ok_or_else(ApiResponse::internal_server_error)?;
 
@@ -85,8 +85,8 @@ pub async fn get_stats(redis_pool: Data<RedisPool>) -> ApiResult<ApiResponse> {
 }
 
 #[get("/status")]
-pub async fn get_status(redis_pool: Data<RedisPool>) -> ApiResult<ApiResponse> {
-    let status: Vec<Status> = cache::get(&redis_pool, STATUS_KEY)
+pub async fn get_status(pool: Data<RedisPool>) -> ApiResult<ApiResponse> {
+    let status: Vec<Status> = cache::get(&pool, STATUS_KEY)
         .await?
         .ok_or_else(ApiResponse::internal_server_error)?;
 

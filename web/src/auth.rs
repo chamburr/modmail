@@ -2,8 +2,8 @@ use crate::{
     cache::{self, RedisPool},
     config::CONFIG,
     constants::{
-        csrf_token_key, token_info_key, token_key, CALLBACK_PATH, COOKIE_NAME, CSRF_TOKEN_KEY_TTL,
-        TOKEN_INFO_KEY_TTL,
+        csrf_token_key, token_key, user_token_key, CALLBACK_PATH, COOKIE_NAME, CSRF_TOKEN_KEY_TTL,
+        TOKEN_KEY_TTL,
     },
     routes::{ApiError, ApiResponse, ApiResult},
 };
@@ -11,7 +11,7 @@ use crate::{
 use actix_web::{
     cookie::{Cookie, SameSite},
     dev::Payload,
-    web::Data,
+    web::{block, Data},
     FromRequest, HttpMessage, HttpRequest,
 };
 use chrono::Utc;
@@ -19,12 +19,12 @@ use jsonwebtoken::{DecodingKey, EncodingKey, Header, Validation};
 use lazy_static::lazy_static;
 use oauth2::{
     basic::{BasicClient, BasicTokenResponse},
-    reqwest::async_http_client,
+    reqwest::http_client,
     AccessToken, AuthUrl, AuthorizationCode, ClientId, ClientSecret, CsrfToken, RedirectUrl,
     RevocationUrl, Scope, StandardRevocableToken, TokenResponse, TokenUrl,
 };
 use serde::{Deserialize, Serialize};
-use std::{convert::TryInto, future::Future, pin::Pin};
+use std::{convert::TryInto, future::Future, pin::Pin, time::Duration};
 use url::Url;
 
 lazy_static! {
@@ -77,13 +77,17 @@ pub async fn get_redirect_uri(pool: &RedisPool, redirect: Option<String>) -> Api
 struct Claims {
     token: String,
     iat: u64,
+    exp: u64,
 }
 
 pub async fn token_exchange(pool: &RedisPool, code: &str) -> ApiResult<BasicTokenResponse> {
-    let response = CLIENT
-        .exchange_code(AuthorizationCode::new(code.to_owned()))
-        .request_async(async_http_client)
-        .await?;
+    let code_clone = code.to_owned();
+    let response = block(move || {
+        CLIENT
+            .exchange_code(AuthorizationCode::new(code_clone))
+            .request(http_client)
+    })
+    .await?;
 
     if let Some(scopes) = response.scopes() {
         if !scopes.contains(&Scope::new("identify".to_owned()))
@@ -96,9 +100,9 @@ pub async fn token_exchange(pool: &RedisPool, code: &str) -> ApiResult<BasicToke
     let user = User::from_token(pool, response.access_token().secret()).await?;
     cache::set(
         pool,
-        token_key(user.id),
+        user_token_key(user.id.as_str()),
         response.access_token().secret(),
-        response.expires_in().unwrap_or_default().as_millis() as usize,
+        response.expires_in().unwrap_or_default().as_secs() as usize,
     )
     .await?;
 
@@ -109,11 +113,15 @@ pub async fn get_token_cookie(exchange: BasicTokenResponse) -> ApiResult<Cookie<
     let url = Url::parse(CONFIG.base_uri.as_str())?;
     let domain = url.domain().unwrap_or_default().to_owned();
 
+    let timestamp = Utc::now().timestamp() as u64;
+    let expire_timestamp = timestamp + exchange.expires_in().unwrap_or_default().as_secs() as u64;
+
     let token = jsonwebtoken::encode(
         &Header::default(),
         &Claims {
             token: exchange.access_token().secret().to_owned(),
-            iat: Utc::now().timestamp_millis() as u64,
+            iat: timestamp,
+            exp: expire_timestamp,
         },
         &EncodingKey::from_base64_secret(CONFIG.api_secret.as_str())?,
     )?;
@@ -122,10 +130,11 @@ pub async fn get_token_cookie(exchange: BasicTokenResponse) -> ApiResult<Cookie<
         .domain(domain)
         .http_only(true)
         .max_age(
-            exchange.expires_in().unwrap_or_default().try_into().unwrap_or_default()
+            Duration::from_secs(expire_timestamp - timestamp).try_into().unwrap_or_default()
         )
         .same_site(SameSite::Lax)
-        // .secure(true)
+        .path("/")
+        .secure(url.scheme() == "https")
         .finish();
 
     Ok(cookie)
@@ -135,45 +144,51 @@ pub async fn get_token_cookie(exchange: BasicTokenResponse) -> ApiResult<Cookie<
 pub struct User {
     #[serde(default, skip_serializing_if = "String::is_empty")]
     pub token: String,
-    pub id: u64,
+    pub id: String,
     pub username: String,
-    pub discriminator: u32,
+    pub discriminator: String,
     pub avatar: String,
 }
 
 impl User {
     async fn from_token(pool: &RedisPool, token: &str) -> ApiResult<Self> {
-        let user: Option<User> = cache::get(pool, token_info_key(token)).await?;
+        let user: Option<User> = cache::get(pool, token_key(token)).await?;
         if let Some(mut user) = user {
             user.token = token.to_owned();
             return Ok(user);
         }
 
-        let client = twilight_http::Client::new(format!("Bearer {}", token));
-        let current_user = client.current_user().await?;
+        let token_clone = token.to_owned();
+        let response = block(move || {
+            reqwest::blocking::Client::new()
+                .get("https://discord.com/api/v9/users/@me")
+                .header(
+                    http::header::AUTHORIZATION,
+                    format!("Bearer {}", token_clone),
+                )
+                .send()
+        })
+        .await?;
 
-        let mut user = Self {
-            token: "".to_owned(),
-            id: current_user.id.0,
-            username: current_user.name,
-            discriminator: current_user.discriminator.parse()?,
-            avatar: current_user.avatar.unwrap_or_else(|| "".to_owned()),
-        };
+        let mut user: User = block(move || response.json()).await?;
 
-        cache::set(pool, token_info_key(token), &user, TOKEN_INFO_KEY_TTL).await?;
+        cache::set(pool, token_key(token), &user, TOKEN_KEY_TTL).await?;
 
         user.token = token.to_owned();
         Ok(user)
     }
 
-    pub async fn revoke_token(self) -> ApiResult<()> {
-        CLIENT
-            .revoke_token(StandardRevocableToken::AccessToken(AccessToken::new(
-                self.token,
-            )))
-            .unwrap()
-            .request_async(async_http_client)
-            .await?;
+    pub async fn revoke_token(&self) -> ApiResult<()> {
+        let token_clone = self.token.clone();
+        block(move || {
+            CLIENT
+                .revoke_token(StandardRevocableToken::AccessToken(AccessToken::new(
+                    token_clone,
+                )))
+                .unwrap()
+                .request(http_client)
+        })
+        .await?;
 
         Ok(())
     }

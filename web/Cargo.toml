@@ -29,9 +29,4 @@ tokio = { version = "1.5.0", default-features = false, features = ["rt", "rt-mul
 tracing = { version = "0.1.26", default-features = false }
 tracing-log = { version = "0.1.1", default-features = false, features = ["env_logger"] }
 tracing-subscriber = { version = "0.2.18", default-features = false, features = ["ansi", "fmt"] }
-twilight-http = { version = "0.2.10", default-features = false, features = ["rustls"] }
-twilight-model = { version = "0.2.9", default-features = false }
 url = { version = "2.1.1", default-features = false }
-
-[profile.release]
-lto = "thin"

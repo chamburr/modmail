@@ -1,6 +1,9 @@
 use crate::routes::{ApiResponse, ApiResult};
 
-use actix_web::{get, web::Path};
+use actix_web::{
+    get,
+    web::{block, Path},
+};
 use lazy_static::lazy_static;
 use regex::Regex;
 use serde::Serialize;
@@ -33,20 +36,22 @@ pub async fn get_log(Path(id): Path<String>) -> ApiResult<ApiResponse> {
         return ApiResponse::not_found().finish();
     }
 
-    let response = reqwest::get(
-        format!(
-            "https://cdn.discordapp.com/attachments/{}/{}/modmail_log_{}.txt",
-            ids[0], ids[1], ids[2]
+    let response = block(move || {
+        reqwest::blocking::get(
+            format!(
+                "https://cdn.discordapp.com/attachments/{}/{}/modmail_log_{}.txt",
+                ids[0], ids[1], ids[2]
+            )
+            .as_str(),
         )
-        .as_str(),
-    )
+    })
     .await?;
 
     if response.status() != 200 {
         return ApiResponse::not_found().finish();
     }
 
-    let body = response.text().await?;
+    let body = block(move || response.text()).await?;
     let mut messages: Vec<Entry> = vec![];
 
     for line in body.split('\n') {

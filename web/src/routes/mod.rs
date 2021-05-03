@@ -195,7 +195,6 @@ pub enum ApiError {
     ),
     ReqwestError(reqwest::Error),
     SerdeJsonError(serde_json::Error),
-    TwilightHttpError(twilight_http::Error),
     Utf8Error(Utf8Error),
 }
 
@@ -229,6 +228,68 @@ impl From<BlockingError<r2d2::Error>> for ApiError {
         sentry::capture_error(&err);
         match err {
             BlockingError::Error(error) => Self::R2d2Error(error),
+            BlockingError::Canceled => Self::EmptyError(()),
+        }
+    }
+}
+
+impl
+    From<
+        BlockingError<
+            RequestTokenError<
+                oauth2::reqwest::Error<reqwest::Error>,
+                StandardErrorResponse<BasicErrorResponseType>,
+            >,
+        >,
+    > for ApiError
+{
+    fn from(
+        err: BlockingError<
+            RequestTokenError<
+                oauth2::reqwest::Error<reqwest::Error>,
+                StandardErrorResponse<BasicErrorResponseType>,
+            >,
+        >,
+    ) -> Self {
+        sentry::capture_error(&err);
+        match err {
+            BlockingError::Error(error) => Self::RequestTokenErrorBasic(error),
+            BlockingError::Canceled => Self::EmptyError(()),
+        }
+    }
+}
+
+impl
+    From<
+        BlockingError<
+            RequestTokenError<
+                oauth2::reqwest::Error<reqwest::Error>,
+                StandardErrorResponse<RevocationErrorResponseType>,
+            >,
+        >,
+    > for ApiError
+{
+    fn from(
+        err: BlockingError<
+            RequestTokenError<
+                oauth2::reqwest::Error<reqwest::Error>,
+                StandardErrorResponse<RevocationErrorResponseType>,
+            >,
+        >,
+    ) -> Self {
+        sentry::capture_error(&err);
+        match err {
+            BlockingError::Error(error) => Self::RequestTokenErrorRevocation(error),
+            BlockingError::Canceled => Self::EmptyError(()),
+        }
+    }
+}
+
+impl From<BlockingError<reqwest::Error>> for ApiError {
+    fn from(err: BlockingError<reqwest::Error>) -> Self {
+        sentry::capture_error(&err);
+        match err {
+            BlockingError::Error(error) => Self::ReqwestError(error),
             BlockingError::Canceled => Self::EmptyError(()),
         }
     }
@@ -282,62 +343,10 @@ impl From<RedisError> for ApiError {
     }
 }
 
-impl
-    From<
-        RequestTokenError<
-            oauth2::reqwest::Error<reqwest::Error>,
-            StandardErrorResponse<BasicErrorResponseType>,
-        >,
-    > for ApiError
-{
-    fn from(
-        err: RequestTokenError<
-            oauth2::reqwest::Error<reqwest::Error>,
-            StandardErrorResponse<BasicErrorResponseType>,
-        >,
-    ) -> Self {
-        sentry::capture_error(&err);
-        Self::RequestTokenErrorBasic(err)
-    }
-}
-
-impl
-    From<
-        RequestTokenError<
-            oauth2::reqwest::Error<reqwest::Error>,
-            StandardErrorResponse<RevocationErrorResponseType>,
-        >,
-    > for ApiError
-{
-    fn from(
-        err: RequestTokenError<
-            oauth2::reqwest::Error<reqwest::Error>,
-            StandardErrorResponse<RevocationErrorResponseType>,
-        >,
-    ) -> Self {
-        sentry::capture_error(&err);
-        Self::RequestTokenErrorRevocation(err)
-    }
-}
-
-impl From<reqwest::Error> for ApiError {
-    fn from(err: reqwest::Error) -> Self {
-        sentry::capture_error(&err);
-        Self::ReqwestError(err)
-    }
-}
-
 impl From<serde_json::Error> for ApiError {
     fn from(err: serde_json::Error) -> Self {
         sentry::capture_error(&err);
         Self::SerdeJsonError(err)
-    }
-}
-
-impl From<twilight_http::Error> for ApiError {
-    fn from(err: twilight_http::Error) -> Self {
-        sentry::capture_error(&err);
-        Self::TwilightHttpError(err)
     }
 }
 
