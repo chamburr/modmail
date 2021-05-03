@@ -109,7 +109,9 @@ class General(commands.Cog):
             all_pages.append(page)
 
         for page in range(len(all_pages)):
-            all_pages[page].set_footer(text=f"Use the reactions to flip pages. (Page {page + 1}/{len(all_pages)})")
+            all_pages[page].set_footer(
+                text=f"Use the reactions to flip pages. (Page {page + 1}/{len(all_pages)})"
+            )
 
         await tools.create_paginator(self.bot, ctx, all_pages)
 
@@ -153,7 +155,9 @@ class General(commands.Cog):
             embed.add_field(name="Uptime", value=f"{hours}h {minutes}m {seconds}s")
         embed.add_field(name="Clusters", value=self.bot.cluster_count)
         if ctx.guild:
-            embed.add_field(name="Shards", value=f"{ctx.guild.shard_id + 1}/{await self.bot.shard_count()}")
+            embed.add_field(
+                name="Shards", value=f"{ctx.guild.shard_id + 1}/{await self.bot.shard_count()}"
+            )
         else:
             embed.add_field(name="Shards", value=f"0/{await self.bot.shard_count()}")
         embed.add_field(name="Servers", value=str(await self.bot.state.scard("guild_keys")))
@@ -286,8 +290,12 @@ class General(commands.Cog):
 
         for page in range(len(all_pages)):
             bot_user = await self.bot.real_user()
-            all_pages[page].set_author(name=f"{bot_user.name} partners", icon_url=bot_user.avatar_url)
-            all_pages[page].set_footer(text=f"Use the reactions to flip pages. (Page {page + 1}/{len(all_pages)})")
+            all_pages[page].set_author(
+                name=f"{bot_user.name} partners", icon_url=bot_user.avatar_url
+            )
+            all_pages[page].set_footer(
+                text=f"Use the reactions to flip pages. (Page {page + 1}/{len(all_pages)})"
+            )
 
         await tools.create_paginator(self.bot, ctx, all_pages)
 
@@ -300,7 +308,9 @@ class General(commands.Cog):
             )
         )
 
-    @commands.command(description="Get a link to my support server.", usage="support", aliases=["server"])
+    @commands.command(
+        description="Get a link to my support server.", usage="support", aliases=["server"]
+    )
     async def support(self, ctx):
         await ctx.send(
             embed=Embed(
@@ -318,7 +328,11 @@ class General(commands.Cog):
             )
         )
 
-    @commands.command(description="Get the link to ModMail's GitHub repository.", usage="source", aliases=["github"])
+    @commands.command(
+        description="Get the link to ModMail's GitHub repository.",
+        usage="source",
+        aliases=["github"],
+    )
     async def source(self, ctx):
         await ctx.send(
             embed=Embed(

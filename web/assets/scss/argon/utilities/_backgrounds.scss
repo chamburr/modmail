@@ -1,0 +1,33 @@
+@each $color, $value in $colors {
+  @include bg-variant(".bg-#{$color}", $value, false);
+}
+
+@each $color, $value in $theme-colors {
+  @include bg-gradient-variant(".bg-gradient-#{$color}", $value);
+}
+
+@each $color, $value in $colors {
+  @include bg-gradient-variant(".bg-gradient-#{$color}", $value);
+}
+
+@each $color, $value in $section-colors {
+  @include bg-variant(".section-#{$color}", $value, false);
+}
+
+@each $color, $value in $theme-colors {
+  @include bg-gradient-variant(".bg-gradient-#{$color}", $value);
+}
+
+@each $color, $value in $theme-colors {
+  .fill-#{$color} {
+    fill: $value;
+  }
+
+  .stroke-#{$color} {
+    stroke: $value;
+  }
+}
+
+.fill-opacity-8 {
+  fill-opacity: .8;
+}

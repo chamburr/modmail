@@ -53,7 +53,9 @@ class Core(commands.Cog):
         try:
             await ctx.channel.delete()
         except discord.Forbidden:
-            await ctx.send(embed=ErrorEmbed(description="Missing permissions to delete this channel."))
+            await ctx.send(
+                embed=ErrorEmbed(description="Missing permissions to delete this channel.")
+            )
             return
 
         embed = ErrorEmbed(
@@ -63,7 +65,9 @@ class Core(commands.Cog):
         )
         embed.set_author(
             name=str(ctx.author.name) if anon is False else "Anonymous#0000",
-            icon_url=ctx.author.avatar_url if anon is False else "https://cdn.discordapp.com/embed/avatars/0.png",
+            icon_url=ctx.author.avatar_url
+            if anon is False
+            else "https://cdn.discordapp.com/embed/avatars/0.png",
         )
         embed.set_footer(text=f"{ctx.guild.name} | {ctx.guild.id}", icon_url=ctx.guild.icon_url)
 
@@ -135,7 +139,9 @@ class Core(commands.Cog):
                     description = message.embeds[0].description
 
                     for attachment in [
-                        field.value for field in message.embeds[0].fields if field.name.startswith("Attachment ")
+                        field.value
+                        for field in message.embeds[0].fields
+                        if field.name.startswith("Attachment ")
                     ]:
                         if not description:
                             description = f"(Attachment: {attachment})"
@@ -145,11 +151,16 @@ class Core(commands.Cog):
                     author = f"{message.author} (Comment)"
                     description = message.content
 
-                history = f"[{str(message.created_at.replace(microsecond=0))}] {author}: {description}\n" + history
+                history = (
+                    f"[{str(message.created_at.replace(microsecond=0))}] {author}: {description}\n"
+                    + history
+                )
 
             history = io.BytesIO(history.encode())
 
-            file = discord.File(history, f"modmail_log_{tools.get_modmail_user(ctx.channel).id}.txt")
+            file = discord.File(
+                history, f"modmail_log_{tools.get_modmail_user(ctx.channel).id}.txt"
+            )
 
             try:
                 msg = await channel.send(embed=embed, file=file)
@@ -215,7 +226,9 @@ class Core(commands.Cog):
     @checks.is_mod()
     @checks.bot_has_permissions(manage_channels=True)
     @commands.guild_only()
-    @commands.command(description="Close all of the channels anonymously.", usage="acloseall [reason]")
+    @commands.command(
+        description="Close all of the channels anonymously.", usage="acloseall [reason]"
+    )
     async def acloseall(self, ctx, *, reason: str = None):
         for channel in await ctx.guild.text_channels():
             if tools.is_modmail_channel(channel):

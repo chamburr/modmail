@@ -64,7 +64,11 @@ async def create_paginator(bot, ctx, pages):
 
 async def get_reaction_menu(bot, payload, kind):
     for menu in await bot.state.smembers("reaction_menus"):
-        if menu["channel"] == payload.channel_id and menu["message"] == payload.message_id and menu["kind"] == kind:
+        if (
+            menu["channel"] == payload.channel_id
+            and menu["message"] == payload.message_id
+            and menu["kind"] == kind
+        ):
             channel = DMChannel(me=bot.user, state=bot.state, data={"id": menu["channel"]})
             message = channel.get_partial_message(menu["message"])
 
@@ -165,13 +169,35 @@ async def is_guild_banned(bot, guild):
     return await bot.state.sismember("banned_guilds", guild.id)
 
 
+async def get_user_guilds(bot, member):
+    headers = {
+        "User-Id": member.id,
+        "User-Username": member.name,
+        "User-Discriminator": member.discriminator,
+        "User-Avatar": member.avatar if member.avatar else "",
+    }
+
+    resp = await bot.session.get(f"{bot.config.base_uri}/api/users/@me/guilds", headers=headers)
+
+    if resp.status == 400:
+        return []
+
+    resp = resp.json()
+
+    return [x["id"] for x in resp]
+
+
 def is_modmail_channel(channel, user_id=None):
     return (
         channel.topic
         and channel.topic.startswith("ModMail Channel ")
         and channel.topic.replace("ModMail Channel ", "").split(" ")[0].isdigit()
         and channel.topic.replace("ModMail Channel ", "").split(" ")[1].isdigit()
-        and (channel.topic.replace("ModMail Channel ", "").split(" ")[0] == str(user_id) if user_id else True)
+        and (
+            channel.topic.replace("ModMail Channel ", "").split(" ")[0] == str(user_id)
+            if user_id
+            else True
+        )
     )
 
 

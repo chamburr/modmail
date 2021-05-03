@@ -3,7 +3,14 @@ import logging
 from discord import guild, utils
 from discord.channel import CategoryChannel
 from discord.emoji import Emoji
-from discord.enums import ChannelType, ContentFilter, NotificationLevel, VerificationLevel, VoiceRegion, try_enum
+from discord.enums import (
+    ChannelType,
+    ContentFilter,
+    NotificationLevel,
+    VerificationLevel,
+    VoiceRegion,
+    try_enum,
+)
 from discord.member import VoiceState
 from discord.role import Role
 
@@ -48,8 +55,12 @@ class Guild(guild.Guild):
         self.name = guild.get("name")
         self.region = try_enum(VoiceRegion, guild.get("region"))
         self.verification_level = try_enum(VerificationLevel, guild.get("verification_level"))
-        self.default_notifications = try_enum(NotificationLevel, guild.get("default_message_notifications"))
-        self.explicit_content_filter = try_enum(ContentFilter, guild.get("explicit_content_filter", 0))
+        self.default_notifications = try_enum(
+            NotificationLevel, guild.get("default_message_notifications")
+        )
+        self.explicit_content_filter = try_enum(
+            ContentFilter, guild.get("explicit_content_filter", 0)
+        )
         self.afk_timeout = guild.get("afk_timeout")
         self.icon = guild.get("icon")
         self.banner = guild.get("banner")
@@ -69,17 +80,25 @@ class Guild(guild.Guild):
         self.preferred_locale = guild.get("preferred_locale")
         self.discovery_splash = guild.get("discovery_splash")
         self._rules_channel_id = utils._get_as_snowflake(guild, "rules_channel_id")
-        self._public_updates_channel_id = utils._get_as_snowflake(guild, "public_updates_channel_id")
+        self._public_updates_channel_id = utils._get_as_snowflake(
+            guild, "public_updates_channel_id"
+        )
         self._large = None if member_count is None else self._member_count >= 250
         self.owner_id = utils._get_as_snowflake(guild, "owner_id")
         self._afk_channel_id = utils._get_as_snowflake(guild, "afk_channel_id")
 
-    async def create_text_channel(self, name, *, overwrites=None, category=None, reason=None, **options):
-        data = await self._create_channel(name, overwrites, ChannelType.text, category, reason=reason, **options)
+    async def create_text_channel(
+        self, name, *, overwrites=None, category=None, reason=None, **options
+    ):
+        data = await self._create_channel(
+            name, overwrites, ChannelType.text, category, reason=reason, **options
+        )
         return TextChannel(state=self._state, guild=self, data=data)
 
     async def create_category(self, name, *, overwrites=None, reason=None, position=None):
-        data = await self._create_channel(name, overwrites, ChannelType.category, reason=reason, position=position)
+        data = await self._create_channel(
+            name, overwrites, ChannelType.category, reason=reason, position=position
+        )
         return CategoryChannel(state=self._state, guild=self, data=data)
 
     async def fetch_member(self, member_id):
@@ -90,7 +109,9 @@ class Guild(guild.Guild):
         channels = []
         for channel in await self._state._members_get_all("guild", key_id=self.id, name="channel"):
             factory, _ = _channel_factory(channel["type"])
-            channels.append(factory(guild=self, state=self._state, data=tools.upgrade_payload(channel)))
+            channels.append(
+                factory(guild=self, state=self._state, data=tools.upgrade_payload(channel))
+            )
 
         return channels
 

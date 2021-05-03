@@ -1,6 +1,0 @@
-build:
-	GOOS=linux
-	GOARCH=amd64
-	GO111MODULE=on
-	GOBIN=${PWD}/_functions go get ./...
-	GOBIN=${PWD}/_functions go install ./...

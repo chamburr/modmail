@@ -84,11 +84,15 @@ class Configuration(commands.Cog):
 
     @commands.guild_only()
     @commands.command(
-        description="Change the prefix or view the current prefix.", usage="prefix [new prefix]", aliases=["setprefix"]
+        description="Change the prefix or view the current prefix.",
+        usage="prefix [new prefix]",
+        aliases=["setprefix"],
     )
     async def prefix(self, ctx, *, prefix: str = None):
         if prefix is None:
-            await ctx.send(embed=Embed(description=f"The prefix for this server is `{ctx.prefix}`."))
+            await ctx.send(
+                embed=Embed(description=f"The prefix for this server is `{ctx.prefix}`.")
+            )
             return
 
         if (await ctx.message.member.guild_permissions()).administrator is False:
@@ -118,10 +122,16 @@ class Configuration(commands.Cog):
     @checks.in_database()
     @checks.has_permissions(administrator=True)
     @commands.guild_only()
-    @commands.command(description="Re-create the category for the ModMail channels.", usage="category [name]")
+    @commands.command(
+        description="Re-create the category for the ModMail channels.", usage="category [name]"
+    )
     async def category(self, ctx, *, name: str = "ModMail"):
         if len(name) > 100:
-            await ctx.send(embed=ErrorEmbed(description="The category name cannot be longer than 100 characters"))
+            await ctx.send(
+                embed=ErrorEmbed(
+                    description="The category name cannot be longer than 100 characters"
+                )
+            )
             return
 
         data = await tools.get_data(self.bot, ctx.guild.id)
@@ -137,7 +147,9 @@ class Configuration(commands.Cog):
         category = await ctx.guild.create_category(name=name, overwrites=overwrites)
 
         async with self.bot.pool.acquire() as conn:
-            await conn.execute("UPDATE data SET category=$1 WHERE guild=$2", category.id, ctx.guild.id)
+            await conn.execute(
+                "UPDATE data SET category=$1 WHERE guild=$2", category.id, ctx.guild.id
+            )
 
         await ctx.send(embed=Embed(description="Successfully created the category."))
 
@@ -155,7 +167,9 @@ class Configuration(commands.Cog):
             roles = []
 
         if check:
-            await ctx.send(embed=ErrorEmbed(description="The role(s) are not found. Please try again."))
+            await ctx.send(
+                embed=ErrorEmbed(description="The role(s) are not found. Please try again.")
+            )
             return
 
         if len(roles) > 10:
@@ -224,7 +238,9 @@ class Configuration(commands.Cog):
                 elif role == "here":
                     role_ids.append(-1)
                 else:
-                    await ctx.send(embed=ErrorEmbed(description="The role(s) are not found. Please try again."))
+                    await ctx.send(
+                        embed=ErrorEmbed(description="The role(s) are not found. Please try again.")
+                    )
                     return
             else:
                 role_ids.append(role.id)
@@ -259,7 +275,9 @@ class Configuration(commands.Cog):
             try:
                 await channel.delete()
             except Forbidden:
-                await ctx.send(embed=ErrorEmbed(description="Missing permissions to delete the channel."))
+                await ctx.send(
+                    embed=ErrorEmbed(description="Missing permissions to delete the channel.")
+                )
                 return
 
         if data[4]:
@@ -282,7 +300,9 @@ class Configuration(commands.Cog):
         channel = await ctx.guild.create_text_channel(name="modmail-log", category=category)
 
         async with self.bot.pool.acquire() as conn:
-            await conn.execute("UPDATE data SET logging=$1 WHERE guild=$2", channel.id, ctx.guild.id)
+            await conn.execute(
+                "UPDATE data SET logging=$1 WHERE guild=$2", channel.id, ctx.guild.id
+            )
 
         await ctx.send(embed=Embed(description="The channel is created successfully."))
 
@@ -366,7 +386,9 @@ class Configuration(commands.Cog):
     @checks.in_database()
     @checks.has_permissions(administrator=True)
     @commands.guild_only()
-    @commands.command(description="View the configurations for the current server.", usage="viewconfig")
+    @commands.command(
+        description="View the configurations for the current server.", usage="viewconfig"
+    )
     async def viewconfig(self, ctx):
         data = await tools.get_data(self.bot, ctx.guild.id)
         category = await ctx.guild.get_channel(data[2])
@@ -396,13 +418,29 @@ class Configuration(commands.Cog):
         embed = Embed(title="Server Configurations")
         embed.add_field(name="Prefix", value=ctx.prefix)
         embed.add_field(name="Category", value="*Not set*" if category is None else category.name)
-        embed.add_field(name="Access Roles", value="*Not set*" if len(access_roles) == 0 else " ".join(access_roles))
-        embed.add_field(name="Ping Roles", value="*Not set*" if len(ping_roles) == 0 else " ".join(ping_roles))
-        embed.add_field(name="Logging", value="*Not set*" if logging_channel is None else f"<#{logging_channel.id}>")
+        embed.add_field(
+            name="Access Roles",
+            value="*Not set*" if len(access_roles) == 0 else " ".join(access_roles),
+        )
+        embed.add_field(
+            name="Ping Roles", value="*Not set*" if len(ping_roles) == 0 else " ".join(ping_roles)
+        )
+        embed.add_field(
+            name="Logging",
+            value="*Not set*" if logging_channel is None else f"<#{logging_channel.id}>",
+        )
         embed.add_field(name="Advanced Logging", value="Enabled" if data[7] is True else "Disabled")
-        embed.add_field(name="Anonymous Messaging", value="Enabled" if data[10] is True else "Disabled")
-        embed.add_field(name="Greeting Message", value="*Not set*" if greeting is None else greeting, inline=False)
-        embed.add_field(name="Closing message", value="*Not set*" if closing is None else closing, inline=False)
+        embed.add_field(
+            name="Anonymous Messaging", value="Enabled" if data[10] is True else "Disabled"
+        )
+        embed.add_field(
+            name="Greeting Message",
+            value="*Not set*" if greeting is None else greeting,
+            inline=False,
+        )
+        embed.add_field(
+            name="Closing message", value="*Not set*" if closing is None else closing, inline=False
+        )
 
         await ctx.send(embed=embed)
 

@@ -161,6 +161,21 @@ class Scheduler:
                 headers={"Authorization": config.dboats_token, "Content-Type": "application/json"},
             )
 
+            await self.redis.set(
+                "bot_stats",
+                orjson.dumps(
+                    {
+                        "version": "3.0.0",
+                        "started": await self.redis.get("gateway_started"),
+                        "shards": await self.redis.get("gateway_shards"),
+                        "guilds": guilds,
+                        "roles": await self.redis.scard("role_keys"),
+                        "channels": await self.redis.scard("channel_keys"),
+                        "members": await self.redis.scard("member_keys"),
+                    }
+                ).decode("utf-8"),
+            )
+
             await asyncio.sleep(900)
 
     async def cleanup(self):
@@ -177,17 +192,23 @@ class Scheduler:
                     except discord.Forbidden:
                         for reaction in ["⏮️", "◀️", "⏹️", "▶️", "⏭️"]:
                             try:
-                                await self.http.remove_own_reaction(menu["channel"], menu["message"], reaction)
+                                await self.http.remove_own_reaction(
+                                    menu["channel"], menu["message"], reaction
+                                )
                             except discord.NotFound:
                                 pass
                 elif menu["kind"] == "confirmation":
                     for reaction in ["✅", "🔁", "❌"]:
-                        await self.http.remove_own_reaction(menu["channel"], menu["message"], reaction)
+                        await self.http.remove_own_reaction(
+                            menu["channel"], menu["message"], reaction
+                        )
 
                     await self.http.edit_message(
                         menu["channel"],
                         menu["message"],
-                        embed=ErrorEmbed(description="Time out. You did not choose anything.").to_dict(),
+                        embed=ErrorEmbed(
+                            description="Time out. You did not choose anything."
+                        ).to_dict(),
                     )
                 elif menu["kind"] == "selection":
                     await self.http.remove_own_reaction(menu["channel"], menu["message"], "◀")
@@ -195,14 +216,18 @@ class Scheduler:
 
                     for reaction in ["1⃣", "2⃣", "3⃣", "4⃣", "5⃣", "6⃣", "7⃣", "8⃣", "9⃣", "🔟"]:
                         try:
-                            await self.http.remove_own_reaction(menu["channel"], menu["message"], reaction)
+                            await self.http.remove_own_reaction(
+                                menu["channel"], menu["message"], reaction
+                            )
                         except discord.NotFound:
                             pass
 
                     await self.http.edit_message(
                         menu["channel"],
                         menu["message"],
-                        embed=ErrorEmbed(description="Time out. You did not choose anything.").to_dict(),
+                        embed=ErrorEmbed(
+                            description="Time out. You did not choose anything."
+                        ).to_dict(),
                     )
 
                 await self.redis.srem("reaction_menus", orjson.dumps(menu).decode("utf-8"))
@@ -215,7 +240,9 @@ class Scheduler:
             bans = await conn.fetch("SELECT identifier, category FROM ban")
 
         if len(data) >= 1:
-            await self.redis.mset(*[y for x in data for y in (f"prefix:{x[0]}", "" if x[1] is None else x[1])])
+            await self.redis.mset(
+                *[y for x in data for y in (f"prefix:{x[0]}", "" if x[1] is None else x[1])]
+            )
 
         if len([x[0] for x in bans if x[1] == 0]) >= 1:
             await self.redis.sadd("banned_users", *[x[0] for x in bans if x[1] == 0])
@@ -242,7 +269,9 @@ class Main:
 
     def dead_process_handler(self, result):
         instance = result.result()
-        print(f"[Cluster {instance.id}] The cluster exited with code {instance._process.returncode}.")
+        print(
+            f"[Cluster {instance.id}] The cluster exited with code {instance._process.returncode}."
+        )
 
         if instance._process.returncode in [0, -15]:
             print(f"[Cluster {instance.id}] The cluster stopped gracefully.")
@@ -266,7 +295,7 @@ class Main:
             data.append({"labels": {"cluster": str(i)}, "targets": [f"localhost:{6000 + i}"]})
 
         with open("targets.json", "w") as file:
-            json.dump(data, file, indent=4)
+            json.dump(data, file, indent=2)
 
     async def launch(self):
         print(f"[Cluster Manager] Starting a total of {config.clusters} clusters.")
@@ -281,7 +310,9 @@ class Main:
         )
 
         async with self.pool.acquire() as conn:
-            exists = await conn.fetchrow("SELECT EXISTS (SELECT relname FROM pg_class WHERE relname = 'data')")
+            exists = await conn.fetchrow(
+                "SELECT EXISTS (SELECT relname FROM pg_class WHERE relname = 'data')"
+            )
             if exists[0] is False:
                 with open("schema.sql", "r") as file:
                     await conn.execute(file.read())
@@ -314,7 +345,9 @@ try:
 except KeyboardInterrupt:
 
     def shutdown_handler(_loop, context):
-        if "exception" not in context or not isinstance(context["exception"], asyncio.CancelledError):
+        if "exception" not in context or not isinstance(
+            context["exception"], asyncio.CancelledError
+        ):
             _loop.default_exception_handler(context)
 
     loop.set_exception_handler(shutdown_handler)

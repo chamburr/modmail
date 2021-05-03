@@ -1,3 +1,6 @@
+# Base URI
+base_uri = ""
+
 # Bot token
 token = ""
 

@@ -37,7 +37,9 @@ def in_database():
 
         if not res or not res[0]:
             await ctx.send(
-                embed=ErrorEmbed(description=f"Your server has not been set up yet. Use `{ctx.prefix}setup` first.")
+                embed=ErrorEmbed(
+                    description=f"Your server has not been set up yet. Use `{ctx.prefix}setup` first."
+                )
             )
             return False
 
@@ -52,7 +54,9 @@ def is_premium():
             return True
 
         async with ctx.bot.pool.acquire() as conn:
-            res = await conn.fetchrow("SELECT identifier FROM premium WHERE $1=any(guild)", ctx.guild.id)
+            res = await conn.fetchrow(
+                "SELECT identifier FROM premium WHERE $1=any(guild)", ctx.guild.id
+            )
 
         if not res:
             await ctx.send(
@@ -71,7 +75,9 @@ def is_premium():
 def is_patron():
     async def predicate(ctx):
         async with ctx.bot.pool.acquire() as conn:
-            res = await conn.fetchrow("SELECT identifier FROM premium WHERE identifier=$1", ctx.author.id)
+            res = await conn.fetchrow(
+                "SELECT identifier FROM premium WHERE identifier=$1", ctx.author.id
+            )
 
         if res:
             return True
@@ -86,7 +92,9 @@ def is_patron():
             return False
 
         async with ctx.bot.pool.acquire() as conn:
-            await conn.execute("INSERT INTO premium (identifier, guild) VALUES ($1, $2)", ctx.author.id, [])
+            await conn.execute(
+                "INSERT INTO premium (identifier, guild) VALUES ($1, $2)", ctx.author.id, []
+            )
 
         return True
 

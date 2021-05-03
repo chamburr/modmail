@@ -44,7 +44,9 @@ class Admin(commands.Cog):
         await tools.create_paginator(self.bot, ctx, all_pages)
 
     @checks.is_admin()
-    @commands.command(description="Get a list of servers with the specified name.", usage="findserver <name>")
+    @commands.command(
+        description="Get a list of servers with the specified name.", usage="findserver <name>"
+    )
     async def findserver(self, ctx, *, name: str):
         guilds = [
             f"{guild.name} `{guild.id}` ({guild.member_count} members)"
@@ -55,12 +57,16 @@ class Admin(commands.Cog):
         await self._send_guilds(ctx, guilds, "Servers")
 
     @checks.is_admin()
-    @commands.command(description="Get a list of servers the bot shares with the user.", usage="sharedservers <user>")
+    @commands.command(
+        description="Get a list of servers the bot shares with the user.",
+        usage="sharedservers <user>",
+    )
     async def sharedservers(self, ctx, *, user: UserConverter):
         guilds = [
             f"{guild.name} `{guild.id}` ({guild.member_count} members)"
             for guild in [
-                await self.bot.get_guild(int(guild)) for guild in await self.bot.state.smembers(f"user:{user.id}")
+                await self.bot.get_guild(int(guild))
+                for guild in await self.bot.state.smembers(f"user:{user.id}")
             ]
         ]
 
@@ -79,7 +85,9 @@ class Admin(commands.Cog):
         await self._send_guilds(ctx, guilds, "Top Servers")
 
     @checks.is_admin()
-    @commands.command(description="Create an invite to the specified server.", usage="createinvite <server ID>")
+    @commands.command(
+        description="Create an invite to the specified server.", usage="createinvite <server ID>"
+    )
     async def createinvite(self, ctx, *, guild: GuildConverter):
         try:
             invite = (await guild.invites())[0]
@@ -87,7 +95,9 @@ class Admin(commands.Cog):
             try:
                 invite = (await guild.text_channels())[0].create_invite(max_age=120)
             except (IndexError, discord.Forbidden):
-                await ctx.send(embed=ErrorEmbed(description="No permissions to create an invite link."))
+                await ctx.send(
+                    embed=ErrorEmbed(description="No permissions to create an invite link.")
+                )
                 return
 
         await ctx.send(embed=Embed(description=f"Here is the invite link: {invite.url}"))
