@@ -39,6 +39,7 @@ bot = ModMail(
     version="3.0.0",
 )
 
+slash = SlashCommand(bot, sync_commands=True, sync_on_cog_reload=True)
 
 @bot.event
 async def on_message(_):
