@@ -37,8 +37,11 @@ Administrator
 Moderator
 
 - Image: https://cdn.discordapp.com/avatars/365262543872327681/7c55d2f219b263d7de75f48b8b813b67.png
+- Website: https://teagancollyer.wordpress.com
 - GitHub: https://github.com/SnowyJaguar1034
-- Reddit: https://www.reddit.com/u/NinthTurtle1034
+- Twitter: https://twitter.com/SnowyJaguar1034
+- Reddit: https://www.reddit.com/user/NinthTurtle1034
+- LinkedIn: https://www.linkedin.com/in/teagancollyer
 
 # dyl
 

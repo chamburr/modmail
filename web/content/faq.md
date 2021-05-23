@@ -5,7 +5,7 @@ easily.
 
 # How do I set up ModMail?
 
-Simply run \`=setup\` in your server.
+Simply run =setup in your server.
 
 # How do I use ModMail to contact staff?
 
@@ -57,43 +57,11 @@ Use the command =prefix \<new prefix\>.
 
 Yes. you can.
 
-# How can I become a moderator/support?
-
-You can apply for staff with this link: https://forms.gle/GngEAQzj9Rh8MSjj9
-
-# Can I appeal infractions?
-
-Please message ModMail and choose the support server. Include why you were given the infraction, and
-the reason to appeal.
-
-# Can I get an invite to this server?
-
-You can find that in the #rules-and-info channel of the support server.
-
 # Is the bot open source?
 
 Yes! See https://github.com/chamburr/modmail. However, we will not provide any help for
 self-hosting.
 
-# Can I partner with you?
-
-Please see the pinned message in #partners of the support server. There is a form for you to apply
-for partnership.
-
-# How can I suggest something?
-
-Please see the channel description of #suggestions channel of support server.
-
-# How do I report a bug?
-
-Please see the channel description of #bug-reports channel of support server.
-
-# I donated, but did not get my patron role?
-
-Please ensure that the payment was successful, and that you bought it for the correct account. If
-you believe that something is wrong on our end, send your email address, together with some evidence
-to CHamburr#2591.
-
 # None of these helped me!
 
-If your question is not answered, please join our support server and ask in the #support channel!
+Please join our support server and ask in the #support channel!

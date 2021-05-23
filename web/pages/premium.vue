@@ -101,7 +101,10 @@ export default {
           else
             await this.$router.push(`/login?redirect=${encodeURIComponent(this.$route.fullPath)}`)
         })
-        this.$store.commit('user/set', user || {})
+
+        if (!user) return
+
+        this.$store.commit('user/set', user)
       }
 
       const user = this.$store.getters['user/get']

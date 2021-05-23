@@ -1,34 +1,35 @@
-# Intuitive Commands
+# Powerful Features
 
-Our goal is to make the end-user experience as good as possible, be it the moderators or the users.
-No more fumbling to find that command you wrote down and instead, use our interactive help with the
-=help command!
+We believe that every Discord bot should be packed with great features. That's why we've done so for
+ModMail! An example is our beautifully designed log viewer, which allows server staff to read past
+transcripts pleasantly.
 
-# Feature Rich
+# Easy to Use
 
-We believe that a ModMail bot should not only fulfill the roles of relaying messages, it should also
-be packed with loads of other great features. A great example is our beautiful logs viewer which
-allows server moderators to read through the transcripts presented in a pleasing manner.
+All you need to do to set up ModMail is to type =setup! For the users, they only need to message the
+bot to contact your server staff. Then, your server staff can easily reply by sending a message in
+the dedicated channel.
 
 # Reliable and High Quality
 
-With our revolutionary gateway implementation written in the fastest language in the world, we're
-proud to achieve absolute 100% uptime! ModMail can help relay messages to and fro between your staff
-and users at any time!
+With our revolutionary infrastructure implementation, we're proud to achieve absolute 100% uptime!
+This means that ModMail will always be online, and ready to relay messages between your server staff
+and users!
 
 # Customizable Settings
 
-Adjust the settings to fit your server. Choose the who can access the tickets, the bot's prefix and
-even whether you want staff to reply anonymously! You can even move tickets out of its original
-category if you want!
+Adjust the settings to fit all the needs of your server! You can select who can access the tickets,
+the roles to notify for new tickets, whether to reply anonymously, the channel to send message logs
+to, and more...
 
 # Open Source
 
 We are an open source project on GitHub. Don't believe what we've said earlier? Check out the source
-code for yourself! Open source means the maximum level of transparency, so you will never have to
-worry about privacy concerns.
+code for yourself! This means the maximum level of transparency, so you'll never have to worry about
+privacy concerns.
 
 # And Much More...
 
-There are many more goodies available in Wyvor, such as advanced logging, snippets, greeting and
-closing messages, just to name a few. Discover the rest of the features on your own!
+There are many more goodies available in ModMail, such as blacklisting users, saving messages as
+snippets, automated greeting and closing messages. Discover the rest of the amazing features on your
+own!

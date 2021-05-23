@@ -120,7 +120,7 @@ pub async fn token_exchange(pool: &RedisPool, code: &str) -> ApiResult<BasicToke
 }
 
 pub async fn get_token_cookie(exchange: BasicTokenResponse) -> ApiResult<Cookie<'static>> {
-    let url = Url::parse(CONFIG.base_uri.as_str())?;
+    let url = Url::parse(CONFIG.base_uri.as_str()).unwrap();
     let domain = url.domain().unwrap_or_default().to_owned();
 
     let timestamp = Utc::now().timestamp() as u64;
@@ -182,7 +182,7 @@ impl User {
         })
         .await?;
 
-        let mut user: User = block(move || response.json()).await?;
+        let mut user: User = serde_json::from_value(block(move || response.json()).await?)?;
 
         cache::set(pool, token_key(token), &user, TOKEN_KEY_TTL).await?;
 

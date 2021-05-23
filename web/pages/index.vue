@@ -1,3 +1,4 @@
+`
 <template>
   <div>
     <div id="hero-top-container">
@@ -10,14 +11,13 @@
             <div class="d-md-none text-center mt-5 mb-3">
               <img id="hero-top-icon-sm" src="~/static/icon.png" alt="Icon" />
             </div>
-            <h1 class="display-1">
-              <span class="d-none d-md-inline font-weight-bold">Meet</span>
-              ModMail<span class="d-none d-md-inline font-weight-bold">.</span>
-            </h1>
+            <h1 class="display-1">ModMail</h1>
             <h2 class="display-4">
-              The best feature-rich Discord music bot.
+              A feature-rich Discord bot
               <br class="d-none d-lg-block" />
-              Take control over your music with an intuitive dashboard, custom effects and more!
+              for easy communication
+              <br class="d-none d-lg-block" />
+              between server staff and users.
             </h2>
             <div class="d-inline-block">
               <a target="_blank" href="/invite" class="mx-2 ml-md-0">
@@ -25,9 +25,9 @@
                   <span class="h6 font-weight-bold">Add to Discord</span>
                 </BaseButton>
               </a>
-              <a target="_blank" href="/github" class="mx-2 ml-md-0">
+              <a target="_blank" href="/support" class="mx-2 ml-md-0">
                 <BaseButton type="primary" size="lg" class="mt-3">
-                  <span class="h6 font-weight-bold">GitHub</span>
+                  <span class="h6 font-weight-bold">Support Server</span>
                 </BaseButton>
               </a>
             </div>
@@ -80,8 +80,8 @@
       <div class="container text-center px-5 pb-5 pt-4">
         <h2 class="display-3">What are you waiting for?</h2>
         <p class="h5">
-          Dive into the best moderation experience today! Feel free to join our support server if
-          you have any questions or have some feedback to let us know. Have fun and enjoy! :)
+          Get the best communication system for your Discord server today! If you have any
+          questions, feel free to join our support server and let us know.
         </p>
         <a href="/invite" target="_blank">
           <BaseButton type="primary" size="lg" class="mt-3 mx-2 ml-md-0">
@@ -129,7 +129,7 @@ export default {
   top: -76px;
   margin-bottom: -76px;
   width: 100%;
-  background: linear-gradient(90deg, #f09819 0%, #ff512f 100%);
+  background: linear-gradient(90deg, #0e8279 0%, #20ed6e 100%);
   z-index: 0;
 }
 
@@ -199,7 +199,7 @@ export default {
 
 #hero-bottom-container {
   width: 100%;
-  background: linear-gradient(90deg, #f09819 0%, #ff512f 100%);
+  background: linear-gradient(90deg, #0e8279 0%, #20ed6e 100%);
   z-index: -1;
 }
 
@@ -215,3 +215,4 @@ export default {
   }
 }
 </style>
+`

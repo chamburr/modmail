@@ -1,3 +1,5 @@
+use crate::config::CONFIG;
+
 use actix_web::{
     cookie::Cookie, error::BlockingError, http::StatusCode, HttpMessage, HttpRequest, HttpResponse,
     Responder, ResponseError,
@@ -16,7 +18,7 @@ use std::{
     num::ParseIntError,
     str::Utf8Error,
 };
-use url::ParseError;
+use url::{ParseError, Url};
 
 pub mod errors;
 pub mod index;
@@ -161,7 +163,13 @@ impl Responder for ApiResponse {
         }
 
         if let Some(del_cookie) = self.del_cookie {
-            if let Some(cookie) = req.cookie(del_cookie.as_str()) {
+            if let Some(mut cookie) = req.cookie(del_cookie.as_str()) {
+                let url = Url::parse(CONFIG.base_uri.as_str()).unwrap();
+                let domain = url.domain().unwrap_or_default();
+
+                cookie.set_path("/");
+                cookie.set_domain(domain);
+
                 res.del_cookie(&cookie);
             }
         }

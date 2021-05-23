@@ -14,6 +14,7 @@ export default {
     }
   },
   mounted() {
+    this.windowTop = window.top.scrollY
     window.addEventListener('scroll', this.onScroll)
   },
   beforeDestroy() {

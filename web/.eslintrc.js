@@ -8,13 +8,7 @@ module.exports = {
     parser: 'babel-eslint',
     ecmaVersion: 2020,
   },
-  extends: [
-    '@nuxtjs',
-    'prettier',
-    'prettier/vue',
-    'plugin:prettier/recommended',
-    'plugin:nuxt/recommended',
-  ],
+  extends: ['@nuxtjs', 'prettier', 'plugin:prettier/recommended', 'plugin:nuxt/recommended'],
   plugins: ['prettier'],
   rules: {
     'vue/require-prop-types': 0,

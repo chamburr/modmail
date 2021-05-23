@@ -17,7 +17,7 @@
       <slot name="container-after"></slot>
       <div
         :id="id"
-        v-click-outside-2="closeMenu"
+        v-click-outside="closeMenu"
         class="collapse navbar-collapse"
         :class="{ show: toggled }"
       >

@@ -1,9 +1,6 @@
 import Vue from 'vue'
-import vClickOutside from 'v-click-outside'
 
-Vue.use(vClickOutside)
-
-Vue.directive('click-outside-2', {
+Vue.directive('click-outside', {
   bind(el, binding, node) {
     el.clickOutsideEvent = function (event) {
       if (!(el === event.target || el.contains(event.target))) {

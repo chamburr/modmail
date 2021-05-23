@@ -108,6 +108,7 @@ export default {
 .navbar-nav .nav-link {
   font-weight: 600;
   font-size: 16px;
+  color: white !important;
 }
 
 .navbar-nav .nav-link > span {
