@@ -50,7 +50,7 @@ class Owner(commands.Cog):
         try:
             exec(f"async def func():\n{textwrap.indent(body, '  ')}", env)
         except Exception as e:
-            await ctx.send(embed=ErrorEmbed(description=f"```py\n{e.__class__.__name__}: {e}\n```"))
+            await ctx.send(ErrorEmbed(f"```py\n{e.__class__.__name__}: {e}\n```"))
             return
 
         func = env["func"]
@@ -60,11 +60,7 @@ class Owner(commands.Cog):
             with redirect_stdout(stdout):
                 ret = await func()
         except Exception:
-            await ctx.send(
-                embed=ErrorEmbed(
-                    description=f"```py\n{stdout.getvalue()}{traceback.format_exc()}\n```"
-                )
-            )
+            await ctx.send(ErrorEmbed(f"```py\n{stdout.getvalue()}{traceback.format_exc()}\n```"))
             return
 
         try:
@@ -75,9 +71,9 @@ class Owner(commands.Cog):
         value = stdout.getvalue()
 
         if ret is not None:
-            await ctx.send(embed=Embed(description=f"```py\n{value}{ret}\n```"))
+            await ctx.send(Embed(f"```py\n{value}{ret}\n```"))
         elif value is not None:
-            await ctx.send(embed=Embed(description=f"```py\n{value}\n```"))
+            await ctx.send(Embed(f"```py\n{value}\n```"))
 
     @checks.is_owner()
     @commands.command(description="Execute code in bash.", usage="bash <command>")
@@ -86,11 +82,9 @@ class Owner(commands.Cog):
             output = subprocess.check_output(command.split(), stderr=subprocess.STDOUT).decode(
                 "utf-8"
             )
-            await ctx.send(embed=Embed(description=f"```py\n{output}\n```"))
+            await ctx.send(Embed(f"```py\n{output}\n```"))
         except Exception as error:
-            await ctx.send(
-                embed=ErrorEmbed(description=f"```py\n{error.__class__.__name__}: {error}\n```")
-            )
+            await ctx.send(ErrorEmbed(f"```py\n{error.__class__.__name__}: {error}\n```"))
 
     @checks.is_owner()
     @commands.command(description="Execute SQL query.", usage="sql <query>")
@@ -99,14 +93,14 @@ class Owner(commands.Cog):
             try:
                 res = await conn.fetch(query)
             except Exception:
-                await ctx.send(embed=ErrorEmbed(description=f"```py\n{traceback.format_exc()}```"))
+                await ctx.send(ErrorEmbed(f"```py\n{traceback.format_exc()}```"))
                 return
 
         if res:
-            await ctx.send(embed=Embed(description=f"```{res}```"))
+            await ctx.send(Embed(f"```{res}```"))
             return
 
-        await ctx.send(embed=Embed(description="No results to fetch."))
+        await ctx.send(Embed("No results to fetch."))
 
     @checks.is_owner()
     @commands.command(
@@ -137,7 +131,7 @@ class Owner(commands.Cog):
     async def givepremium(self, ctx, user: UserConverter, *, expiry: DateTimeConverter):
         premium = await tools.get_premium_slots(self.bot, user.id)
         if premium:
-            await ctx.send(embed=ErrorEmbed(description="That user already has premium."))
+            await ctx.send(ErrorEmbed("That user already has premium."))
             return
 
         async with self.bot.pool.acquire() as conn:
@@ -149,9 +143,7 @@ class Owner(commands.Cog):
                 timestamp,
             )
 
-        await ctx.send(
-            embed=Embed(description="Successfully assigned that user premium temporarily.")
-        )
+        await ctx.send(Embed("Successfully assigned that user premium temporarily."))
 
     @checks.is_owner()
     @commands.command(description="Remove a user's premium.", usage="wipepremium <user>")
@@ -164,7 +156,7 @@ class Owner(commands.Cog):
 
             await conn.execute("DELETE FROM premium WHERE identifier=$1", user.id)
 
-        await ctx.send(embed=Embed(description="Successfully removed that user's premium."))
+        await ctx.send(Embed("Successfully removed that user's premium."))
 
     @checks.is_owner()
     @commands.command(description="Ban a user from the bot", usage="banuser <user>")
@@ -174,7 +166,7 @@ class Owner(commands.Cog):
 
         await self.bot.state.sadd("banned_users", user.id)
 
-        await ctx.send(embed=Embed(description="Successfully banned that user from the bot."))
+        await ctx.send(Embed("Successfully banned that user from the bot."))
 
     @checks.is_owner()
     @commands.command(description="Unban a user from the bot", usage="unbanuser <user>")
@@ -185,12 +177,12 @@ class Owner(commands.Cog):
             )
 
         if res == "DELETE 0":
-            await ctx.send(embed=ErrorEmbed(description="That user is not banned."))
+            await ctx.send(ErrorEmbed("That user is not banned."))
             return
 
         await self.bot.state.srem("banned_users", user.id)
 
-        await ctx.send(embed=Embed(description="Successfully unbanned that user from the bot."))
+        await ctx.send(Embed("Successfully unbanned that user from the bot."))
 
     @checks.is_owner()
     @commands.command(description="Ban a server from the bot", usage="banserver <server ID>")
@@ -202,7 +194,7 @@ class Owner(commands.Cog):
 
         await self.bot.state.sadd("banned_guilds", guild.id)
 
-        await ctx.send(embed=Embed(description="Successfully banned that server from the bot."))
+        await ctx.send(Embed("Successfully banned that server from the bot."))
 
     @checks.is_owner()
     @commands.command(description="Unban a server from the bot", usage="unbanserver <server ID>")
@@ -213,12 +205,12 @@ class Owner(commands.Cog):
             )
 
         if res == "DELETE 0":
-            await ctx.send(embed=ErrorEmbed(description="That server is not banned."))
+            await ctx.send(ErrorEmbed("That server is not banned."))
             return
 
         await self.bot.state.srem("banned_guilds", guild_id)
 
-        await ctx.send(embed=Embed(description="Successfully unbanned that server from the bot."))
+        await ctx.send(Embed("Successfully unbanned that server from the bot."))
 
 
 def setup(bot):

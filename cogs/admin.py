@@ -18,7 +18,7 @@ class Admin(commands.Cog):
 
     async def _send_guilds(self, ctx, guilds, title):
         if len(guilds) == 0:
-            await ctx.send(embed=ErrorEmbed(description="No such guild was found."))
+            await ctx.send(ErrorEmbed("No such guild was found."))
             return
 
         all_pages = []
@@ -32,13 +32,13 @@ class Admin(commands.Cog):
                 else:
                     page.description += f"\n{guild}"
 
-            page.set_footer(text="Use the reactions to flip pages.")
+            page.set_footer("Use the reactions to flip pages.")
             all_pages.append(page)
 
         if len(all_pages) == 1:
             embed = all_pages[0]
-            embed.set_footer(text=discord.Embed.Empty)
-            await ctx.send(embed=embed)
+            embed.set_footer(discord.Embed.Empty)
+            await ctx.send(embed)
             return
 
         await tools.create_paginator(self.bot, ctx, all_pages)
@@ -95,12 +95,10 @@ class Admin(commands.Cog):
             try:
                 invite = (await guild.text_channels())[0].create_invite(max_age=120)
             except (IndexError, discord.Forbidden):
-                await ctx.send(
-                    embed=ErrorEmbed(description="No permissions to create an invite link.")
-                )
+                await ctx.send(ErrorEmbed("No permissions to create an invite link."))
                 return
 
-        await ctx.send(embed=Embed(description=f"Here is the invite link: {invite.url}"))
+        await ctx.send(Embed(f"Here is the invite link: {invite.url}"))
 
     @checks.is_admin()
     @commands.command(description="Make me say something.", usage="echo [channel] <message>")
@@ -112,7 +110,7 @@ class Admin(commands.Cog):
     @checks.is_admin()
     @commands.command(description="Restart all clusters.", usage="restart")
     async def restart(self, ctx):
-        await ctx.send(embed=Embed(description="Restarting..."))
+        await ctx.send(Embed("Restarting..."))
         await self.bot.session.post(f"{self.bot.http_uri}/restart")
 
 

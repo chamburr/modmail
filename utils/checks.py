@@ -37,9 +37,7 @@ def in_database():
 
         if not res or not res[0]:
             await ctx.send(
-                embed=ErrorEmbed(
-                    description=f"Your server has not been set up yet. Use `{ctx.prefix}setup` first."
-                )
+                ErrorEmbed(f"Your server has not been set up yet. Use `{ctx.prefix}setup` first.")
             )
             return False
 
@@ -60,9 +58,9 @@ def is_premium():
 
         if not res:
             await ctx.send(
-                embed=ErrorEmbed(
-                    description="This server does not have premium. Want to get premium? More information is available "
-                    f"with the `{ctx.prefix}premium` command."
+                ErrorEmbed(
+                    "This server does not have premium. Want to get premium? More information is "
+                    f"available with the `{ctx.prefix}premium` command."
                 )
             )
             return False
@@ -84,9 +82,9 @@ def is_patron():
 
         if await tools.get_premium_slots(ctx.bot, ctx.author.id) is False:
             await ctx.send(
-                embed=ErrorEmbed(
-                    description="This command requires you to be a patron. Want to become a patron? More information "
-                    f"is available with the `{ctx.prefix}premium` command."
+                ErrorEmbed(
+                    "This command requires you to be a patron. Want to become a patron? More "
+                    f"information is available with the `{ctx.prefix}premium` command."
                 )
             )
             return False
@@ -104,7 +102,7 @@ def is_patron():
 def is_modmail_channel():
     async def predicate(ctx):
         if not tools.is_modmail_channel(ctx.channel):
-            await ctx.send(embed=ErrorEmbed(description="This channel is not a ModMail channel."))
+            await ctx.send(ErrorEmbed("This channel is not a ModMail channel."))
             return False
 
         return True
@@ -121,7 +119,7 @@ def is_mod():
             if role in ctx.message.member._roles:
                 return True
 
-        await ctx.send(embed=ErrorEmbed(description="You do not have access to this command."))
+        await ctx.send(ErrorEmbed("You do not have access to this command."))
         return False
 
     return commands.check(predicate)

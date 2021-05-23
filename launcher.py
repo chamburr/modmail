@@ -9,17 +9,15 @@ from datetime import datetime
 from pathlib import Path
 
 import aiohttp
-import aioredis
-import asyncpg
 import discord
 import orjson
 
 from aiohttp import web
 
 import config
+
 from classes.bot import ModMail
 from classes.channel import DMChannel
-
 from classes.embed import ErrorEmbed
 from classes.message import Message
 from utils.tools import select_guild
@@ -58,7 +56,8 @@ class Instance:
             return
 
         self._process = await asyncio.create_subprocess_shell(
-            f"{sys.executable} \"{Path.cwd() / 'main.py'}\" {self.id} {config.clusters} {self.main.bot_id}",
+            f"{sys.executable} \"{Path.cwd() / 'main.py'}\" {self.id} {config.clusters} "
+            f"{self.main.bot_id}",
             stdin=asyncio.subprocess.DEVNULL,
             stdout=asyncio.subprocess.PIPE,
             stderr=asyncio.subprocess.PIPE,
@@ -175,7 +174,7 @@ class Scheduler:
                     "roles": await self.state.scard("role_keys"),
                     "channels": await self.state.scard("channel_keys"),
                     "members": await self.state.scard("member_keys"),
-                }
+                },
             )
 
             await asyncio.sleep(900)
@@ -207,9 +206,7 @@ class Scheduler:
                     await self.http.edit_message(
                         menu["channel"],
                         menu["message"],
-                        embed=ErrorEmbed(
-                            description="Time out. You did not choose anything."
-                        ).to_dict(),
+                        ErrorEmbed("Time out. You did not choose anything.").to_dict(),
                     )
                 elif menu["kind"] == "selection":
                     await self.http.remove_own_reaction(menu["channel"], menu["message"], "◀")
@@ -226,9 +223,7 @@ class Scheduler:
                     await self.http.edit_message(
                         menu["channel"],
                         menu["message"],
-                        embed=ErrorEmbed(
-                            description="Time out. You did not choose anything."
-                        ).to_dict(),
+                        ErrorEmbed("Time out. You did not choose anything.").to_dict(),
                     )
 
                 await self.state.srem("reaction_menus", menu)
@@ -294,7 +289,9 @@ class Main:
             if login_message is None or user_message is None:
                 return
 
-            channel = DMChannel(me=self.bot.user, state=self.bot.state, data={"id": login_message["id"]})
+            channel = DMChannel(
+                me=self.bot.user, state=self.bot.state, data={"id": login_message["id"]}
+            )
             login_message = Message(state=self.bot.state, channel=channel, data=login_message)
             user_message = Message(state=self.bot.state, channel=channel, data=user_message)
 

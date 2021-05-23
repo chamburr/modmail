@@ -20,25 +20,26 @@ class Premium(commands.Cog):
     )
     async def premium(self, ctx):
         embed = Embed(
-            title="Premium",
-            description="Purchasing premium is the best way you can show support to us. As hosting this bot for all "
-            "the servers and users costs much money, your donation will certainly help us a lot in keeping the bot "
-            "running. You will also get access to the premium features listed below.",
+            "Premium",
+            "Purchasing premium is the best way you can show support to us. As hosting this bot "
+            "for all the servers and users costs much money, your donation will certainly help us "
+            "a lot in keeping the bot running. You will also get access to the premium features "
+            "listed below.",
         )
         embed.add_field(
-            name="Premium Features",
-            value="- Custom greeting and closing messages.\n- Advanced logging that includes chat history.\n- Snippet "
-            "functionality (saved messages).\n- Priority support.\n- Exclusive role and channels in the support server."
-            "\n- More features released in future.",
-            inline=False,
+            "Premium Features",
+            "- Custom greeting and closing messages.\n- Advanced logging that includes chat "
+            "history.\n- Snippet functionality (saved messages).\n- Priority support.\n- Exclusive "
+            "role and channels in the support server.\n- More features released in future.",
+            False,
         )
         embed.add_field(
-            name="Get Premium",
-            value="Please join our support server and go to https://modmail.xyz/premium.",
-            inline=False,
+            "Get Premium",
+            "Please join our support server and go to https://modmail.xyz/premium.",
+            False,
         )
 
-        await ctx.send(embed=embed)
+        await ctx.send(embed)
 
     @checks.is_premium()
     @commands.guild_only()
@@ -49,9 +50,7 @@ class Premium(commands.Cog):
                 "SELECT identifier FROM premium WHERE $1=any(guild)", ctx.guild.id
             )
 
-        await ctx.send(
-            embed=Embed(description=f"This server has premium. Offered by: <@{res[0]}>.")
-        )
+        await ctx.send(Embed(f"This server has premium. Offered by: <@{res[0]}>."))
 
     @checks.is_patron()
     @commands.command(
@@ -66,7 +65,7 @@ class Premium(commands.Cog):
             )
 
         if not res or not res[0]:
-            await ctx.send(embed=Embed(description="You have not assigned premium to any server."))
+            await ctx.send(Embed("You have not assigned premium to any server."))
             return
 
         guilds = []
@@ -74,7 +73,7 @@ class Premium(commands.Cog):
             guild = await self.bot.get_guild(guild_id)
             guilds.append(f"{guild.name if guild else 'Unknown server'} `{guild_id}`")
 
-        await ctx.send(embed=Embed(title="Premium Servers", description="\n".join(guilds)))
+        await ctx.send(Embed("Premium Servers", "\n".join(guilds)))
 
     @checks.is_patron()
     @commands.command(
@@ -87,7 +86,7 @@ class Premium(commands.Cog):
             )
 
         if res:
-            await ctx.send(embed=ErrorEmbed(description="That server already has premium."))
+            await ctx.send(ErrorEmbed("That server already has premium."))
             return
 
         async with self.bot.pool.acquire() as conn:
@@ -97,9 +96,9 @@ class Premium(commands.Cog):
 
         if res[0] and res[0] >= await tools.get_premium_slots(self.bot, ctx.author.id):
             await ctx.send(
-                embed=ErrorEmbed(
-                    description="You have reached the maximum number of slots that can be assigned. Please upgrade "
-                    "your premium to increase the slots."
+                ErrorEmbed(
+                    "You have reached the maximum number of slots that can be assigned. Please "
+                    "upgrade your premium to increase the slots."
                 )
             )
             return
@@ -111,7 +110,7 @@ class Premium(commands.Cog):
                 ctx.author.id,
             )
 
-        await ctx.send(embed=Embed(description="That server now has premium."))
+        await ctx.send(Embed("That server now has premium."))
 
     @checks.is_patron()
     @commands.command(
@@ -126,9 +125,7 @@ class Premium(commands.Cog):
             )
 
         if not res:
-            await ctx.send(
-                embed=ErrorEmbed(description="You did not assign premium to that server.")
-            )
+            await ctx.send(ErrorEmbed("You did not assign premium to that server."))
             return
 
         async with self.bot.pool.acquire() as conn:
@@ -140,7 +137,7 @@ class Premium(commands.Cog):
 
         await tools.remove_premium(self.bot, guild.id)
 
-        await ctx.send(embed=Embed(description="That server no longer has premium."))
+        await ctx.send(Embed("That server no longer has premium."))
 
 
 def setup(bot):

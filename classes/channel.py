@@ -2,6 +2,7 @@ import logging
 
 from discord import channel, utils
 from discord.channel import CategoryChannel, GroupChannel, StoreChannel, VoiceChannel
+from discord.embeds import Embed
 from discord.enums import ChannelType, try_enum
 from discord.permissions import Permissions
 
@@ -87,6 +88,11 @@ class TextChannel(channel.TextChannel):
 
         return base
 
+    async def send(self, content=None, **kwargs):
+        if isinstance(content, Embed):
+            return await super().send(embed=content, **kwargs)
+        return await super().send(content, **kwargs)
+
 
 class DMChannel(channel.DMChannel):
     def __init__(self, *, me, state, data):
@@ -94,6 +100,11 @@ class DMChannel(channel.DMChannel):
         self.recipient = None
         self.me = me
         self.id = int(data["id"])
+
+    async def send(self, content=None, **kwargs):
+        if isinstance(content, Embed):
+            return await super().send(embed=content, **kwargs)
+        return await super().send(content, **kwargs)
 
 
 def _channel_factory(channel_type):

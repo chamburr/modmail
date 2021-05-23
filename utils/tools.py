@@ -2,7 +2,6 @@ import logging
 import time
 
 import aiohttp
-import orjson
 
 from discord.user import User
 
@@ -48,7 +47,7 @@ def upgrade_payload(data):
 
 
 async def create_paginator(bot, ctx, pages):
-    msg = await ctx.send(embed=pages[0])
+    msg = await ctx.send(pages[0])
 
     for reaction in ["⏮️", "◀️", "⏹️", "▶️", "⏭️"]:
         await msg.add_reaction(reaction)
@@ -86,23 +85,23 @@ async def get_reaction_menu(bot, payload, kind):
 async def get_data(bot, guild):
     async with bot.pool.acquire() as conn:
         res = await conn.fetchrow("SELECT * FROM data WHERE guild=$1", guild)
-        if not res:
-            res = await conn.fetchrow(
-                "INSERT INTO data VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11) RETURNING *",
-                guild,
-                None,
-                None,
-                [],
-                None,
-                None,
-                None,
-                False,
-                [],
-                [],
-                False,
-            )
+        if res:
+            return res
 
-    return res
+        return await conn.fetchrow(
+            "INSERT INTO data VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11) RETURNING *",
+            guild,
+            None,
+            None,
+            [],
+            None,
+            None,
+            None,
+            False,
+            [],
+            [],
+            False,
+        )
 
 
 async def get_guild_prefix(bot, guild):
@@ -204,8 +203,8 @@ async def select_guild(bot, message, msg=None):
     user_guilds = await get_user_guilds(bot.state, message.author.id)
     if len(user_guilds) == 0:
         login_message = await message.channel.send(
-            embed=ErrorEmbed(
-                description="Oops, you don't seem to be in our database. Please login at "
+            ErrorEmbed(
+                "Oops, you don't seem to be in our database. Please login at "
                 f"[this link](https://{config.base_uri}/login)."
             )
         )
@@ -233,10 +232,7 @@ async def select_guild(bot, message, msg=None):
 
     if len(guilds) == 0:
         await message.channel.send(
-            embed=ErrorEmbed(
-                description="Oops, no server found. "
-                "Please change your Discord status to online and try again."
-            )
+            ErrorEmbed("Oops, something strange happened. No server was found.")
         )
         return
 
@@ -244,25 +240,25 @@ async def select_guild(bot, message, msg=None):
 
     for chunk in [list(guilds.items())[i : i + 10] for i in range(0, len(guilds), 10)]:
         embed = Embed(
-            title="Select Server",
-            description="Please select the server you want to send this message to. "
-            "You can do so by reacting with the corresponding emote.",
+            "Select Server",
+            "Please select the server you want to send this message to. You can do so by reacting "
+            "with the corresponding emote.",
         )
-        embed.set_footer(text="Use the reactions to flip pages.")
+        embed.set_footer("Use the reactions to flip pages.")
 
         for guild, value in chunk:
             embed.add_field(
-                name=f"{len(embed.fields) + 1}: {value[0]}",
-                value=f"{'Create a new ticket.' if value[1] is False else 'Existing ticket.'}\n"
+                f"{len(embed.fields) + 1}: {value[0]}",
+                f"{'Create a new ticket.' if value[1] is False else 'Existing ticket.'}\n"
                 f"Server ID: {guild}",
             )
 
         embeds.append(embed)
 
     if msg:
-        msg = await msg.edit(embed=embeds[0])
+        msg = await msg.edit(embeds[0])
     else:
-        msg = await message.channel.send(embed=embeds[0])
+        msg = await message.channel.send(embeds[0])
 
     await msg.add_reaction("◀")
     await msg.add_reaction("▶")

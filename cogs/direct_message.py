@@ -1,5 +1,4 @@
 import copy
-import datetime
 import io
 import logging
 import string
@@ -29,15 +28,13 @@ class DirectMessageEvents(commands.Cog, name="Direct Message"):
         self.bot.prom.tickets_message.inc({})
 
         if not guild:
-            message.channel.send(embed=ErrorEmbed(description="The server was not found."))
+            message.channel.send(ErrorEmbed("The server was not found."))
             return
 
         member = await guild.fetch_member(message.author.id)
         if not member:
             message.channel.send(
-                embed=ErrorEmbed(
-                    description="You are not in that server, and the message is not sent."
-                )
+                ErrorEmbed("You are not in that server, and the message is not sent.")
             )
             return
 
@@ -46,17 +43,15 @@ class DirectMessageEvents(commands.Cog, name="Direct Message"):
         category = await guild.get_channel(data[2])
         if not category:
             await message.channel.send(
-                embed=ErrorEmbed(
-                    description="A ModMail category is not found. The bot is not set up properly in the server."
+                ErrorEmbed(
+                    "A ModMail category is not found. The bot is not set up properly in the server."
                 )
             )
             return
 
         if message.author.id in data[9]:
             await message.channel.send(
-                embed=ErrorEmbed(
-                    description="That server has blacklisted you from sending a message there."
-                )
+                ErrorEmbed("That server has blacklisted you from sending a message there.")
             )
             return
 
@@ -86,13 +81,14 @@ class DirectMessageEvents(commands.Cog, name="Direct Message"):
                 channel = await guild.create_text_channel(
                     name=name,
                     category=category,
-                    topic=f"ModMail Channel {message.author.id} {message.channel.id} (Please do not change this)",
+                    topic=f"ModMail Channel {message.author.id} {message.channel.id} (Please do "
+                    "not change this)",
                 )
             except discord.HTTPException as e:
                 await message.channel.send(
-                    embed=ErrorEmbed(
-                        description="A HTTPException error occurred. Please contact an admin on the server with the "
-                        f"following information: {e.text} ({e.code})."
+                    ErrorEmbed(
+                        "An HTTPException error occurred. Please contact an admin on the server "
+                        f"with the following information: {e.text} ({e.code})."
                     )
                 )
                 return
@@ -102,32 +98,31 @@ class DirectMessageEvents(commands.Cog, name="Direct Message"):
                 embed = Embed(
                     title="New Ticket",
                     colour=config.user_colour,
-                    timestamp=datetime.datetime.utcnow(),
+                    timestamp=True,
                 )
                 embed.set_footer(
-                    text=f"{message.author.name}#{message.author.discriminator} | {message.author.id}",
-                    icon_url=message.author.avatar_url,
+                    f"{message.author.name}#{message.author.discriminator} | "
+                    f"{message.author.id}",
+                    message.author.avatar_url,
                 )
 
                 try:
-                    await log_channel.send(embed=embed)
+                    await log_channel.send(embed)
                 except discord.Forbidden:
                     pass
 
             prefix = await tools.get_guild_prefix(self.bot, guild)
 
             embed = Embed(
-                title="New Ticket",
-                description="Type a message in this channel to reply. Messages starting with the server prefix "
+                "New Ticket",
+                "Type a message in this channel to reply. Messages starting with the server prefix "
                 f"`{prefix}` are ignored, and can be used for staff discussion. Use the command "
-                f"`{prefix}close [reason]` to close this ticket.",
-                timestamp=datetime.datetime.utcnow(),
+                "`{prefix}close [reason]` to close this ticket.",
+                timestamp=True,
             )
-            embed.add_field(name="User", value=f"<@{message.author.id}> ({message.author.id})")
-            embed.add_field(name="Roles", value=" ".join([f"<@&{x}>" for x in member._roles]))
-            embed.set_footer(
-                text=f"{message.author} | {message.author.id}", icon_url=message.author.avatar_url
-            )
+            embed.add_field("User", f"<@{message.author.id}> ({message.author.id})")
+            embed.add_field("Roles", " ".join([f"<@&{x}>" for x in member._roles]))
+            embed.set_footer(f"{message.author} | {message.author.id}", message.author.avatar_url)
 
             roles = []
             for role in data[8]:
@@ -139,33 +134,33 @@ class DirectMessageEvents(commands.Cog, name="Direct Message"):
                     roles.append(f"<@&{role}>")
 
             try:
-                await channel.send(" ".join(roles), embed=embed)
+                await channel.send(" ".join(roles), embed)
             except discord.HTTPException:
                 await message.channel.send(
-                    embed=ErrorEmbed(
-                        description="The bot is missing permissions. Please contact an admin on the server."
+                    ErrorEmbed(
+                        "The bot is missing permissions. Please contact an admin on the server."
                     )
                 )
                 return
 
             if data[5]:
                 embed = Embed(
-                    title="Greeting Message",
-                    description=tools.tag_format(data[5], message.author),
+                    "Greeting Message",
+                    tools.tag_format(data[5], message.author),
                     colour=config.mod_colour,
-                    timestamp=datetime.datetime.utcnow(),
+                    timestamp=True,
                 )
-                embed.set_footer(text=f"{guild.name} | {guild.id}", icon_url=guild.icon_url)
+                embed.set_footer(f"{guild.name} | {guild.id}", guild.icon_url)
 
-                await message.channel.send(embed=embed)
+                await message.channel.send(embed)
 
         embed = Embed(
-            title="Message Sent",
-            description=message.content,
+            "Message Sent",
+            message.content,
             colour=config.user_colour,
-            timestamp=datetime.datetime.utcnow(),
+            timestamp=True,
         )
-        embed.set_footer(text=f"{guild.name} | {guild.id}", icon_url=guild.icon_url)
+        embed.set_footer(f"{guild.name} | {guild.id}", guild.icon_url)
 
         files = []
         for file in message.attachments:
@@ -173,30 +168,28 @@ class DirectMessageEvents(commands.Cog, name="Direct Message"):
             await file.save(saved_file)
             files.append(discord.File(saved_file, file.filename))
 
-        dm_message = await message.channel.send(embed=embed, files=files)
+        dm_message = await message.channel.send(embed, files=files)
 
         embed.title = "Message Received"
         embed.set_footer(
-            text=f"{message.author.name}#{message.author.discriminator} | {message.author.id}",
-            icon_url=message.author.avatar_url,
+            f"{message.author.name}#{message.author.discriminator} | {message.author.id}",
+            message.author.avatar_url,
         )
 
         for count, attachment in enumerate(
             [attachment.url for attachment in dm_message.attachments], start=1
         ):
-            embed.add_field(name=f"Attachment {count}", value=attachment, inline=False)
+            embed.add_field(f"Attachment {count}", attachment, False)
 
         for file in files:
             file.reset()
 
         try:
-            await channel.send(embed=embed, files=files)
+            await channel.send(embed, files=files)
         except discord.Forbidden:
             await dm_message.delete()
             await message.channel.send(
-                embed=ErrorEmbed(
-                    description="The bot is missing permissions. Please contact an admin on the server."
-                )
+                ErrorEmbed("The bot is missing permissions. Please contact an admin on the server.")
             )
 
     @commands.Cog.listener()
@@ -227,9 +220,7 @@ class DirectMessageEvents(commands.Cog, name="Direct Message"):
                 if payload.emoji.name == "🔁":
                     await select_guild(self.bot, msg, message)
                 elif payload.emoji.name == "❌":
-                    await message.edit(
-                        embed=ErrorEmbed(description="Request cancelled successfully.")
-                    )
+                    await message.edit(ErrorEmbed("Request cancelled successfully."))
 
             await self.bot.state.srem("reaction_menus", menu)
             return
@@ -276,7 +267,7 @@ class DirectMessageEvents(commands.Cog, name="Direct Message"):
                 page -= 1
 
                 new_page = discord.Embed.from_dict(all_pages[page])
-                await message.edit(embed=new_page)
+                await message.edit(new_page)
 
                 for reaction in ["1⃣", "2⃣", "3⃣", "4⃣", "5⃣", "6⃣", "7⃣", "8⃣", "9⃣", "🔟"][
                     : len(new_page.fields)
@@ -287,7 +278,7 @@ class DirectMessageEvents(commands.Cog, name="Direct Message"):
                 page += 1
 
                 new_page = discord.Embed.from_dict(all_pages[page])
-                await message.edit(embed=new_page)
+                await message.edit(new_page)
 
                 for reaction in ["1⃣", "2⃣", "3⃣", "4⃣", "5⃣", "6⃣", "7⃣", "8⃣", "9⃣", "🔟"][
                     len(new_page.fields) :
@@ -312,9 +303,7 @@ class DirectMessageEvents(commands.Cog, name="Direct Message"):
                 return
 
         if await tools.is_user_banned(self.bot, message.author):
-            await message.channel.send(
-                embed=ErrorEmbed(description="You are banned from this bot.")
-            )
+            await message.channel.send(ErrorEmbed("You are banned from this bot."))
             return
 
         if self.bot.config.default_server:
@@ -338,16 +327,16 @@ class DirectMessageEvents(commands.Cog, name="Direct Message"):
 
         if guild and confirmation is True:
             embed = Embed(
-                title="Confirmation",
-                description=f"You're sending this message to **{guild.name}** (ID: {guild.id}). "
-                "React with ✅ to confirm.\nWant to send to another server? "
-                "React with 🔁.\nTo cancel this request, react with ❌.",
+                "Confirmation",
+                f"You're sending this message to **{guild.name}** (ID: {guild.id}). React with ✅ "
+                "to confirm.\nWant to send to another server? React with 🔁.\nTo cancel this "
+                "request, react with ❌.",
             )
             embed.set_footer(
-                text="Tip: You can disable confirmation messages with the "
+                "Tip: You can disable confirmation messages with the "
                 f"{self.bot.config.default_prefix}confirmation command."
             )
-            msg = await message.channel.send(embed=embed)
+            msg = await message.channel.send(embed)
 
             await msg.add_reaction("✅")
             await msg.add_reaction("🔁")
@@ -373,7 +362,8 @@ class DirectMessageEvents(commands.Cog, name="Direct Message"):
 
     @commands.dm_only()
     @commands.command(
-        description="Send message to another server, useful when confirmation messages are disabled.",
+        description="Send message to another server, useful when confirmation messages are "
+        "disabled.",
         usage="new <message>",
         aliases=["create", "switch", "change"],
     )
@@ -413,9 +403,10 @@ class DirectMessageEvents(commands.Cog, name="Direct Message"):
                     )
 
             await ctx.send(
-                embed=Embed(
-                    description="Confirmation messages are disabled. To send messages to another server, either use "
-                    f"`{ctx.prefix}new <message>` or `{ctx.prefix}send <server ID> <message>`.",
+                Embed(
+                    "Confirmation messages are disabled. To send messages to another server, "
+                    f"either use `{ctx.prefix}new <message>` or `{ctx.prefix}send <server ID> "
+                    "<message>`.",
                 )
             )
             return
@@ -427,7 +418,7 @@ class DirectMessageEvents(commands.Cog, name="Direct Message"):
                 ctx.author.id,
             )
 
-        await ctx.send(embed=Embed(description="Confirmation messages are enabled."))
+        await ctx.send(Embed("Confirmation messages are enabled."))
 
 
 def setup(bot):

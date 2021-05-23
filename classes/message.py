@@ -115,3 +115,10 @@ class Message(message.Message):
             return roles
         except KeyError:
             return []
+
+    async def edit(self, content=None, **kwargs):
+        if isinstance(content, Embed):
+            return await super().send(embed=content, **kwargs)
+        elif content is not None:
+            return await super().send(content=content, **kwargs)
+        return await super().send(**kwargs)

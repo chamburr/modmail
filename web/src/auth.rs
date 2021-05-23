@@ -110,7 +110,7 @@ pub async fn token_exchange(pool: &RedisPool, code: &str) -> ApiResult<BasicToke
         reqwest::blocking::Client::new()
             .get(format!(
                 "{}:{}/success/{}",
-                CONFIG.http_host, CONFIG.http_port, user.id
+                CONFIG.bot_host, CONFIG.bot_port, user.id
             ))
             .send()
     })

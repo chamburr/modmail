@@ -1,4 +1,3 @@
-import datetime
 import logging
 import time
 
@@ -25,10 +24,13 @@ class Events(commands.Cog):
         if message["t"] == "GUILD_MEMBER_UPDATE":
             if int(message["d"]["user"]["id"]) == self.bot.id:
                 member = await self.bot.state.get(
-                    f"member:{message['d']['guild_id']}:{self.bot.id}")
+                    f"member:{message['d']['guild_id']}:{self.bot.id}"
+                )
                 if member:
                     member["roles"] = message["d"]["roles"]
-                    await self.bot.state.set(f"member:{message['d']['guild_id']}:{self.bot.id}", member)
+                    await self.bot.state.set(
+                        f"member:{message['d']['guild_id']}:{self.bot.id}", member
+                    )
 
         elif message["t"] == "GUILD_CREATE":
             for member in message["d"]["members"]:
@@ -41,7 +43,6 @@ class Events(commands.Cog):
                 return
 
             await self.bot.state.delete(f"member:{message['d']['id']}:{self.bot.id}")
-
 
     @commands.Cog.listener()
     async def on_raw_reaction_add(self, payload):
@@ -80,7 +81,7 @@ class Events(commands.Cog):
         elif payload.emoji.name == "⏭️":
             page = len(all_pages) - 1
 
-        await message.edit(embed=discord.Embed.from_dict(all_pages[page]))
+        await message.edit(discord.Embed.from_dict(all_pages[page]))
 
         try:
             member = tools.create_fake_user(payload.user_id)
@@ -121,24 +122,20 @@ class Events(commands.Cog):
                 return
 
         if await tools.is_user_banned(self.bot, message.author):
-            await ctx.send(embed=ErrorEmbed(description="You are banned from the bot."))
+            await ctx.send(ErrorEmbed("You are banned from the bot."))
             return
 
         if (
             ctx.command.cog_name in ["Owner", "Admin"]
             and ctx.author.id in self.bot.config.admins + self.bot.config.owners
         ):
-            embed = Embed(
-                title=ctx.command.name.title(),
-                description=ctx.message.content,
-                timestamp=datetime.datetime.utcnow(),
-            )
-            embed.set_author(name=f"{ctx.author} ({ctx.author.id})", icon_url=ctx.author.avatar_url)
+            embed = Embed(ctx.command.name.title(), ctx.message.content, timestamp=True)
+            embed.set_author(f"{ctx.author} ({ctx.author.id})", ctx.author.avatar_url)
 
             if self.bot.config.admin_channel:
                 channel = await self.bot.get_channel(self.bot.config.admin_channel)
                 if channel:
-                    await channel.send(embed=embed)
+                    await channel.send(embed)
 
         if ctx.prefix in [f"<@{self.bot.id}> ", f"<@!{self.bot.id}> "]:
             ctx.prefix = await tools.get_guild_prefix(self.bot, message.guild)

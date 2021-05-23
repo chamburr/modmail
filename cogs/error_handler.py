@@ -28,57 +28,57 @@ class ErrorHandler(commands.Cog):
             return
         elif isinstance(error, commands.NoPrivateMessage):
             await ctx.send(
-                embed=ErrorEmbed(
-                    title="Command Unavailable",
-                    description="This command cannot be used in direct message.",
+                ErrorEmbed(
+                    "Command Unavailable",
+                    "This command cannot be used in direct message.",
                 )
             )
         elif isinstance(error, commands.PrivateMessageOnly):
             await ctx.send(
-                embed=ErrorEmbed(
-                    title="Command Unavailable",
-                    description="This command can only be used in direct message.",
+                ErrorEmbed(
+                    "Command Unavailable",
+                    "This command can only be used in direct message.",
                 )
             )
         elif isinstance(error, commands.MissingRequiredArgument) or isinstance(
             error, commands.BadArgument
         ):
             embed = ErrorEmbed(
-                title="Invalid Arguments",
-                description=f"Please check the usage below or join the support server with `{ctx.prefix}support` if "
-                "you don't know what went wrong.",
+                "Invalid Arguments",
+                "Please check the usage below or join the support server with "
+                f"`{ctx.prefix}support` if you don't know what went wrong.",
             )
             usage = "\n".join([ctx.prefix + x.strip() for x in ctx.command.usage.split("\n")])
-            embed.add_field(name="Usage", value=f"```{usage}```")
-            await ctx.send(embed=embed)
+            embed.add_field("Usage", f"```{usage}```")
+            await ctx.send(embed)
         elif isinstance(error, commands.NotOwner):
             await ctx.send(
-                embed=ErrorEmbed(
-                    title="Permission Denied",
-                    description="You do not have permission to use this command.",
+                ErrorEmbed(
+                    "Permission Denied",
+                    "You do not have permission to use this command.",
                 )
             )
         elif isinstance(error, commands.MissingPermissions):
             await ctx.send(
-                embed=ErrorEmbed(
-                    title="Permission Denied",
-                    description="You do not have permission to use this command. Permissions needed: "
-                    + f"{', '.join([tools.perm_format(x) for x in error.missing_perms])}.",
+                ErrorEmbed(
+                    "Permission Denied",
+                    "You do not have permission to use this command. Permissions needed: "
+                    f"{', '.join([tools.perm_format(x) for x in error.missing_perms])}.",
                 )
             )
         elif isinstance(error, commands.BotMissingPermissions):
             await ctx.send(
-                embed=ErrorEmbed(
-                    title="Bot Missing Permissions",
-                    description="Bot is missing permissions to perform that action. Permissions needed: "
-                    + f"{', '.join([tools.perm_format(x) for x in error.missing_perms])}.",
+                ErrorEmbed(
+                    "Bot Missing Permissions",
+                    "Bot is missing permissions to perform that action. Permissions needed: "
+                    f"{', '.join([tools.perm_format(x) for x in error.missing_perms])}.",
                 )
             )
         elif isinstance(error, discord.HTTPException):
             await ctx.send(
-                embed=ErrorEmbed(
-                    title="Unknown HTTP Exception",
-                    description=f"Please report this in the support server.\n```{error.text}````",
+                ErrorEmbed(
+                    "Unknown HTTP Exception",
+                    f"Please report this in the support server.\n```{error.text}````",
                 )
             )
         elif isinstance(error, commands.CommandInvokeError):
@@ -89,9 +89,9 @@ class ErrorHandler(commands.Cog):
 
             try:
                 await ctx.send(
-                    embed=ErrorEmbed(
-                        title="Unknown Error",
-                        description="Please report this in the support server.\n"
+                    ErrorEmbed(
+                        "Unknown Error",
+                        "Please report this in the support server.\n"
                         f"```{error.original.__class__.__name__}: {error.original}```",
                     )
                 )
