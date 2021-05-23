@@ -74,9 +74,7 @@ class State:
             return value
         return orjson.dumps(value).decode("utf-8")
 
-    async def delete(self, key, pipe=None):
-        if pipe:
-            return pipe.delete(key)
+    async def delete(self, key):
         return await self.redis.delete(key)
 
     async def get(self, keys):
@@ -98,20 +96,20 @@ class State:
 
         return results[0]
 
-    async def set(self, key, value, pipe=None):
-        if pipe:
-            return pipe.set(key, self._dumps(value))
+    async def expire(self, key, time):
+        return await self.redis.expire(key, time)
+
+    async def set(self, key, value):
+        if isinstance(key, (list, tuple)):
+            return await self.redis.mset(*key)
+
         return await self.redis.set(key, self._dumps(value))
 
-    async def sadd(self, key, value, pipe=None):
-        if pipe:
-            return pipe.sadd(key, self._dumps(value))
-        return await self.redis.sadd(key, self._dumps(value))
+    async def sadd(self, key, *value):
+        return await self.redis.sadd(key, *[self._dumps(x) for x in value])
 
-    async def srem(self, key, value, pipe=None):
-        if pipe:
-            return pipe.srem(key, self._dumps(value))
-        return await self.redis.srem(key, self._dumps(value))
+    async def srem(self, key, *value):
+        return await self.redis.srem(key, *[self._dumps(x) for x in value])
 
     async def smembers(self, key):
         return [self._loads(x) for x in await self.redis.smembers(key)]

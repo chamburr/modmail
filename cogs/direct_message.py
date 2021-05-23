@@ -15,6 +15,7 @@ from classes.embed import Embed, ErrorEmbed
 from classes.message import Message
 from utils import tools
 from utils.converters import GuildConverter
+from utils.tools import select_guild
 
 log = logging.getLogger(__name__)
 
@@ -198,86 +199,6 @@ class DirectMessageEvents(commands.Cog, name="Direct Message"):
                 )
             )
 
-    async def select_guild(self, message, msg=None):
-        guilds = {}
-
-        user_guilds = await tools.get_user_guilds(self.bot, message.author.id)
-        if len(user_guilds) == 0:
-            await message.channel.send(
-                embed=ErrorEmbed(
-                    description="Oops, you don't seem to be in our database. Please login at "
-                    f"[this link](https://{self.bot.config.base_uri})."
-                )
-            )
-            return
-
-        for guild in await tools.get_user_guilds(self.bot, message.author.id):
-
-            guild = await self.bot.get_guild(int(guild))
-
-            channel = None
-            for text_channel in await guild.text_channels():
-                if tools.is_modmail_channel(text_channel, message.author.id):
-                    channel = text_channel
-
-            if not channel:
-                guilds[str(guild.id)] = (guild.name, False)
-            else:
-                guilds[str(guild.id)] = (guild.name, True)
-
-        if len(guilds) == 0:
-            await message.channel.send(
-                embed=ErrorEmbed(
-                    description="Oops, no server found. Please change your Discord status to online and try again."
-                )
-            )
-            return
-
-        embeds = []
-
-        for chunk in [list(guilds.items())[i : i + 10] for i in range(0, len(guilds), 10)]:
-            embed = Embed(
-                title="Select Server",
-                description="Please select the server you want to send this message to. You can do so by reacting "
-                "with the corresponding emote.",
-            )
-            embed.set_footer(text="Use the reactions to flip pages.")
-
-            for guild, value in chunk:
-                embed.add_field(
-                    name=f"{len(embed.fields) + 1}: {value[0]}",
-                    value=f"{'Create a new ticket.' if value[1] is False else 'Existing ticket.'}\nServer ID: {guild}",
-                )
-
-            embeds.append(embed)
-
-        if msg:
-            msg = await msg.edit(embed=embeds[0])
-        else:
-            msg = await message.channel.send(embed=embeds[0])
-
-        await msg.add_reaction("◀")
-        await msg.add_reaction("▶")
-        for reaction in ["1⃣", "2⃣", "3⃣", "4⃣", "5⃣", "6⃣", "7⃣", "8⃣", "9⃣", "🔟"][
-            : len(embeds[0].fields)
-        ]:
-            await msg.add_reaction(reaction)
-
-        await self.bot.state.sadd(
-            "reaction_menus",
-            {
-                "kind": "selection",
-                "channel": msg.channel.id,
-                "message": msg.id,
-                "end": int(time.time()) + 180,
-                "data": {
-                    "msg": message._data,
-                    "page": 0,
-                    "all_pages": [embed.to_dict() for embed in embeds],
-                },
-            },
-        )
-
     @commands.Cog.listener()
     async def on_raw_reaction_add(self, payload):
         if payload.user_id == self.bot.id:
@@ -304,7 +225,7 @@ class DirectMessageEvents(commands.Cog, name="Direct Message"):
                     await message.remove_reaction(reaction, self.bot.user)
 
                 if payload.emoji.name == "🔁":
-                    await self.select_guild(msg, message)
+                    await select_guild(self.bot, msg, message)
                 elif payload.emoji.name == "❌":
                     await message.edit(
                         embed=ErrorEmbed(description="Request cancelled successfully.")
@@ -418,8 +339,9 @@ class DirectMessageEvents(commands.Cog, name="Direct Message"):
         if guild and confirmation is True:
             embed = Embed(
                 title="Confirmation",
-                description=f"You're sending this message to **{guild.name}** (ID: {guild.id}). React with ✅ to "
-                "confirm.\nWant to send to another server? React with 🔁.\nTo cancel this request, react with ❌.",
+                description=f"You're sending this message to **{guild.name}** (ID: {guild.id}). "
+                "React with ✅ to confirm.\nWant to send to another server? "
+                "React with 🔁.\nTo cancel this request, react with ❌.",
             )
             embed.set_footer(
                 text="Tip: You can disable confirmation messages with the "
@@ -447,7 +369,7 @@ class DirectMessageEvents(commands.Cog, name="Direct Message"):
         elif guild:
             await self.send_mail(message, guild)
         else:
-            await self.select_guild(message)
+            await select_guild(self.bot, message)
 
     @commands.dm_only()
     @commands.command(
@@ -458,7 +380,7 @@ class DirectMessageEvents(commands.Cog, name="Direct Message"):
     async def new(self, ctx, message):
         msg = copy.copy(ctx.message)
         msg.content = message
-        await self.select_guild(msg)
+        await select_guild(self.bot, msg)
 
     @commands.dm_only()
     @commands.command(

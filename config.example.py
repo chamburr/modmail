@@ -1,4 +1,4 @@
-# Base URI
+o  # Base URI
 base_uri = ""
 
 # Bot token

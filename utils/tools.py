@@ -1,9 +1,15 @@
 import logging
 import time
 
+import aiohttp
+import orjson
+
 from discord.user import User
 
+import config
+
 from classes.channel import DMChannel
+from classes.embed import Embed, ErrorEmbed
 
 log = logging.getLogger(__name__)
 
@@ -169,22 +175,116 @@ async def is_guild_banned(bot, guild):
     return await bot.state.sismember("banned_guilds", guild.id)
 
 
-async def get_user_guilds(bot, member):
-    headers = {
-        "User-Id": member.id,
-        "User-Username": member.name,
-        "User-Discriminator": member.discriminator,
-        "User-Avatar": member.avatar if member.avatar else "",
-    }
+async def get_user_guilds(state, member):
+    user_guilds = await state.get(f"user_guilds:{member.id}")
+    if user_guilds is not None:
+        return user_guilds
 
-    resp = await bot.session.get(f"{bot.config.base_uri}/api/users/@me/guilds", headers=headers)
-
-    if resp.status == 400:
+    token = await state.get(f"user_token:{member.id}")
+    if token is None:
         return []
 
-    resp = resp.json()
+    payload = {
+        "Authorization": f"Bearer {token}",
+    }
 
-    return [x["id"] for x in resp]
+    async with aiohttp.ClientSession() as session, session.get(
+        "https://discord.com/api/v9/users/@me/guilds", headers=payload
+    ) as req:
+        response = req.json()
+
+    await state.set(f"user_guilds:{member.id}", response)
+    await state.expire(f"user_guilds:{member.id}", 10)
+    return response
+
+
+async def select_guild(bot, message, msg=None):
+    guilds = {}
+
+    user_guilds = await get_user_guilds(bot.state, message.author.id)
+    if len(user_guilds) == 0:
+        login_message = await message.channel.send(
+            embed=ErrorEmbed(
+                description="Oops, you don't seem to be in our database. Please login at "
+                f"[this link](https://{config.base_uri}/login)."
+            )
+        )
+
+        await bot.state.set(f"login_message:{message.author.id}", login_message._data)
+        await bot.state.expire(f"login_message:{message.author.id}", 300)
+        await bot.state.set(f"user_message:{message.author.id}", message._data)
+        await bot.state.expire(f"user_message:{message.author.id}", 300)
+
+        return
+
+    for guild in user_guilds:
+
+        guild = await bot.get_guild(int(guild))
+
+        channel = None
+        for text_channel in await guild.text_channels():
+            if is_modmail_channel(text_channel, message.author.id):
+                channel = text_channel
+
+        if not channel:
+            guilds[str(guild.id)] = (guild.name, False)
+        else:
+            guilds[str(guild.id)] = (guild.name, True)
+
+    if len(guilds) == 0:
+        await message.channel.send(
+            embed=ErrorEmbed(
+                description="Oops, no server found. "
+                "Please change your Discord status to online and try again."
+            )
+        )
+        return
+
+    embeds = []
+
+    for chunk in [list(guilds.items())[i : i + 10] for i in range(0, len(guilds), 10)]:
+        embed = Embed(
+            title="Select Server",
+            description="Please select the server you want to send this message to. "
+            "You can do so by reacting with the corresponding emote.",
+        )
+        embed.set_footer(text="Use the reactions to flip pages.")
+
+        for guild, value in chunk:
+            embed.add_field(
+                name=f"{len(embed.fields) + 1}: {value[0]}",
+                value=f"{'Create a new ticket.' if value[1] is False else 'Existing ticket.'}\n"
+                f"Server ID: {guild}",
+            )
+
+        embeds.append(embed)
+
+    if msg:
+        msg = await msg.edit(embed=embeds[0])
+    else:
+        msg = await message.channel.send(embed=embeds[0])
+
+    await msg.add_reaction("◀")
+    await msg.add_reaction("▶")
+    for reaction in ["1⃣", "2⃣", "3⃣", "4⃣", "5⃣", "6⃣", "7⃣", "8⃣", "9⃣", "🔟"][
+        : len(embeds[0].fields)
+    ]:
+        await msg.add_reaction(reaction)
+
+    await bot.state.sadd(
+        "reaction_menus",
+        {
+            "kind": "selection",
+            "channel": msg.channel.id,
+            "message": msg.id,
+            "end": int(time.time()) + 180,
+            "data": {
+                "msg": message._data,
+                "page": 0,
+                "all_pages": [embed.to_dict() for embed in embeds],
+            },
+        },
+    )
 
 
 def is_modmail_channel(channel, user_id=None):

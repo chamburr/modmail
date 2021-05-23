@@ -230,7 +230,7 @@ class ModMail(commands.AutoShardedBot):
             }
         )
 
-    async def start(self):
+    async def start(self, fake=False):
         trace_config = aiohttp.TraceConfig()
         trace_config.on_request_start.append(self.on_http_request_start)
         trace_config.on_request_end.append(self.on_http_request_end)
@@ -253,14 +253,15 @@ class ModMail(commands.AutoShardedBot):
             loop=self.loop,
         )
 
-        self._amqp = await aio_pika.connect_robust(
-            login=self.config.rabbitmq["username"],
-            password=self.config.rabbitmq["password"],
-            host=self.config.rabbitmq["host"],
-            port=self.config.rabbitmq["port"],
-        )
-        self._amqp_channel = await self._amqp.channel()
-        self._amqp_queue = await self._amqp_channel.get_queue("gateway.recv")
+        if not fake:
+            self._amqp = await aio_pika.connect_robust(
+                login=self.config.rabbitmq["username"],
+                password=self.config.rabbitmq["password"],
+                host=self.config.rabbitmq["host"],
+                port=self.config.rabbitmq["port"],
+            )
+            self._amqp_channel = await self._amqp.channel()
+            self._amqp_queue = await self._amqp_channel.get_queue("gateway.recv")
 
         self.prom = Prometheus(self)
         await self.prom.start()
@@ -274,6 +275,9 @@ class ModMail(commands.AutoShardedBot):
         self.ws._discord_parsers = self._connection.parsers
         self.ws._dispatch = self.dispatch
         self.ws.call_hooks = self._connection.call_hooks
+
+        if fake:
+            return
 
         for extension in self._cogs:
             try:

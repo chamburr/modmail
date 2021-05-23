@@ -17,8 +17,12 @@ import orjson
 from aiohttp import web
 
 import config
+from classes.bot import ModMail
+from classes.channel import DMChannel
 
 from classes.embed import ErrorEmbed
+from classes.message import Message
+from utils.tools import select_guild
 
 
 class Instance:
@@ -88,9 +92,9 @@ class Instance:
 class Scheduler:
     def __init__(self, loop, main):
         self.loop = loop
-        self.pool = main.pool
-        self.redis = main.redis
-        self.http = main.http
+        self.pool = main.bot.pool
+        self.state = main.bot.state
+        self.http = main.bot.http
         self.bot_id = main.bot_id
         self.shard_count = main.shard_count
         self.session = aiohttp.ClientSession()
@@ -123,7 +127,7 @@ class Scheduler:
             if not self.bot_id and not self.shard_count:
                 continue
 
-            guilds = await self.redis.scard("guild_keys")
+            guilds = await self.state.scard("guild_keys")
 
             await self.session.post(
                 f"https://top.gg/api/bots/{self.bot_id}/stats",
@@ -161,27 +165,24 @@ class Scheduler:
                 headers={"Authorization": config.dboats_token, "Content-Type": "application/json"},
             )
 
-            await self.redis.set(
+            await self.state.set(
                 "bot_stats",
-                orjson.dumps(
-                    {
-                        "version": "3.0.0",
-                        "started": await self.redis.get("gateway_started"),
-                        "shards": await self.redis.get("gateway_shards"),
-                        "guilds": guilds,
-                        "roles": await self.redis.scard("role_keys"),
-                        "channels": await self.redis.scard("channel_keys"),
-                        "members": await self.redis.scard("member_keys"),
-                    }
-                ).decode("utf-8"),
+                {
+                    "version": "3.0.0",
+                    "started": await self.state.get("gateway_started"),
+                    "shards": await self.state.get("gateway_shards"),
+                    "guilds": guilds,
+                    "roles": await self.state.scard("role_keys"),
+                    "channels": await self.state.scard("channel_keys"),
+                    "members": await self.state.scard("member_keys"),
+                }
             )
 
             await asyncio.sleep(900)
 
     async def cleanup(self):
         while True:
-            for menu in await self.redis.smembers("reaction_menus"):
-                menu = orjson.loads(menu)
+            for menu in await self.state.smembers("reaction_menus"):
 
                 if menu["end"] > int(time.time()):
                     continue
@@ -230,7 +231,7 @@ class Scheduler:
                         ).to_dict(),
                     )
 
-                await self.redis.srem("reaction_menus", orjson.dumps(menu).decode("utf-8"))
+                await self.state.srem("reaction_menus", menu)
 
             await asyncio.sleep(10)
 
@@ -240,15 +241,15 @@ class Scheduler:
             bans = await conn.fetch("SELECT identifier, category FROM ban")
 
         if len(data) >= 1:
-            await self.redis.mset(
-                *[y for x in data for y in (f"prefix:{x[0]}", "" if x[1] is None else x[1])]
+            await self.state.set(
+                [y for x in data for y in (f"prefix:{x[0]}", "" if x[1] is None else x[1])]
             )
 
         if len([x[0] for x in bans if x[1] == 0]) >= 1:
-            await self.redis.sadd("banned_users", *[x[0] for x in bans if x[1] == 0])
+            await self.state.sadd("banned_users", *[x[0] for x in bans if x[1] == 0])
 
         if len([x[0] for x in bans if x[1] == 1]) >= 1:
-            await self.redis.sadd("banned_guilds", *[x[0] for x in bans if x[1] == 1])
+            await self.state.sadd("banned_guilds", *[x[0] for x in bans if x[1] == 1])
 
         if config.testing is False:
             self.loop.create_task(self.bot_stats_updater())
@@ -261,9 +262,7 @@ class Main:
     def __init__(self, loop):
         self.loop = loop
         self.instances = []
-        self.pool = None
-        self.redis = None
-        self.http = None
+        self.bot = None
         self.bot_id = None
         self.shard_count = None
 
@@ -281,12 +280,25 @@ class Main:
         instance.loop.create_task(instance.start())
 
     async def handler(self, request):
-        if request.path == "/restart":
+        if request.path == "/healthcheck":
+            return web.Response(body='{"status":"Ok"}', content_type="application/json")
+        elif request.path == "/restart":
             for instance in self.instances:
                 self.loop.create_task(instance.restart())
             return web.Response(body='{"status":"Restarting"}', content_type="application/json")
-        elif request.path == "/healthcheck":
-            return web.Response(body='{"status":"Ok"}', content_type="application/json")
+        elif request.path.startswith("/success"):
+            user_id = request.path[8:]
+            login_message = self.bot.state.get(f"login_message:{user_id}")
+            user_message = self.bot.state.get(f"user_message:{user_id}")
+
+            if login_message is None or user_message is None:
+                return
+
+            channel = DMChannel(me=self.bot.user, state=self.bot.state, data={"id": login_message["id"]})
+            login_message = Message(state=self.bot.state, channel=channel, data=login_message)
+            user_message = Message(state=self.bot.state, channel=channel, data=user_message)
+
+            await select_guild(self.bot, user_message, login_message)
 
     def write_targets(self, clusters):
         data = []
@@ -300,16 +312,10 @@ class Main:
     async def launch(self):
         print(f"[Cluster Manager] Starting a total of {config.clusters} clusters.")
 
-        self.pool = await asyncpg.create_pool(**config.database, max_size=10, command_timeout=60)
-        self.redis = await aioredis.create_redis_pool(
-            (config.redis["host"], config.redis["port"]),
-            password=config.redis["password"],
-            minsize=5,
-            maxsize=10,
-            loop=self.loop,
-        )
+        self.bot = ModMail(command_prefix=None)
+        await self.bot.start(True)
 
-        async with self.pool.acquire() as conn:
+        async with self.bot.pool.acquire() as conn:
             exists = await conn.fetchrow(
                 "SELECT EXISTS (SELECT relname FROM pg_class WHERE relname = 'data')"
             )
@@ -317,9 +323,8 @@ class Main:
                 with open("schema.sql", "r") as file:
                     await conn.execute(file.read())
 
-        self.http = discord.Client().http
-        self.bot_id = (await self.http.static_login(config.token, bot=True))["id"]
-        self.shard_count = int(await self.redis.get("gateway_shards"))
+        self.bot_id = (await self.bot.real_user()).id
+        self.shard_count = int(await self.bot.state.get("gateway_shards"))
 
         for i in range(config.clusters):
             self.instances.append(Instance(i + 1, loop=self.loop, main=self))
