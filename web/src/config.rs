@@ -13,6 +13,8 @@ lazy_static! {
         api_port: get_env_as("API_PORT"),
         api_workers: get_env_as("API_WORKERS"),
         api_secret: get_env("API_SECRET"),
+        http_host: get_env("HTTP_HOST"),
+        http_port: get_env_as("HTTP_PORT"),
         redis_host: get_env("REDIS_HOST"),
         redis_port: get_env_as("REDIS_PORT"),
     };
@@ -44,6 +46,8 @@ pub struct Config {
     pub api_port: u16,
     pub api_workers: u64,
     pub api_secret: String,
+    pub http_host: String,
+    pub http_port: u16,
     pub redis_host: String,
     pub redis_port: u16,
 }

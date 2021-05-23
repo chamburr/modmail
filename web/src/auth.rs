@@ -1,12 +1,4 @@
-use crate::{
-    cache::{self, RedisPool},
-    config::CONFIG,
-    constants::{
-        csrf_token_key, token_key, user_token_key, CALLBACK_PATH, COOKIE_NAME, CSRF_TOKEN_KEY_TTL,
-        TOKEN_KEY_TTL,
-    },
-    routes::{ApiError, ApiResponse, ApiResult},
-};
+use std::{convert::TryInto, future::Future, pin::Pin, time::Duration};
 
 use actix_web::{
     cookie::{Cookie, SameSite},
@@ -24,8 +16,17 @@ use oauth2::{
     RevocationUrl, Scope, StandardRevocableToken, TokenResponse, TokenUrl,
 };
 use serde::{Deserialize, Serialize};
-use std::{convert::TryInto, future::Future, pin::Pin, time::Duration};
 use url::Url;
+
+use crate::{
+    cache::{self, RedisPool},
+    config::CONFIG,
+    constants::{
+        csrf_token_key, token_key, user_token_key, CALLBACK_PATH, COOKIE_NAME, CSRF_TOKEN_KEY_TTL,
+        TOKEN_KEY_TTL,
+    },
+    routes::{ApiError, ApiResponse, ApiResult},
+};
 
 lazy_static! {
     static ref CLIENT: BasicClient = {
@@ -103,6 +104,16 @@ pub async fn token_exchange(pool: &RedisPool, code: &str) -> ApiResult<BasicToke
         response.access_token().secret(),
         response.expires_in().unwrap_or_default().as_secs() as usize,
     )
+    .await?;
+
+    block(move || {
+        reqwest::blocking::Client::new()
+            .get(format!(
+                "{}:{}/success/{}",
+                CONFIG.http_host, CONFIG.http_port, user.id
+            ))
+            .send()
+    })
     .await?;
 
     Ok(response)
