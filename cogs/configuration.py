@@ -50,6 +50,10 @@ class Configuration(commands.Cog):
         msg = await ctx.send(Embed("Setting up..."))
 
         data = await tools.get_data(self.bot, ctx.guild.id)
+        if await ctx.guild.get_channel(data[2]):
+            await msg.edit(ErrorEmbed("The bot has already been set up."))
+            return
+
         overwrites = await self._get_overwrites(ctx, data[3])
         category = await ctx.guild.create_category(name="ModMail", overwrites=overwrites)
         logging_channel = await ctx.guild.create_text_channel(name="modmail-log", category=category)

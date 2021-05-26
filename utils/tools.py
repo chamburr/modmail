@@ -6,6 +6,7 @@ import discord
 
 from discord.user import User
 
+from classes.message import Message
 from classes.channel import DMChannel
 from classes.embed import Embed, ErrorEmbed
 
@@ -20,6 +21,24 @@ def create_fake_user(user_id):
             "id": str(user_id),
             "discriminator": "",
             "avatar": "",
+        },
+    )
+
+
+def create_fake_message(bot, channel, message_id):
+    return Message(
+        state=bot.state,
+        channel=channel,
+        data={
+            "id": message_id,
+            "attachments": [],
+            "embeds": [],
+            "edited_timestamp": 0,
+            "type": 0,
+            "pinned": False,
+            "mention_everyone": False,
+            "tts": False,
+            "content": "",
         },
     )
 
@@ -80,7 +99,7 @@ async def get_reaction_menu(bot, payload, kind):
             and menu["kind"] == kind
         ):
             channel = DMChannel(me=bot.user, state=bot.state, data={"id": menu["channel"]})
-            message = channel.get_partial_message(menu["message"])
+            message = create_fake_message(bot, channel, menu["message"])
 
             return menu, channel, message
 
@@ -202,7 +221,7 @@ async def get_user_guilds(state, member):
 async def select_guild(bot, message, msg=None):
     guilds = {}
 
-    user_guilds = await get_user_guilds(bot.state, message.author.id)
+    user_guilds = await get_user_guilds(bot.state, message.author)
     if user_guilds is None:
         embed = Embed(f"Please login at [this link](https://{bot.config.BASE_URI}/login).")
         if msg:

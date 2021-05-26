@@ -22,6 +22,9 @@ from utils import tools
 from utils.config import Config
 
 
+VERSION = "3.1.0"
+
+
 class Instance:
     def __init__(self, instance_id, loop, main):
         self.id = instance_id
@@ -56,7 +59,7 @@ class Instance:
 
         self._process = await asyncio.create_subprocess_shell(
             f"{sys.executable} \"{Path.cwd() / 'worker.py'}\" {self.id} {config.BOT_CLUSTERS} "
-            f"{self.main.bot.id}",
+            f"{self.main.bot.id} {VERSION}",
             stdin=asyncio.subprocess.DEVNULL,
             stdout=asyncio.subprocess.PIPE,
             stderr=asyncio.subprocess.PIPE,
@@ -119,16 +122,17 @@ class Scheduler:
     async def bot_stats_updater(self):
         while True:
             guilds = await self.bot.state.scard("guild_keys")
+            shards = await self.bot.shard_count()
 
             await self.session.post(
                 f"https://top.gg/api/bots/{self.bot.id}/stats",
-                data=orjson.dumps({"server_count": guilds, "shard_count": self.bot.shard_count}),
+                data=orjson.dumps({"server_count": guilds, "shard_count": shards}),
                 headers={"Authorization": config.TOPGG_TOKEN, "Content-Type": "application/json"},
             )
 
             await self.session.post(
                 f"https://discord.bots.gg/api/v1/bots/{self.bot.id}/stats",
-                data=orjson.dumps({"guildCount": guilds, "shardCount": self.bot.shard_count}),
+                data=orjson.dumps({"guildCount": guilds, "shardCount": shards}),
                 headers={"Authorization": config.DBOTS_TOKEN, "Content-Type": "application/json"},
             )
 
@@ -169,11 +173,7 @@ class Scheduler:
                     state=self.bot.state,
                     data={"id": menu["channel"]},
                 )
-                message = Message(
-                    state=self.bot.state,
-                    channel=channel,
-                    data={"id": menu["message"]},
-                )
+                message = tools.create_fake_message(self.bot, channel, menu["message"])
 
                 emojis = []
 
@@ -215,7 +215,7 @@ class Scheduler:
         if len([x[0] for x in bans if x[1] == 1]) >= 1:
             await self.bot.state.sadd("banned_guilds", *[x[0] for x in bans if x[1] == 1])
 
-        if config.ENVIRONMENT != "production":
+        if config.ENVIRONMENT == "production":
             self.loop.create_task(self.bot_stats_updater())
 
         self.loop.create_task(self.premium_updater())

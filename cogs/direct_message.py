@@ -251,7 +251,7 @@ class DirectMessageEvents(commands.Cog, name="Direct Message"):
             if payload.emoji.name == "◀️" and page > 0:
                 page -= 1
 
-                new_page = discord.Embed.from_dict(all_pages[page])
+                new_page = Embed.from_dict(all_pages[page])
                 await message.edit(new_page)
 
                 for reaction in numbers[: len(new_page.fields)]:
@@ -260,7 +260,7 @@ class DirectMessageEvents(commands.Cog, name="Direct Message"):
             if payload.emoji.name == "▶️" and page < len(all_pages) - 1:
                 page += 1
 
-                new_page = discord.Embed.from_dict(all_pages[page])
+                new_page = Embed.from_dict(all_pages[page])
                 await message.edit(new_page)
 
                 for reaction in numbers[len(new_page.fields) :]:

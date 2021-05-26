@@ -8,7 +8,10 @@ class Config:
         pass
 
     def __getattr__(self, attr):
-        return os.getenv(attr)
+        variable = os.getenv(attr)
+        if variable == "":
+            return None
+        return variable
 
     def load(self):
         load_dotenv(override=True)

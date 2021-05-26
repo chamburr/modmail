@@ -49,11 +49,10 @@ pub fn get_pool() -> ApiResult<RedisPool> {
     let mut uri = Url::parse("redis://")?;
     uri.set_host(Some(CONFIG.redis_host.as_str()))?;
     uri.set_port(Some(CONFIG.redis_port))?;
-    uri.set_password(
-        Some(CONFIG.redis_password.clone())
-            .filter(String::is_empty)
-            .as_deref(),
-    )?;
+
+    if !CONFIG.redis_password.is_empty() {
+        uri.set_password(Some(CONFIG.redis_password.as_str()))?;
+    }
 
     let pool = Pool::builder().build(RedisConnectionManager::new(uri)?)?;
 

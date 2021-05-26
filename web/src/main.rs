@@ -23,6 +23,8 @@ pub async fn main() {
     tracing_subscriber::fmt::init();
     tracing_log::env_logger::init();
 
+    tracing::info!("Running...");
+
     let result = real_main().await;
 
     if let Err(err) = result {

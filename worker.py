@@ -10,12 +10,13 @@ from utils.config import Config
 
 config = Config().load()
 
-if config.ENVIRONMENT != "production":
+if config.ENVIRONMENT == "production":
     sentry_sdk.init(config.SENTRY_DSN)
 
 cluster_id = int(sys.argv[1])
 cluster_count = int(sys.argv[2])
 bot_id = int(sys.argv[3])
+version = sys.argv[4]
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger()
@@ -37,7 +38,7 @@ bot = ModMail(
     bot_id=bot_id,
     cluster_id=cluster_id,
     cluster_count=cluster_count,
-    version="3.0.0",
+    version=version,
 )
 
 

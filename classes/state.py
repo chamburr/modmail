@@ -99,7 +99,7 @@ class State:
     async def expire(self, key, time):
         return await self.redis.expire(key, time)
 
-    async def set(self, key, value):
+    async def set(self, key, value=None):
         if isinstance(key, (list, tuple)):
             return await self.redis.mset(*key)
 

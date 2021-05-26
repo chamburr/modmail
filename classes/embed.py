@@ -1,7 +1,8 @@
 import datetime
 
+import discord
+
 from discord import embeds
-from discord.embeds import EmptyEmbed
 
 
 class Embed(embeds.Embed):
@@ -20,16 +21,16 @@ class Embed(embeds.Embed):
 
         super().__init__(**kwargs)
 
-    def set_author(self, name=EmptyEmbed, icon_url=EmptyEmbed, **kwargs):
+    def set_author(self, name=discord.Embed.Empty, icon_url=discord.Embed.Empty, **kwargs):
         super().set_author(name=name, icon_url=icon_url, **kwargs)
 
-    def set_footer(self, text=EmptyEmbed, icon_url=EmptyEmbed):
+    def set_footer(self, text=discord.Embed.Empty, icon_url=discord.Embed.Empty):
         super().set_footer(text=text, icon_url=icon_url)
 
-    def set_thumbnail(self, url=EmptyEmbed):
+    def set_thumbnail(self, url=discord.Embed.Empty):
         super().set_thumbnail(url=url)
 
-    def add_field(self, name=EmptyEmbed, value=EmptyEmbed, inline=True):
+    def add_field(self, name=discord.Embed.Empty, value=discord.Embed.Empty, inline=True):
         super().add_field(name=name, value=value, inline=inline)
 
 

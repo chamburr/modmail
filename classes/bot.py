@@ -42,6 +42,7 @@ class ModMail(commands.AutoShardedBot):
         self._skip_check = lambda x, y: x == y
         self.case_insensitive = True
         self.all_commands = _CaseInsensitiveDict() if self.case_insensitive else {}
+        self.strip_after_prefix = False
 
         self.ws = None
         self.loop = asyncio.get_event_loop()
@@ -71,14 +72,15 @@ class ModMail(commands.AutoShardedBot):
 
         self._enabled_events = [
             "MESSAGE_CREATE",
+            "MESSAGE_REACTION_ADD",
             "READY",
         ]
 
         self._cogs = [
             "admin",
-            "direct_message",
             "configuration",
             "core",
+            "direct_message",
             "error_handler",
             "events",
             "general",
@@ -146,18 +148,6 @@ class ModMail(commands.AutoShardedBot):
 
     async def get_all_members(self):
         pass
-
-    async def _get_state(self, **options):
-        return State(
-            dispatch=self.dispatch,
-            handlers=self._handlers,
-            hooks=self._hooks,
-            http=self.http,
-            loop=self.loop,
-            redis=self._redis,
-            shard_count=int(await self._redis.get("gateway_shards")),
-            **options,
-        )
 
     async def receive_message(self, msg):
         self.ws._dispatch("socket_raw_receive", msg)
@@ -267,7 +257,16 @@ class ModMail(commands.AutoShardedBot):
         self.prom = Prometheus(self)
         await self.prom.start()
 
-        self._connection = await self._get_state()
+        self._connection = State(
+            id=self.id,
+            dispatch=self.dispatch,
+            handlers=self._handlers,
+            hooks=self._hooks,
+            http=self.http,
+            loop=self.loop,
+            redis=self._redis,
+            shard_count=int(await self._redis.get("gateway_shards")),
+        )
         self._connection._get_client = lambda: self
 
         self.ws = DiscordWebSocket(socket=None, loop=self.loop)

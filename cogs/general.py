@@ -54,35 +54,16 @@ class General(commands.Cog):
         all_pages = []
 
         page = Embed(
-            f"{bot_user.name} Help Menu",
-            "Thank you for using ModMail! Please direct message me if you wish to contact staff. "
-            "You can also invite me to your server with the link below, or join our support server "
-            "if you need further help.",
+            "ModMail Help Menu",
+            "ModMail is a feature-rich Discord bot designed to enable your server members to "
+            "contact staff easily.\n\nPlease direct message me if you wish to contact staff. You "
+            "can also invite me to your server with the link below, or join our support server if "
+            f"you need further help.\n\nTo setup the bot, run `{ctx.prefix}setup`.",
         )
         page.set_thumbnail(bot_user.avatar_url)
         page.set_footer("Use the reactions to flip pages.")
         page.add_field("Invite", "https://modmail.xyz/invite", False)
         page.add_field("Support Server", "https://discord.gg/wjWJwJB", False)
-        all_pages.append(page)
-
-        page = Embed(title=f"{bot_user.name} Help Menu")
-        page.set_thumbnail(bot_user.avatar_url)
-        page.set_footer("Use the reactions to flip pages.")
-        page.add_field(
-            "About ModMail",
-            "ModMail is a feature-rich Discord bot designed to enable your server members to "
-            "contact staff easily. A new channel is created whenever a user messages the bot, and "
-            "the channel will serve as a shared inbox for seamless communication between staff and "
-            "the user.",
-            False,
-        )
-        page.add_field(
-            "Getting Started",
-            "Follow these steps to get the bot all ready to serve your server!\n1. Invite the bot "
-            f"with [this link](https://modmail.xyz/invite)\n2. Run `{ctx.prefix}setup`.\n3. All "
-            f"done! For the full list of commands, see `{ctx.prefix}help`.",
-            False,
-        )
         all_pages.append(page)
 
         for cog_name in self.bot.cogs:
@@ -101,7 +82,7 @@ class General(commands.Cog):
                 "information on a command.",
             )
 
-            page.set_author(f"{bot_user.name} Help Menu", bot_user.avatar_url)
+            page.set_author("ModMail Help Menu", bot_user.avatar_url)
             page.set_thumbnail(bot_user.avatar_url)
             page.set_footer("Use the reactions to flip pages.")
 
@@ -146,7 +127,7 @@ class General(commands.Cog):
         bot_user = await self.bot.real_user()
 
         embed = Embed(
-            f"{bot_user.name} Statistics",
+            "ModMail Statistics",
             "Visit the bot status page [here](https://modmail.xyz/status) for more information.",
         )
         embed.add_field("Owner", "CHamburr#2591")

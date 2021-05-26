@@ -2,10 +2,10 @@ import logging
 
 from discord import channel, utils
 from discord.channel import CategoryChannel, GroupChannel, StoreChannel, VoiceChannel
-from discord.embeds import Embed
 from discord.enums import ChannelType, try_enum
 from discord.permissions import Permissions
 
+from classes.embed import Embed
 from classes.invite import Invite
 
 log = logging.getLogger(__name__)

@@ -5,6 +5,7 @@ import discord
 
 from discord.ext import commands
 
+from classes.context import Context
 from classes.embed import Embed, ErrorEmbed
 from utils import tools
 
@@ -17,7 +18,7 @@ class Events(commands.Cog):
         self.pipe = self.bot._redis.pipeline()
 
     @commands.Cog.listener()
-    async def on_ready(self, _):
+    async def on_ready(self):
         pass
 
     async def on_socket_response(self, message):
@@ -79,7 +80,7 @@ class Events(commands.Cog):
         elif payload.emoji.name == "⏭️":
             page = len(all_pages) - 1
 
-        await message.edit(discord.Embed.from_dict(all_pages[page]))
+        await message.edit(Embed.from_dict(all_pages[page]))
 
         try:
             member = tools.create_fake_user(payload.user_id)
@@ -97,7 +98,7 @@ class Events(commands.Cog):
         if message.author.bot:
             return
 
-        ctx = await self.bot.get_context(message)
+        ctx = await self.bot.get_context(message, cls=Context)
         if not ctx.command:
             return
 
