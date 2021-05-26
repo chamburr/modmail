@@ -8,8 +8,6 @@ import discord
 
 from discord.ext import commands
 
-import config
-
 from classes.embed import Embed, ErrorEmbed
 from classes.message import Message
 from utils import tools
@@ -97,7 +95,7 @@ class DirectMessageEvents(commands.Cog, name="Direct Message"):
             if log_channel:
                 embed = Embed(
                     title="New Ticket",
-                    colour=config.user_colour,
+                    colour=0x00FF00,
                     timestamp=True,
                 )
                 embed.set_footer(
@@ -147,7 +145,7 @@ class DirectMessageEvents(commands.Cog, name="Direct Message"):
                 embed = Embed(
                     "Greeting Message",
                     tools.tag_format(data[5], message.author),
-                    colour=config.mod_colour,
+                    colour=0xFF4500,
                     timestamp=True,
                 )
                 embed.set_footer(f"{guild.name} | {guild.id}", guild.icon_url)
@@ -157,7 +155,7 @@ class DirectMessageEvents(commands.Cog, name="Direct Message"):
         embed = Embed(
             "Message Sent",
             message.content,
-            colour=config.user_colour,
+            colour=0x00FF00,
             timestamp=True,
         )
         embed.set_footer(f"{guild.name} | {guild.id}", guild.icon_url)
@@ -281,7 +279,7 @@ class DirectMessageEvents(commands.Cog, name="Direct Message"):
         if message.author.bot or not isinstance(message.channel, discord.DMChannel):
             return
 
-        for prefix in [f"<@{self.bot.id}> ", f"<@!{self.bot.id}> ", self.bot.config.default_prefix]:
+        for prefix in [f"<@{self.bot.id}> ", f"<@!{self.bot.id}> ", self.bot.config.DEFAULT_PREFIX]:
             if message.content.startswith(prefix):
                 return
 
@@ -289,8 +287,8 @@ class DirectMessageEvents(commands.Cog, name="Direct Message"):
             await message.channel.send(ErrorEmbed("You are banned from this bot."))
             return
 
-        if self.bot.config.default_server:
-            guild = await self.bot.get_guild(self.bot.config.default_server)
+        if self.bot.config.DEFAULT_SERVER:
+            guild = await self.bot.get_guild(int(self.bot.config.DEFAULT_SERVER))
             await self.send_mail(message, guild)
             return
 
@@ -317,7 +315,7 @@ class DirectMessageEvents(commands.Cog, name="Direct Message"):
             )
             embed.set_footer(
                 "Tip: You can disable confirmation messages with the "
-                f"{self.bot.config.default_prefix}confirmation command."
+                f"{self.bot.config.DEFAULT_PREFIX}confirmation command."
             )
             msg = await message.channel.send(embed)
 

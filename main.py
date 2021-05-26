@@ -14,13 +14,12 @@ import orjson
 
 from aiohttp import web
 
-import config
-
 from classes.bot import ModMail
 from classes.channel import DMChannel
 from classes.embed import ErrorEmbed
 from classes.message import Message
 from utils import tools
+from utils.config import Config
 
 
 class Instance:
@@ -56,8 +55,8 @@ class Instance:
             return
 
         self._process = await asyncio.create_subprocess_shell(
-            f"{sys.executable} \"{Path.cwd() / 'worker.py'}\" {self.id} {config.clusters} "
-            f"{self.main.bot_id}",
+            f"{sys.executable} \"{Path.cwd() / 'worker.py'}\" {self.id} {config.BOT_CLUSTERS} "
+            f"{self.main.bot.id}",
             stdin=asyncio.subprocess.DEVNULL,
             stdout=asyncio.subprocess.PIPE,
             stderr=asyncio.subprocess.PIPE,
@@ -89,18 +88,14 @@ class Instance:
 
 
 class Scheduler:
-    def __init__(self, loop, main):
+    def __init__(self, loop, bot):
         self.loop = loop
-        self.pool = main.bot.pool
-        self.state = main.bot.state
-        self.http = main.bot.http
-        self.bot_id = main.bot_id
-        self.shard_count = main.shard_count
+        self.bot = bot
         self.session = aiohttp.ClientSession()
 
     async def premium_updater(self):
         while True:
-            async with self.pool.acquire() as conn:
+            async with self.bot.pool.acquire() as conn:
                 premium = await conn.fetch(
                     "SELECT identifier, guild FROM premium WHERE expiry IS NOT NULL AND expiry<$1",
                     int(datetime.utcnow().timestamp() * 1000),
@@ -123,130 +118,104 @@ class Scheduler:
 
     async def bot_stats_updater(self):
         while True:
-            if not self.bot_id and not self.shard_count:
-                continue
-
-            guilds = await self.state.scard("guild_keys")
+            guilds = await self.bot.state.scard("guild_keys")
 
             await self.session.post(
-                f"https://top.gg/api/bots/{self.bot_id}/stats",
-                data=orjson.dumps({"server_count": guilds, "shard_count": self.shard_count}),
-                headers={"Authorization": config.topgg_token, "Content-Type": "application/json"},
+                f"https://top.gg/api/bots/{self.bot.id}/stats",
+                data=orjson.dumps({"server_count": guilds, "shard_count": self.bot.shard_count}),
+                headers={"Authorization": config.TOPGG_TOKEN, "Content-Type": "application/json"},
             )
 
             await self.session.post(
-                f"https://discord.bots.gg/api/v1/bots/{self.bot_id}/stats",
-                data=orjson.dumps({"guildCount": guilds, "shardCount": self.shard_count}),
-                headers={"Authorization": config.dbots_token, "Content-Type": "application/json"},
+                f"https://discord.bots.gg/api/v1/bots/{self.bot.id}/stats",
+                data=orjson.dumps({"guildCount": guilds, "shardCount": self.bot.shard_count}),
+                headers={"Authorization": config.DBOTS_TOKEN, "Content-Type": "application/json"},
             )
 
             await self.session.post(
-                f"https://discordbotlist.com/api/v1/bots/{self.bot_id}/stats",
+                f"https://discordbotlist.com/api/v1/bots/{self.bot.id}/stats",
                 data=orjson.dumps({"guilds": guilds}),
-                headers={"Authorization": config.dbl_token, "Content-Type": "application/json"},
+                headers={"Authorization": config.DBL_TOKEN, "Content-Type": "application/json"},
             )
 
             await self.session.post(
-                f"https://bots.ondiscord.xyz/bot-api/bots/{self.bot_id}/guilds",
+                f"https://bots.ondiscord.xyz/bot-api/bots/{self.bot.id}/guilds",
                 data=orjson.dumps({"guildCount": guilds}),
-                headers={"Authorization": config.bod_token, "Content-Type": "application/json"},
+                headers={"Authorization": config.BOD_TOKEN, "Content-Type": "application/json"},
             )
 
             await self.session.post(
-                f"https://botsfordiscord.com/api/bot/{self.bot_id}",
+                f"https://botsfordiscord.com/api/bot/{self.bot.id}",
                 data=orjson.dumps({"server_count": guilds}),
-                headers={"Authorization": config.bfd_token, "Content-Type": "application/json"},
+                headers={"Authorization": config.BFD_TOKEN, "Content-Type": "application/json"},
             )
 
             await self.session.post(
-                f"https://discord.boats/api/v2/bot/{self.bot_id}",
+                f"https://discord.boats/api/v2/bot/{self.bot.id}",
                 data=orjson.dumps({"server_count": guilds}),
-                headers={"Authorization": config.dboats_token, "Content-Type": "application/json"},
-            )
-
-            await self.state.set(
-                "bot_stats",
-                {
-                    "version": "3.0.0",
-                    "started": await self.state.get("gateway_started"),
-                    "shards": await self.state.get("gateway_shards"),
-                    "guilds": guilds,
-                    "roles": await self.state.scard("role_keys"),
-                    "channels": await self.state.scard("channel_keys"),
-                    "members": await self.state.scard("member_keys"),
-                },
+                headers={"Authorization": config.DBOATS_TOKEN, "Content-Type": "application/json"},
             )
 
             await asyncio.sleep(900)
 
     async def cleanup(self):
         while True:
-            for menu in await self.state.smembers("reaction_menus"):
-
+            for menu in await self.bot.state.smembers("reaction_menus"):
                 if menu["end"] > int(time.time()):
                     continue
 
+                channel = DMChannel(
+                    me=self.bot.user,
+                    state=self.bot.state,
+                    data={"id": menu["channel"]},
+                )
+                message = Message(
+                    state=self.bot.state,
+                    channel=channel,
+                    data={"id": menu["message"]},
+                )
+
+                emojis = []
+
                 if menu["kind"] == "paginator":
                     try:
-                        await self.http.clear_reactions(menu["channel"], menu["message"])
+                        await message.clear_reactions()
                     except discord.Forbidden:
-                        for reaction in ["⏮️", "◀️", "⏹️", "▶️", "⏭️"]:
-                            try:
-                                await self.http.remove_own_reaction(
-                                    menu["channel"], menu["message"], reaction
-                                )
-                            except discord.NotFound:
-                                pass
+                        emojis = ["⏮️", "◀️", "⏹️", "▶️", "⏭️"]
                 elif menu["kind"] == "confirmation":
-                    for reaction in ["✅", "🔁", "❌"]:
-                        await self.http.remove_own_reaction(
-                            menu["channel"], menu["message"], reaction
-                        )
-
-                    await self.http.edit_message(
-                        menu["channel"],
-                        menu["message"],
-                        ErrorEmbed("Time out. You did not choose anything.").to_dict(),
-                    )
+                    emojis = ["✅", "🔁", "❌"]
+                    await message.edit(ErrorEmbed("Time out. You did not choose anything."))
                 elif menu["kind"] == "selection":
-                    await self.http.remove_own_reaction(menu["channel"], menu["message"], "◀")
-                    await self.http.remove_own_reaction(menu["channel"], menu["message"], "▶")
+                    emojis = ["1⃣", "2⃣", "3⃣", "4⃣", "5⃣", "6⃣", "7⃣", "8⃣", "9⃣", "🔟", "◀", "▶"]
+                    await message.edit(ErrorEmbed("Time out. You did not choose anything."))
 
-                    for reaction in ["1⃣", "2⃣", "3⃣", "4⃣", "5⃣", "6⃣", "7⃣", "8⃣", "9⃣", "🔟"]:
-                        try:
-                            await self.http.remove_own_reaction(
-                                menu["channel"], menu["message"], reaction
-                            )
-                        except discord.NotFound:
-                            pass
+                await self.bot.state.srem("reaction_menus", menu)
 
-                    await self.http.edit_message(
-                        menu["channel"],
-                        menu["message"],
-                        ErrorEmbed("Time out. You did not choose anything.").to_dict(),
-                    )
-
-                await self.state.srem("reaction_menus", menu)
+                for emoji in emojis:
+                    try:
+                        await message.remove_reaction(emoji, self.bot.user)
+                    except discord.NotFound:
+                        pass
 
             await asyncio.sleep(10)
 
     async def launch(self):
-        async with self.pool.acquire() as conn:
+        async with self.bot.pool.acquire() as conn:
             data = await conn.fetch("SELECT guild, prefix FROM data")
             bans = await conn.fetch("SELECT identifier, category FROM ban")
 
         if len(data) >= 1:
-            await self.state.set(
+            await self.bot.state.set(
                 [y for x in data for y in (f"prefix:{x[0]}", "" if x[1] is None else x[1])]
             )
 
         if len([x[0] for x in bans if x[1] == 0]) >= 1:
-            await self.state.sadd("banned_users", *[x[0] for x in bans if x[1] == 0])
+            await self.bot.state.sadd("banned_users", *[x[0] for x in bans if x[1] == 0])
 
         if len([x[0] for x in bans if x[1] == 1]) >= 1:
-            await self.state.sadd("banned_guilds", *[x[0] for x in bans if x[1] == 1])
+            await self.bot.state.sadd("banned_guilds", *[x[0] for x in bans if x[1] == 1])
 
-        if config.testing is False:
+        if config.ENVIRONMENT != "production":
             self.loop.create_task(self.bot_stats_updater())
 
         self.loop.create_task(self.premium_updater())
@@ -298,21 +267,24 @@ class Main:
 
             await tools.select_guild(self.bot, message, msg)
 
-    def write_targets(self, clusters):
+    def write_targets(self):
         data = []
 
-        for i in range(len(clusters)):
-            data.append({"labels": {"cluster": str(i)}, "targets": [f"localhost:{6000 + i}"]})
-        data.append({"labels": {"cluster": 0, "targets": [f"localhost:{6000 + 999}"]}})
+        for i in range(len(self.instances)):
+            data.append({"labels": {"cluster": str(i)}, "targets": [f"localhost:{6100 + i}"]})
+        data.append({"labels": {"cluster": 0, "targets": ["localhost:6100"]}})
 
         with open("targets.json", "w") as file:
             json.dump(data, file, indent=2)
 
     async def launch(self):
-        print(f"[Cluster Manager] Starting a total of {config.clusters} clusters.")
+        print(f"[Cluster Manager] Starting a total of {config.BOT_CLUSTERS} clusters.")
 
-        self.bot = ModMail(cluster_id=999, cluster_count=config.clusters)
+        self.bot = ModMail(cluster_id=0, cluster_count=int(config.BOT_CLUSTERS))
         await self.bot.start(worker=False)
+
+        self.bot.id = (await self.bot.real_user()).id
+        self.bot.state.id = self.bot.id
 
         async with self.bot.pool.acquire() as conn:
             exists = await conn.fetchrow(
@@ -322,24 +294,22 @@ class Main:
                 with open("schema.sql", "r") as file:
                     await conn.execute(file.read())
 
-        self.bot.id = (await self.bot.real_user()).id
-        self.bot_id = self.bot.id
-        self.shard_count = self.bot.state.shard_count
-
-        for i in range(config.clusters):
+        for i in range(int(config.BOT_CLUSTERS)):
             self.instances.append(Instance(i + 1, loop=self.loop, main=self))
 
-        self.write_targets(self.instances)
+        self.write_targets()
 
-        scheduler = Scheduler(loop=self.loop, main=self)
+        scheduler = Scheduler(loop=self.loop, bot=self.bot)
         loop.create_task(scheduler.launch())
 
         server = web.Server(self.handler)
         runner = web.ServerRunner(server)
         await runner.setup()
-        site = web.TCPSite(runner, config.http_api["host"], config.http_api["port"])
+        site = web.TCPSite(runner, config.BOT_API_HOST, int(config.BOT_API_PORT))
         await site.start()
 
+
+config = Config().load()
 
 loop = asyncio.get_event_loop()
 main = Main(loop=loop)

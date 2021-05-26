@@ -5,8 +5,6 @@ import discord
 
 from discord.ext import commands
 
-import config
-
 from classes.embed import Embed, ErrorEmbed
 from utils import tools
 
@@ -67,7 +65,7 @@ class ModMailEvents(commands.Cog):
         if snippet is True:
             message.content = tools.tag_format(message.content, member)
 
-        embed = Embed("Message Received", message.content, colour=config.mod_colour, timestamp=True)
+        embed = Embed("Message Received", message.content, colour=0xFF4500, timestamp=True)
         embed.set_author(
             str(message.author) if anon is False else "Anonymous#0000",
             message.author.avatar_url

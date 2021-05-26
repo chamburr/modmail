@@ -15,12 +15,11 @@ from discord.ext.commands.core import _CaseInsensitiveDict
 from discord.gateway import DiscordClientWebSocketResponse, DiscordWebSocket
 from discord.utils import parse_time
 
-import config
-
 from classes.http import HTTPClient
 from classes.misc import Session, Status
 from classes.state import State
 from utils import tools
+from utils.config import Config
 from utils.prometheus import Prometheus
 
 log = logging.getLogger(__name__)
@@ -60,8 +59,9 @@ class ModMail(commands.AutoShardedBot):
         self._amqp_channel = None
         self._amqp_queue = None
 
+        self.config = Config()
         self.session = aiohttp.ClientSession(loop=self.loop)
-        self.http_uri = f"http://{self.config.http_api['host']}:{self.config.http_api['port']}"
+        self.http_uri = f"http://{self.config.BOT_API_HOST}:{self.config.BOT_API_PORT}"
         self.id = kwargs.get("bot_id")
         self.cluster = kwargs.get("cluster_id")
         self.cluster_count = kwargs.get("cluster_count")
@@ -92,10 +92,6 @@ class ModMail(commands.AutoShardedBot):
     @property
     def state(self):
         return self._connection
-
-    @property
-    def config(self):
-        return config
 
     @property
     def user(self):
@@ -238,15 +234,21 @@ class ModMail(commands.AutoShardedBot):
             ws_response_class=DiscordClientWebSocketResponse,
             trace_configs=[trace_config],
         )
-        self.http._token(self.config.token, bot=True)
+        self.http._token(self.config.BOT_TOKEN, bot=True)
 
         self.pool = await asyncpg.create_pool(
-            **self.config.database, max_size=10, command_timeout=60
+            database=self.config.POSTGRES_DATABASE,
+            user=self.config.POSTGRES_USERNAME,
+            password=self.config.POSTGRES_PASSWORD,
+            host=self.config.POSTGRES_HOST,
+            port=int(self.config.POSTGRES_PORT),
+            max_size=10,
+            command_timeout=60,
         )
 
         self._redis = await aioredis.create_redis_pool(
-            (self.config.redis["host"], self.config.redis["port"]),
-            password=self.config.redis["password"],
+            (self.config.REDIS_HOST, int(self.config.REDIS_PORT)),
+            password=self.config.REDIS_PASSWORD,
             minsize=5,
             maxsize=10,
             loop=self.loop,
@@ -254,10 +256,10 @@ class ModMail(commands.AutoShardedBot):
 
         if worker:
             self._amqp = await aio_pika.connect_robust(
-                login=self.config.rabbitmq["username"],
-                password=self.config.rabbitmq["password"],
-                host=self.config.rabbitmq["host"],
-                port=self.config.rabbitmq["port"],
+                login=self.config.RABBIT_USERNAME,
+                password=self.config.RABBIT_PASSWORD,
+                host=self.config.RABBIT_HOST,
+                port=int(self.config.RABBIT_PORT),
             )
             self._amqp_channel = await self._amqp.channel()
             self._amqp_queue = await self._amqp_channel.get_queue("gateway.recv")

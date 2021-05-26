@@ -7,8 +7,6 @@ import discord
 
 from discord.ext import commands
 
-import config
-
 from classes.embed import Embed, ErrorEmbed
 from utils import checks, tools
 from utils.converters import MemberConverter
@@ -79,7 +77,7 @@ class Core(commands.Cog):
                 embed2 = Embed(
                     "Closing Message",
                     tools.tag_format(data[6], member),
-                    colour=config.mod_colour,
+                    colour=0xFF4500,
                     timestamp=True,
                 )
                 embed2.set_footer(f"{ctx.guild.name} | {ctx.guild.id}", ctx.guild.icon_url)

@@ -53,7 +53,7 @@ class Prometheus:
             if issubclass(type(value), Collector):
                 self.msvr.register(getattr(self, name))
 
-        await self.msvr.start(addr="127.0.0.1", port=6000 + self.bot.cluster)
+        await self.msvr.start(addr="127.0.0.1", port=6100 + self.bot.cluster)
         self.msvr._runner._server._kwargs["access_log"] = None
 
         if platform.system() == "Linux":

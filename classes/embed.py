@@ -3,13 +3,11 @@ import datetime
 from discord import embeds
 from discord.embeds import EmptyEmbed
 
-from config import error_colour, primary_colour
-
 
 class Embed(embeds.Embed):
     def __init__(self, *args, **kwargs):
         if "colour" not in kwargs:
-            kwargs["colour"] = primary_colour
+            kwargs["colour"] = 0x1E90FF
 
         if kwargs.get("timestamp", False) is True:
             kwargs["timestamp"] = datetime.datetime.utcnow()
@@ -38,6 +36,6 @@ class Embed(embeds.Embed):
 class ErrorEmbed(Embed):
     def __init__(self, *args, **kwargs):
         if "colour" not in kwargs:
-            kwargs["colour"] = error_colour
+            kwargs["colour"] = 0xFF0000
 
         super().__init__(*args, **kwargs)

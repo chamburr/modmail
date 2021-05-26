@@ -102,7 +102,7 @@ class Configuration(commands.Cog):
             await ctx.send(ErrorEmbed("The chosen prefix is too long."))
             return
 
-        if prefix == self.bot.config.default_prefix:
+        if prefix == self.bot.config.DEFAULT_PREFIX:
             prefix = None
 
         await tools.get_data(self.bot, ctx.guild.id)
@@ -114,7 +114,7 @@ class Configuration(commands.Cog):
         await ctx.send(
             Embed(
                 "Successfully changed the prefix to "
-                f"`{self.bot.config.default_prefix if prefix is None else prefix}`.",
+                f"`{self.bot.config.DEFAULT_PREFIX if prefix is None else prefix}`.",
             )
         )
 

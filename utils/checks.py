@@ -12,7 +12,7 @@ log = logging.getLogger(__name__)
 
 def is_owner():
     def predicate(ctx):
-        if ctx.author.id not in ctx.bot.config.owners:
+        if str(ctx.author.id) not in ctx.bot.config.OWNER_USERS.split(","):
             raise commands.NotOwner()
 
         return True
@@ -22,7 +22,9 @@ def is_owner():
 
 def is_admin():
     def predicate(ctx):
-        if ctx.author.id not in ctx.bot.config.owners + ctx.bot.config.admins:
+        if str(ctx.author.id) not in (
+            ctx.bot.config.OWNER_USERS.split(",") + ctx.bot.config.ADMIN_USERS.split(",")
+        ):
             raise commands.NotOwner()
 
         return True
@@ -48,7 +50,7 @@ def in_database():
 
 def is_premium():
     async def predicate(ctx):
-        if not ctx.bot.config.main_server:
+        if not ctx.bot.config.MAIN_SERVER:
             return True
 
         async with ctx.bot.pool.acquire() as conn:

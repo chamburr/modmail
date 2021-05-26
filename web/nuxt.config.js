@@ -1,4 +1,4 @@
-require('dotenv').config()
+require('dotenv').config({ path: '../.env' })
 
 function isDevelopment() {
   return process.env.ENVIRONMENT !== 'production'

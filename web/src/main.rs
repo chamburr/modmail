@@ -19,7 +19,7 @@ mod routes;
 
 #[actix_web::main]
 pub async fn main() {
-    dotenv::dotenv().ok();
+    dotenv::from_filename("../.env").ok();
     tracing_subscriber::fmt::init();
     tracing_log::env_logger::init();
 

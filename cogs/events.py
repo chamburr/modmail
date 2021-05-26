@@ -123,18 +123,6 @@ class Events(commands.Cog):
             await ctx.send(ErrorEmbed("You are banned from the bot."))
             return
 
-        if (
-            ctx.command.cog_name in ["Owner", "Admin"]
-            and ctx.author.id in self.bot.config.admins + self.bot.config.owners
-        ):
-            embed = Embed(ctx.command.name.title(), ctx.message.content, timestamp=True)
-            embed.set_author(f"{ctx.author} ({ctx.author.id})", ctx.author.avatar_url)
-
-            if self.bot.config.admin_channel:
-                channel = await self.bot.get_channel(self.bot.config.admin_channel)
-                if channel:
-                    await channel.send(embed)
-
         if ctx.prefix in [f"<@{self.bot.id}> ", f"<@!{self.bot.id}> "]:
             ctx.prefix = await tools.get_guild_prefix(self.bot, message.guild)
 

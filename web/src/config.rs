@@ -17,6 +17,7 @@ lazy_static! {
         bot_port: get_env_as("BOT_PORT"),
         redis_host: get_env("REDIS_HOST"),
         redis_port: get_env_as("REDIS_PORT"),
+        redis_password: get_env("REDIS_PASSWORD"),
     };
 }
 
@@ -50,6 +51,7 @@ pub struct Config {
     pub bot_port: u16,
     pub redis_host: String,
     pub redis_port: u16,
+    pub redis_password: String,
 }
 
 fn get_env(name: &str) -> String {

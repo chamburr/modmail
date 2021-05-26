@@ -6,6 +6,7 @@ use r2d2::{ManageConnection, Pool};
 use redis::{AsyncCommands, Client, IntoConnectionInfo, RedisError};
 use serde::{de::DeserializeOwned, Serialize};
 use tokio::runtime::Runtime;
+use url::Url;
 
 pub mod models;
 
@@ -45,10 +46,16 @@ impl ManageConnection for RedisConnectionManager {
 pub type RedisPool = Pool<RedisConnectionManager>;
 
 pub fn get_pool() -> ApiResult<RedisPool> {
-    let pool = Pool::builder().build(RedisConnectionManager::new((
-        CONFIG.redis_host.as_str(),
-        CONFIG.redis_port,
-    ))?)?;
+    let mut uri = Url::parse("redis://")?;
+    uri.set_host(Some(CONFIG.redis_host.as_str()))?;
+    uri.set_port(Some(CONFIG.redis_port))?;
+    uri.set_password(
+        Some(CONFIG.redis_password.clone())
+            .filter(String::is_empty)
+            .as_deref(),
+    )?;
+
+    let pool = Pool::builder().build(RedisConnectionManager::new(uri)?)?;
 
     Ok(pool)
 }

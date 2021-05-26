@@ -111,11 +111,11 @@ async def get_data(bot, guild):
 
 async def get_guild_prefix(bot, guild):
     if not guild:
-        return bot.config.default_prefix
+        return bot.config.DEFAULT_PREFIX
 
     prefix = await bot.state.get(f"prefix:{guild.id}")
     if prefix == "":
-        return bot.config.default_prefix
+        return bot.config.DEFAULT_PREFIX
     elif prefix is not None:
         return prefix
 
@@ -127,7 +127,7 @@ async def get_guild_prefix(bot, guild):
         return res[0]
 
     await bot.state.set(f"prefix:{guild.id}", "")
-    return bot.config.default_prefix
+    return bot.config.DEFAULT_PREFIX
 
 
 async def get_user_settings(bot, user):
@@ -136,18 +136,18 @@ async def get_user_settings(bot, user):
 
 
 async def get_premium_slots(bot, user):
-    if user in bot.config.owners + bot.config.admins:
+    if str(user) in bot.config.OWNER_USERS.split(",") + bot.config.ADMIN_USERS.split(","):
         return 1000
 
-    guild = await bot.get_guild(bot.config.main_server)
+    guild = await bot.get_guild(int(bot.config.MAIN_SERVER))
     if guild:
         member = await guild.get_member(user)
         if member:
-            if bot.config.premium5 in member._roles:
+            if int(bot.config.PREMIUM5_ROLE) in member._roles:
                 return 5
-            elif bot.config.premium3 in member._roles:
+            elif int(bot.config.PREMIUM3_ROLE) in member._roles:
                 return 3
-            elif bot.config.premium1 in member._roles:
+            elif int(bot.config.PREMIUM1_ROLE) in member._roles:
                 return 1
 
     async with bot.pool.acquire() as conn:
@@ -204,7 +204,7 @@ async def select_guild(bot, message, msg=None):
 
     user_guilds = await get_user_guilds(bot.state, message.author.id)
     if user_guilds is None:
-        embed = Embed("Please login at [this link](https://{config.base_uri}/login).")
+        embed = Embed(f"Please login at [this link](https://{bot.config.BASE_URI}/login).")
         if msg:
             msg = await msg.edit(embed)
         else:

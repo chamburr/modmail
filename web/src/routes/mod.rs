@@ -309,6 +309,12 @@ impl From<ApiResponse> for ApiError {
     }
 }
 
+impl From<()> for ApiError {
+    fn from(_: ()) -> Self {
+        Self::EmptyError(())
+    }
+}
+
 impl From<io::Error> for ApiError {
     fn from(err: io::Error) -> Self {
         sentry::capture_error(&err);

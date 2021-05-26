@@ -4,13 +4,14 @@ import sys
 
 import sentry_sdk
 
-import config
-
 from classes.bot import ModMail
 from utils import tools
+from utils.config import Config
 
-if config.testing is False:
-    sentry_sdk.init(config.sentry_url)
+config = Config().load()
+
+if config.ENVIRONMENT != "production":
+    sentry_sdk.init(config.SENTRY_DSN)
 
 cluster_id = int(sys.argv[1])
 cluster_count = int(sys.argv[2])
