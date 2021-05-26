@@ -27,7 +27,7 @@ log = logging.getLogger(__name__)
 
 
 class ModMail(commands.AutoShardedBot):
-    def __init__(self, command_prefix, **kwargs):
+    def __init__(self, command_prefix=None, **kwargs):
         self.command_prefix = command_prefix
         self.extra_events = {}
         self._BotBase__cogs = {}
@@ -160,7 +160,6 @@ class ModMail(commands.AutoShardedBot):
             loop=self.loop,
             redis=self._redis,
             shard_count=int(await self._redis.get("gateway_shards")),
-            id=self.id,
             **options,
         )
 
@@ -230,7 +229,7 @@ class ModMail(commands.AutoShardedBot):
             }
         )
 
-    async def start(self, fake=False):
+    async def start(self, worker=True):
         trace_config = aiohttp.TraceConfig()
         trace_config.on_request_start.append(self.on_http_request_start)
         trace_config.on_request_end.append(self.on_http_request_end)
@@ -253,7 +252,7 @@ class ModMail(commands.AutoShardedBot):
             loop=self.loop,
         )
 
-        if not fake:
+        if worker:
             self._amqp = await aio_pika.connect_robust(
                 login=self.config.rabbitmq["username"],
                 password=self.config.rabbitmq["password"],
@@ -276,7 +275,7 @@ class ModMail(commands.AutoShardedBot):
         self.ws._dispatch = self.dispatch
         self.ws.call_hooks = self._connection.call_hooks
 
-        if fake:
+        if not worker:
             return
 
         for extension in self._cogs:
@@ -285,8 +284,6 @@ class ModMail(commands.AutoShardedBot):
             except Exception:
                 log.error(f"Failed to load extension {extension}.", file=sys.stderr)
                 log.error(traceback.print_exc())
-
-        log.info("Running...")
 
         async with self._amqp_queue.iterator() as queue_iter:
             async for message in queue_iter:

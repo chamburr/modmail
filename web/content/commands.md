@@ -2,7 +2,7 @@
 
 ## setup
 
-Set up ModMail with an interactive guide.
+Set up ModMail.
 
 ## prefix
 

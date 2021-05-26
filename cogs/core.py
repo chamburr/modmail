@@ -68,8 +68,11 @@ class Core(commands.Cog):
         )
         embed.set_footer(f"{ctx.guild.name} | {ctx.guild.id}", ctx.guild.icon_url)
 
-        member = await ctx.guild.fetch_member(tools.get_modmail_user(ctx.channel).id)
-        if member:
+        try:
+            member = await ctx.guild.fetch_member(tools.get_modmail_user(ctx.channel).id)
+        except discord.NotFound:
+            pass
+        else:
             dm_channel = tools.get_modmail_channel(self.bot, ctx.channel)
 
             if data[6]:
@@ -79,10 +82,7 @@ class Core(commands.Cog):
                     colour=config.mod_colour,
                     timestamp=True,
                 )
-                embed2.set_footer(
-                    f"{ctx.guild.name} | {ctx.guild.id}",
-                    ctx.guild.icon_url,
-                )
+                embed2.set_footer(f"{ctx.guild.name} | {ctx.guild.id}", ctx.guild.icon_url)
                 try:
                     await dm_channel.send(embed2)
                 except discord.Forbidden:
@@ -211,11 +211,7 @@ class Core(commands.Cog):
                 await self.close_channel(new_ctx, reason)
 
         try:
-            await ctx.send(
-                Embed(
-                    "All channels are successfully closed.",
-                )
-            )
+            await ctx.send(Embed("All channels are successfully closed."))
         except discord.HTTPException:
             pass
 
@@ -308,10 +304,7 @@ class Core(commands.Cog):
 
         all_pages = []
         for chunk in [blacklist[i : i + 25] for i in range(0, len(blacklist), 25)]:
-            page = Embed(
-                "Blacklist",
-                "\n".join([f"<@{user}> ({user})" for user in chunk]),
-            )
+            page = Embed("Blacklist", "\n".join([f"<@{user}> ({user})" for user in chunk]))
             page.set_footer("Use the reactions to flip pages.")
             all_pages.append(page.to_dict())
 

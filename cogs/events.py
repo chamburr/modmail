@@ -31,13 +31,11 @@ class Events(commands.Cog):
                     await self.bot.state.set(
                         f"member:{message['d']['guild_id']}:{self.bot.id}", member
                     )
-
         elif message["t"] == "GUILD_CREATE":
             for member in message["d"]["members"]:
                 if int(member["user"]["id"]) == self.bot.id:
                     await self.bot.state.set(f"member:{message['d']['id']}:{self.bot.id}", member)
                     return
-
         elif message["t"] == "GUILD_DELETE":
             if message["d"].get("unavailable"):
                 return

@@ -225,20 +225,9 @@ class DirectMessageEvents(commands.Cog, name="Direct Message"):
             await self.bot.state.srem("reaction_menus", menu)
             return
 
-        if payload.emoji.name in [
-            "1⃣",
-            "2⃣",
-            "3⃣",
-            "4⃣",
-            "5⃣",
-            "6⃣",
-            "7⃣",
-            "8⃣",
-            "9⃣",
-            "🔟",
-            "◀️",
-            "▶️",
-        ]:
+        numbers = ["1⃣", "2⃣", "3⃣", "4⃣", "5⃣", "6⃣", "7⃣", "8⃣", "9⃣", "🔟"]
+        arrows = ["◀️", "▶️"]
+        if payload.emoji.name in numbers + arrows:
             menu, channel, message = await tools.get_reaction_menu(self.bot, payload, "selection")
             if menu is None:
                 return
@@ -246,10 +235,8 @@ class DirectMessageEvents(commands.Cog, name="Direct Message"):
             page = menu["data"]["page"]
             all_pages = menu["data"]["all_pages"]
 
-            if payload.emoji.name not in ["◀️", "▶️"]:
-                chosen = ["1⃣", "2⃣", "3⃣", "4⃣", "5⃣", "6⃣", "7⃣", "8⃣", "9⃣", "🔟"].index(
-                    payload.emoji.name
-                )
+            if payload.emoji.name not in arrows:
+                chosen = numbers.index(payload.emoji.name)
                 await message.delete()
 
                 fields = all_pages[page]["fields"]
@@ -269,9 +256,7 @@ class DirectMessageEvents(commands.Cog, name="Direct Message"):
                 new_page = discord.Embed.from_dict(all_pages[page])
                 await message.edit(new_page)
 
-                for reaction in ["1⃣", "2⃣", "3⃣", "4⃣", "5⃣", "6⃣", "7⃣", "8⃣", "9⃣", "🔟"][
-                    : len(new_page.fields)
-                ]:
+                for reaction in numbers[: len(new_page.fields)]:
                     await message.add_reaction(reaction)
 
             if payload.emoji.name == "▶️" and page < len(all_pages) - 1:
@@ -280,9 +265,7 @@ class DirectMessageEvents(commands.Cog, name="Direct Message"):
                 new_page = discord.Embed.from_dict(all_pages[page])
                 await message.edit(new_page)
 
-                for reaction in ["1⃣", "2⃣", "3⃣", "4⃣", "5⃣", "6⃣", "7⃣", "8⃣", "9⃣", "🔟"][
-                    len(new_page.fields) :
-                ]:
+                for reaction in numbers[len(new_page.fields) :]:
                     try:
                         await message.remove_reaction(reaction, self.bot.user)
                     except discord.NotFound:

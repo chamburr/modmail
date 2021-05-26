@@ -35,7 +35,7 @@ log = logging.getLogger(__name__)
 
 class State:
     def __init__(
-        self, *, dispatch, handlers, hooks, http, loop, redis=None, shard_count=None, id, **options
+        self, *, dispatch, handlers, hooks, http, loop, redis=None, shard_count=None, **options
     ):
         self.dispatch = dispatch
         self.handlers = handlers
@@ -217,10 +217,6 @@ class State:
         if result:
             return ClientUser(state=self, data=result)
         return None
-
-    @property
-    def self_id(self):
-        return self.id
 
     @property
     def intents(self):

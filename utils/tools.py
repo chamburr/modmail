@@ -2,10 +2,9 @@ import logging
 import time
 
 import aiohttp
+import discord
 
 from discord.user import User
-
-import config
 
 from classes.channel import DMChannel
 from classes.embed import Embed, ErrorEmbed
@@ -47,6 +46,12 @@ def upgrade_payload(data):
 
 
 async def create_paginator(bot, ctx, pages):
+    if len(pages) == 1:
+        embed = pages[0]
+        embed.set_footer(discord.Embed.Empty)
+        await ctx.send(embed)
+        return
+
     msg = await ctx.send(pages[0])
 
     for reaction in ["⏮️", "◀️", "⏹️", "▶️", "⏭️"]:
@@ -181,14 +186,11 @@ async def get_user_guilds(state, member):
 
     token = await state.get(f"user_token:{member.id}")
     if token is None:
-        return []
-
-    payload = {
-        "Authorization": f"Bearer {token}",
-    }
+        return None
 
     async with aiohttp.ClientSession() as session, session.get(
-        "https://discord.com/api/v9/users/@me/guilds", headers=payload
+        "https://discord.com/api/v9/users/@me/guilds",
+        headers={"Authorization": f"Bearer {token}"},
     ) as req:
         response = req.json()
 
@@ -201,23 +203,24 @@ async def select_guild(bot, message, msg=None):
     guilds = {}
 
     user_guilds = await get_user_guilds(bot.state, message.author.id)
-    if len(user_guilds) == 0:
-        login_message = await message.channel.send(
-            ErrorEmbed(
-                "Oops, you don't seem to be in our database. Please login at "
-                f"[this link](https://{config.base_uri}/login)."
-            )
-        )
+    if user_guilds is None:
+        embed = Embed("Please login at [this link](https://{config.base_uri}/login).")
+        if msg:
+            msg = await msg.edit(embed)
+        else:
+            msg = await message.channel.send(embed)
 
-        await bot.state.set(f"login_message:{message.author.id}", login_message._data)
-        await bot.state.expire(f"login_message:{message.author.id}", 300)
-        await bot.state.set(f"user_message:{message.author.id}", message._data)
-        await bot.state.expire(f"user_message:{message.author.id}", 300)
+        await bot.state.set(
+            f"user_select:{message.author.id}",
+            {
+                "message": message._data,
+                "msg": msg._data,
+            },
+        )
 
         return
 
     for guild in user_guilds:
-
         guild = await bot.get_guild(int(guild))
 
         channel = None

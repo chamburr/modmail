@@ -35,12 +35,6 @@ class Admin(commands.Cog):
             page.set_footer("Use the reactions to flip pages.")
             all_pages.append(page)
 
-        if len(all_pages) == 1:
-            embed = all_pages[0]
-            embed.set_footer(discord.Embed.Empty)
-            await ctx.send(embed)
-            return
-
         await tools.create_paginator(self.bot, ctx, all_pages)
 
     @checks.is_admin()

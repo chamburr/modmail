@@ -57,8 +57,7 @@ class General(commands.Cog):
             f"{bot_user.name} Help Menu",
             "Thank you for using ModMail! Please direct message me if you wish to contact staff. "
             "You can also invite me to your server with the link below, or join our support server "
-            "if you need further help.\n\nDon't forget to check out our partners with the "
-            f"`{ctx.prefix}partners` command!",
+            "if you need further help.",
         )
         page.set_thumbnail(bot_user.avatar_url)
         page.set_footer("Use the reactions to flip pages.")
@@ -79,10 +78,9 @@ class General(commands.Cog):
         )
         page.add_field(
             "Getting Started",
-            "Follow these steps to get the bot all ready to serve your server!\n1. Invite "
-            f"the bot with [this link](https://modmail.xyz/invite)\n2. Run `{ctx.prefix}setup`, "
-            "there will be an interactive guide.\n3. All done! For a full list of commands, see "
-            f"`{ctx.prefix}help`.",
+            "Follow these steps to get the bot all ready to serve your server!\n1. Invite the bot "
+            f"with [this link](https://modmail.xyz/invite)\n2. Run `{ctx.prefix}setup`.\n3. All "
+            f"done! For the full list of commands, see `{ctx.prefix}help`.",
             False,
         )
         all_pages.append(page)
@@ -173,131 +171,9 @@ class General(commands.Cog):
 
         await ctx.send(embed)
 
-    @checks.bot_has_permissions(add_reactions=True)
     @commands.command(description="See the amazing stuff we have partnered with.", usage="partners")
     async def partners(self, ctx):
-        all_pages = []
-
-        page = Embed(
-            title="Discord Templates",
-            description="Discord Templates is the place for you to discover a huge variety of Discord server templates "
-            "for all purposes.",
-        )
-        page.add_field("Link", "https://discordtemplates.me")
-        page.set_thumbnail(
-            "https://cdn.discordapp.com/icons/696179394057732237/cf54e042456638eba2ea5abddfc7910e.png"
-        )
-        all_pages.append(page)
-
-        page = Embed(
-            title="Call of Duty Mobile",
-            description="The Activision-supported, community-run discord for the Call of Duty: Mobile Community.",
-        )
-        page.add_field("Link", "https://discord.gg/codmobile")
-        page.set_thumbnail(
-            "https://cdn.discordapp.com/icons/619762818266431547/a_cce3e6b3b6e64dcf7bbb6fa92c9fc4e6.gif"
-        )
-        all_pages.append(page)
-
-        page = Embed(
-            title="Eden of Gaming",
-            description="Eden of Gaming is a global gaming community that aims to share knowledge and build "
-            "relationships between members and fellow global gaming communities.",
-        )
-        page.add_field("Link", "https://discord.gg/edenofgaming")
-        page.set_thumbnail(
-            "https://cdn.discordapp.com/icons/457151179072339978/a_6b2bf427b3f07f209386dcf85ea94a9a.gif"
-        )
-        all_pages.append(page)
-
-        page = Embed(
-            title="Homework Help",
-            description="Got assignments? Need help? Then come join Discord's premier hub for students, scholars, "
-            "professionals, and hobbyists interested in discussions, challenges, as well as news, views, and reviews "
-            "that runs the gamut of academic disciplines.",
-        )
-        page.add_field("Link", "https://discord.gg/homework")
-        page.set_thumbnail(
-            "https://cdn.discordapp.com/icons/238956364729155585/468ac0a7dc84db45d018e0c442fe8447.png"
-        )
-        all_pages.append(page)
-
-        page = Embed(
-            title="Otzdarva's Dungeon",
-            description="Otzdarva's Dungeon is a community for the Dead by Daylight streamer Otzdarva, also known for "
-            "being a PUBG and Dark Souls YouTuber in the past.",
-        )
-        page.add_field("Link", "https://discord.gg/otzdarva")
-        page.set_thumbnail(
-            "https://cdn.discordapp.com/icons/227900298549657601/a_74313704119f88dc252e9b0b98c3ab25.gif"
-        )
-        all_pages.append(page)
-
-        page = Embed(
-            title="DOOM",
-            description="Hell’s armies have invaded Earth. Become the Slayer in an epic single-player campaign to "
-            "conquer demons across dimensions and stop the final destruction of humanity. The only thing they fear... "
-            "is you. RAZE HELL in DOOM Eternal!",
-        )
-        page.add_field("Link", "https://discord.gg/doom")
-        page.set_thumbnail(
-            "https://cdn.discordapp.com/icons/162891400684371968/a_4363040f917b4920a2e78da1e302d9dc.gif"
-        )
-        all_pages.append(page)
-
-        page = Embed(
-            title="Sea of Thieves",
-            description="One of the longest running and largest community-run Sea of Thieves Discord servers. A great "
-            "and most of all welcoming place to chat about Sea of Thieves and maybe find a few crew mates along the "
-            "way.",
-        )
-        page.add_field("Link", "https://discord.gg/seaofthievescommunity")
-        page.set_thumbnail(
-            "https://cdn.discordapp.com/icons/209815380946845697/a_04c8ae80dce6e6ef1e3d574dca61b4a2.png"
-        )
-        all_pages.append(page)
-
-        page = Embed(
-            title="Underlords",
-            description="Underlords Discord server acts as a secondary platform to r/Underlords where users can have "
-            "casual chit-chat, give suggestions, share tactics and discuss everything related to Underlords.",
-        )
-        page.add_field("Link", "https://discord.gg/underlords")
-        page.set_thumbnail(
-            "https://cdn.discordapp.com/icons/580534040692654101/a_0a6f7616c7d9b98f740809dbea272967.gif"
-        )
-        all_pages.append(page)
-
-        page = Embed(
-            title="CH's amburr",
-            description="CH's amburr is my personal community server. It is a fun and friendly place where you can "
-            "talk about everything cool.",
-        )
-        page.add_field("Link", "https://discord.gg/TYe3U4w")
-        page.set_thumbnail(
-            "https://cdn.discordapp.com/icons/447732123340767232/5a1064a156540e36e22a38abc527c737.png"
-        )
-        all_pages.append(page)
-
-        page = Embed(
-            title="Member Count",
-            description="Member Count is another bot that I am actively developing on. It shows stats on your server "
-            "using channel names.",
-        )
-        page.add_field("Link", "https://discordbots.org/bot/membercount")
-        page.set_thumbnail(
-            "https://cdn.discordapp.com/icons/496964682972659712/0b61c5cb7b9ace8f8f5e2fef37cacb5b.png"
-        )
-        all_pages.append(page)
-
-        for page in range(len(all_pages)):
-            bot_user = await self.bot.real_user()
-            all_pages[page].set_author(f"{bot_user.name} partners", bot_user.avatar_url)
-            all_pages[page].set_footer(
-                f"Use the reactions to flip pages. (Page {page + 1}/{len(all_pages)})"
-            )
-
-        await tools.create_paginator(self.bot, ctx, all_pages)
+        await ctx.send(Embed("Partners", "https://modmail.xyz/partners"))
 
     @commands.command(description="Get a link to invite me.", usage="invite")
     async def invite(self, ctx):

@@ -127,9 +127,7 @@ class Configuration(commands.Cog):
     )
     async def category(self, ctx, *, name: str = "ModMail"):
         if len(name) > 100:
-            await ctx.send(
-                ErrorEmbed("The category name cannot be longer than 100 characters")
-            )
+            await ctx.send(ErrorEmbed("The category name cannot be longer than 100 characters"))
             return
 
         data = await tools.get_data(self.bot, ctx.guild.id)
@@ -373,9 +371,7 @@ class Configuration(commands.Cog):
             )
 
         await ctx.send(
-            Embed(
-                f"Anonymous messaging is {'enabled' if data[10] is False else 'disabled'}.",
-            )
+            Embed(f"Anonymous messaging is {'enabled' if data[10] is False else 'disabled'}.")
         )
 
     @checks.in_database()
@@ -424,11 +420,7 @@ class Configuration(commands.Cog):
         )
         embed.add_field("Advanced Logging", "Enabled" if data[7] is True else "Disabled")
         embed.add_field("Anonymous Messaging", "Enabled" if data[10] is True else "Disabled")
-        embed.add_field(
-            "Greeting Message",
-            "*Not set*" if greeting is None else greeting,
-            False,
-        )
+        embed.add_field("Greeting Message", "*Not set*" if greeting is None else greeting, False)
         embed.add_field("Closing message", "*Not set*" if closing is None else closing, False)
 
         await ctx.send(embed)

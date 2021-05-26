@@ -28,10 +28,7 @@ class ErrorHandler(commands.Cog):
             return
         elif isinstance(error, commands.NoPrivateMessage):
             await ctx.send(
-                ErrorEmbed(
-                    "Command Unavailable",
-                    "This command cannot be used in direct message.",
-                )
+                ErrorEmbed("Command Unavailable", "This command cannot be used in direct message.")
             )
         elif isinstance(error, commands.PrivateMessageOnly):
             await ctx.send(
@@ -53,10 +50,7 @@ class ErrorHandler(commands.Cog):
             await ctx.send(embed)
         elif isinstance(error, commands.NotOwner):
             await ctx.send(
-                ErrorEmbed(
-                    "Permission Denied",
-                    "You do not have permission to use this command.",
-                )
+                ErrorEmbed("Permission Denied", "You do not have permission to use this command.")
             )
         elif isinstance(error, commands.MissingPermissions):
             await ctx.send(
