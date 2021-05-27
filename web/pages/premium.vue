@@ -108,6 +108,7 @@ export default {
       }
 
       const user = this.$store.getters['user/get']
+      const username = user.username.replace(/</g, '&lt;').replace(/>/g, '&gt;')
       const message = this.$createElement('div', {
         domProps: {
           innerHTML: `
@@ -117,7 +118,7 @@ export default {
               <a target="_blank" href="/support">support server</a> to receive the role and rewards.
             </p>
             <p class="mb-0">
-              Signed in as ${user.username}#${user.discriminator}.
+              Signed in as ${username}#${user.discriminator}.
               <a href="/logout">Not you?</a>
             </p>
             <form id="premium-form" action="https://www.paypal.com/cgi-bin/webscr" method="post"

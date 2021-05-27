@@ -280,11 +280,6 @@ class DirectMessageEvents(commands.Cog, name="Direct Message"):
             await message.channel.send(ErrorEmbed("You are banned from this bot."))
             return
 
-        if self.bot.config.DEFAULT_SERVER:
-            guild = await self.bot.get_guild(int(self.bot.config.DEFAULT_SERVER))
-            await self.send_mail(message, guild)
-            return
-
         guild = None
         async for msg in message.channel.history(limit=30):
             if (

@@ -1,7 +1,7 @@
 import logging
 
 from discord import channel, utils
-from discord.channel import CategoryChannel, GroupChannel, StoreChannel, VoiceChannel
+from discord.channel import CategoryChannel, GroupChannel, StoreChannel, VoiceChannel, StageChannel
 from discord.enums import ChannelType, try_enum
 from discord.permissions import Permissions
 
@@ -123,5 +123,7 @@ def _channel_factory(channel_type):
         return TextChannel, value
     elif value is ChannelType.store:
         return StoreChannel, value
+    elif value is ChannelType.stage_voice:
+        return StageChannel, value
     else:
         return None, value

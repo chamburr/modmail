@@ -176,7 +176,8 @@ class State:
         return emojis
 
     async def _guilds(self):
-        return [Guild(state=self, data=x) for x in await self._members_get_all("guild")]
+        guilds = [Guild(state=self, data=x) for x in await self._members_get_all("guild")]
+        return [x for x in guilds if not x.unavailable]
 
     async def _private_channels(self):
         results = await self._members_get_all("channel", predicate=lambda x: len(x.split(":")) <= 2)

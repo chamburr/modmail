@@ -60,8 +60,9 @@ class Admin(commands.Cog):
             f"{guild.name} `{guild.id}` ({guild.member_count} members)"
             for guild in [
                 await self.bot.get_guild(int(guild))
-                for guild in await self.bot.state.smembers(f"user_guilds:{user.id}")
+                for guild in await tools.get_user_guilds(self.bot, user)
             ]
+            if guild is not None
         ]
 
         await self._send_guilds(ctx, guilds, "Shared Servers")
