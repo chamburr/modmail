@@ -49,7 +49,7 @@ class Miscellaneous(commands.Cog):
         if member is None:
             member = ctx.message.member
 
-        roles = [f"<@&{role.id}>" for role in await member.roles() if role.id != ctx.guild.id]
+        roles = [f"<@&{role}>" for role in member._roles]
         if len(roles) == 0:
             roles.append("*No roles*")
 

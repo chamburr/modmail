@@ -3,8 +3,8 @@ import time
 
 import discord
 
-from discord.user import User
 from discord.http import Route
+from discord.user import User
 
 from classes.channel import DMChannel
 from classes.embed import Embed, ErrorEmbed
@@ -255,12 +255,15 @@ async def get_user_guilds(bot, member):
         if not res or not res[0]:
             return None
 
-        async with bot.session.post(f"{Route.BASE}/oauth2/token", data={
-            "client_id": bot.config.BOT_CLIENT_ID,
-            "client_secret": bot.config.BOT_CLIENT_SECRET,
-            "grant_type": "refresh_token",
-            "refresh_token": res[0]
-        }) as response:
+        async with bot.session.post(
+            f"{Route.BASE}/oauth2/token",
+            data={
+                "client_id": bot.config.BOT_CLIENT_ID,
+                "client_secret": bot.config.BOT_CLIENT_SECRET,
+                "grant_type": "refresh_token",
+                "refresh_token": res[0],
+            },
+        ) as response:
             if response.status != 200:
                 async with bot.pool.acquire() as conn:
                     await conn.execute(

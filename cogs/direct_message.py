@@ -118,7 +118,12 @@ class DirectMessageEvents(commands.Cog, name="Direct Message"):
                 timestamp=True,
             )
             embed.add_field("User", f"<@{message.author.id}> ({message.author.id})")
-            embed.add_field("Roles", " ".join([f"<@&{x}>" for x in member._roles]))
+            embed.add_field(
+                "Roles",
+                "*None*"
+                if len(member._roles) == 0
+                else " ".join([f"<@&{x}>" for x in member._roles]),
+            )
             embed.set_footer(f"{message.author} | {message.author.id}", message.author.avatar_url)
 
             roles = []

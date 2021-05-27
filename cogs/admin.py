@@ -60,7 +60,7 @@ class Admin(commands.Cog):
             f"{guild.name} `{guild.id}` ({guild.member_count} members)"
             for guild in [
                 await self.bot.get_guild(int(guild))
-                for guild in await tools.get_user_guilds(self.bot, user)
+                for guild in await tools.get_user_guilds(self.bot, user) or []
             ]
             if guild is not None
         ]

@@ -1,7 +1,7 @@
 import logging
 
 from discord import channel, utils
-from discord.channel import CategoryChannel, GroupChannel, StoreChannel, VoiceChannel, StageChannel
+from discord.channel import CategoryChannel, GroupChannel, StageChannel, StoreChannel, VoiceChannel
 from discord.enums import ChannelType, try_enum
 from discord.permissions import Permissions
 

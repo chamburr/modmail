@@ -227,8 +227,9 @@ impl FromRequest for User {
                     &DecodingKey::from_base64_secret(CONFIG.api_secret.as_str())?,
                     &Validation::default(),
                 ) {
-                    let user = Self::from_token(&pool, token.claims.token.as_str()).await?;
-                    return Ok(user);
+                    if let Ok(user) = Self::from_token(&pool, token.claims.token.as_str()).await {
+                        return Ok(user);
+                    }
                 }
 
                 Err(ApiResponse::unauthorized()
