@@ -24,6 +24,7 @@ pub mod errors;
 pub mod index;
 pub mod logs;
 pub mod users;
+pub mod webhook;
 
 pub type ApiResult<T> = Result<T, ApiError>;
 
