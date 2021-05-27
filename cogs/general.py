@@ -62,7 +62,7 @@ class General(commands.Cog):
         )
         page.set_thumbnail(bot_user.avatar_url)
         page.set_footer("Use the reactions to flip pages.")
-        page.add_field("Invite", "https://modmail.xyz/invite", False)
+        page.add_field("Invite", f"{self.bot.config.BASE_URI}/invite", False)
         page.add_field("Support Server", "https://discord.gg/wjWJwJB", False)
         all_pages.append(page)
 
@@ -128,7 +128,8 @@ class General(commands.Cog):
 
         embed = Embed(
             "ModMail Statistics",
-            "Visit the bot status page [here](https://modmail.xyz/status) for more information.",
+            f"Visit the bot status page [here]({self.bot.config.BASE_URI}/status) for more "
+            "information.",
         )
         embed.add_field("Owner", "CHamburr#2591")
         embed.add_field("Bot Version", self.bot.version)
@@ -154,11 +155,11 @@ class General(commands.Cog):
 
     @commands.command(description="See the amazing stuff we have partnered with.", usage="partners")
     async def partners(self, ctx):
-        await ctx.send(Embed("Partners", "https://modmail.xyz/partners"))
+        await ctx.send(Embed("Partners", f"{self.bot.config.BASE_URI}/partners"))
 
     @commands.command(description="Get a link to invite me.", usage="invite")
     async def invite(self, ctx):
-        await ctx.send(Embed("Invite Link", "https://modmail.xyz/invite"))
+        await ctx.send(Embed("Invite Link", f"{self.bot.config.BASE_URI}/invite"))
 
     @commands.command(
         description="Get a link to my support server.", usage="support", aliases=["server"]
@@ -168,7 +169,7 @@ class General(commands.Cog):
 
     @commands.command(description="Get the link to ModMail's website.", usage="website")
     async def website(self, ctx):
-        await ctx.send(Embed("Website", "https://modmail.xyz"))
+        await ctx.send(Embed("Website", f"{self.bot.config.BASE_URI}"))
 
     @commands.command(
         description="Get the link to ModMail's GitHub repository.",

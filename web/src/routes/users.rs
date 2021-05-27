@@ -1,11 +1,10 @@
 use crate::{
     auth::User,
     cache::{self, RedisPool},
-    constants::{user_token_key, COOKIE_NAME},
+    constants::{token_key, user_token_key, COOKIE_NAME},
     routes::{ApiResponse, ApiResult},
 };
 
-use crate::constants::token_key;
 use actix_web::{get, post, web::Data};
 
 #[get("/@me")]

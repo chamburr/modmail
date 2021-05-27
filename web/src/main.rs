@@ -20,10 +20,13 @@ mod routes;
 #[actix_web::main]
 pub async fn main() {
     dotenv::from_filename("../.env").ok();
+
+    if std::env::var("RUST_LOG").is_err() {
+        std::env::set_var("RUST_LOG", "info");
+    }
+
     tracing_subscriber::fmt::init();
     tracing_log::env_logger::init();
-
-    tracing::info!("Running...");
 
     let result = real_main().await;
 

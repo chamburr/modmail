@@ -49,7 +49,9 @@ class Miscellaneous(commands.Cog):
         if member is None:
             member = ctx.message.member
 
-        roles = [role.name for role in await member.roles()]
+        roles = [f"<@&{role.id}>" for role in await member.roles() if role.id != ctx.guild.id]
+        if len(roles) == 0:
+            roles.append("*No roles*")
 
         embed = Embed(title="User Information")
         embed.add_field("Name", str(member))

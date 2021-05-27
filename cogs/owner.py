@@ -136,12 +136,7 @@ class Owner(commands.Cog):
 
         async with self.bot.pool.acquire() as conn:
             timestamp = int(expiry.replace(tzinfo=timezone.utc).timestamp() * 1000)
-            await conn.execute(
-                "INSERT INTO premium (identifier, guild, expiry) VALUES ($1, $2, $3)",
-                user.id,
-                [],
-                timestamp,
-            )
+            await conn.execute("INSERT INTO premium VALUES ($1, $2, $3)", user.id, [], timestamp)
 
         await ctx.send(Embed("Successfully assigned that user premium temporarily."))
 
@@ -162,7 +157,7 @@ class Owner(commands.Cog):
     @commands.command(description="Ban a user from the bot", usage="banuser <user>")
     async def banuser(self, ctx, *, user: UserConverter):
         async with self.bot.pool.acquire() as conn:
-            await conn.execute("INSERT INTO ban (identifier, category) VALUES ($1, $2)", user.id, 0)
+            await conn.execute("INSERT INTO ban VALUES ($1, $2)", user.id, 0)
 
         await self.bot.state.sadd("banned_users", user.id)
 
@@ -188,9 +183,7 @@ class Owner(commands.Cog):
     @commands.command(description="Ban a server from the bot", usage="banserver <server ID>")
     async def banserver(self, ctx, *, guild: GuildConverter):
         async with self.bot.pool.acquire() as conn:
-            await conn.execute(
-                "INSERT INTO ban (identifier, category) VALUES ($1, $2)", guild.id, 1
-            )
+            await conn.execute("INSERT INTO ban VALUES ($1, $2)", guild.id, 1)
 
         await self.bot.state.sadd("banned_guilds", guild.id)
 

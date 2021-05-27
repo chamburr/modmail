@@ -59,7 +59,7 @@ class Core(commands.Cog):
             timestamp=True,
         )
         embed.set_author(
-            str(ctx.author.name) if anon is False else "Anonymous#0000",
+            str(ctx.author) if anon is False else "Anonymous#0000",
             ctx.author.avatar_url
             if anon is False
             else "https://cdn.discordapp.com/embed/avatars/0.png",
@@ -108,6 +108,11 @@ class Core(commands.Cog):
                 "Unknown#0000 | 000000000000000000",
                 "https://cdn.discordapp.com/embed/avatars/0.png",
             )
+
+        embed.set_author(
+            str(ctx.author) if anon is False else f"{ctx.author} (Anonymous)",
+            ctx.author.avatar_url,
+        )
 
         if data[7] is True:
             history = ""
@@ -165,7 +170,7 @@ class Core(commands.Cog):
             log_url = msg.attachments[0].url[39:-4]
             log_url = log_url.replace("modmail_log_", "")
             log_url = [hex(int(some_id))[2:] for some_id in log_url.split("/")]
-            log_url = f"https://modmail.xyz/logs/{'-'.join(log_url)}"
+            log_url = f"{self.bot.config.BASE_URI}/logs/{'-'.join(log_url)}"
             embed.add_field("Message Logs", log_url, False)
 
             await asyncio.sleep(0.5)

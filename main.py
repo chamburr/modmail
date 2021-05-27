@@ -15,12 +15,10 @@ import orjson
 from aiohttp import web
 
 from classes.bot import ModMail
-from classes.channel import DMChannel
 from classes.embed import ErrorEmbed
 from classes.message import Message
 from utils import tools
 from utils.config import Config
-
 
 VERSION = "3.1.0"
 
@@ -168,11 +166,7 @@ class Scheduler:
                 if menu["end"] > int(time.time()):
                     continue
 
-                channel = DMChannel(
-                    me=self.bot.user,
-                    state=self.bot.state,
-                    data={"id": menu["channel"]},
-                )
+                channel = tools.create_fake_channel(self.bot, menu["channel"])
                 message = tools.create_fake_message(self.bot, channel, menu["message"])
 
                 emojis = []
@@ -187,7 +181,11 @@ class Scheduler:
                     await message.edit(ErrorEmbed("Time out. You did not choose anything."))
                 elif menu["kind"] == "selection":
                     emojis = ["1⃣", "2⃣", "3⃣", "4⃣", "5⃣", "6⃣", "7⃣", "8⃣", "9⃣", "🔟", "◀", "▶"]
-                    await message.edit(ErrorEmbed("Time out. You did not choose anything."))
+                    try:
+                        await message.edit(ErrorEmbed("Time out. You did not choose anything."))
+                    except Exception:
+                        print(menu["channel"])
+                        print(menu["message"])
 
                 await self.bot.state.srem("reaction_menus", menu)
 
@@ -197,7 +195,7 @@ class Scheduler:
                     except discord.NotFound:
                         pass
 
-            await asyncio.sleep(10)
+            await asyncio.sleep(30)
 
     async def launch(self):
         async with self.bot.pool.acquire() as conn:
@@ -227,7 +225,6 @@ class Main:
         self.loop = loop
         self.instances = []
         self.bot = None
-        self.bot_id = None
         self.shard_count = None
 
     def dead_process_handler(self, result):
@@ -243,29 +240,38 @@ class Main:
         print(f"[Cluster {instance.id}] The cluster is restarting.")
         instance.loop.create_task(instance.start())
 
+    async def user_select_handler(self, body):
+        async with self.bot.pool.acquire() as conn:
+            await conn.execute(
+                "INSERT INTO account VALUES ($1, TRUE, $2) ON CONFLICT (identifier) DO UPDATE SET "
+                "token=$2",
+                int(body["id"]),
+                body["token"],
+            )
+
+        user_select = await self.bot.state.get(f"user_select:{body['id']}")
+        if not user_select:
+            return
+
+        await self.bot.state.delete(f"user_select:{body['id']}")
+
+        channel = tools.create_fake_channel(self.bot, user_select["message"]["channel_id"])
+        message = Message(state=self.bot.state, channel=channel, data=user_select["message"])
+        msg = Message(state=self.bot.state, channel=channel, data=user_select["msg"])
+
+        await tools.select_guild(self.bot, message, msg)
+
     async def handler(self, request):
-        if request.path == "/healthcheck":
+        if request.method == "GET" and request.path == "/healthcheck":
             return web.Response(body='{"status":"Ok"}', content_type="application/json")
-        elif request.path == "/restart":
+        elif request.method == "GET" and request.path == "/restart":
             for instance in self.instances:
                 self.loop.create_task(instance.restart())
             return web.Response(body='{"status":"Ok"}', content_type="application/json")
-        elif request.path.startswith("/success/"):
-            user_id = request.path.split("/")[-1]
-            user_select = await self.bot.state.get(f"user_select:{user_id}")
-
-            if not user_select:
-                return
-
-            channel = DMChannel(
-                me=self.bot.user,
-                state=self.bot.state,
-                data={"id": user_select["message"]["channel_id"]},
-            )
-            message = Message(state=self.bot.state, channel=channel, data=user_select["message"])
-            msg = Message(state=self.bot.state, channel=channel, data=user_select["msg"])
-
-            await tools.select_guild(self.bot, message, msg)
+        elif request.method == "POST" and request.path == "/success":
+            body = await request.json()
+            self.loop.create_task(self.user_select_handler(body))
+            return web.Response(body='{"status":"Ok"}', content_type="application/json")
 
     def write_targets(self):
         data = []

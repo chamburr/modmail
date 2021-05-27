@@ -40,8 +40,7 @@ export default {
   },
   watch: {
     value(newValue) {
-      this.realValue = newValue
-      this.$emit('input', this.realValue)
+      this.$emit('input', this.value)
     },
   },
   methods: {

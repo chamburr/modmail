@@ -262,7 +262,9 @@ class State:
         result = await self.get(f"guild:{guild_id}")
 
         if result:
-            return Guild(state=self, data=result)
+            guild = Guild(state=self, data=result)
+            if not guild.unavailable:
+                return guild
 
         return None
 
@@ -385,9 +387,7 @@ class State:
         channel = await self.get_channel(int(data["channel_id"]))
 
         if not channel and not data.get("guild_id"):
-            channel = DMChannel(
-                me=await self.user(), state=self, data={"id": int(data["channel_id"])}
-            )
+            channel = DMChannel(me=await self.user(), state=self, data={"id": data["channel_id"]})
 
         if channel:
             message = self.create_message(channel=channel, data=data)

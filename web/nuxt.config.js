@@ -30,7 +30,7 @@ export default {
       { name: 'theme-color', content: '#1e90ff' },
       { name: 'og:title', content: 'ModMail' },
       { name: 'og:type', content: 'website' },
-      { name: 'og:url', content: process.env.BASE_URI },
+      { name: 'og:url', content: `${process.env.BASE_URI}` },
       { name: 'og:image', content: `${process.env.BASE_URI}/icon.png` },
       { name: 'og:site_name', content: 'ModMail' },
       {
@@ -54,7 +54,7 @@ export default {
       { rel: 'apple-touch-icon', sizes: '180x180', href: '/apple-touch-icon.png' },
       { rel: 'mask-icon', href: '/safari-pinned-tab.svg', color: '#ff4500' },
       { rel: 'manifest', href: '/site.webmanifest' },
-      { rel: 'canonical', href: process.env.BASE_URI },
+      { rel: 'canonical', href: `${process.env.BASE_URI}` },
     ],
   },
 

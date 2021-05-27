@@ -53,8 +53,9 @@ class ModMailEvents(commands.Cog):
             )
             return
 
-        member = await message.guild.fetch_member(user.id)
-        if not member:
+        try:
+            member = await message.guild.fetch_member(user.id)
+        except discord.NotFound:
             await message.channel.send(
                 ErrorEmbed(
                     f"The user was not found. Use `{prefix}close [reason]` to close this channel."

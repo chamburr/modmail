@@ -1,4 +1,3 @@
-import copy
 import io
 import logging
 import string
@@ -12,7 +11,6 @@ from classes.embed import Embed, ErrorEmbed
 from classes.message import Message
 from utils import tools
 from utils.converters import GuildConverter
-from utils.tools import select_guild
 
 log = logging.getLogger(__name__)
 
@@ -29,8 +27,9 @@ class DirectMessageEvents(commands.Cog, name="Direct Message"):
             message.channel.send(ErrorEmbed("The server was not found."))
             return
 
-        member = await guild.fetch_member(message.author.id)
-        if not member:
+        try:
+            member = await guild.fetch_member(message.author.id)
+        except discord.NotFound:
             message.channel.send(
                 ErrorEmbed("You are not in that server, and the message is not sent.")
             )
@@ -115,7 +114,7 @@ class DirectMessageEvents(commands.Cog, name="Direct Message"):
                 "New Ticket",
                 "Type a message in this channel to reply. Messages starting with the server prefix "
                 f"`{prefix}` are ignored, and can be used for staff discussion. Use the command "
-                "`{prefix}close [reason]` to close this ticket.",
+                f"`{prefix}close [reason]` to close this ticket.",
                 timestamp=True,
             )
             embed.add_field("User", f"<@{message.author.id}> ({message.author.id})")
@@ -132,7 +131,7 @@ class DirectMessageEvents(commands.Cog, name="Direct Message"):
                     roles.append(f"<@&{role}>")
 
             try:
-                await channel.send(" ".join(roles), embed)
+                await channel.send(" ".join(roles), embed=embed)
             except discord.HTTPException:
                 await message.channel.send(
                     ErrorEmbed(
@@ -152,12 +151,7 @@ class DirectMessageEvents(commands.Cog, name="Direct Message"):
 
                 await message.channel.send(embed)
 
-        embed = Embed(
-            "Message Sent",
-            message.content,
-            colour=0x00FF00,
-            timestamp=True,
-        )
+        embed = Embed("Message Sent", message.content, colour=0x00FF00, timestamp=True)
         embed.set_footer(f"{guild.name} | {guild.id}", guild.icon_url)
 
         files = []
@@ -199,26 +193,25 @@ class DirectMessageEvents(commands.Cog, name="Direct Message"):
             return
 
         if payload.emoji.name in ["✅", "🔁", "❌"]:
-            menu, channel, message = await tools.get_reaction_menu(
-                self.bot, payload, "confirmation"
-            )
+            menu, channel, msg = await tools.get_reaction_menu(self.bot, payload, "confirmation")
             if menu is None:
                 return
 
             guild = await self.bot.get_guild(menu["data"]["guild"])
-            msg = Message(state=self.bot.state, channel=channel, data=menu["data"]["msg"])
+            message = Message(state=self.bot.state, channel=channel, data=menu["data"]["msg"])
 
             if payload.emoji.name == "✅":
-                await self.send_mail(msg, guild)
-                await message.delete()
+                await self.send_mail(message, guild)
+                await msg.delete()
             else:
-                for reaction in ["✅", "🔁", "❌"]:
-                    await message.remove_reaction(reaction, self.bot.user)
-
                 if payload.emoji.name == "🔁":
-                    await select_guild(self.bot, msg, message)
+                    await msg.edit(Embed("Loading servers..."))
+                    self.bot.loop.create_task(tools.select_guild(self.bot, message, msg))
                 elif payload.emoji.name == "❌":
-                    await message.edit(ErrorEmbed("Request cancelled successfully."))
+                    await msg.edit(ErrorEmbed("Request cancelled successfully."))
+
+                for reaction in ["✅", "🔁", "❌"]:
+                    await msg.remove_reaction(reaction, self.bot.user)
 
             await self.bot.state.srem("reaction_menus", menu)
             return
@@ -339,7 +332,8 @@ class DirectMessageEvents(commands.Cog, name="Direct Message"):
         elif guild:
             await self.send_mail(message, guild)
         else:
-            await select_guild(self.bot, message)
+            msg = await message.channel.send(Embed("Loading servers..."))
+            await tools.select_guild(self.bot, message, msg)
 
     @commands.dm_only()
     @commands.command(
@@ -348,10 +342,11 @@ class DirectMessageEvents(commands.Cog, name="Direct Message"):
         usage="new <message>",
         aliases=["create", "switch", "change"],
     )
-    async def new(self, ctx, message):
-        msg = copy.copy(ctx.message)
-        msg.content = message
-        await select_guild(self.bot, msg)
+    async def new(self, ctx, *, message: str):
+        ctx.message.content = message
+
+        msg = await message.channel.send(Embed("Loading servers..."))
+        await tools.select_guild(self.bot, ctx.message, msg)
 
     @commands.dm_only()
     @commands.command(
@@ -370,18 +365,12 @@ class DirectMessageEvents(commands.Cog, name="Direct Message"):
 
         if not data or data[0] is True:
             async with self.bot.pool.acquire() as conn:
-                if not data:
-                    await conn.execute(
-                        "INSERT INTO preference (identifier, confirmation) VALUES ($1, $2)",
-                        ctx.author.id,
-                        False,
-                    )
-                else:
-                    await conn.execute(
-                        "UPDATE preference SET confirmation=$1 WHERE identifier=$2",
-                        False,
-                        ctx.author.id,
-                    )
+                await conn.execute(
+                    "INSERT INTO account VALUES ($1, $2, NULL) ON CONFLICT (identifier) DO UPDATE "
+                    "SET confirmation=$2",
+                    ctx.author.id,
+                    False,
+                )
 
             await ctx.send(
                 Embed(
@@ -394,7 +383,7 @@ class DirectMessageEvents(commands.Cog, name="Direct Message"):
 
         async with self.bot.pool.acquire() as conn:
             await conn.execute(
-                "UPDATE preference SET confirmation=$1 WHERE identifier=$2",
+                "UPDATE account SET confirmation=$1 WHERE identifier=$2",
                 True,
                 ctx.author.id,
             )

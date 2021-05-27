@@ -35,7 +35,7 @@ class Premium(commands.Cog):
         )
         embed.add_field(
             "Get Premium",
-            "Please join our support server and go to https://modmail.xyz/premium.",
+            f"Please join our support server and go to {self.bot.config.BASE_URI}/premium.",
             False,
         )
 

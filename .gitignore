@@ -264,3 +264,4 @@ target/
 
 # Custom
 targets.json
+!web/pages/*

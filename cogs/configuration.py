@@ -208,7 +208,7 @@ class Configuration(commands.Cog):
                 await msg.edit(
                     ErrorEmbed(
                         "The role(s) are updated successfully. The permission overwrites for the "
-                        "category failed to be changed. Update my permissions nd try again or set "
+                        "category failed to be changed. Update my permissions And try again or set "
                         "the overwrites manually."
                     )
                 )

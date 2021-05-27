@@ -1,11 +1,10 @@
 use crate::{
     auth,
     cache::{self, models::Status, RedisPool},
-    constants::STATUS_KEY,
+    constants::{GUILDS_KEY, SHARDS_KEY, STARTED_KEY, STATUS_KEY},
     routes::{ApiResponse, ApiResult},
 };
 
-use crate::constants::{GUILDS_KEY, SHARDS_KEY, STARTED_KEY};
 use actix_web::{
     get, post,
     web::{Data, Json, Query},

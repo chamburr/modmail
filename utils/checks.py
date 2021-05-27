@@ -92,9 +92,7 @@ def is_patron():
             return False
 
         async with ctx.bot.pool.acquire() as conn:
-            await conn.execute(
-                "INSERT INTO premium (identifier, guild) VALUES ($1, $2)", ctx.author.id, []
-            )
+            await conn.execute("INSERT INTO premium VALUES ($1, $2, NULL)", ctx.author.id, [])
 
         return True
 

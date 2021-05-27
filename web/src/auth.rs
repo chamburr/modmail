@@ -1,4 +1,12 @@
-use std::{convert::TryInto, future::Future, pin::Pin, time::Duration};
+use crate::{
+    cache::{self, RedisPool},
+    config::CONFIG,
+    constants::{
+        csrf_token_key, token_key, user_token_key, CALLBACK_PATH, COOKIE_NAME, CSRF_TOKEN_KEY_TTL,
+        TOKEN_KEY_TTL,
+    },
+    routes::{ApiError, ApiResponse, ApiResult},
+};
 
 use actix_web::{
     cookie::{Cookie, SameSite},
@@ -16,17 +24,9 @@ use oauth2::{
     RevocationUrl, Scope, StandardRevocableToken, TokenResponse, TokenUrl,
 };
 use serde::{Deserialize, Serialize};
+use serde_json::json;
+use std::{convert::TryInto, future::Future, pin::Pin, time::Duration};
 use url::Url;
-
-use crate::{
-    cache::{self, RedisPool},
-    config::CONFIG,
-    constants::{
-        csrf_token_key, token_key, user_token_key, CALLBACK_PATH, COOKIE_NAME, CSRF_TOKEN_KEY_TTL,
-        TOKEN_KEY_TTL,
-    },
-    routes::{ApiError, ApiResponse, ApiResult},
-};
 
 lazy_static! {
     static ref CLIENT: BasicClient = {
@@ -106,15 +106,18 @@ pub async fn token_exchange(pool: &RedisPool, code: &str) -> ApiResult<BasicToke
     )
     .await?;
 
-    block(move || {
-        reqwest::blocking::Client::new()
-            .post(format!(
-                "http://{}:{}/success/{}",
-                CONFIG.bot_host, CONFIG.bot_port, user.id
-            ))
-            .send()
-    })
-    .await?;
+    if let Some(refresh_token) = response.refresh_token().cloned() {
+        block(move || {
+            reqwest::blocking::Client::new()
+                .post(format!(
+                    "http://{}:{}/success",
+                    CONFIG.bot_api_host, CONFIG.bot_api_port
+                ))
+                .json(&json!({"id": user.id, "token": refresh_token.secret()}))
+                .send()
+        })
+        .await?;
+    }
 
     Ok(response)
 }
