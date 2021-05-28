@@ -34,7 +34,9 @@ log = logging.getLogger(__name__)
 
 
 class State:
-    def __init__(self, *, dispatch, handlers, hooks, http, loop, redis=None, shard_count=None, id, **options):
+    def __init__(
+        self, *, dispatch, handlers, hooks, http, loop, redis=None, shard_count=None, id, **options
+    ):
         self.dispatch = dispatch
         self.handlers = handlers
         self.hooks = hooks
@@ -72,9 +74,7 @@ class State:
             return value
         return orjson.dumps(value).decode("utf-8")
 
-    async def delete(self, key, pipe=None):
-        if pipe:
-            return pipe.delete(key)
+    async def delete(self, key):
         return await self.redis.delete(key)
 
     async def get(self, keys):
@@ -96,20 +96,20 @@ class State:
 
         return results[0]
 
-    async def set(self, key, value, pipe=None):
-        if pipe:
-            return pipe.set(key, self._dumps(value))
+    async def expire(self, key, time):
+        return await self.redis.expire(key, time)
+
+    async def set(self, key, value=None):
+        if isinstance(key, (list, tuple)):
+            return await self.redis.mset(*key)
+
         return await self.redis.set(key, self._dumps(value))
 
-    async def sadd(self, key, value, pipe=None):
-        if pipe:
-            return pipe.sadd(key, self._dumps(value))
-        return await self.redis.sadd(key, self._dumps(value))
+    async def sadd(self, key, *value):
+        return await self.redis.sadd(key, *[self._dumps(x) for x in value])
 
-    async def srem(self, key, value, pipe=None):
-        if pipe:
-            return pipe.srem(key, self._dumps(value))
-        return await self.redis.srem(key, self._dumps(value))
+    async def srem(self, key, *value):
+        return await self.redis.srem(key, *[self._dumps(x) for x in value])
 
     async def smembers(self, key):
         return [self._loads(x) for x in await self.redis.smembers(key)]
@@ -128,7 +128,9 @@ class State:
 
         return [x.decode("utf-8") for x in await self.redis.smembers(key)]
 
-    async def _members_get(self, key, key_id=None, name=None, first=None, second=None, predicate=None):
+    async def _members_get(
+        self, key, key_id=None, name=None, first=None, second=None, predicate=None
+    ):
         for match in await self._members(key, key_id):
             keys = match.split(":")
             if name is None or keys[0] == str(name):
@@ -139,7 +141,9 @@ class State:
 
         return None
 
-    async def _members_get_all(self, key, key_id=None, name=None, first=None, second=None, predicate=None):
+    async def _members_get_all(
+        self, key, key_id=None, name=None, first=None, second=None, predicate=None
+    ):
         matches = []
         for match in await self._members(key, key_id):
             keys = match.split(":")
@@ -172,7 +176,8 @@ class State:
         return emojis
 
     async def _guilds(self):
-        return [Guild(state=self, data=x) for x in await self._members_get_all("guild")]
+        guilds = [Guild(state=self, data=x) for x in await self._members_get_all("guild")]
+        return [x for x in guilds if not x.unavailable]
 
     async def _private_channels(self):
         results = await self._members_get_all("channel", predicate=lambda x: len(x.split(":")) <= 2)
@@ -214,7 +219,6 @@ class State:
             return ClientUser(state=self, data=result)
         return None
 
-    @property
     def self_id(self):
         return self.id
 
@@ -259,7 +263,9 @@ class State:
         result = await self.get(f"guild:{guild_id}")
 
         if result:
-            return Guild(state=self, data=result)
+            guild = Guild(state=self, data=result)
+            if not guild.unavailable:
+                return guild
 
         return None
 
@@ -345,7 +351,9 @@ class State:
         try:
             while True:
                 try:
-                    guild = await asyncio.wait_for(self._ready_state.get(), timeout=self._ready_timeout)
+                    guild = await asyncio.wait_for(
+                        self._ready_state.get(), timeout=self._ready_timeout
+                    )
                 except asyncio.TimeoutError:
                     break
                 else:
@@ -380,7 +388,7 @@ class State:
         channel = await self.get_channel(int(data["channel_id"]))
 
         if not channel and not data.get("guild_id"):
-            channel = DMChannel(me=await self.user(), state=self, data={"id": int(data["channel_id"])})
+            channel = DMChannel(me=await self.user(), state=self, data={"id": data["channel_id"]})
 
         if channel:
             message = self.create_message(channel=channel, data=data)
@@ -447,7 +455,9 @@ class State:
 
         message = await self._get_message(raw.message_id)
         if message:
-            reaction = Reaction(message=message, data=data, emoji=await self._upgrade_partial_emoji(emoji))
+            reaction = Reaction(
+                message=message, data=data, emoji=await self._upgrade_partial_emoji(emoji)
+            )
             user = raw.member or await self._get_reaction_user(message.channel, raw.user_id)
 
             if user:
@@ -473,7 +483,9 @@ class State:
 
         message = await self._get_message(raw.message_id)
         if message:
-            reaction = Reaction(message=message, data=data, emoji=await self._upgrade_partial_emoji(emoji))
+            reaction = Reaction(
+                message=message, data=data, emoji=await self._upgrade_partial_emoji(emoji)
+            )
             user = await self._get_reaction_user(message.channel, raw.user_id)
 
             if user:
@@ -491,7 +503,9 @@ class State:
 
         message = await self._get_message(raw.message_id)
         if message:
-            reaction = Reaction(message=message, data=data, emoji=await self._upgrade_partial_emoji(emoji))
+            reaction = Reaction(
+                message=message, data=data, emoji=await self._upgrade_partial_emoji(emoji)
+            )
             self.dispatch("reaction_clear_emoji", reaction)
 
     async def parse_presence_update(self, data, old):
@@ -561,7 +575,9 @@ class State:
 
     async def parse_channel_pins_update(self, data, old):
         channel = await self.get_channel(int(data["channel_id"]))
-        last_pin = utils.parse_time(data["last_pin_timestamp"]) if data["last_pin_timestamp"] else None
+        last_pin = (
+            utils.parse_time(data["last_pin_timestamp"]) if data["last_pin_timestamp"] else None
+        )
 
         try:
             channel.guild
@@ -738,7 +754,12 @@ class State:
                     member = await guild.get_member(utils._get_as_snowflake(data, "user_id"))
 
             if member:
-                self.dispatch("typing", channel, member, datetime.datetime.utcfromtimestamp(data.get("timestamp")))
+                self.dispatch(
+                    "typing",
+                    channel,
+                    member,
+                    datetime.datetime.utcfromtimestamp(data.get("timestamp")),
+                )
 
     async def parse_relationship_add(self, data, old):
         return
@@ -769,7 +790,9 @@ class State:
         if not channel_id:
             return None
 
-        return await self._get_private_channel(channel_id) or await self._get_guild_channel(channel_id)
+        return await self._get_private_channel(channel_id) or await self._get_guild_channel(
+            channel_id
+        )
 
     def create_message(self, *, channel, data):
         message = Message(state=self, channel=channel, data=data)

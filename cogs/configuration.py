@@ -47,9 +47,13 @@ class Configuration(commands.Cog):
     @commands.guild_only()
     @commands.command(description="Set up ModMail.", usage="setup")
     async def setup(self, ctx):
-        msg = await ctx.send(embed=Embed(description="Setting up..."))
+        msg = await ctx.send(Embed("Setting up..."))
 
         data = await tools.get_data(self.bot, ctx.guild.id)
+        if await ctx.guild.get_channel(data[2]):
+            await msg.edit(ErrorEmbed("The bot has already been set up."))
+            return
+
         overwrites = await self._get_overwrites(ctx, data[3])
         category = await ctx.guild.create_category(name="ModMail", overwrites=overwrites)
         logging_channel = await ctx.guild.create_text_channel(name="modmail-log", category=category)
@@ -63,42 +67,46 @@ class Configuration(commands.Cog):
             )
 
         await msg.edit(
-            embed=Embed(
-                title="Premium",
-                description="Please consider purchasing premium! It is the best way you can show support to us. You "
-                "will get access to premium features including greeting and closing messages, advanced logging that "
-                "includes chat history, as well as the snippet functionality. You will also receive priority support "
-                f"in our server. For more information, see `{ctx.prefix}premium`.",
+            Embed(
+                "Premium",
+                "Please consider purchasing premium! It is the best way you can show support to "
+                "us. You will get access to premium features including greeting and closing "
+                "messages, advanced logging that includes chat history, as well as the snippet "
+                "functionality. You will also receive priority support in our server. For more "
+                f"information, see `{ctx.prefix}premium`.",
             )
         )
 
         await ctx.send(
-            embed=Embed(
-                title="Setup",
-                description="Everything has been set up! Next up, you can give your staff access to ModMail commands "
-                f"using `{ctx.prefix}accessrole [roles]` (by default, any user with the administrator permission has "
-                "full access). You can also test things out by direct messaging me. Check out more information and "
-                f"configurations with `{ctx.prefix}help`.",
+            Embed(
+                "Setup",
+                "Everything has been set up! Next up, you can give your staff access to ModMail "
+                f"commands using `{ctx.prefix}accessrole [roles]` (by default, any user with the "
+                f"administrator permission has full access). You can also test things out by "
+                f"direct messaging me. Check out more information and configurations with "
+                f"`{ctx.prefix}help`.",
             )
         )
 
     @commands.guild_only()
     @commands.command(
-        description="Change the prefix or view the current prefix.", usage="prefix [new prefix]", aliases=["setprefix"]
+        description="Change the prefix or view the current prefix.",
+        usage="prefix [new prefix]",
+        aliases=["setprefix"],
     )
     async def prefix(self, ctx, *, prefix: str = None):
         if prefix is None:
-            await ctx.send(embed=Embed(description=f"The prefix for this server is `{ctx.prefix}`."))
+            await ctx.send(Embed(f"The prefix for this server is `{ctx.prefix}`."))
             return
 
         if (await ctx.message.member.guild_permissions()).administrator is False:
             raise commands.MissingPermissions(["administrator"])
 
         if len(prefix) > 10:
-            await ctx.send(embed=ErrorEmbed(description="The chosen prefix is too long."))
+            await ctx.send(ErrorEmbed("The chosen prefix is too long."))
             return
 
-        if prefix == self.bot.config.default_prefix:
+        if prefix == self.bot.config.DEFAULT_PREFIX:
             prefix = None
 
         await tools.get_data(self.bot, ctx.guild.id)
@@ -108,9 +116,9 @@ class Configuration(commands.Cog):
         await self.bot.state.set(f"prefix:{ctx.guild.id}", "" if prefix is None else prefix)
 
         await ctx.send(
-            embed=Embed(
-                description="Successfully changed the prefix to "
-                f"`{self.bot.config.default_prefix if prefix is None else prefix}`.",
+            Embed(
+                "Successfully changed the prefix to "
+                f"`{self.bot.config.DEFAULT_PREFIX if prefix is None else prefix}`.",
             )
         )
 
@@ -118,17 +126,19 @@ class Configuration(commands.Cog):
     @checks.in_database()
     @checks.has_permissions(administrator=True)
     @commands.guild_only()
-    @commands.command(description="Re-create the category for the ModMail channels.", usage="category [name]")
+    @commands.command(
+        description="Re-create the category for the ModMail channels.", usage="category [name]"
+    )
     async def category(self, ctx, *, name: str = "ModMail"):
         if len(name) > 100:
-            await ctx.send(embed=ErrorEmbed(description="The category name cannot be longer than 100 characters"))
+            await ctx.send(ErrorEmbed("The category name cannot be longer than 100 characters"))
             return
 
         data = await tools.get_data(self.bot, ctx.guild.id)
         if await ctx.guild.get_channel(data[2]):
             await ctx.send(
-                embed=ErrorEmbed(
-                    description="A ModMail category already exists. Please delete that category and try again."
+                ErrorEmbed(
+                    "A ModMail category already exists. Please delete that category and try again."
                 )
             )
             return
@@ -137,16 +147,19 @@ class Configuration(commands.Cog):
         category = await ctx.guild.create_category(name=name, overwrites=overwrites)
 
         async with self.bot.pool.acquire() as conn:
-            await conn.execute("UPDATE data SET category=$1 WHERE guild=$2", category.id, ctx.guild.id)
+            await conn.execute(
+                "UPDATE data SET category=$1 WHERE guild=$2", category.id, ctx.guild.id
+            )
 
-        await ctx.send(embed=Embed(description="Successfully created the category."))
+        await ctx.send(Embed("Successfully created the category."))
 
     @checks.bot_has_permissions(manage_channels=True, manage_roles=True)
     @checks.in_database()
     @checks.has_permissions(administrator=True)
     @commands.guild_only()
     @commands.command(
-        description="Set or clear the roles that have access to ticket related commands and replying to tickets.",
+        description="Set or clear the roles that have access to ticket related commands and "
+        "replying to tickets.",
         aliases=["modrole", "supportrole"],
         usage="accessrole [roles]",
     )
@@ -155,18 +168,19 @@ class Configuration(commands.Cog):
             roles = []
 
         if check:
-            await ctx.send(embed=ErrorEmbed(description="The role(s) are not found. Please try again."))
+            await ctx.send(ErrorEmbed("The role(s) are not found. Please try again."))
             return
 
         if len(roles) > 10:
             await ctx.send(
-                embed=ErrorEmbed(
-                    description="There can at most be 10 roles. Try using the command again but specify less roles."
+                ErrorEmbed(
+                    "There can at most be 10 roles. Try using the command again but specify fewer "
+                    "roles."
                 )
             )
             return
 
-        msg = await ctx.send(embed=Embed(description="Updating roles..."))
+        msg = await ctx.send(Embed("Updating roles..."))
 
         old_data = await tools.get_data(self.bot, ctx.guild.id)
 
@@ -192,20 +206,22 @@ class Configuration(commands.Cog):
                     await category.set_permissions(target=role, overwrite=permission)
             except Forbidden:
                 await msg.edit(
-                    embed=ErrorEmbed(
-                        description="The role(s) are updated successfully. The permission overwrites for the category "
-                        "failed to be changed. Update my permissions and try again or set the overwrites manually."
+                    ErrorEmbed(
+                        "The role(s) are updated successfully. The permission overwrites for the "
+                        "category failed to be changed. Update my permissions And try again or set "
+                        "the overwrites manually."
                     )
                 )
                 return
 
-        await msg.edit(embed=Embed(description="The role(s) are updated successfully."))
+        await msg.edit(Embed("The role(s) are updated successfully."))
 
     @checks.in_database()
     @checks.has_permissions(administrator=True)
     @commands.guild_only()
     @commands.command(
-        description="Set or clear the roles mentioned when a ticket is opened. You can also use `everyone` and `here`.",
+        description="Set or clear the roles mentioned when a ticket is opened. You can also use "
+        "`everyone` and `here`.",
         aliases=["mentionrole"],
         usage="pingrole [roles]",
     )
@@ -224,15 +240,16 @@ class Configuration(commands.Cog):
                 elif role == "here":
                     role_ids.append(-1)
                 else:
-                    await ctx.send(embed=ErrorEmbed(description="The role(s) are not found. Please try again."))
+                    await ctx.send(ErrorEmbed("The role(s) are not found. Please try again."))
                     return
             else:
                 role_ids.append(role.id)
 
         if len(role_ids) > 10:
             await ctx.send(
-                embed=ErrorEmbed(
-                    description="There can at most be 10 roles. Try using the command again but specify less roles."
+                ErrorEmbed(
+                    "There can at most be 10 roles. Try using the command again but specify fewer "
+                    "roles."
                 )
             )
             return
@@ -240,7 +257,7 @@ class Configuration(commands.Cog):
         async with self.bot.pool.acquire() as conn:
             await conn.execute("UPDATE data SET pingrole=$1 WHERE guild=$2", role_ids, ctx.guild.id)
 
-        await ctx.send(embed=Embed(description="The role(s) are updated successfully."))
+        await ctx.send(Embed("The role(s) are updated successfully."))
 
     @checks.bot_has_permissions(manage_channels=True)
     @checks.in_database()
@@ -259,22 +276,22 @@ class Configuration(commands.Cog):
             try:
                 await channel.delete()
             except Forbidden:
-                await ctx.send(embed=ErrorEmbed(description="Missing permissions to delete the channel."))
+                await ctx.send(ErrorEmbed("Missing permissions to delete the channel."))
                 return
 
         if data[4]:
             async with self.bot.pool.acquire() as conn:
                 await conn.execute("UPDATE data SET logging=$1 WHERE guild=$2", None, ctx.guild.id)
 
-            await ctx.send(embed=Embed(description="ModMail logs are disabled."))
+            await ctx.send(Embed("ModMail logs are disabled."))
             return
 
         category = await ctx.guild.get_channel(data[2])
         if category is None:
             await ctx.send(
-                embed=ErrorEmbed(
-                    description=f"Your server does not have a ModMail category yet. Use either `{ctx.prefix}setup` or "
-                    f"`{ctx.prefix}category` to create the category first."
+                ErrorEmbed(
+                    f"Your server does not have a ModMail category yet. Use either "
+                    f"`{ctx.prefix}setup` or `{ctx.prefix}category` to create the category first."
                 )
             )
             return
@@ -282,17 +299,19 @@ class Configuration(commands.Cog):
         channel = await ctx.guild.create_text_channel(name="modmail-log", category=category)
 
         async with self.bot.pool.acquire() as conn:
-            await conn.execute("UPDATE data SET logging=$1 WHERE guild=$2", channel.id, ctx.guild.id)
+            await conn.execute(
+                "UPDATE data SET logging=$1 WHERE guild=$2", channel.id, ctx.guild.id
+            )
 
-        await ctx.send(embed=Embed(description="The channel is created successfully."))
+        await ctx.send(Embed("The channel is created successfully."))
 
     @checks.in_database()
     @checks.is_premium()
     @checks.has_permissions(administrator=True)
     @commands.guild_only()
     @commands.command(
-        description="Set or clear the message that is sent when a new ticket is opened. Tags `{username}`, "
-        "`{usertag}`, `{userid}` and `{usermention}` can be used.",
+        description="Set or clear the message that is sent when a new ticket is opened. Tags "
+        "`{username}`, `{usertag}`, `{userid}` and `{usermention}` can be used.",
         aliases=["welcomemessage", "greetmessage"],
         usage="greetingmessage [text]",
     )
@@ -300,15 +319,15 @@ class Configuration(commands.Cog):
         async with self.bot.pool.acquire() as conn:
             await conn.execute("UPDATE data SET welcome=$1 WHERE guild=$2", text, ctx.guild.id)
 
-        await ctx.send(embed=Embed(description="The greeting message is set successfully."))
+        await ctx.send(Embed("The greeting message is set successfully."))
 
     @checks.in_database()
     @checks.is_premium()
     @checks.has_permissions(administrator=True)
     @commands.guild_only()
     @commands.command(
-        description="Set or clear the message that is sent when a ticket is closed. Tags `{username}`, `{usertag}`, "
-        "`{userid}` and `{usermention}` can be used.",
+        description="Set or clear the message that is sent when a ticket is closed. Tags "
+        "`{username}`, `{usertag}`, `{userid}` and `{usermention}` can be used.",
         aliases=["goodbyemessage", "closemessage"],
         usage="closingmessage [text]",
     )
@@ -316,7 +335,7 @@ class Configuration(commands.Cog):
         async with self.bot.pool.acquire() as conn:
             await conn.execute("UPDATE data SET goodbye=$1 WHERE guild=$2", text, ctx.guild.id)
 
-        await ctx.send(embed=Embed(description="The closing message is set successfully."))
+        await ctx.send(Embed("The closing message is set successfully."))
 
     @checks.in_database()
     @checks.is_premium()
@@ -338,9 +357,7 @@ class Configuration(commands.Cog):
             )
 
         await ctx.send(
-            embed=Embed(
-                description=f"Advanced logging is {'enabled' if data[7] is False else 'disabled'}.",
-            )
+            Embed(f"Advanced logging is {'enabled' if data[7] is False else 'disabled'}.")
         )
 
     @checks.in_database()
@@ -358,15 +375,15 @@ class Configuration(commands.Cog):
             )
 
         await ctx.send(
-            embed=Embed(
-                description=f"Anonymous messaging is {'enabled' if data[10] is False else 'disabled'}.",
-            )
+            Embed(f"Anonymous messaging is {'enabled' if data[10] is False else 'disabled'}.")
         )
 
     @checks.in_database()
     @checks.has_permissions(administrator=True)
     @commands.guild_only()
-    @commands.command(description="View the configurations for the current server.", usage="viewconfig")
+    @commands.command(
+        description="View the configurations for the current server.", usage="viewconfig"
+    )
     async def viewconfig(self, ctx):
         data = await tools.get_data(self.bot, ctx.guild.id)
         category = await ctx.guild.get_channel(data[2])
@@ -394,17 +411,23 @@ class Configuration(commands.Cog):
             closing = closing[:997] + "..."
 
         embed = Embed(title="Server Configurations")
-        embed.add_field(name="Prefix", value=ctx.prefix)
-        embed.add_field(name="Category", value="*Not set*" if category is None else category.name)
-        embed.add_field(name="Access Roles", value="*Not set*" if len(access_roles) == 0 else " ".join(access_roles))
-        embed.add_field(name="Ping Roles", value="*Not set*" if len(ping_roles) == 0 else " ".join(ping_roles))
-        embed.add_field(name="Logging", value="*Not set*" if logging_channel is None else f"<#{logging_channel.id}>")
-        embed.add_field(name="Advanced Logging", value="Enabled" if data[7] is True else "Disabled")
-        embed.add_field(name="Anonymous Messaging", value="Enabled" if data[10] is True else "Disabled")
-        embed.add_field(name="Greeting Message", value="*Not set*" if greeting is None else greeting, inline=False)
-        embed.add_field(name="Closing message", value="*Not set*" if closing is None else closing, inline=False)
+        embed.add_field("Prefix", ctx.prefix)
+        embed.add_field("Category", "*Not set*" if category is None else category.name)
+        embed.add_field(
+            "Access Roles",
+            "*Not set*" if len(access_roles) == 0 else " ".join(access_roles),
+        )
+        embed.add_field("Ping Roles", "*Not set*" if len(ping_roles) == 0 else " ".join(ping_roles))
+        embed.add_field(
+            "Logging",
+            "*Not set*" if logging_channel is None else f"<#{logging_channel.id}>",
+        )
+        embed.add_field("Advanced Logging", "Enabled" if data[7] is True else "Disabled")
+        embed.add_field("Anonymous Messaging", "Enabled" if data[10] is True else "Disabled")
+        embed.add_field("Greeting Message", "*Not set*" if greeting is None else greeting, False)
+        embed.add_field("Closing message", "*Not set*" if closing is None else closing, False)
 
-        await ctx.send(embed=embed)
+        await ctx.send(embed)
 
 
 def setup(bot):

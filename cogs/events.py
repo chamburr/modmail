@@ -1,12 +1,11 @@
-import datetime
 import logging
 import time
-import asyncio
 
 import discord
 
 from discord.ext import commands
 
+from classes.context import Context
 from classes.embed import Embed, ErrorEmbed
 from utils import tools
 
@@ -17,60 +16,32 @@ class Events(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         self.pipe = self.bot._redis.pipeline()
-        self.bot.loop.create_task(self.execute_pipe())
-
-    async def execute_pipe(self):
-        while True:
-            old_pipe = self.pipe
-            self.pipe = self.bot._redis.pipeline()
-            await old_pipe.execute()
-            await asyncio.sleep(1)
 
     @commands.Cog.listener()
     async def on_ready(self):
         pass
 
-    @commands.Cog.listener()
     async def on_socket_response(self, message):
-        if message["t"] == "PRESENCE_UPDATE":
+        if message["t"] == "GUILD_MEMBER_UPDATE":
             if int(message["d"]["user"]["id"]) == self.bot.id:
-                return
-
-            await self.bot.state.sadd(f"user:{message['d']['user']['id']}", message["d"]["guild_id"], pipe=self.pipe)
-            await self.bot.state.sadd("user_keys", f"user:{message['d']['user']['id']}", pipe=self.pipe)
-        elif message["t"] == "GUILD_MEMBER_ADD":
-            if int(message["d"]["user"]["id"]) == self.bot.id:
-                await self.bot.state.set(
-                    f"member:{message['d']['guild_id']}:{self.bot.id}", message["d"], pipe=self.pipe
+                member = await self.bot.state.get(
+                    f"member:{message['d']['guild_id']}:{self.bot.id}"
                 )
-                return
-
-            await self.bot.state.sadd(f"user:{message['d']['user']['id']}", message["d"]["guild_id"], pipe=self.pipe)
-            await self.bot.state.sadd("user_keys", f"user:{message['d']['user']['id']}", pipe=self.pipe)
-        elif message["t"] == "GUILD_MEMBER_REMOVE":
-            if int(message["d"]["user"]["id"]) == self.bot.id:
-                await self.bot.state.delete(f"member:{message['d']['guild_id']}:{self.bot.id}", pipe=self.pipe)
-                return
-
-            await self.bot.state.srem(f"user:{message['d']['user']['id']}", message["d"]["guild_id"], pipe=self.pipe)
-        elif message["t"] == "GUILD_MEMBER_UPDATE":
-            if int(message["d"]["user"]["id"]) == self.bot.id:
-                member = await self.bot.state.get(f"member:{message['d']['guild_id']}:{self.bot.id}")
                 if member:
                     member["roles"] = message["d"]["roles"]
-                    await self.bot.state.set(f"member:{message['d']['guild_id']}:{self.bot.id}", member, pipe=self.pipe)
-                return
-
-            await self.bot.state.sadd(f"user:{message['d']['user']['id']}", message["d"]["guild_id"], pipe=self.pipe)
-            await self.bot.state.sadd("user_keys", f"user:{message['d']['user']['id']}", pipe=self.pipe)
+                    await self.bot.state.set(
+                        f"member:{message['d']['guild_id']}:{self.bot.id}", member
+                    )
         elif message["t"] == "GUILD_CREATE":
             for member in message["d"]["members"]:
                 if int(member["user"]["id"]) == self.bot.id:
-                    await self.bot.state.set(f"member:{message['d']['id']}:{self.bot.id}", member, pipe=self.pipe)
-                    continue
+                    await self.bot.state.set(f"member:{message['d']['id']}:{self.bot.id}", member)
+                    return
+        elif message["t"] == "GUILD_DELETE":
+            if message["d"].get("unavailable"):
+                return
 
-                await self.bot.state.sadd(f"user:{member['user']['id']}", message["d"]["id"], pipe=self.pipe)
-                await self.bot.state.sadd("user_keys", f"user:{member['user']['id']}", pipe=self.pipe)
+            await self.bot.state.delete(f"member:{message['d']['id']}:{self.bot.id}")
 
     @commands.Cog.listener()
     async def on_raw_reaction_add(self, payload):
@@ -109,7 +80,7 @@ class Events(commands.Cog):
         elif payload.emoji.name == "⏭️":
             page = len(all_pages) - 1
 
-        await message.edit(embed=discord.Embed.from_dict(all_pages[page]))
+        await message.edit(Embed.from_dict(all_pages[page]))
 
         try:
             member = tools.create_fake_user(payload.user_id)
@@ -127,7 +98,7 @@ class Events(commands.Cog):
         if message.author.bot:
             return
 
-        ctx = await self.bot.get_context(message)
+        ctx = await self.bot.get_context(message, cls=Context)
         if not ctx.command:
             return
 
@@ -144,28 +115,14 @@ class Events(commands.Cog):
                 return
 
             if permissions.embed_links is False:
-                await message.channel.send("The Embed Links permission is needed for basic commands to work.")
+                await message.channel.send(
+                    "The Embed Links permission is needed for basic commands to work."
+                )
                 return
 
         if await tools.is_user_banned(self.bot, message.author):
-            await ctx.send(embed=ErrorEmbed(description="You are banned from the bot."))
+            await ctx.send(ErrorEmbed("You are banned from the bot."))
             return
-
-        if (
-            ctx.command.cog_name in ["Owner", "Admin"]
-            and ctx.author.id in self.bot.config.admins + self.bot.config.owners
-        ):
-            embed = Embed(
-                title=ctx.command.name.title(),
-                description=ctx.message.content,
-                timestamp=datetime.datetime.utcnow(),
-            )
-            embed.set_author(name=f"{ctx.author} ({ctx.author.id})", icon_url=ctx.author.avatar_url)
-
-            if self.bot.config.admin_channel:
-                channel = await self.bot.get_channel(self.bot.config.admin_channel)
-                if channel:
-                    await channel.send(embed=embed)
 
         if ctx.prefix in [f"<@{self.bot.id}> ", f"<@!{self.bot.id}> "]:
             ctx.prefix = await tools.get_guild_prefix(self.bot, message.guild)

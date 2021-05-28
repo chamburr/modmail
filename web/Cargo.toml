@@ -1,0 +1,36 @@
+[package]
+name = "modmail"
+version = "1.0.0"
+authors = ["CHamburr <hi@chamburr.xyz>"]
+edition = "2018"
+readme = "README.md"
+homepage = "https://modmail.xyz"
+repository = "https://github.com/chamburr/modmail"
+license = "AGPL-3.0"
+
+[dependencies]
+actix-web = { version = "3.3.2", default-features = false }
+chrono = { version = "0.4.19", default-features = false, features = ["serde"] }
+dotenv = { version = "0.15.0", default-features = false }
+futures = { version = "0.3.15", default-features = false }
+http = { version = "0.2.4", default-features = false }
+jsonwebtoken = { version = "7.2.0", default-features = false }
+lazy_static = { version = "1.4.0", default-features = false }
+oauth2 = { version = "4.0.0", default-features = false, features = ["reqwest"]}
+percent-encoding = { version = "2.1.0", default-features = false }
+r2d2 = { version = "0.8.9", default-features = false }
+redis = { version = "0.20.1", default-features = false, features = ["tokio-comp"] }
+regex = { version = "1.5.4", default-features = false }
+reqwest = { version = "0.11.3", default-features = false, features = ["json"] }
+sentry = { version = "0.22.0", default-features = false, features = ["backtrace", "transport"] }
+serde = { version = "1.0.117", default-features = false, features = ["derive"] }
+serde_json = { version = "1.0.61", default-features = false }
+serde_urlencoded = { version = "0.7.0", default-features = false }
+tokio = { version = "1.6.0", default-features = false, features = ["rt", "rt-multi-thread"] }
+tracing = { version = "0.1.26", default-features = false }
+tracing-log = { version = "0.1.1", default-features = false, features = ["env_logger"] }
+tracing-subscriber = { version = "0.2.18", default-features = false, features = ["ansi", "fmt"] }
+twilight-embed-builder = { version = "0.4.0", default-features = false }
+twilight-http = { version = "0.4.1", default-features = false, features = ["rustls-webpki-roots"] }
+twilight-model = { version = "0.4.1", default-features = false }
+url = { version = "2.2.2", default-features = false }

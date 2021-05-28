@@ -1,14 +1,11 @@
 import asyncio
 import copy
-import datetime
 import io
 import logging
 
 import discord
 
 from discord.ext import commands
-
-import config
 
 from classes.embed import Embed, ErrorEmbed
 from utils import checks, tools
@@ -43,7 +40,7 @@ class Core(commands.Cog):
         await self.bot.cogs["ModMailEvents"].send_mail_mod(ctx.message, ctx.prefix, anon=True)
 
     async def close_channel(self, ctx, reason, anon: bool = False):
-        await ctx.send(embed=Embed(description="Closing channel..."))
+        await ctx.send(Embed("Closing channel..."))
 
         data = await tools.get_data(self.bot, ctx.guild.id)
 
@@ -53,42 +50,44 @@ class Core(commands.Cog):
         try:
             await ctx.channel.delete()
         except discord.Forbidden:
-            await ctx.send(embed=ErrorEmbed(description="Missing permissions to delete this channel."))
+            await ctx.send(ErrorEmbed("Missing permissions to delete this channel."))
             return
 
         embed = ErrorEmbed(
-            title="Ticket Closed",
-            description=(reason if reason else "No reason was provided."),
-            timestamp=datetime.datetime.utcnow(),
+            "Ticket Closed",
+            reason if reason else "No reason was provided.",
+            timestamp=True,
         )
         embed.set_author(
-            name=str(ctx.author.name) if anon is False else "Anonymous#0000",
-            icon_url=ctx.author.avatar_url if anon is False else "https://cdn.discordapp.com/embed/avatars/0.png",
+            str(ctx.author) if anon is False else "Anonymous#0000",
+            ctx.author.avatar_url
+            if anon is False
+            else "https://cdn.discordapp.com/embed/avatars/0.png",
         )
-        embed.set_footer(text=f"{ctx.guild.name} | {ctx.guild.id}", icon_url=ctx.guild.icon_url)
+        embed.set_footer(f"{ctx.guild.name} | {ctx.guild.id}", ctx.guild.icon_url)
 
-        member = await ctx.guild.fetch_member(tools.get_modmail_user(ctx.channel).id)
-        if member:
+        try:
+            member = await ctx.guild.fetch_member(tools.get_modmail_user(ctx.channel).id)
+        except discord.NotFound:
+            pass
+        else:
             dm_channel = tools.get_modmail_channel(self.bot, ctx.channel)
 
             if data[6]:
                 embed2 = Embed(
-                    title="Closing Message",
-                    description=tools.tag_format(data[6], member),
-                    colour=config.mod_colour,
-                    timestamp=datetime.datetime.utcnow(),
+                    "Closing Message",
+                    tools.tag_format(data[6], member),
+                    colour=0xFF4500,
+                    timestamp=True,
                 )
-                embed2.set_footer(
-                    text=f"{ctx.guild.name} | {ctx.guild.id}",
-                    icon_url=ctx.guild.icon_url,
-                )
+                embed2.set_footer(f"{ctx.guild.name} | {ctx.guild.id}", ctx.guild.icon_url)
                 try:
-                    await dm_channel.send(embed=embed2)
+                    await dm_channel.send(embed2)
                 except discord.Forbidden:
                     pass
 
             try:
-                await dm_channel.send(embed=embed)
+                await dm_channel.send(embed)
             except discord.Forbidden:
                 pass
 
@@ -103,12 +102,17 @@ class Core(commands.Cog):
             member = await self.bot.fetch_user(tools.get_modmail_user(ctx.channel))
 
         if member:
-            embed.set_footer(text=f"{member} | {member.id}", icon_url=member.avatar_url)
+            embed.set_footer(f"{member} | {member.id}", member.avatar_url)
         else:
             embed.set_footer(
-                text="Unknown#0000 | 000000000000000000",
-                icon_url="https://cdn.discordapp.com/embed/avatars/0.png",
+                "Unknown#0000 | 000000000000000000",
+                "https://cdn.discordapp.com/embed/avatars/0.png",
             )
+
+        embed.set_author(
+            str(ctx.author) if anon is False else f"{ctx.author} (Anonymous)",
+            ctx.author.avatar_url,
+        )
 
         if data[7] is True:
             history = ""
@@ -135,7 +139,9 @@ class Core(commands.Cog):
                     description = message.embeds[0].description
 
                     for attachment in [
-                        field.value for field in message.embeds[0].fields if field.name.startswith("Attachment ")
+                        field.value
+                        for field in message.embeds[0].fields
+                        if field.name.startswith("Attachment ")
                     ]:
                         if not description:
                             description = f"(Attachment: {attachment})"
@@ -145,29 +151,34 @@ class Core(commands.Cog):
                     author = f"{message.author} (Comment)"
                     description = message.content
 
-                history = f"[{str(message.created_at.replace(microsecond=0))}] {author}: {description}\n" + history
+                history = (
+                    f"[{str(message.created_at.replace(microsecond=0))}] {author}: {description}\n"
+                    + history
+                )
 
             history = io.BytesIO(history.encode())
 
-            file = discord.File(history, f"modmail_log_{tools.get_modmail_user(ctx.channel).id}.txt")
+            file = discord.File(
+                history, f"modmail_log_{tools.get_modmail_user(ctx.channel).id}.txt"
+            )
 
             try:
-                msg = await channel.send(embed=embed, file=file)
+                msg = await channel.send(embed, file=file)
             except discord.Forbidden:
                 return
 
             log_url = msg.attachments[0].url[39:-4]
             log_url = log_url.replace("modmail_log_", "")
             log_url = [hex(int(some_id))[2:] for some_id in log_url.split("/")]
-            log_url = f"https://modmail.xyz/logs/{'-'.join(log_url)}"
-            embed.add_field(name="Message Logs", value=log_url, inline=False)
+            log_url = f"{self.bot.config.BASE_URI}/logs/{'-'.join(log_url)}"
+            embed.add_field("Message Logs", log_url, False)
 
             await asyncio.sleep(0.5)
-            await msg.edit(embed=embed)
+            await msg.edit(embed)
             return
 
         try:
-            await channel.send(embed=embed)
+            await channel.send(embed)
         except discord.Forbidden:
             pass
 
@@ -203,11 +214,7 @@ class Core(commands.Cog):
                 await self.close_channel(new_ctx, reason)
 
         try:
-            await ctx.send(
-                embed=Embed(
-                    description="All channels are successfully closed.",
-                )
-            )
+            await ctx.send(Embed("All channels are successfully closed."))
         except discord.HTTPException:
             pass
 
@@ -215,7 +222,9 @@ class Core(commands.Cog):
     @checks.is_mod()
     @checks.bot_has_permissions(manage_channels=True)
     @commands.guild_only()
-    @commands.command(description="Close all of the channels anonymously.", usage="acloseall [reason]")
+    @commands.command(
+        description="Close all of the channels anonymously.", usage="acloseall [reason]"
+    )
     async def acloseall(self, ctx, *, reason: str = None):
         for channel in await ctx.guild.text_channels():
             if tools.is_modmail_channel(channel):
@@ -225,11 +234,7 @@ class Core(commands.Cog):
                 await self.close_channel(new_ctx, reason, True)
 
         try:
-            await ctx.send(
-                embed=Embed(
-                    description="All channels are successfully closed anonymously.",
-                )
-            )
+            await ctx.send(Embed("All channels are successfully closed anonymously."))
         except discord.HTTPException:
             pass
 
@@ -244,7 +249,7 @@ class Core(commands.Cog):
     async def blacklist(self, ctx, *, member: MemberConverter):
         blacklist = (await tools.get_data(self.bot, ctx.guild.id))[9]
         if member.id in blacklist:
-            await ctx.send(embed=ErrorEmbed(description="The user is already blacklisted."))
+            await ctx.send(ErrorEmbed("The user is already blacklisted."))
             return
 
         async with self.bot.pool.acquire() as conn:
@@ -254,7 +259,7 @@ class Core(commands.Cog):
                 ctx.guild.id,
             )
 
-        await ctx.send(embed=Embed(description="The user is blacklisted successfully."))
+        await ctx.send(Embed("The user is blacklisted successfully."))
 
     @checks.in_database()
     @checks.is_mod()
@@ -268,7 +273,7 @@ class Core(commands.Cog):
         blacklist = (await tools.get_data(self.bot, ctx.guild.id))[9]
 
         if member.id not in blacklist:
-            await ctx.send(embed=ErrorEmbed(description="The user is not blacklisted."))
+            await ctx.send(ErrorEmbed("The user is not blacklisted."))
             return
 
         async with self.bot.pool.acquire() as conn:
@@ -278,7 +283,7 @@ class Core(commands.Cog):
                 ctx.guild.id,
             )
 
-        await ctx.send(embed=Embed(description="The user is whitelisted successfully."))
+        await ctx.send(Embed("The user is whitelisted successfully."))
 
     @checks.in_database()
     @checks.is_mod()
@@ -288,7 +293,7 @@ class Core(commands.Cog):
         async with self.bot.pool.acquire() as conn:
             await conn.execute("UPDATE data SET blacklist=$1 WHERE guild=$2", [], ctx.guild.id)
 
-        await ctx.send(embed=Embed(description="The blacklist is cleared successfully."))
+        await ctx.send(Embed("The blacklist is cleared successfully."))
 
     @checks.in_database()
     @checks.is_mod()
@@ -297,22 +302,19 @@ class Core(commands.Cog):
     async def viewblacklist(self, ctx):
         blacklist = (await tools.get_data(self.bot, ctx.guild.id))[9]
         if not blacklist:
-            await ctx.send(embed=Embed(description="No one is blacklisted."))
+            await ctx.send(Embed("No one is blacklisted."))
             return
 
         all_pages = []
         for chunk in [blacklist[i : i + 25] for i in range(0, len(blacklist), 25)]:
-            page = Embed(
-                title="Blacklist",
-                description="\n".join([f"<@{user}> ({user})" for user in chunk]),
-            )
-            page.set_footer(text="Use the reactions to flip pages.")
+            page = Embed("Blacklist", "\n".join([f"<@{user}> ({user})" for user in chunk]))
+            page.set_footer("Use the reactions to flip pages.")
             all_pages.append(page.to_dict())
 
         if len(all_pages) == 1:
-            embed = discord.Embed.from_dict(all_pages[0])
-            embed.set_footer(text=discord.Embed.Empty)
-            await ctx.send(embed=embed)
+            embed = Embed.from_dict(all_pages[0])
+            embed.set_footer(discord.Embed.Empty)
+            await ctx.send(embed)
             return
 
         await tools.create_paginator(self.bot, ctx, all_pages)

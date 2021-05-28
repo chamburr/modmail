@@ -28,26 +28,32 @@ class Prometheus:
 
         self.vmem = Gauge("process_virtual_memory_bytes", "Virtual memory size in bytes.")
         self.rss = Gauge("process_resident_memory_bytes", "Resident memory size in bytes.")
-        self.start_time = Gauge("process_start_time_seconds", "Start time of the process since unix epoch in seconds.")
-        self.cpu = Counter("process_cpu_seconds", "Total user and system CPU time spent in seconds.")
+        self.start_time = Gauge("process_start_time_seconds", "Start time of the process.")
+        self.cpu = Counter("process_cpu_seconds", "Total CPU time spent in seconds.")
         self.fds = Gauge("process_open_fds", "Number of open file descriptors.")
 
         self.info = Gauge("python_info", "Python platform information.")
         self.collected = Counter("python_gc_objects_collected", "Objects collected during GC.")
-        self.uncollectable = Counter("python_gc_objects_uncollectable", "Uncollectable objects found during GC.")
-        self.collections = Counter("python_gc_collections", "Number of times this generation was collected.")
+        self.uncollectable = Counter(
+            "python_gc_objects_uncollectable", "Uncollectable objects found during GC."
+        )
+        self.collections = Counter(
+            "python_gc_collections", "Number of times this generation was collected."
+        )
 
-        self.http = Counter("modmail_http_requests", "The number of http requests sent to Discord.")
-        self.commands = Counter("modmail_commands", "The total number of commands used on the bot.")
-        self.tickets = Counter("modmail_tickets", "The total number of tickets created by the bot.")
-        self.tickets_message = Counter("modmail_tickets_message", "The total number of messages sent in tickets.")
+        self.http = Counter("modmail_http_requests", "Number of http requests sent to Discord.")
+        self.commands = Counter("modmail_commands", "Number of commands used on the bot.")
+        self.tickets = Counter("modmail_tickets", "Number of tickets created by the bot.")
+        self.tickets_message = Counter(
+            "modmail_tickets_message", "Number of messages sent in tickets."
+        )
 
     async def start(self):
         for name, value in vars(self).items():
             if issubclass(type(value), Collector):
                 self.msvr.register(getattr(self, name))
 
-        await self.msvr.start(addr="127.0.0.1", port=6000 + self.bot.cluster)
+        await self.msvr.start(addr="127.0.0.1", port=6100 + self.bot.cluster)
         self.msvr._runner._server._kwargs["access_log"] = None
 
         if platform.system() == "Linux":
