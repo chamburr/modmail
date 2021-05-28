@@ -92,7 +92,6 @@ export default {
   modules: [
     '@nuxt/content',
     '@nuxtjs/axios',
-    '@nuxtjs/dotenv',
     '@nuxtjs/proxy',
     '@nuxtjs/sentry',
     'bootstrap-vue/nuxt',
