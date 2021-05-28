@@ -30,51 +30,11 @@ question. Instead, ask it on our [Discord server](https://discord.gg/wjWJwJB).
 
 ## Self-Hosting
 
-This self-hosting guide requires you to have some basic knowledge about command line, Python, and
-Discord bots. We do not provide any support for self-hosting.
+Due to the complex infrastructure, the bot is unfortunately not suitable to for self-hosting at the
+moment. Please use our public instance while we are working on a way to run the bot with Docker.
 
-### Prerequisites
-
-In order to run ModMail, you will need to install the following software. Please also note that
-ModMail can only be hosted on UNIX based operating systems. Windows is not supported.
-
-- [Git](https://git-scm.com)
-- [Python 3](https://www.python.org/downloads/)
-- [PostgreSQL](https://www.postgresql.org/download/)
-- [Redis](https://redis.io/download/)
-- [RabbitMQ](https://www.rabbitmq.com/download.html)
-- [Twilight Dispatch](https://github.com/chamburr/twilight-dispatch)
-
-### Getting the Sources
-
-Clone this repository, or fork and clone if you wish to make pull requests.
-
-```sh
-git clone https://github.com/chamburr/modmail.git
-```
-
-### Configuration
-
-Configuration is done through a `config.py` file. A template can be found in `config.example.py`.
-You can create a copy of it and rename it to `config.py`, then fill in the configurations.
-
-### Installing Modules
-
-ModMail utilises several modules to function properly. The list of modules can be found
-in `requirements.txt`. You can install them with the following command.
-
-```sh
-pip3 install -r requirements.txt
-```
-
-### Running the Bot
-
-Congratulations! You have set up everything, and you can finally have the bot up and running. Please
-start twilight-dispatch first, then use the following command to start the bot.
-
-```sh
-python3 main.py
-```
+Alternatively, you may also host v2.x of this bot. There are self-hosting instructions on the README
+page of those versions.
 
 ## License
 

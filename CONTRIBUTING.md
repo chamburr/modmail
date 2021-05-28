@@ -20,10 +20,8 @@ request.
 
 Please follow these guidelines related to submitting a pull request.
 
-We use [black](https://github.com/psf/black) and [isort](https://github.com/timothycrosley/isort)
-for code style, and use [flake8](https://github.com/PyCQA/flake8) for linting. Please always
-run `scripts/format.sh` and ensure that `scripts/lint.sh` returns no error before submitting a pull
-request.
+We use tools to enforce code style. Please always run `scripts/format.sh` and ensure that
+`scripts/lint.sh` returns no error before submitting a pull request.
 
 Please follow our commit conventions below. For subsequent commits to a pull request, it is okay not
 to follow them, because they will be eventually squashed.
