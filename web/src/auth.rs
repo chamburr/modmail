@@ -43,7 +43,7 @@ lazy_static! {
         let mut redirect_uri = Url::parse(CONFIG.base_uri.as_str()).unwrap();
         redirect_uri.set_path(CALLBACK_PATH);
 
-        client.set_redirect_uri(RedirectUrl::new(redirect_uri.into_string()).unwrap())
+        client.set_redirect_uri(RedirectUrl::new(redirect_uri.to_string()).unwrap())
     };
 }
 

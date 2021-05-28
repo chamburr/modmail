@@ -2,7 +2,7 @@
 
 use crate::{
     config::{Environment, CONFIG},
-    routes::{errors, index, logs, users, ApiResult},
+    routes::{errors, index, logs, users, webhooks, ApiResult},
 };
 
 use actix_web::{
@@ -73,7 +73,8 @@ pub async fn real_main() -> ApiResult<()> {
                             .service(users::get_user_me)
                             .service(users::post_user_me_logout),
                     )
-                    .service(web::scope("/logs").service(logs::get_log)),
+                    .service(web::scope("/logs").service(logs::get_log))
+                    .service(web::scope("/webhooks").service(webhooks::post_payment)),
             )
             .default_service(web::to(errors::default_service))
     })

@@ -17,14 +17,17 @@ use std::{
     io,
     num::ParseIntError,
     str::Utf8Error,
+    string::FromUtf8Error,
 };
+use twilight_embed_builder::EmbedError;
+use twilight_http::request::channel::message::create_message::CreateMessageError;
 use url::{ParseError, Url};
 
 pub mod errors;
 pub mod index;
 pub mod logs;
 pub mod users;
-pub mod webhook;
+pub mod webhooks;
 
 pub type ApiResult<T> = Result<T, ApiError>;
 
@@ -182,8 +185,11 @@ impl Responder for ApiResponse {
 #[derive(Debug)]
 pub enum ApiError {
     ActixWebError(()),
+    CreateMessageError(CreateMessageError),
     CustomError((StatusCode, Value)),
+    EmbedError(EmbedError),
     EmptyError(()),
+    FromUtf8Error(FromUtf8Error),
     IoError(io::Error),
     JsonWebTokenError(jsonwebtoken::errors::Error),
     ParseError(ParseError),
@@ -204,6 +210,8 @@ pub enum ApiError {
     ),
     ReqwestError(reqwest::Error),
     SerdeJsonError(serde_json::Error),
+    SerdeUrlEncodedError(serde_urlencoded::de::Error),
+    TwilightHttpError(twilight_http::Error),
     Utf8Error(Utf8Error),
 }
 
@@ -304,15 +312,36 @@ impl From<BlockingError<reqwest::Error>> for ApiError {
     }
 }
 
+impl From<CreateMessageError> for ApiError {
+    fn from(err: CreateMessageError) -> Self {
+        sentry::capture_error(&err);
+        Self::CreateMessageError(err)
+    }
+}
+
 impl From<ApiResponse> for ApiError {
     fn from(err: ApiResponse) -> Self {
         Self::CustomError((err.status, err.data))
     }
 }
 
+impl From<FromUtf8Error> for ApiError {
+    fn from(err: FromUtf8Error) -> Self {
+        sentry::capture_error(&err);
+        Self::FromUtf8Error(err)
+    }
+}
+
 impl From<()> for ApiError {
     fn from(_: ()) -> Self {
         Self::EmptyError(())
+    }
+}
+
+impl From<EmbedError> for ApiError {
+    fn from(err: EmbedError) -> Self {
+        sentry::capture_error(&err);
+        Self::EmbedError(err)
     }
 }
 
@@ -362,6 +391,20 @@ impl From<serde_json::Error> for ApiError {
     fn from(err: serde_json::Error) -> Self {
         sentry::capture_error(&err);
         Self::SerdeJsonError(err)
+    }
+}
+
+impl From<serde_urlencoded::de::Error> for ApiError {
+    fn from(err: serde_urlencoded::de::Error) -> Self {
+        sentry::capture_error(&err);
+        Self::SerdeUrlEncodedError(err)
+    }
+}
+
+impl From<twilight_http::Error> for ApiError {
+    fn from(err: twilight_http::Error) -> Self {
+        sentry::capture_error(&err);
+        Self::TwilightHttpError(err)
     }
 }
 
