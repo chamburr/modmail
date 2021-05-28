@@ -28,18 +28,22 @@ class Snippet(commands.Cog):
             )
 
         if not res:
-            await ctx.send(embed=ErrorEmbed(description="The snippet was not found."))
+            await ctx.send(ErrorEmbed("The snippet was not found."))
             return
 
         ctx.message.content = res[0]
-        await self.bot.cogs["ModMailEvents"].send_mail_mod(ctx.message, ctx.prefix, anon=False, snippet=True)
+        await self.bot.cogs["ModMailEvents"].send_mail_mod(
+            ctx.message, ctx.prefix, anon=False, snippet=True
+        )
 
     @checks.is_modmail_channel()
     @checks.in_database()
     @checks.is_premium()
     @checks.is_mod()
     @commands.guild_only()
-    @commands.command(description="Use a snippet anonymously.", aliases=["as"], usage="asnippet <name>")
+    @commands.command(
+        description="Use a snippet anonymously.", aliases=["as"], usage="asnippet <name>"
+    )
     async def asnippet(self, ctx, *, name: str):
         async with self.bot.pool.acquire() as conn:
             res = await conn.fetchrow(
@@ -47,37 +51,42 @@ class Snippet(commands.Cog):
             )
 
         if not res:
-            await ctx.send(embed=ErrorEmbed(description="The snippet was not found."))
+            await ctx.send(ErrorEmbed("The snippet was not found."))
             return
 
         ctx.message.content = res[0]
-        await self.bot.cogs["ModMailEvents"].send_mail_mod(ctx.message, ctx.prefix, anon=True, snippet=True)
+        await self.bot.cogs["ModMailEvents"].send_mail_mod(
+            ctx.message, ctx.prefix, anon=True, snippet=True
+        )
 
     @checks.in_database()
     @checks.is_premium()
     @checks.is_mod()
     @commands.guild_only()
     @commands.command(
-        description="Add a snippet. Tags `{username}`, `{usertag}`, `{userid}` and `{usermention}` can be used.",
+        description="Add a snippet. Tags `{username}`, `{usertag}`, `{userid}` and `{usermention}` "
+        "can be used.",
         usage="snippetadd <name> <content>",
     )
     async def snippetadd(self, ctx, name: str, *, content: str):
         if len(name) > 100:
-            await ctx.send(embed=ErrorEmbed(description="The snippet name cannot exceed 100 characters."))
+            await ctx.send(ErrorEmbed("The snippet name cannot exceed 100 characters."))
             return
 
         if len(content) > 1000:
-            await ctx.send(embed=ErrorEmbed(description="The snippet content cannot exceed 1000 characters."))
+            await ctx.send(ErrorEmbed("The snippet content cannot exceed 1000 characters."))
             return
 
         async with self.bot.pool.acquire() as conn:
             try:
-                await conn.execute("INSERT INTO snippet VALUES ($1, $2, $3)", ctx.guild.id, name.lower(), content)
+                await conn.execute(
+                    "INSERT INTO snippet VALUES ($1, $2, $3)", ctx.guild.id, name.lower(), content
+                )
             except asyncpg.UniqueViolationError:
-                await ctx.send(embed=ErrorEmbed(description="A snippet with that name already exists."))
+                await ctx.send(ErrorEmbed("A snippet with that name already exists."))
                 return
 
-        await ctx.send(embed=Embed(description="The snippet was added successfully."))
+        await ctx.send(Embed("The snippet was added successfully."))
 
     @checks.in_database()
     @checks.is_premium()
@@ -86,13 +95,15 @@ class Snippet(commands.Cog):
     @commands.command(description="Remove a snippet.", usage="snippetremove <name>")
     async def snippetremove(self, ctx, *, name: str):
         async with self.bot.pool.acquire() as conn:
-            res = await conn.execute("DELETE FROM snippet WHERE name=$1 AND guild=$2", name, ctx.guild.id)
+            res = await conn.execute(
+                "DELETE FROM snippet WHERE name=$1 AND guild=$2", name, ctx.guild.id
+            )
 
         if res == "DELETE 0":
-            await ctx.send(embed=ErrorEmbed(description="A snippet with that name was not found."))
+            await ctx.send(ErrorEmbed("A snippet with that name was not found."))
             return
 
-        await ctx.send(embed=Embed(description="The snippet was removed successfully."))
+        await ctx.send(Embed("The snippet was removed successfully."))
 
     @checks.in_database()
     @checks.is_premium()
@@ -103,7 +114,7 @@ class Snippet(commands.Cog):
         async with self.bot.pool.acquire() as conn:
             await conn.execute("DELETE FROM snippet WHERE guild=$1", ctx.guild.id)
 
-        await ctx.send(embed=Embed(description="All snippets were removed successfully."))
+        await ctx.send(Embed("All snippets were removed successfully."))
 
     @checks.in_database()
     @checks.is_premium()
@@ -125,20 +136,20 @@ class Snippet(commands.Cog):
                 )
 
             if not res:
-                await ctx.send(embed=ErrorEmbed(description="A snippet with that name was not found."))
+                await ctx.send(ErrorEmbed("A snippet with that name was not found."))
                 return
 
             embed = Embed(title="Snippet")
-            embed.add_field(name="Name", value=res[0], inline=False)
-            embed.add_field(name="Content", value=res[1], inline=False)
-            await ctx.send(embed=embed)
+            embed.add_field("Name", res[0], False)
+            embed.add_field("Content", res[1], False)
+            await ctx.send(embed)
             return
 
         async with self.bot.pool.acquire() as conn:
             res = await conn.fetch("SELECT name, content FROM snippet WHERE guild=$1", ctx.guild.id)
 
         if not res:
-            await ctx.send(embed=Embed(description="No snippet has been added yet."))
+            await ctx.send(Embed("No snippet has been added yet."))
             return
 
         all_pages = []
@@ -147,18 +158,18 @@ class Snippet(commands.Cog):
 
             for snippet in chunk:
                 page.add_field(
-                    name=snippet[0],
-                    value=snippet[1][:97] + "..." if len(snippet[1]) > 100 else snippet[1],
-                    inline=False,
+                    snippet[0],
+                    snippet[1][:97] + "..." if len(snippet[1]) > 100 else snippet[1],
+                    False,
                 )
 
-            page.set_footer(text="Use the reactions to flip pages.")
+            page.set_footer("Use the reactions to flip pages.")
             all_pages.append(page)
 
         if len(all_pages) == 1:
             embed = all_pages[0]
-            embed.set_footer(text=discord.Embed.Empty)
-            await ctx.send(embed=embed)
+            embed.set_footer(discord.Embed.Empty)
+            await ctx.send(embed)
             return
 
         await tools.create_paginator(self.bot, ctx, all_pages)

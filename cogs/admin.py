@@ -18,7 +18,7 @@ class Admin(commands.Cog):
 
     async def _send_guilds(self, ctx, guilds, title):
         if len(guilds) == 0:
-            await ctx.send(embed=ErrorEmbed(description="No such guild was found."))
+            await ctx.send(ErrorEmbed("No such guild was found."))
             return
 
         all_pages = []
@@ -32,19 +32,15 @@ class Admin(commands.Cog):
                 else:
                     page.description += f"\n{guild}"
 
-            page.set_footer(text="Use the reactions to flip pages.")
+            page.set_footer("Use the reactions to flip pages.")
             all_pages.append(page)
-
-        if len(all_pages) == 1:
-            embed = all_pages[0]
-            embed.set_footer(text=discord.Embed.Empty)
-            await ctx.send(embed=embed)
-            return
 
         await tools.create_paginator(self.bot, ctx, all_pages)
 
     @checks.is_admin()
-    @commands.command(description="Get a list of servers with the specified name.", usage="findserver <name>")
+    @commands.command(
+        description="Get a list of servers with the specified name.", usage="findserver <name>"
+    )
     async def findserver(self, ctx, *, name: str):
         guilds = [
             f"{guild.name} `{guild.id}` ({guild.member_count} members)"
@@ -55,13 +51,18 @@ class Admin(commands.Cog):
         await self._send_guilds(ctx, guilds, "Servers")
 
     @checks.is_admin()
-    @commands.command(description="Get a list of servers the bot shares with the user.", usage="sharedservers <user>")
+    @commands.command(
+        description="Get a list of servers the bot shares with the user.",
+        usage="sharedservers <user>",
+    )
     async def sharedservers(self, ctx, *, user: UserConverter):
         guilds = [
             f"{guild.name} `{guild.id}` ({guild.member_count} members)"
             for guild in [
-                await self.bot.get_guild(int(guild)) for guild in await self.bot.state.smembers(f"user:{user.id}")
+                await self.bot.get_guild(int(guild))
+                for guild in await tools.get_user_guilds(self.bot, user) or []
             ]
+            if guild is not None
         ]
 
         await self._send_guilds(ctx, guilds, "Shared Servers")
@@ -79,18 +80,20 @@ class Admin(commands.Cog):
         await self._send_guilds(ctx, guilds, "Top Servers")
 
     @checks.is_admin()
-    @commands.command(description="Create an invite to the specified server.", usage="createinvite <server ID>")
+    @commands.command(
+        description="Create an invite to the specified server.", usage="createinvite <server ID>"
+    )
     async def createinvite(self, ctx, *, guild: GuildConverter):
         try:
             invite = (await guild.invites())[0]
         except (IndexError, discord.Forbidden):
             try:
-                invite = (await guild.text_channels())[0].create_invite(max_age=120)
+                invite = await (await guild.text_channels())[0].create_invite(max_age=120)
             except (IndexError, discord.Forbidden):
-                await ctx.send(embed=ErrorEmbed(description="No permissions to create an invite link."))
+                await ctx.send(ErrorEmbed("No permissions to create an invite link."))
                 return
 
-        await ctx.send(embed=Embed(description=f"Here is the invite link: {invite.url}"))
+        await ctx.send(Embed(f"Here is the invite link: {invite.url}"))
 
     @checks.is_admin()
     @commands.command(description="Make me say something.", usage="echo [channel] <message>")
@@ -102,7 +105,7 @@ class Admin(commands.Cog):
     @checks.is_admin()
     @commands.command(description="Restart all clusters.", usage="restart")
     async def restart(self, ctx):
-        await ctx.send(embed=Embed(description="Restarting..."))
+        await ctx.send(Embed("Restarting..."))
         await self.bot.session.post(f"{self.bot.http_uri}/restart")
 
 

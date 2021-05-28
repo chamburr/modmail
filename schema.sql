@@ -37,9 +37,10 @@ CREATE TABLE public.ban
     PRIMARY KEY (identifier, category)
 );
 
-CREATE TABLE public.preference
+CREATE TABLE public.account
 (
     identifier   bigint  NOT NULL,
     confirmation boolean NOT NULL,
+    token        text,
     PRIMARY KEY (identifier)
 );

@@ -12,7 +12,7 @@ log = logging.getLogger(__name__)
 
 def is_owner():
     def predicate(ctx):
-        if ctx.author.id not in ctx.bot.config.owners:
+        if str(ctx.author.id) not in ctx.bot.config.OWNER_USERS.split(","):
             raise commands.NotOwner()
 
         return True
@@ -22,7 +22,9 @@ def is_owner():
 
 def is_admin():
     def predicate(ctx):
-        if ctx.author.id not in ctx.bot.config.owners + ctx.bot.config.admins:
+        if str(ctx.author.id) not in (
+            ctx.bot.config.OWNER_USERS.split(",") + ctx.bot.config.ADMIN_USERS.split(",")
+        ):
             raise commands.NotOwner()
 
         return True
@@ -37,7 +39,7 @@ def in_database():
 
         if not res or not res[0]:
             await ctx.send(
-                embed=ErrorEmbed(description=f"Your server has not been set up yet. Use `{ctx.prefix}setup` first.")
+                ErrorEmbed(f"Your server has not been set up yet. Use `{ctx.prefix}setup` first.")
             )
             return False
 
@@ -48,17 +50,19 @@ def in_database():
 
 def is_premium():
     async def predicate(ctx):
-        if not ctx.bot.config.main_server:
+        if not ctx.bot.config.MAIN_SERVER:
             return True
 
         async with ctx.bot.pool.acquire() as conn:
-            res = await conn.fetchrow("SELECT identifier FROM premium WHERE $1=any(guild)", ctx.guild.id)
+            res = await conn.fetchrow(
+                "SELECT identifier FROM premium WHERE $1=any(guild)", ctx.guild.id
+            )
 
         if not res:
             await ctx.send(
-                embed=ErrorEmbed(
-                    description="This server does not have premium. Want to get premium? More information is available "
-                    f"with the `{ctx.prefix}premium` command."
+                ErrorEmbed(
+                    "This server does not have premium. Want to get premium? More information is "
+                    f"available with the `{ctx.prefix}premium` command."
                 )
             )
             return False
@@ -71,22 +75,24 @@ def is_premium():
 def is_patron():
     async def predicate(ctx):
         async with ctx.bot.pool.acquire() as conn:
-            res = await conn.fetchrow("SELECT identifier FROM premium WHERE identifier=$1", ctx.author.id)
+            res = await conn.fetchrow(
+                "SELECT identifier FROM premium WHERE identifier=$1", ctx.author.id
+            )
 
         if res:
             return True
 
         if await tools.get_premium_slots(ctx.bot, ctx.author.id) is False:
             await ctx.send(
-                embed=ErrorEmbed(
-                    description="This command requires you to be a patron. Want to become a patron? More information "
-                    f"is available with the `{ctx.prefix}premium` command."
+                ErrorEmbed(
+                    "This command requires you to be a patron. Want to become a patron? More "
+                    f"information is available with the `{ctx.prefix}premium` command."
                 )
             )
             return False
 
         async with ctx.bot.pool.acquire() as conn:
-            await conn.execute("INSERT INTO premium (identifier, guild) VALUES ($1, $2)", ctx.author.id, [])
+            await conn.execute("INSERT INTO premium VALUES ($1, $2, NULL)", ctx.author.id, [])
 
         return True
 
@@ -96,7 +102,7 @@ def is_patron():
 def is_modmail_channel():
     async def predicate(ctx):
         if not tools.is_modmail_channel(ctx.channel):
-            await ctx.send(embed=ErrorEmbed(description="This channel is not a ModMail channel."))
+            await ctx.send(ErrorEmbed("This channel is not a ModMail channel."))
             return False
 
         return True
@@ -113,7 +119,7 @@ def is_mod():
             if role in ctx.message.member._roles:
                 return True
 
-        await ctx.send(embed=ErrorEmbed(description="You do not have access to this command."))
+        await ctx.send(ErrorEmbed("You do not have access to this command."))
         return False
 
     return commands.check(predicate)

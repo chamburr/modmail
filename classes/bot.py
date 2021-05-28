@@ -15,19 +15,18 @@ from discord.ext.commands.core import _CaseInsensitiveDict
 from discord.gateway import DiscordClientWebSocketResponse, DiscordWebSocket
 from discord.utils import parse_time
 
-import config
-
 from classes.http import HTTPClient
 from classes.misc import Session, Status
 from classes.state import State
 from utils import tools
+from utils.config import Config
 from utils.prometheus import Prometheus
 
 log = logging.getLogger(__name__)
 
 
 class ModMail(commands.AutoShardedBot):
-    def __init__(self, command_prefix, **kwargs):
+    def __init__(self, command_prefix=None, **kwargs):
         self.command_prefix = command_prefix
         self.extra_events = {}
         self._BotBase__cogs = {}
@@ -43,6 +42,7 @@ class ModMail(commands.AutoShardedBot):
         self._skip_check = lambda x, y: x == y
         self.case_insensitive = True
         self.all_commands = _CaseInsensitiveDict() if self.case_insensitive else {}
+        self.strip_after_prefix = False
 
         self.ws = None
         self.loop = asyncio.get_event_loop()
@@ -60,8 +60,9 @@ class ModMail(commands.AutoShardedBot):
         self._amqp_channel = None
         self._amqp_queue = None
 
+        self.config = Config()
         self.session = aiohttp.ClientSession(loop=self.loop)
-        self.http_uri = f"http://{self.config.http_api['host']}:{self.config.http_api['port']}"
+        self.http_uri = f"http://{self.config.BOT_API_HOST}:{self.config.BOT_API_PORT}"
         self.id = kwargs.get("bot_id")
         self.cluster = kwargs.get("cluster_id")
         self.cluster_count = kwargs.get("cluster_count")
@@ -71,14 +72,15 @@ class ModMail(commands.AutoShardedBot):
 
         self._enabled_events = [
             "MESSAGE_CREATE",
+            "MESSAGE_REACTION_ADD",
             "READY",
         ]
 
         self._cogs = [
             "admin",
-            "direct_message",
             "configuration",
             "core",
+            "direct_message",
             "error_handler",
             "events",
             "general",
@@ -92,10 +94,6 @@ class ModMail(commands.AutoShardedBot):
     @property
     def state(self):
         return self._connection
-
-    @property
-    def config(self):
-        return config
 
     @property
     def user(self):
@@ -129,7 +127,9 @@ class ModMail(commands.AutoShardedBot):
         return [Status(x) for x in await self._connection.get("gateway_statuses")]
 
     async def sessions(self):
-        return {int(x): Session(y) for x, y in (await self._connection.get("gateway_sessions")).items()}
+        return {
+            int(x): Session(y) for x, y in (await self._connection.get("gateway_sessions")).items()
+        }
 
     async def get_channel(self, channel_id):
         return await self._connection.get_channel(channel_id)
@@ -148,19 +148,6 @@ class ModMail(commands.AutoShardedBot):
 
     async def get_all_members(self):
         pass
-
-    async def _get_state(self, **options):
-        return State(
-            dispatch=self.dispatch,
-            handlers=self._handlers,
-            hooks=self._hooks,
-            http=self.http,
-            loop=self.loop,
-            redis=self._redis,
-            shard_count=int(await self._redis.get("gateway_shards")),
-            id=self.id,
-            **options,
-        )
 
     async def receive_message(self, msg):
         self.ws._dispatch("socket_raw_receive", msg)
@@ -199,7 +186,9 @@ class ModMail(commands.AutoShardedBot):
     async def send_message(self, msg):
         data = orjson.dumps(msg)
         self.ws._dispatch("socket_raw_send", data)
-        await self._amqp_channel.default_exchange.publish(aio_pika.Message(body=data), routing_key="gateway.send")
+        await self._amqp_channel.default_exchange.publish(
+            aio_pika.Message(body=data), routing_key="gateway.send"
+        )
 
     async def on_http_request_start(self, _session, trace_config_ctx, _params):
         trace_config_ctx.start = asyncio.get_event_loop().time()
@@ -208,7 +197,7 @@ class ModMail(commands.AutoShardedBot):
         elapsed = asyncio.get_event_loop().time() - trace_config_ctx.start
 
         if elapsed > 1:
-            log.info(f"{params.method} {params.url} took {round(elapsed, 2)} seconds")
+            log.warning(f"{params.method} {params.url} took {round(elapsed, 2)} seconds")
 
         route = str(params.url)
         route = re.sub(r"https:\/\/[a-z\.]+\/api\/v[0-9]+", "", route)
@@ -226,7 +215,7 @@ class ModMail(commands.AutoShardedBot):
             }
         )
 
-    async def start(self):
+    async def start(self, worker=True):
         trace_config = aiohttp.TraceConfig()
         trace_config.on_request_start.append(self.on_http_request_start)
         trace_config.on_request_end.append(self.on_http_request_end)
@@ -235,31 +224,49 @@ class ModMail(commands.AutoShardedBot):
             ws_response_class=DiscordClientWebSocketResponse,
             trace_configs=[trace_config],
         )
-        self.http._token(self.config.token, bot=True)
+        self.http._token(self.config.BOT_TOKEN, bot=True)
 
-        self.pool = await asyncpg.create_pool(**self.config.database, max_size=10, command_timeout=60)
+        self.pool = await asyncpg.create_pool(
+            database=self.config.POSTGRES_DATABASE,
+            user=self.config.POSTGRES_USERNAME,
+            password=self.config.POSTGRES_PASSWORD,
+            host=self.config.POSTGRES_HOST,
+            port=int(self.config.POSTGRES_PORT),
+            max_size=10,
+            command_timeout=60,
+        )
 
         self._redis = await aioredis.create_redis_pool(
-            (self.config.redis["host"], self.config.redis["port"]),
-            password=self.config.redis["password"],
+            (self.config.REDIS_HOST, int(self.config.REDIS_PORT)),
+            password=self.config.REDIS_PASSWORD,
             minsize=5,
             maxsize=10,
             loop=self.loop,
         )
 
-        self._amqp = await aio_pika.connect_robust(
-            login=self.config.rabbitmq["username"],
-            password=self.config.rabbitmq["password"],
-            host=self.config.rabbitmq["host"],
-            port=self.config.rabbitmq["port"],
-        )
-        self._amqp_channel = await self._amqp.channel()
-        self._amqp_queue = await self._amqp_channel.get_queue("gateway.recv")
+        if worker:
+            self._amqp = await aio_pika.connect_robust(
+                login=self.config.RABBIT_USERNAME,
+                password=self.config.RABBIT_PASSWORD,
+                host=self.config.RABBIT_HOST,
+                port=int(self.config.RABBIT_PORT),
+            )
+            self._amqp_channel = await self._amqp.channel()
+            self._amqp_queue = await self._amqp_channel.get_queue("gateway.recv")
 
         self.prom = Prometheus(self)
         await self.prom.start()
 
-        self._connection = await self._get_state()
+        self._connection = State(
+            id=self.id,
+            dispatch=self.dispatch,
+            handlers=self._handlers,
+            hooks=self._hooks,
+            http=self.http,
+            loop=self.loop,
+            redis=self._redis,
+            shard_count=int(await self._redis.get("gateway_shards")),
+        )
         self._connection._get_client = lambda: self
 
         self.ws = DiscordWebSocket(socket=None, loop=self.loop)
@@ -269,14 +276,15 @@ class ModMail(commands.AutoShardedBot):
         self.ws._dispatch = self.dispatch
         self.ws.call_hooks = self._connection.call_hooks
 
+        if not worker:
+            return
+
         for extension in self._cogs:
             try:
                 self.load_extension("cogs." + extension)
             except Exception:
                 log.error(f"Failed to load extension {extension}.", file=sys.stderr)
                 log.error(traceback.print_exc())
-
-        log.info("Running...")
 
         async with self._amqp_queue.iterator() as queue_iter:
             async for message in queue_iter:

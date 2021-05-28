@@ -1,13 +1,12 @@
 import logging
 
 from discord import message, utils
-from discord.embeds import Embed
 from discord.enums import MessageType, try_enum
 from discord.flags import MessageFlags
 from discord.message import Attachment, MessageReference, flatten_handlers
 from discord.reaction import Reaction
 
-from classes.guild import Guild
+from classes.embed import Embed
 from classes.member import Member
 
 log = logging.getLogger(__name__)
@@ -20,7 +19,9 @@ class Message(message.Message):
         self._data = data
         self.id = int(data["id"])
         self.webhook_id = utils._get_as_snowflake(data, "webhook_id")
-        self.reactions = [Reaction(message=self, data=x, emoji="x") for x in data.get("reactions", [])]
+        self.reactions = [
+            Reaction(message=self, data=x, emoji="x") for x in data.get("reactions", [])
+        ]
         self.attachments = [Attachment(data=x, state=self._state) for x in data["attachments"]]
         self.embeds = [Embed.from_dict(x) for x in data["embeds"]]
         self.application = data.get("application")
@@ -82,7 +83,7 @@ class Message(message.Message):
             guild = self.guild
             state = self._state
 
-            if not isinstance(guild, Guild):
+            if guild is not None:
                 members = [state.store_user(m) for m in mentions]
             else:
                 for mention in filter(None, mentions):
@@ -103,7 +104,7 @@ class Message(message.Message):
             mentions = self._data["mention_roles"]
             roles = []
 
-            if isinstance(self.guild, Guild):
+            if self.guild is not None:
                 for role_id in map(int, mentions):
                     role = await self.guild.get_role(role_id)
 
@@ -113,3 +114,10 @@ class Message(message.Message):
             return roles
         except KeyError:
             return []
+
+    async def edit(self, content=None, **kwargs):
+        if isinstance(content, Embed):
+            return await super().edit(embed=content, **kwargs)
+        elif content is not None:
+            return await super().edit(content=content, **kwargs)
+        return await super().edit(**kwargs)

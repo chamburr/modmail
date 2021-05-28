@@ -73,7 +73,7 @@ Congratulations! You have set up everything, and you can finally have the bot up
 start twilight-dispatch first, then use the following command to start the bot.
 
 ```sh
-python3 launcher.py
+python3 main.py
 ```
 
 ## License
