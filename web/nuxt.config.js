@@ -182,7 +182,7 @@ export default {
     fontFace: true,
     keyframes: true,
     variables: true,
-    whitelist: ['arrow', 'big', 'collapsing', 'show', 'small'],
+    whitelist: ['arrow', 'big', 'close', 'collapsing', 'show', 'small'],
     whitelistPatterns: [
       /^[-_]*nuxt[-_]*/,
       /^(?:alert|badge|bg|btn|dropdown|icon|nav|shadow|slider|text)-*/,
