@@ -264,4 +264,5 @@ target/
 
 # Custom
 targets.json
+web/static/sw.js
 !web/pages/*
