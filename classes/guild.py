@@ -15,6 +15,7 @@ from discord.member import VoiceState
 from discord.role import Role
 
 from classes.channel import TextChannel, _channel_factory
+from classes.invite import Invite
 from classes.member import Member
 from utils import tools
 
@@ -222,3 +223,14 @@ class Guild(guild.Guild):
 
     async def default_role(self):
         return await self.get_role(self.id)
+
+    async def invites(self):
+        data = await self._state.http.invites_from(self.id)
+        result = []
+        for invite in data:
+            channel = await self.get_channel(int(invite["channel"]["id"]))
+            invite["channel"] = channel
+            invite["guild"] = self
+            result.append(Invite(state=self._state, data=invite))
+
+        return result

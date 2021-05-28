@@ -197,7 +197,7 @@ class ModMail(commands.AutoShardedBot):
         elapsed = asyncio.get_event_loop().time() - trace_config_ctx.start
 
         if elapsed > 1:
-            log.warn(f"{params.method} {params.url} took {round(elapsed, 2)} seconds")
+            log.warning(f"{params.method} {params.url} took {round(elapsed, 2)} seconds")
 
         route = str(params.url)
         route = re.sub(r"https:\/\/[a-z\.]+\/api\/v[0-9]+", "", route)

@@ -88,7 +88,7 @@ class Admin(commands.Cog):
             invite = (await guild.invites())[0]
         except (IndexError, discord.Forbidden):
             try:
-                invite = (await guild.text_channels())[0].create_invite(max_age=120)
+                invite = await (await guild.text_channels())[0].create_invite(max_age=120)
             except (IndexError, discord.Forbidden):
                 await ctx.send(ErrorEmbed("No permissions to create an invite link."))
                 return
