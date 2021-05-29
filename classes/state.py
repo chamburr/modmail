@@ -780,7 +780,7 @@ class State:
         return await self.get_emoji(emoji.id)
 
     async def _get_channel(self, channel_id):
-        result = await self._get(f"channel:{channel_id}")
+        result = await self.get(f"channel:{channel_id}")
 
         if result:
             if result["type"] == ChannelType.private:
