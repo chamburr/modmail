@@ -157,8 +157,8 @@ async def select_guild(bot, message, msg):
 
     await msg.edit(embeds[0])
 
-    await msg.add_reaction("◀")
-    await msg.add_reaction("▶")
+    await msg.add_reaction("◀️")
+    await msg.add_reaction("▶️")
     for reaction in ["1⃣", "2⃣", "3⃣", "4⃣", "5⃣", "6⃣", "7⃣", "8⃣", "9⃣", "🔟"][
         : len(embeds[0].fields)
     ]:
