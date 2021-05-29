@@ -175,7 +175,7 @@ async def select_guild(bot, message, msg):
             },
         },
     )
-    await bot.state.sadd("reaction_menu_keys", f"reaction_menu:{msg.channel.id}:{msg.id}",)
+    await bot.state.sadd("reaction_menu_keys", f"reaction_menu:{msg.channel.id}:{msg.id}")
 
 
 async def get_reaction_menu(bot, payload, kind):

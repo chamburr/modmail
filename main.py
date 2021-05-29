@@ -168,8 +168,8 @@ class Scheduler:
                 if menu["end"] > int(time.time()):
                     continue
 
-                channel = tools.create_fake_channel(self.bot, menu.split(":")[1])
-                message = tools.create_fake_message(self.bot, channel, menu.split(":")[2])
+                channel = tools.create_fake_channel(self.bot, menu_key.split(":")[1])
+                message = tools.create_fake_message(self.bot, channel, menu_key.split(":")[2])
 
                 emojis = []
 
