@@ -60,8 +60,8 @@ class State:
             if attr.startswith("parse_"):
                 self.parsers[attr[6:].upper()] = func
 
-    def _loads(self, value):
-        if value is None:
+    def _loads(self, value, decode):
+        if value is None or not decode:
             return value
 
         try:
@@ -77,14 +77,14 @@ class State:
     async def delete(self, key):
         return await self.redis.delete(key)
 
-    async def get(self, keys):
+    async def get(self, keys, decode=True):
         results = []
         if isinstance(keys, (list, tuple)):
             if len(keys) == 0:
                 return []
-            results.extend([self._loads(x) for x in await self.redis.mget(*keys)])
+            results.extend([self._loads(x, decode) for x in await self.redis.mget(*keys)])
         else:
-            results.append(self._loads(await self.redis.get(keys)))
+            results.append(self._loads(await self.redis.get(keys), decode))
 
         for index, value in enumerate(results):
             if isinstance(value, dict):
@@ -113,8 +113,8 @@ class State:
     async def srem(self, key, *value):
         return await self.redis.srem(key, *[self._dumps(x) for x in value])
 
-    async def smembers(self, key):
-        return [self._loads(x) for x in await self.redis.smembers(key)]
+    async def smembers(self, key, decode=True):
+        return [self._loads(x, decode) for x in await self.redis.smembers(key)]
 
     async def sismember(self, key, value):
         return await self.redis.sismember(key, self._dumps(value))

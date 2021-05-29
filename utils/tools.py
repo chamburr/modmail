@@ -221,7 +221,7 @@ async def get_guild_prefix(bot, guild):
     if not guild:
         return bot.config.DEFAULT_PREFIX
 
-    prefix = await bot.state.get(f"prefix:{guild.id}")
+    prefix = await bot.state.get(f"prefix:{guild.id}", False)
     if prefix == "":
         return bot.config.DEFAULT_PREFIX
     elif prefix is not None:
@@ -248,7 +248,7 @@ async def get_user_guilds(bot, member):
     if user_guilds is not None:
         return [int(guild) for guild in user_guilds]
 
-    token = await bot.state.get(f"user_token:{member.id}")
+    token = await bot.state.get(f"user_token:{member.id}", False)
     if token is None:
         async with bot.pool.acquire() as conn:
             res = await conn.fetchrow("SELECT token FROM account WHERE identifier=$1", member.id)
