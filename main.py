@@ -180,12 +180,8 @@ class Scheduler:
                     emojis = ["✅", "🔁", "❌"]
                     await message.edit(ErrorEmbed("Time out. You did not choose anything."))
                 elif menu["kind"] == "selection":
-                    emojis = ["1⃣", "2⃣", "3⃣", "4⃣", "5⃣", "6⃣", "7⃣", "8⃣", "9⃣", "🔟", "◀", "▶"]
-                    try:
-                        await message.edit(ErrorEmbed("Time out. You did not choose anything."))
-                    except Exception:
-                        print(menu["channel"])
-                        print(menu["message"])
+                    emojis = ["1⃣", "2⃣", "3⃣", "4⃣", "5⃣", "6⃣", "7⃣", "8⃣", "9⃣", "🔟", "◀️", "▶"]
+                    await message.edit(ErrorEmbed("Time out. You did not choose anything."))
 
                 await self.bot.state.srem("reaction_menus", menu)
 
