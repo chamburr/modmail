@@ -129,10 +129,12 @@ class Guild(guild.Guild):
         ]
 
     async def _roles(self):
-        return [
-            Role(guild=self, state=self._state, data=tools.upgrade_payload(x))
-            for x in await self._state._members_get_all("guild", key_id=self.id, name="role")
-        ]
+        return sorted(
+            [
+                Role(guild=self, state=self._state, data=tools.upgrade_payload(x))
+                for x in await self._state._members_get_all("guild", key_id=self.id, name="role")
+            ]
+        )
 
     async def _voice_states(self):
         voices = []
