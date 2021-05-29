@@ -14,7 +14,7 @@ export default {
     }
   },
   mounted() {
-    this.windowTop = window.top.scrollY
+    this.windowTop = document.scrollingElement.scrollTop
     window.addEventListener('scroll', this.onScroll)
   },
   beforeDestroy() {
@@ -22,7 +22,7 @@ export default {
   },
   methods: {
     onScroll() {
-      this.windowTop = window.top.scrollY
+      this.windowTop = document.scrollingElement.scrollTop
     },
   },
 }
