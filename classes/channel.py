@@ -63,7 +63,7 @@ class TextChannel(channel.TextChannel):
         allows = 0
 
         for overwrite in remaining_overwrites:
-            if overwrite.type == "role" and overwrite.id in roles:
+            if overwrite.type == "role" and overwrite.id in [x.id for x in roles]:
                 denies |= overwrite.deny
                 allows |= overwrite.allow
 
