@@ -61,8 +61,11 @@ class State:
                 self.parsers[attr[6:].upper()] = func
 
     def _loads(self, value, decode):
-        if value is None or not decode:
+        if value is None:
             return value
+
+        if not decode:
+            return value.decode("utf-8")
 
         try:
             return orjson.loads(value)
