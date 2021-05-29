@@ -99,7 +99,10 @@ class Core(commands.Cog):
             return
 
         if member is None:
-            member = await self.bot.fetch_user(tools.get_modmail_user(ctx.channel))
+            try:
+                member = await self.bot.fetch_user(tools.get_modmail_user(ctx.channel))
+            except discord.NotFound:
+                pass
 
         if member:
             embed.set_footer(f"{member} | {member.id}", member.avatar_url)
