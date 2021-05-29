@@ -785,14 +785,14 @@ class State:
         result = await self.get(f"channel:{channel_id}")
 
         if result:
-            if result["type"] == ChannelType.private:
-                return DMChannel(me=self.user, state=self, data=result)
-            else:
+            if result.get("guild_id"):
                 factory, _ = _channel_factory(result["type"])
-                guild = await self._get_guild(self._key_first(result))
+                guild = await self._get_guild(result["guild_id"])
 
                 if guild:
                     return factory(guild=guild, state=self, data=result)
+            else:
+                return DMChannel(me=self.user, state=self, data=result)
 
         return None
 
