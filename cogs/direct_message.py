@@ -354,7 +354,7 @@ class DirectMessageEvents(commands.Cog, name="Direct Message"):
     async def new(self, ctx, *, message: str):
         ctx.message.content = message
 
-        msg = await message.channel.send(Embed("Loading servers..."))
+        msg = await ctx.send(Embed("Loading servers..."))
         await tools.select_guild(self.bot, ctx.message, msg)
 
     @commands.dm_only()
