@@ -24,13 +24,13 @@ class DirectMessageEvents(commands.Cog, name="Direct Message"):
         self.bot.prom.tickets_message.inc({})
 
         if not guild:
-            message.channel.send(ErrorEmbed("The server was not found."))
+            await message.channel.send(ErrorEmbed("The server was not found."))
             return
 
         try:
             member = await guild.fetch_member(message.author.id)
         except discord.NotFound:
-            message.channel.send(
+            await message.channel.send(
                 ErrorEmbed("You are not in that server, and the message is not sent.")
             )
             return
