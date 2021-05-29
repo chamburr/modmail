@@ -15,33 +15,10 @@ log = logging.getLogger(__name__)
 class Events(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
-        self.pipe = self.bot._redis.pipeline()
 
     @commands.Cog.listener()
     async def on_ready(self):
         pass
-
-    async def on_socket_response(self, message):
-        if message["t"] == "GUILD_MEMBER_UPDATE":
-            if int(message["d"]["user"]["id"]) == self.bot.id:
-                member = await self.bot.state.get(
-                    f"member:{message['d']['guild_id']}:{self.bot.id}"
-                )
-                if member:
-                    member["roles"] = message["d"]["roles"]
-                    await self.bot.state.set(
-                        f"member:{message['d']['guild_id']}:{self.bot.id}", member
-                    )
-        elif message["t"] == "GUILD_CREATE":
-            for member in message["d"]["members"]:
-                if int(member["user"]["id"]) == self.bot.id:
-                    await self.bot.state.set(f"member:{message['d']['id']}:{self.bot.id}", member)
-                    return
-        elif message["t"] == "GUILD_DELETE":
-            if message["d"].get("unavailable"):
-                return
-
-            await self.bot.state.delete(f"member:{message['d']['id']}:{self.bot.id}")
 
     @commands.Cog.listener()
     async def on_raw_reaction_add(self, payload):
