@@ -22,6 +22,9 @@ class Events(commands.Cog):
 
     @commands.Cog.listener()
     async def on_raw_reaction_add(self, payload):
+        if payload.user_id == self.bot.id:
+            return
+
         if payload.member and payload.member.bot:
             return
 
