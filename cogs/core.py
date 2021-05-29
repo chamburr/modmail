@@ -69,7 +69,7 @@ class Core(commands.Cog):
         try:
             member = await ctx.guild.fetch_member(tools.get_modmail_user(ctx.channel).id)
         except discord.NotFound:
-            pass
+            member = None
         else:
             dm_channel = tools.get_modmail_channel(self.bot, ctx.channel)
 
