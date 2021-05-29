@@ -309,10 +309,10 @@ class Core(commands.Cog):
         for chunk in [blacklist[i : i + 25] for i in range(0, len(blacklist), 25)]:
             page = Embed("Blacklist", "\n".join([f"<@{user}> ({user})" for user in chunk]))
             page.set_footer("Use the reactions to flip pages.")
-            all_pages.append(page.to_dict())
+            all_pages.append(page)
 
         if len(all_pages) == 1:
-            embed = Embed.from_dict(all_pages[0])
+            embed = Embed(all_pages[0])
             embed.set_footer(discord.Embed.Empty)
             await ctx.send(embed)
             return
