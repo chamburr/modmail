@@ -45,7 +45,11 @@ class Events(commands.Cog):
                     except discord.NotFound:
                         pass
 
-            await self.bot.state.srem("reaction_menus", menu)
+            await self.bot.state.delete(f"reaction_menu:{channel.id}:{message.id}")
+            await self.bot.state.srem(
+                "reaction_menu_keys",
+                f"reaction_menu:{channel.id}:{message.id}",
+            )
             return
 
         page = menu["data"]["page"]
@@ -68,10 +72,9 @@ class Events(commands.Cog):
         except (discord.Forbidden, discord.NotFound):
             pass
 
-        await self.bot.state.srem("reaction_menus", menu)
         menu["data"]["page"] = page
         menu["end"] = int(time.time()) + 180
-        await self.bot.state.sadd("reaction_menus", menu)
+        await self.bot.state.set(f"reaction_menu:{channel.id}:{message.id}", menu)
 
     @commands.Cog.listener()
     async def on_message(self, message):
