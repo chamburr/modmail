@@ -4,7 +4,6 @@ import time
 
 from datetime import datetime
 
-import distro
 import psutil
 
 from discord.ext import commands
@@ -143,11 +142,8 @@ class General(commands.Cog):
         else:
             embed.add_field("Shards", f"0/{await self.bot.shard_count()}")
         embed.add_field("Servers", str(await self.bot.state.scard("guild_keys")))
-        embed.add_field("Channels", str(await self.bot.state.scard("channel_keys")))
-        embed.add_field("Users", str(await self.bot.state.scard("user_keys")))
         embed.add_field("CPU Usage", f"{psutil.cpu_percent(interval=None)}%")
         embed.add_field("RAM Usage", f"{psutil.virtual_memory().percent}%")
-        embed.add_field("Platform", " ".join(distro.linux_distribution()[:2]))
         embed.add_field("Python Version", platform.python_version())
         embed.set_thumbnail(bot_user.avatar_url)
 
