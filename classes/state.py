@@ -180,8 +180,7 @@ class State:
         return [x for x in guilds if not x.unavailable]
 
     async def _private_channels(self):
-        results = await self._members_get_all("channel", predicate=lambda x: len(x.split(":")) <= 2)
-        return [DMChannel(me=self.user, state=self, data=x) for x in results if not x["guild_id"]]
+        return []
 
     async def _messages(self):
         messages = []
@@ -293,12 +292,11 @@ class State:
         return await self._private_channels()
 
     async def _get_private_channel(self, channel_id):
-        result = await self.get(f"channel:{channel_id}")
+        result = await self._get_channel(channel_id)
+        if result and isinstance(result, DMChannel):
+            return result
 
-        if result:
-            result = DMChannel(me=self.user, state=self, data=result)
-
-        return result
+        return None
 
     async def _get_private_channel_by_user(self, user_id):
         return utils.find(lambda x: x.recipient.id == user_id, await self.private_channels())
@@ -330,14 +328,9 @@ class State:
         return
 
     async def _get_guild_channel(self, channel_id):
-        result = await self._members_get("channel", second=channel_id)
-
-        if result:
-            factory, _ = _channel_factory(result["type"])
-            guild = await self._get_guild(self._key_first(result))
-
-            if guild:
-                return factory(guild=guild, state=self, data=result)
+        result = await self._get_channel(channel_id)
+        if result and not isinstance(result, DMChannel):
+            return result
 
         return None
 
@@ -786,13 +779,26 @@ class State:
 
         return await self.get_emoji(emoji.id)
 
+    async def _get_channel(self, channel_id):
+        result = await self._get(f"channel:{channel_id}")
+
+        if result:
+            if result["type"] == ChannelType.private:
+                return DMChannel(me=self.user, state=self, data=result)
+            else:
+                factory, _ = _channel_factory(result["type"])
+                guild = await self._get_guild(self._key_first(result))
+
+                if guild:
+                    return factory(guild=guild, state=self, data=result)
+
+        return None
+
     async def get_channel(self, channel_id):
         if not channel_id:
             return None
 
-        return await self._get_private_channel(channel_id) or await self._get_guild_channel(
-            channel_id
-        )
+        return await self._get_channel(channel_id)
 
     def create_message(self, *, channel, data):
         message = Message(state=self, channel=channel, data=data)
