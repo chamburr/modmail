@@ -218,13 +218,17 @@ class DirectMessageEvents(commands.Cog, name="Direct Message"):
                 for reaction in ["✅", "🔁", "❌"]:
                     await msg.remove_reaction(reaction, self.bot.user)
 
-            await self.bot.state.srem("reaction_menus", menu)
+            await self.bot.state.delete(f"reaction_menu:{channel.id}:{msg.id}")
+            await self.bot.state.srem(
+                "reaction_menu_keys",
+                f"reaction_menu:{channel.id}:{msg.id}",
+            )
             return
 
         numbers = ["1⃣", "2⃣", "3⃣", "4⃣", "5⃣", "6⃣", "7⃣", "8⃣", "9⃣", "🔟"]
         arrows = ["◀️", "▶️"]
         if payload.emoji.name in numbers + arrows:
-            menu, channel, message = await tools.get_reaction_menu(self.bot, payload, "selection")
+            menu, channel, msg = await tools.get_reaction_menu(self.bot, payload, "selection")
             if menu is None:
                 return
 
@@ -233,17 +237,21 @@ class DirectMessageEvents(commands.Cog, name="Direct Message"):
 
             if payload.emoji.name not in arrows:
                 chosen = numbers.index(payload.emoji.name)
-                await message.delete()
+                await msg.delete()
 
                 fields = all_pages[page]["fields"]
                 if chosen > len(fields):
                     return
 
                 guild = await self.bot.get_guild(fields[chosen]["value"].split()[-1])
-                msg = Message(state=self.bot.state, channel=channel, data=menu["data"]["msg"])
-                await self.send_mail(msg, guild)
+                message = Message(state=self.bot.state, channel=channel, data=menu["data"]["msg"])
+                await self.send_mail(message, guild)
 
-                await self.bot.state.srem("reaction_menus", menu)
+                await self.bot.state.delete(f"reaction_menu:{channel.id}:{msg.id}")
+                await self.bot.state.srem(
+                    "reaction_menu_keys",
+                    f"reaction_menu:{channel.id}:{msg.id}",
+                )
                 return
 
             if payload.emoji.name == "◀️" and page > 0:
@@ -267,10 +275,9 @@ class DirectMessageEvents(commands.Cog, name="Direct Message"):
                     except discord.NotFound:
                         pass
 
-            await self.bot.state.srem("reaction_menus", menu)
-            menu["page"] = page
+            menu["data"]["page"] = page
             menu["end"] = int(time.time()) + 180
-            await self.bot.state.sadd("reaction_menus", menu)
+            await self.bot.state.set(f"reaction_menu:{channel.id}:{message.id}", menu)
 
     @commands.Cog.listener()
     async def on_message(self, message):
@@ -316,18 +323,20 @@ class DirectMessageEvents(commands.Cog, name="Direct Message"):
             await msg.add_reaction("🔁")
             await msg.add_reaction("❌")
 
-            await self.bot.state.sadd(
-                "reaction_menus",
+            await self.bot.state.set(
+                f"reaction_menu:{msg.channel.id}:{msg.id}",
                 {
                     "kind": "confirmation",
-                    "channel": msg.channel.id,
-                    "message": msg.id,
                     "end": int(time.time()) + 180,
                     "data": {
                         "guild": guild.id,
                         "msg": message._data,
                     },
                 },
+            )
+            await self.bot.state.sadd(
+                "reaction_menu_keys",
+                f"reaction_menu:{msg.channel.id}:{msg.id}",
             )
         elif guild:
             await self.send_mail(message, guild)

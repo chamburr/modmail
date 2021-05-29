@@ -81,12 +81,10 @@ async def create_paginator(bot, ctx, pages):
     for reaction in ["⏮️", "◀️", "⏹️", "▶️", "⏭️"]:
         await msg.add_reaction(reaction)
 
-    await bot.state.sadd(
-        "reaction_menus",
+    await bot.state.set(
+        f"reaction_menu:{msg.channel.id}:{msg.id}",
         {
             "kind": "paginator",
-            "channel": msg.channel.id,
-            "message": msg.id,
             "end": int(time.time()) + 180,
             "data": {
                 "page": 0,
@@ -94,6 +92,7 @@ async def create_paginator(bot, ctx, pages):
             },
         },
     )
+    await bot.state.sadd("reaction_menu_keys", f"reaction_menu:{msg.channel.id}:{msg.id}")
 
 
 async def select_guild(bot, message, msg):
@@ -164,12 +163,10 @@ async def select_guild(bot, message, msg):
     ]:
         await msg.add_reaction(reaction)
 
-    await bot.state.sadd(
-        "reaction_menus",
+    await bot.state.set(
+        f"reaction_menu:{msg.channel.id}:{msg.id}",
         {
             "kind": "selection",
-            "channel": msg.channel.id,
-            "message": msg.id,
             "end": int(time.time()) + 180,
             "data": {
                 "msg": message._data,
@@ -178,19 +175,16 @@ async def select_guild(bot, message, msg):
             },
         },
     )
+    await bot.state.sadd("reaction_menu_keys", f"reaction_menu:{msg.channel.id}:{msg.id}",)
 
 
 async def get_reaction_menu(bot, payload, kind):
-    for menu in await bot.state.smembers("reaction_menus"):
-        if (
-            menu["channel"] == payload.channel_id
-            and menu["message"] == payload.message_id
-            and menu["kind"] == kind
-        ):
-            channel = create_fake_channel(bot, menu["channel"])
-            message = create_fake_message(bot, channel, menu["message"])
+    menu = await bot.state.get(f"reaction_menu:{payload.channel_id}:{payload.message_id}")
+    if menu and menu["kind"] == kind:
+        channel = create_fake_channel(bot, payload.channel_id)
+        message = create_fake_message(bot, channel, payload.message_id)
 
-            return menu, channel, message
+        return menu, channel, message
 
     return None, None, None
 

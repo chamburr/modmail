@@ -162,12 +162,14 @@ class Scheduler:
 
     async def cleanup(self):
         while True:
-            for menu in await self.bot.state.smembers("reaction_menus"):
+            for menu_key in await self.bot.state.smembers("reaction_menu_keys"):
+                menu = await self.bot.state.get(menu_key)
+
                 if menu["end"] > int(time.time()):
                     continue
 
-                channel = tools.create_fake_channel(self.bot, menu["channel"])
-                message = tools.create_fake_message(self.bot, channel, menu["message"])
+                channel = tools.create_fake_channel(self.bot, menu.split(":")[1])
+                message = tools.create_fake_message(self.bot, channel, menu.split(":")[2])
 
                 emojis = []
 
@@ -191,7 +193,8 @@ class Scheduler:
                     except discord.HTTPException:
                         emojis = []
 
-                await self.bot.state.srem("reaction_menus", menu)
+                await self.bot.state.delete(menu_key)
+                await self.bot.state.srem("reaction_menu_keys", menu_key)
 
                 for emoji in emojis:
                     try:
