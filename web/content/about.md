@@ -36,7 +36,7 @@ Administrator
 
 Moderator
 
-- Image: https://cdn.discordapp.com/avatars/365262543872327681/7c55d2f219b263d7de75f48b8b813b67.png
+- Image: https://cdn.discordapp.com/avatars/365262543872327681/1df18ddbc994d0b8d88413a0cfc54059.png
 - Website: https://teagancollyer.wordpress.com
 - GitHub: https://github.com/SnowyJaguar1034
 - Twitter: https://twitter.com/SnowyJaguar1034
@@ -53,7 +53,7 @@ Support
 
 Support
 
-- Image: https://cdn.discordapp.com/avatars/247151607647698947/2e491deb44626d23ad1d9b5cdbf0bd90.png
+- Image: https://cdn.discordapp.com/avatars/247151607647698947/b82b9b44638202df45f4271d01c3225f.png
 
 # waterflamev8
 
