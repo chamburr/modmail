@@ -176,19 +176,19 @@ class Scheduler:
                         await message.clear_reactions()
                     except discord.Forbidden:
                         emojis = ["⏮️", "◀️", "⏹️", "▶️", "⏭️"]
-                    except discord.NotFound:
+                    except discord.HTTPException:
                         pass
                 elif menu["kind"] == "confirmation":
                     emojis = ["✅", "🔁", "❌"]
                     try:
                         await message.edit(ErrorEmbed("Time out. You did not choose anything."))
-                    except discord.NotFound:
+                    except discord.HTTPException:
                         emojis = []
                 elif menu["kind"] == "selection":
                     emojis = ["1⃣", "2⃣", "3⃣", "4⃣", "5⃣", "6⃣", "7⃣", "8⃣", "9⃣", "🔟", "◀️", "▶️"]
                     try:
                         await message.edit(ErrorEmbed("Time out. You did not choose anything."))
-                    except discord.NotFound:
+                    except discord.HTTPException:
                         emojis = []
 
                 await self.bot.state.srem("reaction_menus", menu)
@@ -196,7 +196,7 @@ class Scheduler:
                 for emoji in emojis:
                     try:
                         await message.remove_reaction(emoji, self.bot.user)
-                    except discord.NotFound:
+                    except discord.HTTPException:
                         pass
 
             await asyncio.sleep(30)
