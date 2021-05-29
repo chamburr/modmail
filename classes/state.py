@@ -80,6 +80,8 @@ class State:
     async def get(self, keys):
         results = []
         if isinstance(keys, (list, tuple)):
+            if len(keys) == 0:
+                return []
             results.extend([self._loads(x) for x in await self.redis.mget(*keys)])
         else:
             results.append(self._loads(await self.redis.get(keys)))

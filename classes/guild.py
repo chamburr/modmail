@@ -164,7 +164,7 @@ class Guild(guild.Guild):
         return channels
 
     async def get_channel(self, channel_id):
-        channel = await self._state.get(f"channel:{self.id}:{channel_id}")
+        channel = await self._state.get(f"channel:{channel_id}")
 
         if not channel:
             return None
