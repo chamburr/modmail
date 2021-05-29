@@ -6,7 +6,6 @@ async-timeout==3.0.1
 asyncpg==0.23.0
 dateparser==1.0.0
 discord.py==1.7.2
-distro==1.5.0
 orjson==3.5.2
 psutil==5.8.0
 python-dotenv==0.17.1
