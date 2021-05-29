@@ -165,6 +165,10 @@ class Scheduler:
             for menu_key in await self.bot.state.smembers("reaction_menu_keys"):
                 menu = await self.bot.state.get(menu_key)
 
+                if menu is None:
+                    await self.bot.state.srem("reaction_menu_keys", menu_key)
+                    continue
+
                 if menu["end"] > int(time.time()):
                     continue
 
