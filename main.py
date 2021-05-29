@@ -176,6 +176,8 @@ class Scheduler:
                         await message.clear_reactions()
                     except discord.Forbidden:
                         emojis = ["⏮️", "◀️", "⏹️", "▶️", "⏭️"]
+                    except discord.NotFound:
+                        pass
                 elif menu["kind"] == "confirmation":
                     emojis = ["✅", "🔁", "❌"]
                     await message.edit(ErrorEmbed("Time out. You did not choose anything."))
