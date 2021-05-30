@@ -8,7 +8,7 @@ Set up ModMail.
 
 Change the prefix or view the current prefix.
 
-- Usage: `prefix [new prefix]`
+- Usage: `[new prefix]`
 - Alias: setprefix
 
 ## category
