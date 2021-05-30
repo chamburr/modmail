@@ -16,40 +16,6 @@ class Admin(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
-    async def _send_guilds(self, ctx, guilds, title):
-        if len(guilds) == 0:
-            await ctx.send(ErrorEmbed("No such guild was found."))
-            return
-
-        all_pages = []
-
-        for chunk in [guilds[i : i + 20] for i in range(0, len(guilds), 20)]:
-            page = Embed(title=title)
-
-            for guild in chunk:
-                if page.description == discord.Embed.Empty:
-                    page.description = guild
-                else:
-                    page.description += f"\n{guild}"
-
-            page.set_footer("Use the reactions to flip pages.")
-            all_pages.append(page)
-
-        await tools.create_paginator(self.bot, ctx, all_pages)
-
-    @checks.is_admin()
-    @commands.command(
-        description="Get a list of servers with the specified name.", usage="findserver <name>"
-    )
-    async def findserver(self, ctx, *, name: str):
-        guilds = [
-            f"{guild.name} `{guild.id}` ({guild.member_count} members)"
-            for guild in await self.bot.guilds()
-            if guild.name.lower().count(name.lower()) > 0
-        ]
-
-        await self._send_guilds(ctx, guilds, "Servers")
-
     @checks.is_admin()
     @commands.command(
         description="Get a list of servers the bot shares with the user.",
@@ -65,19 +31,25 @@ class Admin(commands.Cog):
             if guild is not None
         ]
 
-        await self._send_guilds(ctx, guilds, "Shared Servers")
+        if len(guilds) == 0:
+            await ctx.send(ErrorEmbed("No such guild was found."))
+            return
 
-    @checks.is_admin()
-    @commands.command(description="Get the top servers using the bot.", usage="topservers [count]")
-    async def topservers(self, ctx, *, count: int = 20):
-        guilds = [
-            f"#{index + 1} {guild.name} `{guild.id}` ({guild.member_count} members)"
-            for index, guild in enumerate(
-                sorted(await self.bot.guilds(), key=lambda x: x.member_count, reverse=True)[:count]
-            )
-        ]
+        all_pages = []
 
-        await self._send_guilds(ctx, guilds, "Top Servers")
+        for chunk in [guilds[i : i + 20] for i in range(0, len(guilds), 20)]:
+            page = Embed(title="Shared Servers")
+
+            for guild in chunk:
+                if page.description == discord.Embed.Empty:
+                    page.description = guild
+                else:
+                    page.description += f"\n{guild}"
+
+            page.set_footer("Use the reactions to flip pages.")
+            all_pages.append(page)
+
+        await tools.create_paginator(self.bot, ctx, all_pages)
 
     @checks.is_admin()
     @commands.command(
