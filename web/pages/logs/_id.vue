@@ -20,12 +20,21 @@
         {{ element.message }}
         <div v-if="element.attachments.length !== 0" class="row mt-2">
           <div
-            v-for="(attachment, index2) in validAttachments(element.attachments)"
-            :key="`${index}-${index2}`"
+            v-for="(attachment, index2) in supportedAttachments(element.attachments)"
+            :key="`${index}-1-${index2}`"
             class="col flex-grow-0"
           >
             <a :href="attachment" target="_blank">
               <img :src="attachment" alt="Attachment" class="log-attachment" />
+            </a>
+          </div>
+          <div
+            v-for="(attachment, index2) in unsupportedAttachments(element.attachments)"
+            :key="`${index}-2-${index2}`"
+            class="col-12"
+          >
+            <a :href="attachment" target="_blank" rel="noopener">
+              {{ attachment }}
             </a>
           </div>
         </div>
@@ -45,9 +54,13 @@ export default {
     title: 'Logs',
   },
   methods: {
-    validAttachments(elements) {
+    supportedAttachments(elements) {
       const supported = ['.bmp', '.gif', '.jpg', '.jpeg', '.png']
       return elements.filter(element => supported.includes(element.slice(-4).toLowerCase()))
+    },
+    unsupportedAttachments(elements) {
+      const supported = this.supportedAttachments(elements)
+      return elements.filter(element => !supported.includes(element))
     },
   },
 }
