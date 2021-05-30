@@ -52,6 +52,8 @@ class Guild(guild.Guild):
         member_count = guild.get("member_count", None)
         if member_count is not None:
             self._member_count = member_count
+        else:
+            self._member_count = 0
 
         self.name = guild.get("name")
         self.region = try_enum(VoiceRegion, guild.get("region"))
