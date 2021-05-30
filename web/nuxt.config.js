@@ -186,6 +186,7 @@ export default {
       /^[-_]*nuxt[-_]*/,
       /^(?:alert|badge|bg|btn|dropdown|icon|nav|shadow|slider|text)-*/,
       /^(?:b-tooltip|modal|popover|tooltip|bs-tooltip|b-toast|toast)-*/,
+      /^log-*/,
     ],
     whitelistPatternsChildren: [
       /^[-_]*nuxt[-_]*/,
