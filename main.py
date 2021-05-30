@@ -287,9 +287,9 @@ class Main:
     def write_targets(self):
         data = []
 
-        for i in range(len(self.instances)):
-            data.append({"labels": {"cluster": str(i)}, "targets": [f"localhost:{6100 + i}"]})
         data.append({"labels": {"cluster": "0"}, "targets": ["localhost:6100"]})
+        for i in range(1, len(self.instances) + 1):
+            data.append({"labels": {"cluster": str(i)}, "targets": [f"localhost:{6100 + i}"]})
 
         with open("targets.json", "w") as file:
             json.dump(data, file, indent=2)
