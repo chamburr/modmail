@@ -36,6 +36,7 @@ def create_fake_message(bot, channel, message_id):
         channel=channel,
         data={
             "id": message_id,
+            "channel_id": channel.id,
             "attachments": [],
             "embeds": [],
             "edited_timestamp": 0,
