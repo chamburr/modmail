@@ -341,17 +341,17 @@ async def is_guild_banned(bot, guild):
 
 
 def is_modmail_channel(channel, user_id=None):
-    return (
-        channel.topic
-        and channel.topic.startswith("ModMail Channel ")
-        and channel.topic.replace("ModMail Channel ", "").split(" ")[0].isdigit()
-        and channel.topic.replace("ModMail Channel ", "").split(" ")[1].isdigit()
-        and (
-            channel.topic.replace("ModMail Channel ", "").split(" ")[0] == str(user_id)
-            if user_id
-            else True
-        )
-    )
+    if not channel.topic or not channel.topic.startswith("ModMail Channel "):
+        return False
+
+    parts = channel.topic.replace("ModMail Channel ", "").split(" ")
+    if len(parts) < 2 or not parts[0].isdigit() or not parts[1].isdigit():
+        return False
+
+    if user_id and parts[0] != str(user_id):
+        return False
+
+    return True
 
 
 def get_modmail_user(channel):
