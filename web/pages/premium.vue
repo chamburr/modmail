@@ -131,7 +131,7 @@ export default {
               <input type="hidden" name="no_shipping" value="1">
               <input type="hidden" name="currency_code" value="USD">
               <input type="hidden" name="custom" value="${user.id}">
-              <input type="hidden" name="notify_url" value="https://modmail.xyz/api/webhook/payment">
+              <input type="hidden" name="notify_url" value="https://modmail.xyz/api/webhooks/payment">
               <input type="hidden" name="return" value="https://modmail.xyz/success">
               <input type="hidden" name="cancel_return" value="https://modmail.xyz/premium">
             </form>
