@@ -97,7 +97,7 @@ class State:
                 results[index] = value
 
         if isinstance(keys, (list, tuple)):
-            return results
+            return [x for x in results if x is not None]
 
         return results[0]
 
