@@ -41,6 +41,8 @@ pub async fn real_main() -> ApiResult<()> {
         _guard = sentry::init(CONFIG.sentry_dsn.clone());
     }
 
+    std::env::set_var("RUST_BACKTRACE", "1");
+
     let pool = cache::get_pool()?;
 
     HttpServer::new(move || {
@@ -61,6 +63,7 @@ pub async fn real_main() -> ApiResult<()> {
             )
             .wrap(Logger::default())
             .wrap(NormalizePath::new(TrailingSlash::Trim))
+            .wrap(sentry_actix::Sentry::new())
             .service(
                 web::scope("/api")
                     .service(index::index)

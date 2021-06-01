@@ -184,7 +184,7 @@ impl Responder for ApiResponse {
 
 #[derive(Debug)]
 pub enum ApiError {
-    ActixWebError(()),
+    ActixWebError(actix_web::Error),
     CreateMessageError(CreateMessageError),
     CustomError((StatusCode, Value)),
     EmbedError(EmbedError),
@@ -235,14 +235,12 @@ impl ResponseError for ApiError {
 
 impl From<actix_web::Error> for ApiError {
     fn from(err: actix_web::Error) -> Self {
-        sentry::capture_error(&err);
-        Self::ActixWebError(())
+        Self::ActixWebError(err)
     }
 }
 
 impl From<BlockingError<r2d2::Error>> for ApiError {
     fn from(err: BlockingError<r2d2::Error>) -> Self {
-        sentry::capture_error(&err);
         match err {
             BlockingError::Error(error) => Self::R2d2Error(error),
             BlockingError::Canceled => Self::EmptyError(()),
@@ -268,7 +266,6 @@ impl
             >,
         >,
     ) -> Self {
-        sentry::capture_error(&err);
         match err {
             BlockingError::Error(error) => Self::RequestTokenErrorBasic(error),
             BlockingError::Canceled => Self::EmptyError(()),
@@ -294,7 +291,6 @@ impl
             >,
         >,
     ) -> Self {
-        sentry::capture_error(&err);
         match err {
             BlockingError::Error(error) => Self::RequestTokenErrorRevocation(error),
             BlockingError::Canceled => Self::EmptyError(()),
@@ -304,7 +300,6 @@ impl
 
 impl From<BlockingError<reqwest::Error>> for ApiError {
     fn from(err: BlockingError<reqwest::Error>) -> Self {
-        sentry::capture_error(&err);
         match err {
             BlockingError::Error(error) => Self::ReqwestError(error),
             BlockingError::Canceled => Self::EmptyError(()),
@@ -314,7 +309,6 @@ impl From<BlockingError<reqwest::Error>> for ApiError {
 
 impl From<CreateMessageError> for ApiError {
     fn from(err: CreateMessageError) -> Self {
-        sentry::capture_error(&err);
         Self::CreateMessageError(err)
     }
 }
@@ -327,7 +321,6 @@ impl From<ApiResponse> for ApiError {
 
 impl From<FromUtf8Error> for ApiError {
     fn from(err: FromUtf8Error) -> Self {
-        sentry::capture_error(&err);
         Self::FromUtf8Error(err)
     }
 }
@@ -340,77 +333,66 @@ impl From<()> for ApiError {
 
 impl From<EmbedError> for ApiError {
     fn from(err: EmbedError) -> Self {
-        sentry::capture_error(&err);
         Self::EmbedError(err)
     }
 }
 
 impl From<io::Error> for ApiError {
     fn from(err: io::Error) -> Self {
-        sentry::capture_error(&err);
         Self::IoError(err)
     }
 }
 
 impl From<jsonwebtoken::errors::Error> for ApiError {
     fn from(err: jsonwebtoken::errors::Error) -> Self {
-        sentry::capture_error(&err);
         Self::JsonWebTokenError(err)
     }
 }
 
 impl From<ParseError> for ApiError {
     fn from(err: ParseError) -> Self {
-        sentry::capture_error(&err);
         Self::ParseError(err)
     }
 }
 
 impl From<ParseIntError> for ApiError {
     fn from(err: ParseIntError) -> Self {
-        sentry::capture_error(&err);
         Self::ParseIntError(err)
     }
 }
 
 impl From<r2d2::Error> for ApiError {
     fn from(err: r2d2::Error) -> Self {
-        sentry::capture_error(&err);
         Self::R2d2Error(err)
     }
 }
 
 impl From<RedisError> for ApiError {
     fn from(err: RedisError) -> Self {
-        sentry::capture_error(&err);
         Self::RedisError(err)
     }
 }
 
 impl From<serde_json::Error> for ApiError {
     fn from(err: serde_json::Error) -> Self {
-        sentry::capture_error(&err);
         Self::SerdeJsonError(err)
     }
 }
 
 impl From<serde_urlencoded::de::Error> for ApiError {
     fn from(err: serde_urlencoded::de::Error) -> Self {
-        sentry::capture_error(&err);
         Self::SerdeUrlEncodedError(err)
     }
 }
 
 impl From<twilight_http::Error> for ApiError {
     fn from(err: twilight_http::Error) -> Self {
-        sentry::capture_error(&err);
         Self::TwilightHttpError(err)
     }
 }
 
 impl From<Utf8Error> for ApiError {
     fn from(err: Utf8Error) -> Self {
-        sentry::capture_error(&err);
         Self::Utf8Error(err)
     }
 }
