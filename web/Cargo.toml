@@ -27,11 +27,11 @@ sentry-actix = { version = "0.22.0", default-features = false }
 serde = { version = "1.0.117", default-features = false, features = ["derive"] }
 serde_json = { version = "1.0.61", default-features = false }
 serde_urlencoded = { version = "0.7.0", default-features = false }
-tokio = { version = "1.6.0", default-features = false, features = ["rt", "rt-multi-thread"] }
+tokio = { version = "1.6.1", default-features = false, features = ["rt", "rt-multi-thread"] }
 tracing = { version = "0.1.26", default-features = false }
 tracing-log = { version = "0.1.1", default-features = false, features = ["env_logger"] }
 tracing-subscriber = { version = "0.2.18", default-features = false, features = ["ansi", "fmt"] }
-twilight-embed-builder = { version = "0.4.0", default-features = false }
-twilight-http = { version = "0.4.1", default-features = false, features = ["rustls-webpki-roots"] }
-twilight-model = { version = "0.4.1", default-features = false }
+twilight-embed-builder = { version = "0.4.1", default-features = false }
+twilight-http = { version = "0.4.2", default-features = false, features = ["rustls-webpki-roots"] }
+twilight-model = { version = "0.4.2", default-features = false }
 url = { version = "2.2.2", default-features = false }
