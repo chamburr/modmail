@@ -260,6 +260,10 @@ class DirectMessageEvents(commands.Cog, name="Direct Message"):
                 new_page = Embed.from_dict(all_pages[page])
                 await msg.edit(new_page)
 
+                menu["data"]["page"] = page
+                menu["end"] = int(time.time()) + 180
+                await self.bot.state.set(f"reaction_menu:{channel.id}:{msg.id}", menu)
+
                 for reaction in numbers[: len(new_page.fields)]:
                     await msg.add_reaction(reaction)
 
@@ -269,15 +273,15 @@ class DirectMessageEvents(commands.Cog, name="Direct Message"):
                 new_page = Embed.from_dict(all_pages[page])
                 await msg.edit(new_page)
 
+                menu["data"]["page"] = page
+                menu["end"] = int(time.time()) + 180
+                await self.bot.state.set(f"reaction_menu:{channel.id}:{msg.id}", menu)
+
                 for reaction in numbers[len(new_page.fields) :]:
                     try:
                         await msg.remove_reaction(reaction, self.bot.user)
                     except discord.NotFound:
                         pass
-
-            menu["data"]["page"] = page
-            menu["end"] = int(time.time()) + 180
-            await self.bot.state.set(f"reaction_menu:{channel.id}:{msg.id}", menu)
 
     @commands.Cog.listener()
     async def on_message(self, message):
