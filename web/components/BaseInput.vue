@@ -2,7 +2,7 @@
   <div class="form-group" :class="[{ focused: focused }]">
     <slot v-bind="slotData">
       <input
-        v-model="realValue"
+        v-model="value"
         v-bind="$attrs"
         class="form-control bg-dark border-0 text-white"
         type="text"
