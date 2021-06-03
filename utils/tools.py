@@ -102,7 +102,9 @@ async def select_guild(bot, message, msg):
     user_guilds = await get_user_guilds(bot, message.author)
     if user_guilds is None:
         embed = Embed(
-            f"Please [click here]({bot.config.BASE_URI}/login?redirect=/authorized) to login. "
+            f"Please [click here]({bot.config.BASE_URI}/login?redirect=/authorized) to "
+            "login and allow the bot to see the servers you are in. " 
+            "This is required for the bot to function properly. "
             "Then, close the page and return back here."
         )
         await msg.edit(embed)
