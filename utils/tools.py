@@ -63,7 +63,7 @@ def upgrade_payload(data):
             for x in data["permission_overwrites"]
         ]
 
-    if data.get("permissions"):
+    if isinstance(data.get("permissions"), str):
         data["permissions_new"] = data["permissions"]
         data["permissions"] = int(data["permissions"])
 
