@@ -315,7 +315,7 @@ class Core(commands.Cog):
             all_pages.append(page)
 
         if len(all_pages) == 1:
-            embed = Embed(all_pages[0])
+            embed = all_pages[0]
             embed.set_footer(discord.Embed.Empty)
             await ctx.send(embed)
             return
