@@ -139,7 +139,7 @@ class DirectMessageEvents(commands.Cog, name="Direct Message"):
 
             try:
                 await channel.send(" ".join(roles), embed=embed)
-            except discord.HTTPException as e:
+            except discord.HTTPException:
                 await message.channel.send(
                     ErrorEmbed(
                         "The bot is missing permissions. Please contact an admin on the server."
