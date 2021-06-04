@@ -122,7 +122,9 @@ class DirectMessageEvents(commands.Cog, name="Direct Message"):
                 "Roles",
                 "*None*"
                 if len(member._roles) == 0
-                else " ".join([f"<@&{x}>" for x in member._roles]),
+                else " ".join([f"<@&{x}>" for x in member._roles])
+                if len(" ".join([f"<@&{x}>" for x in member._roles])) <= 1024
+                else f"*{len(member._roles)} roles*",
             )
             embed.set_footer(f"{message.author} | {message.author.id}", message.author.avatar_url)
 
