@@ -137,7 +137,12 @@ class DirectMessageEvents(commands.Cog, name="Direct Message"):
 
             try:
                 await channel.send(" ".join(roles), embed=embed)
-            except discord.HTTPException:
+            except discord.HTTPException as e:
+                if e.text == "Invalid Form Body In embed.fields.1.value: Must be 1024 or fewer in length.":
+                    embed.fields[1].value = f"*{len(member._roles) Roles}*"
+                    await channel.send(" ".join(roles), embed=embed)
+                    return
+
                 await message.channel.send(
                     ErrorEmbed(
                         "The bot is missing permissions. Please contact an admin on the server."
