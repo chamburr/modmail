@@ -122,7 +122,9 @@ class DirectMessageEvents(commands.Cog, name="Direct Message"):
                 "Roles",
                 "*None*"
                 if len(member._roles) == 0
-                else " ".join([f"<@&{x}>" for x in member._roles]),
+                else " ".join([f"<@&{x}>" for x in member._roles])
+                if len(" ".join([f"<@&{x}>" for x in member._roles])) <= 1024
+                else f"*{len(member._roles)} Roles*",
             )
             embed.set_footer(f"{message.author} | {message.author.id}", message.author.avatar_url)
 
@@ -138,11 +140,6 @@ class DirectMessageEvents(commands.Cog, name="Direct Message"):
             try:
                 await channel.send(" ".join(roles), embed=embed)
             except discord.HTTPException as e:
-                if e.text == "Invalid Form Body In embed.fields.1.value: Must be 1024 or fewer in length.":
-                    embed.fields[1].value = f"*{len(member._roles) Roles}*"
-                    await channel.send(" ".join(roles), embed=embed)
-                    return
-
                 await message.channel.send(
                     ErrorEmbed(
                         "The bot is missing permissions. Please contact an admin on the server."
