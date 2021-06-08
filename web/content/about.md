@@ -21,7 +21,7 @@ Administrator
 
 Administrator
 
-- Image: https://cdn.discordapp.com/avatars/197291773133979648/583936dfa136389b93f0eee723b38d22.png
+- Image: https://cdn.discordapp.com/avatars/197291773133979648/dee41d31403236ea959a6b2feac57d54.png
 - GitHub: https://github.com/Foxtrek64
 
 # James [a_leon]
@@ -48,12 +48,13 @@ Moderator
 Support
 
 - Image: https://cdn.discordapp.com/avatars/332314562575597579/570931cb720a4f40ec7c9375193df21b.png
+- GitHub: https://github.com/dlsnyder8
 
 # Mikhail
 
 Support
 
-- Image: https://cdn.discordapp.com/avatars/247151607647698947/b82b9b44638202df45f4271d01c3225f.png
+- Image: https://cdn.discordapp.com/avatars/247151607647698947/b955a19792f7a2b27340565f6b1bb13a.png
 
 # waterflamev8
 
