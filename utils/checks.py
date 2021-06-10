@@ -82,7 +82,7 @@ def is_patron():
         if res:
             return True
 
-        if await tools.get_premium_slots(ctx.bot, ctx.author.id) is False:
+        if await tools.get_premium_slots(ctx.bot, ctx.author.id) == 0:
             await ctx.send(
                 ErrorEmbed(
                     "This command requires you to be a patron. Want to become a patron? More "
