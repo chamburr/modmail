@@ -304,7 +304,7 @@ async def get_premium_slots(bot, user):
 
     guild = await bot.get_guild(int(bot.config.MAIN_SERVER))
     if guild:
-        member = await guild.get_member(user)
+        member = await guild.fetch_member(user)
         if member:
             if int(bot.config.PREMIUM5_ROLE) in member._roles:
                 return 5
