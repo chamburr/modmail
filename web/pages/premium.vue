@@ -58,6 +58,8 @@
         We can host an exclusive instance just for your server! This include the premium features
         listed above, and you will also get to customise the bot username, avatar and status. Please
         contact James [a_leon]#6196 on Discord for more information.
+        We can also add custom commands to your exclusive instance upon request. Please contact 
+        SnowyJaguar#1034 on Discord for more information.
       </p>
     </div>
   </div>
