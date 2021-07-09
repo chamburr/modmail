@@ -105,27 +105,27 @@ Close all of the channels anonymously.
 
 - Usage: `[reason]`
 
-## blacklist
+## block
 
-Blacklist a user to prevent them from creating tickets.
-
-- Usage: `<member>`
-- Alias: block
-
-## whitelist
-
-Whitelist a user to allow them to creating tickets.
+Blocks a user to prevent them from creating tickets.
 
 - Usage: `<member>`
-- Alias: unblock
+- Alias: deny
 
-## blacklistclear
+## unblock
 
-Remove all users from the blacklist.
+Unblocks a user to allow them to create tickets.
 
-## viewblacklist
+- Usage: `<member>`
+- Alias: allow
 
-View the blacklist.
+## blocklistclear
+
+Remove all users from the blocklist.
+
+## viewblocklist
+
+View the blocklist.
 
 # Direct Message
 

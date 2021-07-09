@@ -245,14 +245,14 @@ class Core(commands.Cog):
     @checks.is_mod()
     @commands.guild_only()
     @commands.command(
-        description="Blacklist a user to prevent them from creating tickets.",
-        usage="blacklist <member>",
-        aliases=["block"],
+        description="Blocks a user to prevent them from creating tickets.",
+        usage="block <member>",
+        aliases=["deny"]
     )
-    async def blacklist(self, ctx, *, member: MemberConverter):
+    async def block(self, ctx, *, member: MemberConverter):
         blacklist = (await tools.get_data(self.bot, ctx.guild.id))[9]
         if member.id in blacklist:
-            await ctx.send(ErrorEmbed("The user is already blacklisted."))
+            await ctx.send(ErrorEmbed("The user is already blocked."))
             return
 
         async with self.bot.pool.acquire() as conn:
@@ -262,21 +262,21 @@ class Core(commands.Cog):
                 ctx.guild.id,
             )
 
-        await ctx.send(Embed("The user is blacklisted successfully."))
+        await ctx.send(Embed("The user has been blocked successfully."))
 
     @checks.in_database()
     @checks.is_mod()
     @commands.guild_only()
     @commands.command(
-        description="Whitelist a user to allow them to create tickets.",
-        usage="whitelist <member>",
-        aliases=["unblock"],
+        description="Unblocks a user to allow them to create tickets.",
+        usage="unblock <member>",
+        aliases=["allow"],
     )
-    async def whitelist(self, ctx, *, member: MemberConverter):
+    async def unblock(self, ctx, *, member: MemberConverter):
         blacklist = (await tools.get_data(self.bot, ctx.guild.id))[9]
 
         if member.id not in blacklist:
-            await ctx.send(ErrorEmbed("The user is not blacklisted."))
+            await ctx.send(ErrorEmbed("The user is not blocked."))
             return
 
         async with self.bot.pool.acquire() as conn:
@@ -286,31 +286,31 @@ class Core(commands.Cog):
                 ctx.guild.id,
             )
 
-        await ctx.send(Embed("The user is whitelisted successfully."))
+        await ctx.send(Embed("The user has been unblocked successfully."))
 
     @checks.in_database()
     @checks.is_mod()
     @commands.guild_only()
-    @commands.command(description="Remove all users from the blacklist.", usage="blacklistclear")
-    async def blacklistclear(self, ctx):
+    @commands.command(description="Remove all users from the blocklist.", usage="blocklistclear")
+    async def blocklistclear(self, ctx):
         async with self.bot.pool.acquire() as conn:
             await conn.execute("UPDATE data SET blacklist=$1 WHERE guild=$2", [], ctx.guild.id)
 
-        await ctx.send(Embed("The blacklist is cleared successfully."))
+        await ctx.send(Embed("The blocklist has been cleared successfully."))
 
     @checks.in_database()
     @checks.is_mod()
     @commands.guild_only()
-    @commands.command(description="View the blacklist.", usage="viewblacklist")
-    async def viewblacklist(self, ctx):
+    @commands.command(description="View the blocklist.", usage="viewblocklist")
+    async def viewblocklist(self, ctx):
         blacklist = (await tools.get_data(self.bot, ctx.guild.id))[9]
         if not blacklist:
-            await ctx.send(Embed("No one is blacklisted."))
+            await ctx.send(Embed("No one has been blocked."))
             return
 
         all_pages = []
         for chunk in [blacklist[i : i + 25] for i in range(0, len(blacklist), 25)]:
-            page = Embed("Blacklist", "\n".join([f"<@{user}> ({user})" for user in chunk]))
+            page = Embed("Blocklist", "\n".join([f"<@{user}> ({user})" for user in chunk]))
             page.set_footer("Use the reactions to flip pages.")
             all_pages.append(page)
 
