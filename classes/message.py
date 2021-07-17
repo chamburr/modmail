@@ -19,9 +19,6 @@ class Message(message.Message):
         self._data = data
         self.id = int(data["id"])
         self.webhook_id = utils._get_as_snowflake(data, "webhook_id")
-        self.reactions = [
-            Reaction(message=self, data=x, emoji="x") for x in data.get("reactions", [])
-        ]
         self.attachments = [Attachment(data=x, state=self._state) for x in data["attachments"]]
         self.embeds = [Embed.from_dict(x) for x in data["embeds"]]
         self.application = data.get("application")
@@ -75,6 +72,15 @@ class Message(message.Message):
     @member.setter
     def member(self, value):
         return
+    
+    async def reactions(self):
+        reactions = []
+
+        for reaction in self._data.get("reactions", []):
+            emoji = await self._state.get_reaction_emoji(reaction["emoji"])
+            reactions.append(Reaction(message=self, data=reaction, emoji=emoji))
+
+        return reactions
 
     async def mentions(self):
         try:
