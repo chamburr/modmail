@@ -162,7 +162,7 @@ pub struct User {
     pub id: String,
     pub username: String,
     pub discriminator: String,
-    pub avatar: String,
+    pub avatar: Option<String>,
 }
 
 impl User {
