@@ -116,12 +116,12 @@ class Premium(commands.Cog):
     @commands.command(
         description="Remove premium slot from a server.", usage="premiumremove <server ID>"
     )
-    async def premiumremove(self, ctx, *, guild: GuildConverter):
+    async def premiumremove(self, ctx, *, guild: int):
         async with self.bot.pool.acquire() as conn:
             res = await conn.fetchrow(
                 "SELECT identifier FROM premium WHERE identifier=$1 AND $2=any(guild)",
                 ctx.author.id,
-                guild.id,
+                guild,
             )
 
         if not res:
@@ -131,11 +131,11 @@ class Premium(commands.Cog):
         async with self.bot.pool.acquire() as conn:
             await conn.execute(
                 "UPDATE premium SET guild=array_remove(guild, $1) WHERE identifier=$2",
-                guild.id,
+                guild,
                 ctx.author.id,
             )
 
-        await tools.remove_premium(self.bot, guild.id)
+        await tools.remove_premium(self.bot, guild)
 
         await ctx.send(Embed("That server no longer has premium."))
 
