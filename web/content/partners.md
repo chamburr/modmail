@@ -47,15 +47,6 @@ you. RAZE HELL in DOOM Eternal!
 - Image: https://cdn.discordapp.com/icons/162891400684371968/a_4363040f917b4920a2e78da1e302d9dc.png
 - Link: https://discord.gg/doom
 
-# Sea of Thieves
-
-One of the longest running and largest community-run Sea of Thieves Discord servers. A great and
-most of all welcoming place to chat about Sea of Thieves and maybe find a few crew mates along the
-way.
-
-- Image: https://cdn.discordapp.com/icons/209815380946845697/b1ae5ab985cadd1191a17efd56a1bd83.png
-- Link: https://discord.gg/seaofthievescommunity
-
 # Underlords
 
 Underlords Discord server acts as a secondary platform to r/Underlords where users can have casual
