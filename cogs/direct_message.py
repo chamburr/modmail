@@ -73,13 +73,21 @@ class DirectMessageEvents(commands.Cog, name="Direct Message"):
                 name = name + f"-{message.author.discriminator}"
             else:
                 name = message.author.id
-
+            async with self.bot.pool.acquire() as conn:
+                cursor = conn.cursor()
+                accessrole_id = int(await conn.fetchrow(
+                  "SELECT accessrole WHERE guild = $1",
+                (guild_id)))
             try:
                 channel = await guild.create_text_channel(
                     name=name,
                     category=category,
                     topic=f"ModMail Channel {message.author.id} {message.channel.id} (Please do "
                     "not change this)",
+                    overwrites = 
+                        guild.default_role: discord.PermissionOverwrite(view_channel=False),
+                        guild.get_role(accessrole_id): discord.PermissionOverwrite(view_channel=True,send_messages=True)
+                    }
                 )
             except discord.HTTPException as e:
                 await message.channel.send(
