@@ -154,7 +154,7 @@ class Snippet(commands.Cog):
 
         all_pages = []
         for chunk in [res[i : i + 10] for i in range(0, len(res), 10)]:
-            page = Embed(title="Snippets")
+            page = Embed(title=f"Snippets [{len(res)}]")
 
             for snippet in chunk:
                 page.add_field(

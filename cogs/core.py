@@ -249,20 +249,28 @@ class Core(commands.Cog):
         usage="blacklist <member>",
         aliases=["block"],
     )
-    async def blacklist(self, ctx, *, member: MemberConverter):
+    async def blacklist(self, ctx, *, member: MemberConverter, reason: str = None):
         blacklist = (await tools.get_data(self.bot, ctx.guild.id))[9]
         if member.id in blacklist:
             await ctx.send(ErrorEmbed("The user is already blacklisted."))
             return
 
         async with self.bot.pool.acquire() as conn:
-            await conn.execute(
+            if len(reason) == 0:
+                await conn.execute(
                 "UPDATE data SET blacklist=array_append(blacklist, $1) WHERE guild=$2",
                 member.id,
                 ctx.guild.id,
             )
+            else:
+                await conn.execute(
+                    "UPDATE data SET blacklist=array_append(blacklist, $1, reason, $3) WHERE guild=$2",
+                    member.id,
+                    ctx.guild.id,
+                    reason
+                )
 
-        await ctx.send(Embed("The user is blacklisted successfully."))
+        await ctx.send(Embed(f"The user is blacklisted successfully for `{reason}`."))
 
     @checks.in_database()
     @checks.is_mod()
@@ -310,7 +318,7 @@ class Core(commands.Cog):
 
         all_pages = []
         for chunk in [blacklist[i : i + 25] for i in range(0, len(blacklist), 25)]:
-            page = Embed("Blacklist", "\n".join([f"<@{user}> ({user})" for user in chunk]))
+            page = Embed("Blacklist", "\n".join([f"<@{user}> ({user}) - {reason}" for user in chunk]))
             page.set_footer("Use the reactions to flip pages.")
             all_pages.append(page)
 
