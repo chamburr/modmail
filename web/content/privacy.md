@@ -1,5 +1,7 @@
 # Information We Collect
 
+When you use our Discord bot, we do not collect or store any information about you.
+
 When you visit our website, we automatically collect certain information about your device,
 including information about your web browser, IP address, time zone, and some of the cookies that
 are installed on your device. Additionally, as you browse our website, we collect information about
@@ -31,18 +33,6 @@ can also opt-out of Google Analytics here: https://tools.google.com/dlpage/gaopt
 Finally, we may also share your information to comply with applicable laws and regulations, to
 respond to a subpoena, search warrant or other lawful request for information we receive, or to
 otherwise protect our rights.
-
-# Behavioural Advertising
-
-As described above, we use your information to provide you with targeted advertisements or marketing
-communications we believe may be of interest to you. For more information about how targeted
-advertising works, you can visit the Network Advertising Initiative's ("NAI") educational page at
-https://www.networkadvertising.org/understanding-online-advertising/how-does-it-work.
-
-You can opt out of targeted advertising here: https://www.google.com/settings/ads/anonymous.
-
-Additionally, you can opt out of some of these services by visiting the Digital Advertising
-Alliance’s opt-out portal at: https://optout.aboutads.info.
 
 # Your Rights
 
