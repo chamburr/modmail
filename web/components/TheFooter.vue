@@ -10,7 +10,7 @@
               A feature-rich Discord bot for easy communication between server staff and users.
             </p>
             <p class="mb-0">
-              Copyright © 2019-2021
+              Copyright © 2019-2022
               <a class="footer-link" target="_blank" rel="noopener" href="https://chamburr.xyz">
                 CHamburr
               </a>
