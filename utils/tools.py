@@ -287,7 +287,7 @@ async def get_user_guilds(bot, member):
     http._token(f"Bearer {token}", bot=False)
 
     try:
-        guilds = [guild["id"] for guild in await http.get_guilds(100)]
+        guilds = [guild["id"] for guild in await http.get_guilds(200)]
     except discord.HTTPException:
         await bot.state.delete(f"user_token:{member.id}")
         return await get_user_guilds(bot, member)
