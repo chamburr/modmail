@@ -249,20 +249,21 @@ class Core(commands.Cog):
         usage="blacklist <member>",
         aliases=["block"],
     )
-    async def blacklist(self, ctx, *, member: MemberConverter):
+    async def blacklist(self, ctx, member: MemberConverter, *, reason: str = "Unspecified"):
+        # I don't think it needs to check if reason is None because if reason is None it will just say invalid command usage. That said I'll put the check in since you denied it last time.
+        if reason is None:
+            await ctx.send(ErrorEmbed("You need to provide a reason for blocking this user. Since you have not provided a reason the bot will default to `Unspecified`"))
         blacklist = (await tools.get_data(self.bot, ctx.guild.id))[9]
-        if member.id in blacklist:
-            await ctx.send(ErrorEmbed("The user is already blacklisted."))
+        blocked = (await tools.get_blocked(self.bot, member.id, ctx.guild.id))
+        if member.id in blacklist or blocked[0]:
+            await ctx.send(ErrorEmbed("The user is already blacklisted.\nReason: {blocked[2]}"))
             return
 
         async with self.bot.pool.acquire() as conn:
-            await conn.execute(
-                "UPDATE data SET blacklist=array_append(blacklist, $1) WHERE guild=$2",
-                member.id,
-                ctx.guild.id,
-            )
+            await conn.execute("UPDATE data SET blacklist=array_append(blacklist, $1) WHERE guild=$2", member.id, ctx.guild.id,)
+            await conn.execute("UPDATE blocked SET reason=$1 WHERE member=$2 and guild=$3", reason, member.id, ctx.guild.id,)
 
-        await ctx.send(Embed("The user is blacklisted successfully."))
+        await ctx.send(Embed("The user is blacklisted successfully.\nReason: {reason}"))
 
     @checks.in_database()
     @checks.is_mod()
@@ -280,11 +281,8 @@ class Core(commands.Cog):
             return
 
         async with self.bot.pool.acquire() as conn:
-            await conn.execute(
-                "UPDATE data SET blacklist=array_remove(blacklist, $1) WHERE guild=$2",
-                member.id,
-                ctx.guild.id,
-            )
+            await conn.execute("UPDATE data SET blacklist=array_remove(blacklist, $1) WHERE guild=$2", member.id, ctx.guild.id,)
+            await conn.execute("DELETE FROM blocked WHERE member=$1, guild=$2", member.id, ctx.guild.id)
 
         await ctx.send(Embed("The user is whitelisted successfully."))
 
@@ -295,6 +293,7 @@ class Core(commands.Cog):
     async def blacklistclear(self, ctx):
         async with self.bot.pool.acquire() as conn:
             await conn.execute("UPDATE data SET blacklist=$1 WHERE guild=$2", [], ctx.guild.id)
+            await conn.execute("DELETE FROM blocked")
 
         await ctx.send(Embed("The blacklist is cleared successfully."))
 
@@ -304,13 +303,15 @@ class Core(commands.Cog):
     @commands.command(description="View the blacklist.", usage="viewblacklist")
     async def viewblacklist(self, ctx):
         blacklist = (await tools.get_data(self.bot, ctx.guild.id))[9]
-        if not blacklist:
+        async with self.bot.pool.acquire() as conn:
+            blocked = await conn.fetch("SELECT member, guild, reason FROM blocked",)
+        if not blacklist or not blocked:
             await ctx.send(Embed("No one is blacklisted."))
             return
 
         all_pages = []
         for chunk in [blacklist[i : i + 25] for i in range(0, len(blacklist), 25)]:
-            page = Embed("Blacklist", "\n".join([f"<@{user}> ({user})" for user in chunk]))
+            page = Embed("Blacklist", "\n".join([f"<@{user}> ({user}) - blocked[2]" for user in chunk]))
             page.set_footer("Use the reactions to flip pages.")
             all_pages.append(page)
 

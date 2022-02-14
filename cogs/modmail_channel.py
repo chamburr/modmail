@@ -43,8 +43,9 @@ class ModMailEvents(commands.Cog):
 
         data = await tools.get_data(self.bot, message.guild.id)
         user = tools.get_modmail_user(message.channel)
+        blocked = await tools.get_blocked(self.bot, message.author.id, message.guild.id)
 
-        if user.id in data[9]:
+        if user.id in data[9] or blocked[0]:
             await message.channel.send(
                 ErrorEmbed(
                     "That user is blacklisted from sending a message here. You need to whitelist "

@@ -44,3 +44,12 @@ CREATE TABLE public.account
     token        text,
     PRIMARY KEY (identifier)
 );
+
+CREATE TABLE IF NOT EXISTS public.blocked
+(
+    member bigint NOT NULL,
+    guild bigint NOT NULL,
+    reason text COLLATE pg_catalog."default",
+    CONSTRAINT blocked_pkey PRIMARY KEY (member, guild)
+)
+

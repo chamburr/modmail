@@ -212,6 +212,17 @@ async def get_data(bot, guild):
             False,
         )
 
+async def get_blocked(bot, member, guild):
+    async with bot.pool.acquire() as conn:
+        res = await conn.fetchrow("SELECT * FROM blocked WHERE member=$1 and guild=$2", member, guild)
+        if res:
+            return res
+
+        return await conn.fetchrow(
+            "INSERT INTO data VALUES ($1, $2, $3) RETURNING *",
+            member, guild, None
+        )
+
 
 async def get_guild_prefix(bot, guild):
     if not guild:

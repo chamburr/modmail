@@ -36,6 +36,8 @@ class DirectMessageEvents(commands.Cog, name="Direct Message"):
             return
 
         data = await tools.get_data(self.bot, guild.id)
+        blocked = await tools.get_blocked(self.bot, member.id, guild.id)
+
 
         category = await guild.get_channel(data[2])
         if not category:
@@ -46,7 +48,7 @@ class DirectMessageEvents(commands.Cog, name="Direct Message"):
             )
             return
 
-        if message.author.id in data[9]:
+        if message.author.id in data[9] or blocked[0]:
             await message.channel.send(
                 ErrorEmbed("That server has blacklisted you from sending a message there.")
             )
