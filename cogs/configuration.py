@@ -305,6 +305,36 @@ class Configuration(commands.Cog):
 
         await ctx.send(Embed("The channel is created successfully."))
 
+
+
+    @checks.in_database()
+    @checks.is_premium()
+    @commands.guild_only()
+    @checks.has_permissions(administrator=True)
+    @commands.command(
+        description="Toggle the bot to only send messages in a ticket if the `=reply` or `=areply` commands are used",
+        aliases=["commandonly"],
+        usage="commandrequired"
+    )
+    async def commandrequired(self,ctx):
+        data = await tools.get_data(self.bot, ctx.guild.id)
+
+        if data[12]:
+            async with self.bot.pool.acquire() as conn:
+                await conn.execute("UPDATE data SET commandrequired=$1 WHERE guild=$2",False,ctx.guild.id)
+
+            await ctx.send(Embed(f"Commands are no longer required to send messages"))
+            return
+
+        else:
+            async with self.bot.pool.acquire() as conn:
+                await conn.execute("UPDATE data SET commandrequired=$1 WHERE guild=$2",True,ctx.guild.id)
+
+            await ctx.send(Embed(f"Commands are now required to send messages."))
+            return
+
+
+
     @checks.in_database()
     @checks.is_premium()
     @checks.has_permissions(administrator=True)
