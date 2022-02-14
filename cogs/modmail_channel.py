@@ -24,9 +24,17 @@ class ModMailEvents(commands.Cog):
         if permissions.send_messages is False or permissions.embed_links is False:
             return
 
-        prefix = await tools.get_guild_prefix(self.bot, message.guild)
-        if message.content.startswith(prefix):
+        data = await tools.get_data(self.bot, message.guild.id)
+
+        
+        # If =reply or =areply is required, return
+        if data[12]:
             return
+
+        else:
+            prefix = await tools.get_guild_prefix(self.bot, message.guild)
+            if message.content.startswith(prefix):
+                return
 
         if await tools.is_user_banned(self.bot, message.author):
             await message.channel.send(ErrorEmbed("You are banned from this bot."))
