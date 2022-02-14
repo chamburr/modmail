@@ -270,14 +270,7 @@ class Configuration(commands.Cog):
     )
     async def logging(self, ctx):
         data = await tools.get_data(self.bot, ctx.guild.id)
-        # if channel:
-        #     try:
-        #         await channel.delete()
-        #     except Forbidden:
-        #         await ctx.send(ErrorEmbed("Missing permissions to delete the channel."))
-        #         return
-
-        # loggingenabled
+        
         if data[11]: 
             async with self.bot.pool.acquire() as conn:
                 await conn.execute("UPDATE data SET loggingenabled=$1 WHERE guild=$2", False, ctx.guild.id)
