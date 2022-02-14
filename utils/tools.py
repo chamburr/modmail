@@ -139,13 +139,14 @@ async def select_guild(bot, message, msg):
 
     embeds = []
 
-    for chunk in [list(guilds.items())[i : i + 10] for i in range(0, len(guilds), 10)]:
+    for chunk in [list(guilds.items())[i : i + 9] for i in range(0, len(guilds), 9)]:
         embed = Embed(
             "Select Server",
             "Please select the server you want to send this message to. You can do so by reacting "
             "with the corresponding emote.",
         )
-        embed.set_footer("Use the reactions to flip pages.")
+        if len(guilds) > 9:
+            embed.set_footer("Use the reactions to flip pages.")
 
         for guild, value in chunk:
             embed.add_field(
@@ -157,10 +158,10 @@ async def select_guild(bot, message, msg):
         embeds.append(embed)
 
     await msg.edit(embeds[0])
-
-    await msg.add_reaction("◀️")
-    await msg.add_reaction("▶️")
-    for reaction in ["1⃣", "2⃣", "3⃣", "4⃣", "5⃣", "6⃣", "7⃣", "8⃣", "9⃣", "🔟"][
+    if len(guilds) > 9:
+        await msg.add_reaction("◀️")
+        await msg.add_reaction("▶️")
+    for reaction in ["1⃣", "2⃣", "3⃣", "4⃣", "5⃣", "6⃣", "7⃣", "8⃣", "9⃣",][
         : len(embeds[0].fields)
     ]:
         await msg.add_reaction(reaction)
