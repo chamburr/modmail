@@ -94,6 +94,9 @@ class Core(commands.Cog):
         if data[4] is None:
             return
 
+        if data[11] is False:
+            return
+
         channel = await ctx.guild.get_channel(data[4])
         if channel is None:
             return
