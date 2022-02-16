@@ -32,8 +32,7 @@ question. Instead, ask it on our [Discord server](https://discord.gg/wjWJwJB).
 Due to the complex infrastructure, the bot is unfortunately not suitable to for self-hosting at the
 moment. Please use our public instance while we are working on a way to run the bot with Docker.
 
-Alternatively, you may also host v2.x of this bot. There are self-hosting instructions on the README
-page of those versions.
+Alternatively, you may also host [v2.x](https://github.com/chamburr/modmail/tree/v2.1.2) of this bot. There are self-hosting instructions on the [README](https://github.com/chamburr/modmail/tree/v2.1.2#self-hosting) page of those versions.
 
 ## License
 
