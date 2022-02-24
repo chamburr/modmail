@@ -28,7 +28,6 @@ from classes.channel import DMChannel, TextChannel, _channel_factory
 from classes.guild import Guild
 from classes.member import Member
 from classes.message import Message
-from utils import tools
 
 log = logging.getLogger(__name__)
 
@@ -92,7 +91,6 @@ class State:
         for index, value in enumerate(results):
             if isinstance(value, dict):
                 value["_key"] = keys[index] if isinstance(keys, (list, tuple)) else keys
-                value = tools.upgrade_payload(value)
 
                 results[index] = value
 

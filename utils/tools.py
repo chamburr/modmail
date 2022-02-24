@@ -49,27 +49,6 @@ def create_fake_message(bot, channel, message_id):
     )
 
 
-def upgrade_payload(data):
-    if data.get("permission_overwrites"):
-        data["permission_overwrites"] = [
-            {
-                "id": x["id"],
-                "type": "role" if x["type"] == 0 else "member",
-                "allow": int(x["allow"]),
-                "allow_new": x["allow"],
-                "deny": int(x["deny"]),
-                "deny_new": x["deny"],
-            }
-            for x in data["permission_overwrites"]
-        ]
-
-    if isinstance(data.get("permissions"), str):
-        data["permissions_new"] = data["permissions"]
-        data["permissions"] = int(data["permissions"])
-
-    return data
-
-
 async def create_paginator(bot, ctx, pages):
     if len(pages) == 1:
         embed = pages[0]
