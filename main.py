@@ -152,12 +152,6 @@ class Scheduler:
                 headers={"Authorization": config.BFD_TOKEN, "Content-Type": "application/json"},
             )
 
-            await self.session.post(
-                f"https://discord.boats/api/v2/bot/{self.bot.id}",
-                data=orjson.dumps({"server_count": guilds}),
-                headers={"Authorization": config.DBOATS_TOKEN, "Content-Type": "application/json"},
-            )
-
             await asyncio.sleep(900)
 
     async def cleanup(self):
