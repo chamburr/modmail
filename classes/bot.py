@@ -162,8 +162,6 @@ class ModMail(commands.AutoShardedBot):
         if op != self.ws.DISPATCH:
             return
 
-        data = tools.upgrade_payload(data)
-
         try:
             func = self.ws._discord_parsers[event]
         except KeyError:

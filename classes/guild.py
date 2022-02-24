@@ -17,7 +17,6 @@ from discord.role import Role
 from classes.channel import TextChannel, _channel_factory
 from classes.invite import Invite
 from classes.member import Member
-from utils import tools
 
 log = logging.getLogger(__name__)
 
@@ -112,9 +111,7 @@ class Guild(guild.Guild):
         channels = []
         for channel in await self._state._members_get_all("guild", key_id=self.id, name="channel"):
             factory, _ = _channel_factory(channel["type"])
-            channels.append(
-                factory(guild=self, state=self._state, data=tools.upgrade_payload(channel))
-            )
+            channels.append(factory(guild=self, state=self._state, data=channel))
 
         return channels
 
@@ -133,7 +130,7 @@ class Guild(guild.Guild):
     async def _roles(self):
         return sorted(
             [
-                Role(guild=self, state=self._state, data=tools.upgrade_payload(x))
+                Role(guild=self, state=self._state, data=x)
                 for x in await self._state._members_get_all("guild", key_id=self.id, name="role")
             ]
         )
@@ -221,7 +218,7 @@ class Guild(guild.Guild):
         role = await self._state.get(f"role:{self.id}:{role_id}")
 
         if role:
-            return Role(guild=self, state=self._state, data=tools.upgrade_payload(role))
+            return Role(guild=self, state=self._state, data=role)
 
         return None
 

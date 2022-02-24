@@ -72,7 +72,7 @@ class Message(message.Message):
     @member.setter
     def member(self, value):
         return
-    
+
     async def reactions(self):
         reactions = []
 
