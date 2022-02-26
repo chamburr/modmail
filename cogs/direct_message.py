@@ -117,6 +117,10 @@ class DirectMessageEvents(commands.Cog, name="Direct Message"):
                 f"`{prefix}close [reason]` to close this ticket.",
                 timestamp=True,
             )
+            if data[12]:
+                embed.add_field("Command Required Mode",
+                "Command Required Mode is enabled for this server. To send a message, you must use "
+                f"`{prefix}reply` or `{prefix}areply`. All other messages sent will be ignored.")
             embed.add_field("User", f"<@{message.author.id}> ({message.author.id})")
             embed.add_field(
                 "Roles",
