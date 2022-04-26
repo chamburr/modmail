@@ -11,7 +11,7 @@ CREATE TABLE public.data
     pingrole    bigint[] NOT NULL,
     blacklist   bigint[] NOT NULL,
     anonymous   boolean  NOT NULL,
-    commandrequired boolean NOT NULL default False,
+    commandonly boolean  NOT NULL,
     PRIMARY KEY (guild)
 );
 
