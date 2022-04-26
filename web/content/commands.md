@@ -37,10 +37,11 @@ Toggle between enable and disable for ModMail logs.
 
 - Alias: logs
   
-## commandrequired
-Toggle between commands being required to send messages in a ticket
+## commandonly
 
-- Alias: commandonly
+Toggle whether commands are required to reply to a ticket.
+
+- Alias: commandrequired
 
 ## greetingmessage
 
