@@ -27,7 +27,7 @@ class ModMailEvents(commands.Cog):
         data = await tools.get_data(self.bot, message.guild.id)
 
         # If =reply or =areply is required, return
-        if data[12]:
+        if data[11]:
             return
 
         else:

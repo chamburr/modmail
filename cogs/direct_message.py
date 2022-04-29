@@ -118,7 +118,7 @@ class DirectMessageEvents(commands.Cog, name="Direct Message"):
                 timestamp=True,
             )
 
-            if data[12]:
+            if data[11]:
                 embed.description = (
                     f"Type `{prefix}reply <message>` in this channel to reply. All other messages"
                     "are ignored, and can be used for staff discussion. Use the command "
