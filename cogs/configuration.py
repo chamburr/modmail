@@ -446,7 +446,7 @@ class Configuration(commands.Cog):
         )
         embed.add_field("Advanced Logging", "Enabled" if data[7] is True else "Disabled")
         embed.add_field("Anonymous Messaging", "Enabled" if data[10] is True else "Disabled")
-        embed.add_field("Command Only Mode","Enabled" if data[12] is True else "Disabled")
+        embed.add_field("Command Only Mode", "Enabled" if data[12] is True else "Disabled")
         embed.add_field("Greeting Message", "*Not set*" if greeting is None else greeting, False)
         embed.add_field("Closing Message", "*Not set*" if closing is None else closing, False)
 
