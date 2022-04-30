@@ -12,7 +12,6 @@ CREATE TABLE public.data
     blacklist   bigint[] NOT NULL,
     anonymous   boolean  NOT NULL,
     commandonly boolean  NOT NULL,
-    loggingenabled boolean NOT NULL,
     PRIMARY KEY (guild)
 );
 
