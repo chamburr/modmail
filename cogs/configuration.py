@@ -1,4 +1,5 @@
 import logging
+import discord
 
 from discord.errors import Forbidden
 from discord.ext import commands
@@ -266,9 +267,9 @@ class Configuration(commands.Cog):
     @commands.command(
         description="Toggle between enable and disable for ModMail logs.",
         aliases=["logs"],
-        usage="logging",
+        usage="logging [channel]",
     )
-    async def logging(self, ctx):
+    async def logging(self, ctx, channel_mentioned : discord.TextChannel = None):
         data = await tools.get_data(self.bot, ctx.guild.id)
         category = await ctx.guild.get_channel(data[2])
         channel = await ctx.guild.get_channel(data[4])
@@ -282,28 +283,31 @@ class Configuration(commands.Cog):
                 )
             )
             return
-        # If the default logging channel has been deleted, create a new one and enable logging
-        elif channel is None:
-
-            channel = await ctx.guild.create_text_channel(name="modmail-log", category=category)
+        
+        # If there is not currently a channel...
+        # Set the channel to a specified channel if mentioned
+        # Else, create a new channel
+        if channel is None:
+            if channel_mentioned is None:
+                channel = await ctx.guild.create_text_channel(name="modmail-log", category=category)
+            else:
+                channel = channel_mentioned
 
             async with self.bot.pool.acquire() as conn:
                 await conn.execute(
-                    "UPDATE data SET logging=$1, loggingenabled=$2 WHERE guild=$3", channel.id, True, ctx.guild.id
+                    "UPDATE data SET logging=$1, WHERE guild=$2", channel.id, ctx.guild.id
                 )
 
-            await ctx.send(Embed("A Modmail Logging channel was not found, so another one has been created and logs have been enabled."))
+            await ctx.send(Embed(f"Future Modmail logs will be directed to {channel.mention}"))
             return
 
-        # Otherwise, a category and channel exist, so re-enable logging
+        # Otherwise, a category and channel exist, turn off logging
         else:
-            # Toggle logs on/off
             async with self.bot.pool.acquire() as conn:
-                await conn.execute("UPDATE data SET loggingenabled=$1 WHERE guild=$2", False if data[12] == True else True, ctx.guild.id)
+                await conn.execute("UPDATE data SET logging=$1 WHERE guild=$2", None, ctx.guild.id)
 
-            await ctx.send(Embed(f"ModMail logs are disabled. You can delete {channel.mention}." if data[12] == True else 
-                f"ModMail logs have been enabled for {channel.mention}"))
-            
+            await ctx.send(Embed(f"ModMail logs are disabled. You can delete {channel.mention} or renable logs" 
+                f"for that channel with \"{ctx.prefix}logging {channel.mention}\"."))
 
 
 
