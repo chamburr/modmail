@@ -327,7 +327,7 @@ async def is_guild_banned(bot, guild):
 
 
 def is_modmail_channel(channel, user_id=None):
-    if not channel.topic or not channel.topic.startswith("ModMail Channel "):
+    if not getattr(channel, "topic", None) or not channel.topic.startswith("ModMail Channel "):
         return False
 
     parts = channel.topic.replace("ModMail Channel ", "").split(" ")

@@ -126,4 +126,4 @@ def _channel_factory(channel_type):
     elif value is ChannelType.stage_voice:
         return StageChannel, value
     else:
-        return None, value
+        return TextChannel, value

@@ -309,6 +309,28 @@ class Configuration(commands.Cog):
 
 
     @checks.in_database()
+    @checks.has_permissions(administrator=True)
+    @commands.guild_only()
+    @commands.command(
+        description="Toggle whether commands are required to reply to a ticket.",
+        aliases=["commandrequired"],
+        usage="commandonly",
+    )
+    async def commandonly(self, ctx):
+        data = await tools.get_data(self.bot, ctx.guild.id)
+
+        async with self.bot.pool.acquire() as conn:
+            await conn.execute(
+                "UPDATE data SET commandonly=$1 WHERE guild=$2",
+                True if data[11] is False else False,
+                ctx.guild.id,
+            )
+
+        await ctx.send(
+            Embed(f"Command only mode is {'enabled' if data[11] is False else 'disabled'}.")
+        )
+
+    @checks.in_database()
     @checks.is_premium()
     @checks.has_permissions(administrator=True)
     @commands.guild_only()
@@ -427,8 +449,9 @@ class Configuration(commands.Cog):
         )
         embed.add_field("Advanced Logging", "Enabled" if data[7] is True else "Disabled")
         embed.add_field("Anonymous Messaging", "Enabled" if data[10] is True else "Disabled")
+        embed.add_field("Command Only Mode", "Enabled" if data[11] is True else "Disabled")
         embed.add_field("Greeting Message", "*Not set*" if greeting is None else greeting, False)
-        embed.add_field("Closing message", "*Not set*" if closing is None else closing, False)
+        embed.add_field("Closing Message", "*Not set*" if closing is None else closing, False)
 
         await ctx.send(embed)
 

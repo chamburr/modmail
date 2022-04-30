@@ -36,6 +36,12 @@ Set or clear the roles mentioned when a ticket is opened. You can also use `ever
 Toggle between enable and disable for ModMail logs.
 
 - Alias: logs
+  
+## commandonly
+
+Toggle whether commands are required to reply to a ticket.
+
+- Alias: commandrequired
 
 ## greetingmessage
 
