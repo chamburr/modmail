@@ -265,7 +265,8 @@ class Configuration(commands.Cog):
     @checks.has_permissions(administrator=True)
     @commands.guild_only()
     @commands.command(
-        description="Toggle between enable and disable for ModMail logs.",
+        description="Toggle between enable and disable for ModMail logs. Specify an existing channel to" 
+            "redirect logs there if logging is currently disabled",
         aliases=["logs"],
         usage="logging [channel]",
     )

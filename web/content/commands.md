@@ -33,7 +33,7 @@ Set or clear the roles mentioned when a ticket is opened. You can also use `ever
 
 ## logging
 
-Toggle between enable and disable for ModMail logs. Specify an existing channel to redirect logs there.
+Toggle between enable and disable for ModMail logs. Specify an existing channel to redirect logs there if logging is currently disabled.
 
 - Usage: `logging [channel]`
 - Alias: logs
