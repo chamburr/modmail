@@ -98,11 +98,23 @@ Close the channel anonymously.
 
 - Usage: `[reason]`
 
+## silentclose
+Close the channel silently.
+
+- Usage: `[reason]`
+- Alias: sc
+
 ## closeall
 
 Close all of the channels.
 
 - Usage: `[reason]`
+
+## silentcloseall
+Close all of the channels silently.
+
+- Usage: `[reason]`
+- Alias: sca
 
 ## acloseall
 
