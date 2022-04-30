@@ -28,11 +28,15 @@ class ModMailEvents(commands.Cog):
         if message.content.startswith(prefix):
             return
 
+        data = await tools.get_data(self.bot, message.guild.id)
+        if data[11] is True:
+            return
+
         if await tools.is_user_banned(self.bot, message.author):
             await message.channel.send(ErrorEmbed("You are banned from this bot."))
             return
 
-        if (await tools.get_data(self.bot, message.guild.id))[10] is True:
+        if data[10] is True:
             await self.send_mail_mod(message, prefix, anon=True)
             return
 

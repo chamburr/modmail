@@ -117,6 +117,14 @@ class DirectMessageEvents(commands.Cog, name="Direct Message"):
                 f"`{prefix}close [reason]` to close this ticket.",
                 timestamp=True,
             )
+
+            if data[11]:
+                embed.description = (
+                    f"Type `{prefix}reply <message>` in this channel to reply. All other messages "
+                    "are ignored, and can be used for staff discussion. Use the command "
+                    f"`{prefix}close [reason]` to close this ticket. (Command only mode enabled)"
+                )
+
             embed.add_field("User", f"<@{message.author.id}> ({message.author.id})")
             embed.add_field(
                 "Roles",
