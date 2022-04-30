@@ -181,7 +181,7 @@ async def get_data(bot, guild):
             return res
 
         return await conn.fetchrow(
-            "INSERT INTO data VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12) RETURNING *",
+            "INSERT INTO data VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13) RETURNING *",
             guild,
             None,
             None,
@@ -192,6 +192,7 @@ async def get_data(bot, guild):
             False,
             [],
             [],
+            False,
             False,
             False,
         )
