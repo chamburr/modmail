@@ -82,13 +82,32 @@ class DirectMessageEvents(commands.Cog, name="Direct Message"):
                     "not change this)",
                 )
             except discord.HTTPException as e:
-                await message.channel.send(
-                    ErrorEmbed(
-                        "An HTTPException error occurred. Please contact an admin on the server "
-                        f"with the following information: {e.text} ({e.code})."
-                    )
+                # Change channel name to generic `New Ticket`
+                if "Server Discovery" in e.text:
+                    channel = await guild.create_text_channel(
+                    name="New Ticket",
+                    category=category,
+                    topic=f"ModMail Channel {message.author.id} {message.channel.id} (Please do "
+                    "not change this)",
                 )
-                return
+                elif "Maximum number of channels" in e.text:
+                    await message.channel.send(
+                        ErrorEmbed(
+                            "Too Many Channels",
+                            "The server that you are trying to contact has too many tickets opened currently and I am unable to open another one."
+                            "Please try again later."
+                        )
+                    )
+                    return
+
+                else:
+                    await message.channel.send(
+                        ErrorEmbed(
+                            "An HTTPException error occurred. Please contact an admin on the server "
+                            f"with the following information: {e.text} ({e.code})."
+                        )
+                    )
+                    return
 
             log_channel = await guild.get_channel(data[4])
             if log_channel:
