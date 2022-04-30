@@ -39,7 +39,13 @@ class Core(commands.Cog):
         ctx.message.content = message
         await self.bot.cogs["ModMailEvents"].send_mail_mod(ctx.message, ctx.prefix, anon=True)
 
-    async def close_channel(self, ctx, reason, anon: bool = False):
+
+    """
+    @params 
+    anon: Set if the ticket should be closed anonymously
+    silent: Set if the user who opened the ticket should be DMed when the ticket is closed
+    """
+    async def close_channel(self, ctx, reason, anon: bool = False, silent: bool = False):
         await ctx.send(Embed("Closing channel..."))
 
         data = await tools.get_data(self.bot, ctx.guild.id)
@@ -53,43 +59,44 @@ class Core(commands.Cog):
             await ctx.send(ErrorEmbed("Missing permissions to delete this channel."))
             return
 
-        embed = ErrorEmbed(
-            "Ticket Closed",
-            reason if reason else "No reason was provided.",
-            timestamp=True,
-        )
-        embed.set_author(
-            str(ctx.author) if anon is False else "Anonymous#0000",
-            ctx.author.avatar_url
-            if anon is False
-            else "https://cdn.discordapp.com/embed/avatars/0.png",
-        )
-        embed.set_footer(f"{ctx.guild.name} | {ctx.guild.id}", ctx.guild.icon_url)
-
         try:
             member = await ctx.guild.fetch_member(tools.get_modmail_user(ctx.channel).id)
         except discord.NotFound:
             member = None
         else:
-            dm_channel = tools.get_modmail_channel(self.bot, ctx.channel)
-
-            if data[6]:
-                embed2 = Embed(
-                    "Closing Message",
-                    tools.tag_format(data[6], member),
-                    colour=0xFF4500,
+            if not silent:
+                 # Create Embeds to send to user
+                embed = ErrorEmbed(
+                    "Ticket Closed",
+                    reason if reason else "No reason was provided.",
                     timestamp=True,
                 )
-                embed2.set_footer(f"{ctx.guild.name} | {ctx.guild.id}", ctx.guild.icon_url)
+                embed.set_author(
+                    str(ctx.author) if anon is False else "Anonymous#0000",
+                    ctx.author.avatar_url
+                    if anon is False
+                    else "https://cdn.discordapp.com/embed/avatars/0.png",
+                )
+                embed.set_footer(f"{ctx.guild.name} | {ctx.guild.id}", ctx.guild.icon_url)
+                dm_channel = tools.get_modmail_channel(self.bot, ctx.channel)
+
+                if data[6]:
+                    embed2 = Embed(
+                        "Closing Message",
+                        tools.tag_format(data[6], member),
+                        colour=0xFF4500,
+                        timestamp=True,
+                    )
+                    embed2.set_footer(f"{ctx.guild.name} | {ctx.guild.id}", ctx.guild.icon_url)
+                    try:
+                        await dm_channel.send(embed2)
+                    except discord.Forbidden:
+                        pass
+
                 try:
-                    await dm_channel.send(embed2)
+                    await dm_channel.send(embed)
                 except discord.Forbidden:
                     pass
-
-            try:
-                await dm_channel.send(embed)
-            except discord.Forbidden:
-                pass
 
         if data[4] is None:
             return
@@ -203,6 +210,15 @@ class Core(commands.Cog):
     async def aclose(self, ctx, *, reason: str = None):
         await self.close_channel(ctx, reason, True)
 
+    @checks.is_modmail_channel()
+    @checks.in_database()
+    @checks.is_mod()
+    @checks.bot_has_permissions(manage_channels=True)
+    @commands.guild_only()
+    @commands.command(description="Close the channel silently.", usage="silentclose [reason]", aliases=['sc'])
+    async def silentclose(self, ctx, *, reason: str = None):
+        await self.close_channel(ctx, reason, silent=True)
+
     @checks.in_database()
     @checks.is_mod()
     @checks.bot_has_permissions(manage_channels=True)
@@ -215,6 +231,24 @@ class Core(commands.Cog):
                 msg.channel = channel
                 new_ctx = await self.bot.get_context(msg, cls=type(ctx))
                 await self.close_channel(new_ctx, reason)
+
+        try:
+            await ctx.send(Embed("All channels are successfully closed."))
+        except discord.HTTPException:
+            pass
+
+    @checks.in_database()
+    @checks.is_mod()
+    @checks.bot_has_permissions(manage_channels=True)
+    @commands.guild_only()
+    @commands.command(description="Close all of the channels silently.", usage="silentcloseall [reason]", aliases=['sca'])
+    async def silentcloseall(self, ctx, *, reason: str = None):
+        for channel in await ctx.guild.text_channels():
+            if tools.is_modmail_channel(channel):
+                msg = copy.copy(ctx.message)
+                msg.channel = channel
+                new_ctx = await self.bot.get_context(msg, cls=type(ctx))
+                await self.close_channel(new_ctx, reason, silent=True)
 
         try:
             await ctx.send(Embed("All channels are successfully closed."))
