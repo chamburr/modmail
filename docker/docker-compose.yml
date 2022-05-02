@@ -13,7 +13,7 @@ services:
     restart: unless-stopped
     depends_on:
       modmail-bot:
-        condition: service_healthy
+        condition: service_started
       redis:
         condition: service_healthy
     environment:
@@ -31,7 +31,7 @@ services:
       REDIS_PORT: 6379
       REDIS_PASSWORD: ''
       BASE_URI: ${BASE_URI}
-      API_HOST: localhost
+      API_HOST: 0.0.0.0
       API_PORT: 6001
       API_WORKERS: 1
       API_SECRET: supersecret
@@ -44,8 +44,6 @@ services:
       context: ../
       dockerfile: docker/bot/Dockerfile
     restart: unless-stopped
-    healthcheck:
-      test: ['CMD', 'curl', '-f', 'http://localhost:6002/healthcheck']
     depends_on:
       dispatch:
         condition: service_started
@@ -81,7 +79,7 @@ services:
       RABBIT_HOST: rabbitmq
       RABBIT_PORT: 5672
       BASE_URI: ${BASE_URI}
-      BOT_API_HOST: localhost
+      BOT_API_HOST: 0.0.0.0
       BOT_API_PORT: 6002
       SENTRY_DSN: ''
       TOPGG_TOKEN: ''
@@ -129,7 +127,7 @@ services:
       CLUSTERS: 1
       DEFAULT_QUEUE: 'true'
       RESUME: 'true'
-      INTENTS: 13825
+      INTENTS: 46593
       LARGE_THRESHOLD: 50
       STATUS: ${STATUS}
       ACTIVITY_TYPE: ${ACTIVITY_TYPE}
@@ -149,7 +147,7 @@ services:
       RABBIT_PASSWORD: guest
       REDIS_HOST: redis
       REDIS_PORT: 6379
-      PROMETHEUS_HOST: localhost
+      PROMETHEUS_HOST: 0.0.0.0
       PROMETHEUS_PORT: 8005
 
   postgres:

@@ -9,11 +9,11 @@ start() {
         /app/scripts/database.sh migrate
     fi
 
-    while [[ $(echo "EXISTS bot_user\r\n" | nc redis 6379) =~ "0" ]]; do
+    while [[ $(echo "EXISTS bot_user" | nc -z redis 6379) =~ "0" ]]; do
        sleep 1
     done
 
-    python3 main.py
+    python3 -u main.py
 }
 
 start
