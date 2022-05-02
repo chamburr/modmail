@@ -5,6 +5,7 @@ volumes:
   modmail-postgres:
   modmail-redis:
 
+
 services:
   modmail-api:
     build:
@@ -132,8 +133,8 @@ services:
       STATUS: ${STATUS}
       ACTIVITY_TYPE: ${ACTIVITY_TYPE}
       ACTIVITY_NAME: ${ACTIVITY_NAME}
-      LOG_CHANNEL: 754223149926711366
-      LOG_GUILD_CHANNEL: 754223149926711366
+      LOG_CHANNEL: 0
+      LOG_GUILD_CHANNEL: 0
       STATE_ENABLED: 'true'
       STATE_MEMBER: 'false'
       STATE_MEMBER_TTL: 1000
@@ -154,7 +155,7 @@ services:
     image: postgres:14-alpine
     restart: unless-stopped
     healthcheck:
-      test: ['CMD', 'pg_isready', '-U', 'postgres']
+      test: [ 'CMD', 'pg_isready', '-U', 'postgres' ]
     volumes:
       - modmail-postgres:/var/lib/postgresql/data
     environment:
@@ -167,10 +168,10 @@ services:
     volumes:
       - modmail-redis:/data
     healthcheck:
-      test: ['CMD', 'redis-cli', 'ping']
+      test: [ 'CMD', 'redis-cli', 'ping' ]
 
   rabbitmq:
     image: rabbitmq:3-alpine
     restart: unless-stopped
     healthcheck:
-      test: ['CMD', 'rabbitmq-diagnostics', '-q', 'ping']
+      test: [ 'CMD', 'rabbitmq-diagnostics', '-q', 'ping' ]
