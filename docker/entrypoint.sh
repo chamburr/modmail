@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 start() {
     /app/scripts/database.sh list &> /dev/null
@@ -9,7 +9,7 @@ start() {
         /app/scripts/database.sh migrate
     fi
 
-    while [[ $(echo "EXISTS bot_user\r\n" | nc localhost 6379) =~ "0" ]]; do
+    while [[ $(echo "EXISTS bot_user\r\n" | nc redis 6379) =~ "0" ]]; do
        sleep 1
     done
 

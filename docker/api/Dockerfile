@@ -1,11 +1,13 @@
 FROM rust:1.60-alpine AS builder
 
+RUN apk add --no-cache musl-dev openssl-dev
+
 WORKDIR /build
 
 COPY web/Cargo.toml web/Cargo.lock ./
-COPY web/.cargo ./.cargo
 
-RUN touch -p src/main.rs
+RUN mkdir src
+RUN echo 'fn main() {}' > src/main.rs
 RUN cargo build --release
 RUN rm -f target/release/deps/modmail*
 
@@ -15,7 +17,7 @@ RUN cargo build --release
 
 FROM alpine:latest
 
-RUN apk add dumb-init --no-cache
+RUN apk add --no-cache dumb-init
 
 WORKDIR /app
 

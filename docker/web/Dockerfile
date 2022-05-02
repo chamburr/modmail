@@ -1,6 +1,6 @@
 FROM node:16-alpine AS builder
 
-RUN npm install -g yarn
+RUN npm install -g -f yarn
 
 WORKDIR /build
 
@@ -22,7 +22,7 @@ RUN yarn build
 
 FROM node:16-alpine
 
-RUN apk add dumb-init --no-cache
+RUN apk add --no-cache dumb-init
 
 WORKDIR /app
 
