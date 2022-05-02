@@ -21,9 +21,9 @@ services:
       - redis
     environment:
       ENVIRONMENT: production
-      BOT_TOKEN:
-      BOT_CLIENT_ID:
-      BOT_CLIENT_SECRET:
+      BOT_TOKEN: ${BOT_TOKEN}
+      BOT_CLIENT_ID: ${BOT_CLIENT_ID}
+      BOT_CLIENT_SECRET: ${BOT_CLIENT_SECRET}
       MAIN_SERVER: 0
       PREMIUM1_ROLE: 0
       PREMIUM3_ROLE: 0
@@ -33,7 +33,7 @@ services:
       REDIS_HOST: localhost
       REDIS_PORT: 6379
       REDIS_PASSWORD: ''
-      BASE_URI:
+      BASE_URI: ${BASE_URI}
       API_HOST: localhost
       API_PORT: 6001
       API_WORKERS: 1
@@ -57,14 +57,14 @@ services:
       - rabbitmq
     environment:
       ENVIRONMENT: development
-      BOT_TOKEN:
-      BOT_CLIENT_ID:
-      BOT_CLIENT_SECRET:
-      DEFAULT_PREFIX:
-      BOT_CLUSTERS:
+      BOT_TOKEN: ${BOT_TOKEN}
+      BOT_CLIENT_ID: ${BOT_CLIENT_ID}
+      BOT_CLIENT_SECRET: ${BOT_CLIENT_SECRET}
+      DEFAULT_PREFIX: ${DEFAULT_PREFIX}
+      BOT_CLUSTERS: 1
       MAIN_SERVER: ''
-      OWNER_USERS:
-      ADMIN_USERS:
+      OWNER_USERS: ${OWNER_USERS}
+      ADMIN_USERS: ${ADMIN_USERS}
       PREMIUM1_ROLE: 0
       PREMIUM3_ROLE: 0
       PREMIUM5_ROLE: 0
@@ -80,7 +80,7 @@ services:
       RABBIT_PASSWORD: guest
       RABBIT_HOST: localhost
       RABBIT_PORT: 5672
-      BASE_URI:
+      BASE_URI: ${BASE_URI}
       BOT_API_HOST: localhost
       BOT_API_PORT: 6002
       SENTRY_DSN: ''
@@ -102,7 +102,7 @@ services:
       - '8000:6000'
     environment:
       ENVIRONMENT: production
-      BASE_URI:
+      BASE_URI: ${BASE_URI}
       HTTP_HOST: 0.0.0.0
       HTTP_PORT: 6000
       API_HOST: localhost
@@ -120,19 +120,19 @@ services:
       - rabbitmq
     environment:
       RUST_LOG: info
-      BOT_TOKEN:
-      SHARDS_START:
-      SHARDS_END:
-      SHARDS_TOTAL:
-      SHARDS_CONCURRENCY:
-      CLUSTERS:
+      BOT_TOKEN: ${BOT_TOKEN}
+      SHARDS_START: 0
+      SHARDS_END: 1
+      SHARDS_TOTAL: 1
+      SHARDS_CONCURRENCY: 1
+      CLUSTERS: 1
       DEFAULT_QUEUE: true
       RESUME: true
       INTENTS: 13825
       LARGE_THRESHOLD: 50
-      STATUS: online
-      ACTIVITY_TYPE: 0
-      ACTIVITY_NAME: 'DM to Contact Staff | =help'
+      STATUS: ${STATUS}
+      ACTIVITY_TYPE: ${ACTIVITY_TYP}
+      ACTIVITY_NAME: ${ACTIVITY_NAME}
       STATE_ENABLED: true
       STATE_MEMBER: FALSE
       STATE_MEMBER_TTL: 1000
