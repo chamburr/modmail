@@ -33,6 +33,10 @@ async def command_prefix(bot2, message):
     return [f"<@{bot.id}> ", f"<@!{bot.id}> ", prefix]
 
 
+loop = asyncio.new_event_loop()
+asyncio.set_event_loop(loop)
+
+
 bot = ModMail(
     command_prefix=command_prefix,
     bot_id=bot_id,
@@ -47,4 +51,4 @@ async def on_message(_):
     pass
 
 
-asyncio.run(bot.start())
+loop.run_until_complete(bot.start())
