@@ -5,7 +5,6 @@ volumes:
   modmail-postgres:
   modmail-redis:
 
-
 services:
   modmail-api:
     build:
@@ -60,9 +59,9 @@ services:
       BOT_CLIENT_ID: ${BOT_CLIENT_ID}
       BOT_CLIENT_SECRET: ${BOT_CLIENT_SECRET}
       DEFAULT_PREFIX: ${DEFAULT_PREFIX}
+      DEFAULT_SERVER: ${DEFAULT_SERVER}
       BOT_CLUSTERS: 1
       MAIN_SERVER: ''
-      DEFAULT_SERVER: ${DEFAULT_SERVER}
       OWNER_USERS: ${OWNER_USERS}
       ADMIN_USERS: ${ADMIN_USERS}
       PREMIUM1_ROLE: 0
@@ -156,7 +155,7 @@ services:
     image: postgres:14-alpine
     restart: unless-stopped
     healthcheck:
-      test: [ 'CMD', 'pg_isready', '-U', 'postgres' ]
+      test: ['CMD', 'pg_isready', '-U', 'postgres']
     volumes:
       - modmail-postgres:/var/lib/postgresql/data
     environment:
@@ -169,10 +168,10 @@ services:
     volumes:
       - modmail-redis:/data
     healthcheck:
-      test: [ 'CMD', 'redis-cli', 'ping' ]
+      test: ['CMD', 'redis-cli', 'ping']
 
   rabbitmq:
     image: rabbitmq:3-alpine
     restart: unless-stopped
     healthcheck:
-      test: [ 'CMD', 'rabbitmq-diagnostics', '-q', 'ping' ]
+      test: ['CMD', 'rabbitmq-diagnostics', '-q', 'ping']
