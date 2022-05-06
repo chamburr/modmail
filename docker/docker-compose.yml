@@ -129,7 +129,7 @@ services:
       CLUSTERS: 1
       DEFAULT_QUEUE: 'true'
       RESUME: 'true'
-      INTENTS: 46595
+      INTENTS: 46593
       LARGE_THRESHOLD: 50
       STATUS: ${STATUS}
       ACTIVITY_TYPE: ${ACTIVITY_TYPE}
