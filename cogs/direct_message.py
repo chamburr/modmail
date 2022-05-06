@@ -307,18 +307,23 @@ class DirectMessageEvents(commands.Cog, name="Direct Message"):
             return
 
         guild = None
-        async for msg in message.channel.history(limit=30):
-            if (
-                msg.author.id == self.bot.id
-                and len(msg.embeds) > 0
-                and msg.embeds[0].title in ["Message Received", "Message Sent"]
-            ):
-                guild = msg.embeds[0].footer.text.split()[-1]
-                guild = await self.bot.get_guild(int(guild))
-                break
+        if self.bot.config.DEFAULT_SERVER is not None:
+            guild = self.bot.config.DEFAULT_SERVER
+            guild = await self.bot.get_guild(int(guild))
+            confirmation = False
+        else:    
+            async for msg in message.channel.history(limit=30):
+                if (
+                    msg.author.id == self.bot.id
+                    and len(msg.embeds) > 0
+                    and msg.embeds[0].title in ["Message Received", "Message Sent"]
+                ):
+                    guild = msg.embeds[0].footer.text.split()[-1]
+                    guild = await self.bot.get_guild(int(guild))
+                    break
 
-        settings = await tools.get_user_settings(self.bot, message.author.id)
-        confirmation = True if settings is None or settings[0] is True else False
+            settings = await tools.get_user_settings(self.bot, message.author.id)
+            confirmation = True if settings is None or settings[0] is True else False
 
         if guild and confirmation is True:
             embed = Embed(
