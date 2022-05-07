@@ -38,15 +38,15 @@ or
 $ git clone git@github.com:<Your Username>/modmail.git
 ```
 
-You will need to make sure that you have [created a bot application](https://discordpy.readthedocs.io/en/stable/discord.html) through Discord. Then, you will need three pieces of information to put them into the `.env` file located in `modmail/docker`
+You will need to make sure that you have [created a bot application](https://discordpy.readthedocs.io/en/stable/discord.html) through Discord. Then, you will need three pieces of information from Discord to put them into the `.env` file located in `modmail/docker`. These are marked as the `Required` information. There are also `Optional` arguments that you can change, but are not required for the bot to function.
 
-###### REQUIRED
+##### REQUIRED
 ```
 BOT_TOKEN = The Token on your Bot page
 BOT_CLIENT_ID = Client ID on the OAuth2 page
 BOT_CLIENT_SECRET = Client Secret on the OAuth2 page
 ```
-###### OPTIONAL
+##### OPTIONAL
 
 ```
 STATUS = <online | idle | dnd | offline>
