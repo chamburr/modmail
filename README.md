@@ -27,12 +27,46 @@ question. Instead, ask it on our [Discord server][discord].
 
 ## Self-hosting
 
-Due to the complex infrastructure, the bot is unfortunately not suitable to for self-hosting at the
-moment. Please use our public instance while we are working on a way to run the bot with Docker.
+Modmail can now be hosted through Docker. 
 
-Alternatively, you may also host [v2.x](https://github.com/chamburr/modmail/tree/v2.1.2) of this
-bot. There are self-hosting instructions on the README page of those versions.
+To start, you will need to clone the repository locally or fork it.
+```
+$ git clone git@github.com:chamburr/modmail.git
+```
+or
+```
+$ git clone git@github.com:<Your Username>/modmail.git
+```
 
+You will need to make sure that you have [created a bot application](https://discordpy.readthedocs.io/en/stable/discord.html) through Discord. Then, you will need three pieces of information to put them into the `.env` file located in `modmail/docker`
+
+###### REQUIRED
+```
+BOT_TOKEN = The Token on your Bot page
+BOT_CLIENT_ID = Client ID on the OAuth2 page
+BOT_CLIENT_SECRET = Client Secret on the OAuth2 page
+```
+###### OPTIONAL
+
+```
+STATUS = <online | idle | dnd | offline>
+ACTIVITY_NAME - Displays the bot's current activity
+DEFAULT_SERVER - If a server ID is put here, all tickets will be directed to this server
+DEFAULT_PREFIX - Change the default prefix of the bot
+OWNER_USERS - Users who have access to commands which give access to the database and can ban other users from using the bot
+ADMIN_USERS - Users who have a subset of the owner commands
+```
+
+#### Build the Project
+You must have Docker installed on your system, and instructions on how to do so can be found [here](https://docs.docker.com/get-docker/). Once you have Docker installed, you can do the following:
+
+```
+$ cd modmail/docker
+
+$ docker compose up
+```
+
+The initial build can take anywhere from 10-30 minutes depending on your computer specs, but subsequent builds will usually take under a minute. These commands will build 3 volumes and 7 containers on your computer. 
 ## License
 
 This project is licensed under [GNU Affero General Public License v3.0](LICENSE).
