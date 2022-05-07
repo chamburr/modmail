@@ -74,17 +74,22 @@ class Core(commands.Cog):
             dm_channel = tools.get_modmail_channel(self.bot, ctx.channel)
 
             if data[6]:
-                embed2 = Embed(
-                    "Closing Message",
-                    tools.tag_format(data[6], member),
-                    colour=0xFF4500,
-                    timestamp=True,
-                )
-                embed2.set_footer(f"{ctx.guild.name} | {ctx.guild.id}", ctx.guild.icon_url)
-                try:
-                    await dm_channel.send(embed2)
-                except discord.Forbidden:
-                    pass
+                # If the reason was not set, then add the automatic closing message 
+                # To the "Ticket Closed" embed. Otherwise send two messages
+                if reason is None:
+                    embed.description = tools.tag_format(data[6],member)
+                else:
+                    embed2 = Embed(
+                        "Closing Message",
+                        tools.tag_format(data[6], member),
+                        colour=0xFF4500,
+                        timestamp=True,
+                    )
+                    embed2.set_footer(f"{ctx.guild.name} | {ctx.guild.id}", ctx.guild.icon_url)
+                    try:
+                        await dm_channel.send(embed2)
+                    except discord.Forbidden:
+                        pass
 
             try:
                 await dm_channel.send(embed)
