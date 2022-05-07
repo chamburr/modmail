@@ -53,8 +53,8 @@ STATUS = <online | idle | dnd | offline>
 ACTIVITY_NAME - Displays the bot's current activity
 DEFAULT_SERVER - If a server ID is put here, all tickets will be directed to this server
 DEFAULT_PREFIX - Change the default prefix of the bot
-OWNER_USERS - Users who have access to commands which give access to the database and can ban other users from using the bot
-ADMIN_USERS - Users who have a subset of the owner commands
+OWNER_USERS - Users who have access to sensitive commands 
+ADMIN_USERS - Users who have a subset of the owner commands (not necessary to use)
 ```
 
 #### Build the Project
