@@ -54,16 +54,16 @@ class Core(commands.Cog):
             return
 
         embed = ErrorEmbed(
-            "Ticket Closed",
-            reason if reason else "No reason was provided.",
-            timestamp=True,
+            "Ticket Closed", reason or "No reason was provided.", timestamp=True
         )
+
         embed.set_author(
-            str(ctx.author) if anon is False else "Anonymous#0000",
-            ctx.author.avatar_url
-            if anon is False
-            else "https://cdn.discordapp.com/embed/avatars/0.png",
+            "Anonymous#0000" if anon else str(ctx.author),
+            "https://cdn.discordapp.com/embed/avatars/0.png"
+            if anon
+            else ctx.author.avatar_url,
         )
+
         embed.set_footer(f"{ctx.guild.name} | {ctx.guild.id}", ctx.guild.icon_url)
 
         try:
@@ -113,9 +113,10 @@ class Core(commands.Cog):
             )
 
         embed.set_author(
-            str(ctx.author) if anon is False else f"{ctx.author} (Anonymous)",
+            f"{ctx.author} (Anonymous)" if anon else str(ctx.author),
             ctx.author.avatar_url,
         )
+
 
         if data[7] is True:
             history = ""

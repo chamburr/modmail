@@ -54,10 +54,11 @@ class State:
 
         self.allowed_mentions = options.get("allowed_mentions")
 
-        self.parsers = {}
-        for attr, func in inspect.getmembers(self):
-            if attr.startswith("parse_"):
-                self.parsers[attr[6:].upper()] = func
+        self.parsers = {
+            attr[6:].upper(): func
+            for attr, func in inspect.getmembers(self)
+            if attr.startswith("parse_")
+        }
 
     def _loads(self, value, decode):
         if value is None:
@@ -136,11 +137,13 @@ class State:
     ):
         for match in await self._members(key, key_id):
             keys = match.split(":")
-            if name is None or keys[0] == str(name):
-                if first is None or (len(keys) >= 2 and keys[1] == str(first)):
-                    if second is None or (len(keys) >= 3 and keys[2] == str(second)):
-                        if predicate is None or predicate(match) is True:
-                            return await self.get(match)
+            if (
+                (name is None or keys[0] == str(name))
+                and (first is None or (len(keys) >= 2 and keys[1] == str(first)))
+                and (second is None or (len(keys) >= 3 and keys[2] == str(second)))
+                and (predicate is None or predicate(match) is True)
+            ):
+                return await self.get(match)
 
         return None
 
@@ -150,11 +153,13 @@ class State:
         matches = []
         for match in await self._members(key, key_id):
             keys = match.split(":")
-            if name is None or keys[0] == str(name):
-                if first is None or (len(keys) >= 1 and keys[1] == str(first)):
-                    if second is None or (len(keys) >= 2 and keys[2] == str(second)):
-                        if predicate is None or predicate(match) is True:
-                            matches.append(match)
+            if (
+                (name is None or keys[0] == str(name))
+                and (first is None or (len(keys) >= 1 and keys[1] == str(first)))
+                and (second is None or (len(keys) >= 2 and keys[2] == str(second)))
+                and (predicate is None or predicate(match) is True)
+            ):
+                matches.append(match)
 
         return await self.get(matches)
 
@@ -163,7 +168,7 @@ class State:
         return int(keys[1])
 
     async def _users(self):
-        user_ids = set([x.split(":")[2] for x in await self._members("member")])
+        user_ids = {x.split(":")[2] for x in await self._members("member")}
         return [User(state=self, data=x["user"]) for x in await self.get(user_ids)]
 
     async def _emojis(self):
@@ -441,8 +446,7 @@ class State:
 
         raw = RawReactionActionEvent(data, emoji, "REACTION_ADD")
 
-        member = data.get("member")
-        if member:
+        if member := data.get("member"):
             guild = await self._get_guild(raw.guild_id)
             if guild:
                 raw.member = Member(guild=guild, state=self, data=member)
@@ -514,9 +518,9 @@ class State:
         member = await guild.get_member(int(data["user"]["id"]))
         if member and old:
             old_member = Member._copy(member)
-            user_update = old_member._presence_update(data=old, user=old["user"])
-
-            if user_update:
+            if user_update := old_member._presence_update(
+                data=old, user=old["user"]
+            ):
                 self.dispatch("user_update", user_update[1], user_update[0])
 
         self.dispatch("member_update", old_member, member)
@@ -608,9 +612,7 @@ class State:
             if member:
                 old_member = Member._copy(member)
                 old_member._update(old)
-                user_update = old_member._update_inner_user(data["user"])
-
-                if user_update:
+                if user_update := old_member._update_inner_user(data["user"]):
                     self.dispatch("user_update", user_update[1], user_update[0])
 
                 self.dispatch("member_update", old_member, member)
@@ -618,10 +620,7 @@ class State:
     async def parse_guild_emojis_update(self, data, old):
         guild = await self._get_guild(int(data["guild_id"]))
         if guild:
-            before_emojis = None
-            if old:
-                before_emojis = [self.store_emoji(guild, x) for x in old]
-
+            before_emojis = [self.store_emoji(guild, x) for x in old] if old else None
             after_emojis = tuple(map(lambda x: self.store_emoji(guild, x), data["emojis"]))
             self.dispatch("guild_emojis_update", guild, before_emojis, after_emojis)
 
@@ -777,32 +776,24 @@ class State:
         return await self.get_emoji(emoji_id)
 
     async def _upgrade_partial_emoji(self, emoji):
-        if not emoji.id:
-            return emoji.name
-
-        return await self.get_emoji(emoji.id)
+        return await self.get_emoji(emoji.id) if emoji.id else emoji.name
 
     async def _get_channel(self, channel_id):
         result = await self.get(f"channel:{channel_id}")
 
         if result:
-            if result.get("guild_id"):
-                factory, _ = _channel_factory(result["type"])
-                guild = await self._get_guild(result["guild_id"])
-
-                if guild:
-                    return factory(guild=guild, state=self, data=result)
-            else:
+            if not result.get("guild_id"):
                 return DMChannel(me=self.user, state=self, data=result)
 
+            factory, _ = _channel_factory(result["type"])
+            guild = await self._get_guild(result["guild_id"])
+
+            if guild:
+                return factory(guild=guild, state=self, data=result)
         return None
 
     async def get_channel(self, channel_id):
-        if not channel_id:
-            return None
-
-        return await self._get_channel(channel_id)
+        return await self._get_channel(channel_id) if channel_id else None
 
     def create_message(self, *, channel, data):
-        message = Message(state=self, channel=channel, data=data)
-        return message
+        return Message(state=self, channel=channel, data=data)

@@ -50,8 +50,6 @@ class General(commands.Cog):
 
         bot_user = await self.bot.real_user()
 
-        all_pages = []
-
         page = Embed(
             "ModMail Help Menu",
             "ModMail is a feature-rich Discord bot designed to enable your server members to "
@@ -63,8 +61,7 @@ class General(commands.Cog):
         page.set_footer("Use the reactions to flip pages.")
         page.add_field("Invite", f"{self.bot.config.BASE_URI}/invite", False)
         page.add_field("Support Server", "https://discord.gg/wjWJwJB", False)
-        all_pages.append(page)
-
+        all_pages = [page]
         for cog_name in self.bot.cogs:
             if cog_name in ["Owner", "Admin"]:
                 continue

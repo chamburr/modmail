@@ -40,8 +40,7 @@ class Owner(commands.Cog):
             "author": ctx.author,
             "guild": ctx.guild,
             "message": ctx.message,
-        }
-        env.update(globals())
+        } | globals()
 
         if body.startswith("```") and body.endswith("```"):
             body = "\n".join(body.split("\n")[1:-1])

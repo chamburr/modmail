@@ -50,13 +50,13 @@ class Miscellaneous(commands.Cog):
             member = ctx.message.member
 
         roles = [f"<@&{role}>" for role in member._roles]
-        if len(roles) == 0:
+        if not roles:
             roles.append("*No roles*")
 
         embed = Embed(title="User Information")
         embed.add_field("Name", str(member))
         embed.add_field("ID", member.id)
-        embed.add_field("Nickname", member.nick if member.nick else "*Not set*")
+        embed.add_field("Nickname", member.nick or "*Not set*")
         embed.add_field("Avatar", f"[Link]({member.avatar_url_as(static_format='png')})")
         embed.add_field(
             "Joined Server",

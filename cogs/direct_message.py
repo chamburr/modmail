@@ -52,11 +52,14 @@ class DirectMessageEvents(commands.Cog, name="Direct Message"):
             )
             return
 
-        channel = None
-        for text_channel in await guild.text_channels():
-            if tools.is_modmail_channel(text_channel, message.author.id):
-                channel = text_channel
-                break
+        channel = next(
+            (
+                text_channel
+                for text_channel in await guild.text_channels()
+                if tools.is_modmail_channel(text_channel, message.author.id)
+            ),
+            None,
+        )
 
         if channel is None:
             self.bot.prom.tickets.inc({})
@@ -70,7 +73,7 @@ class DirectMessageEvents(commands.Cog, name="Direct Message"):
             )
 
             if name:
-                name = name + f"-{message.author.discriminator}"
+                name += f"-{message.author.discriminator}"
             else:
                 name = message.author.id
 
@@ -183,9 +186,7 @@ class DirectMessageEvents(commands.Cog, name="Direct Message"):
             message.author.avatar_url,
         )
 
-        for count, attachment in enumerate(
-            [attachment.url for attachment in dm_message.attachments], start=1
-        ):
+        for count, attachment in enumerate((attachment.url for attachment in dm_message.attachments), start=1):
             embed.add_field(f"Attachment {count}", attachment, False)
 
         for file in files:
@@ -318,9 +319,9 @@ class DirectMessageEvents(commands.Cog, name="Direct Message"):
                 break
 
         settings = await tools.get_user_settings(self.bot, message.author.id)
-        confirmation = True if settings is None or settings[0] is True else False
+        confirmation = settings is None or settings[0] is True
 
-        if guild and confirmation is True:
+        if guild and confirmation:
             embed = Embed(
                 "Confirmation",
                 f"You're sending this message to **{guild.name}** (ID: {guild.id}). React with ✅ "

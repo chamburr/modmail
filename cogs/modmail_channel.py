@@ -104,9 +104,7 @@ class ModMailEvents(commands.Cog):
         )
         embed.set_footer(f"{member} | {member.id}", member.avatar_url)
 
-        for count, attachment in enumerate(
-            [attachment.url for attachment in dm_message.attachments], start=1
-        ):
+        for count, attachment in enumerate((attachment.url for attachment in dm_message.attachments), start=1):
             embed.add_field(f"Attachment {count}", attachment, False)
 
         for file in files:
