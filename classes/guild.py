@@ -49,11 +49,7 @@ class Guild(guild.Guild):
 
     def _from_data(self, guild):
         member_count = guild.get("member_count", None)
-        if member_count is not None:
-            self._member_count = member_count
-        else:
-            self._member_count = 0
-
+        self._member_count = member_count if member_count is not None else 0
         self.name = guild.get("name")
         self.region = try_enum(VoiceRegion, guild.get("region"))
         self.verification_level = try_enum(VerificationLevel, guild.get("verification_level"))

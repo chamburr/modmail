@@ -212,10 +212,10 @@ class Scheduler:
                 [y for x in data for y in (f"prefix:{x[0]}", "" if x[1] is None else x[1])]
             )
 
-        if len([x[0] for x in bans if x[1] == 0]) >= 1:
+        if [x[0] for x in bans if x[1] == 0]:
             await self.bot.state.sadd("banned_users", *[x[0] for x in bans if x[1] == 0])
 
-        if len([x[0] for x in bans if x[1] == 1]) >= 1:
+        if [x[0] for x in bans if x[1] == 1]:
             await self.bot.state.sadd("banned_guilds", *[x[0] for x in bans if x[1] == 1])
 
         if config.ENVIRONMENT == "production":
@@ -279,11 +279,12 @@ class Main:
             return web.Response(body='{"status":"Ok"}', content_type="application/json")
 
     def write_targets(self):
-        data = []
+        data = [{"labels": {"cluster": "0"}, "targets": ["localhost:6100"]}]
 
-        data.append({"labels": {"cluster": "0"}, "targets": ["localhost:6100"]})
-        for i in range(1, len(self.instances) + 1):
-            data.append({"labels": {"cluster": str(i)}, "targets": [f"localhost:{6100 + i}"]})
+        data.extend(
+            {"labels": {"cluster": str(i)}, "targets": [f"localhost:{6100 + i}"]}
+            for i in range(1, len(self.instances) + 1)
+        )
 
         with open("targets.json", "w") as file:
             json.dump(data, file, indent=2)

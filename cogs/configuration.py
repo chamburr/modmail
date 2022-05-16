@@ -319,9 +319,10 @@ class Configuration(commands.Cog):
         async with self.bot.pool.acquire() as conn:
             await conn.execute(
                 "UPDATE data SET commandonly=$1 WHERE guild=$2",
-                True if data[11] is False else False,
+                data[11] is False,
                 ctx.guild.id,
             )
+
 
         await ctx.send(
             Embed(f"Command only mode is {'enabled' if data[11] is False else 'disabled'}.")
@@ -374,9 +375,10 @@ class Configuration(commands.Cog):
         async with self.bot.pool.acquire() as conn:
             await conn.execute(
                 "UPDATE data SET loggingplus=$1 WHERE guild=$2",
-                True if data[7] is False else False,
+                data[7] is False,
                 ctx.guild.id,
             )
+
 
         await ctx.send(
             Embed(f"Advanced logging is {'enabled' if data[7] is False else 'disabled'}.")
@@ -392,9 +394,10 @@ class Configuration(commands.Cog):
         async with self.bot.pool.acquire() as conn:
             await conn.execute(
                 "UPDATE data SET anonymous=$1 WHERE guild=$2",
-                True if data[10] is False else False,
+                data[10] is False,
                 ctx.guild.id,
             )
+
 
         await ctx.send(
             Embed(f"Anonymous messaging is {'enabled' if data[10] is False else 'disabled'}.")
@@ -411,10 +414,7 @@ class Configuration(commands.Cog):
         category = await ctx.guild.get_channel(data[2])
         logging_channel = await ctx.guild.get_channel(data[4])
 
-        access_roles = []
-        for role in data[3]:
-            access_roles.append(f"<@&{role}>")
-
+        access_roles = [f"<@&{role}>" for role in data[3]]
         ping_roles = []
         for role in data[8]:
             if role == -1:
@@ -426,20 +426,23 @@ class Configuration(commands.Cog):
 
         greeting = data[5]
         if greeting and len(greeting) > 1000:
-            greeting = greeting[:997] + "..."
+            greeting = f"{greeting[:997]}..."
 
         closing = data[6]
         if closing and len(closing) > 1000:
-            closing = closing[:997] + "..."
+            closing = f"{closing[:997]}..."
 
         embed = Embed(title="Server Configurations")
         embed.add_field("Prefix", ctx.prefix)
         embed.add_field("Category", "*Not set*" if category is None else category.name)
         embed.add_field(
-            "Access Roles",
-            "*Not set*" if len(access_roles) == 0 else " ".join(access_roles),
+            "Access Roles", " ".join(access_roles) if access_roles else "*Not set*"
         )
-        embed.add_field("Ping Roles", "*Not set*" if len(ping_roles) == 0 else " ".join(ping_roles))
+
+        embed.add_field(
+            "Ping Roles", " ".join(ping_roles) if ping_roles else "*Not set*"
+        )
+
         embed.add_field(
             "Logging",
             "*Not set*" if logging_channel is None else f"<#{logging_channel.id}>",

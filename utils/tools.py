@@ -107,12 +107,8 @@ async def select_guild(bot, message, msg):
             if is_modmail_channel(text_channel, message.author.id):
                 channel = text_channel
 
-        if not channel:
-            guilds[str(guild.id)] = (guild.name, False)
-        else:
-            guilds[str(guild.id)] = (guild.name, True)
-
-    if len(guilds) == 0:
+        guilds[str(guild.id)] = (guild.name, True) if channel else (guild.name, False)
+    if not guilds:
         await message.channel.send(ErrorEmbed("Oops, something strange happened. No server found."))
         return
 
@@ -364,6 +360,6 @@ def tag_format(message, author):
         message = message.replace(tag, val)
 
     if len(message) > 2048:
-        return message[:2045] + "..."
+        return f"{message[:2045]}..."
 
     return message

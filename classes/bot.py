@@ -279,7 +279,7 @@ class ModMail(commands.AutoShardedBot):
 
         for extension in self._cogs:
             try:
-                self.load_extension("cogs." + extension)
+                self.load_extension(f"cogs.{extension}")
             except Exception:
                 log.error(f"Failed to load extension {extension}.", file=sys.stderr)
                 log.error(traceback.print_exc())

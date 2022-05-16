@@ -22,8 +22,9 @@ log = logging.getLogger(__name__)
 
 class ChannelConverter(commands.TextChannelConverter):
     async def convert(self, ctx, argument):
-        match = self._get_id_match(argument) or re.match(r"<#([0-9]+)>$", argument)
-        if match:
+        if match := self._get_id_match(argument) or re.match(
+            r"<#([0-9]+)>$", argument
+        ):
             channel_id = int(match.group(1))
             channel = await ctx.bot.get_channel(channel_id)
 
@@ -70,8 +71,9 @@ class GuildConverter(commands.GuildConverter):
 
 class MemberConverter(commands.MemberConverter):
     async def convert(self, ctx, argument):
-        match = self._get_id_match(argument) or re.match(r"<@!?([0-9]+)>$", argument)
-        if match:
+        if match := self._get_id_match(argument) or re.match(
+            r"<@!?([0-9]+)>$", argument
+        ):
             try:
                 return await ctx.guild.fetch_member(int(match.group(1)))
             except discord.NotFound:
@@ -89,8 +91,9 @@ class RoleConverter(commands.RoleConverter):
         if not ctx.guild:
             raise NoPrivateMessage()
 
-        match = self._get_id_match(argument) or re.match(r"<@&([0-9]+)>$", argument)
-        if match:
+        if match := self._get_id_match(argument) or re.match(
+            r"<@&([0-9]+)>$", argument
+        ):
             role = await ctx.guild.get_role(int(match.group(1)))
             if role:
                 return role
@@ -112,8 +115,9 @@ class PingRoleConverter(RoleConverter):
 
 class UserConverter(commands.UserConverter):
     async def convert(self, ctx, argument):
-        match = self._get_id_match(argument) or re.match(r"<@!?([0-9]+)>$", argument)
-        if match:
+        if match := self._get_id_match(argument) or re.match(
+            r"<@!?([0-9]+)>$", argument
+        ):
             try:
                 return await ctx.bot.fetch_user(int(match.group(1)))
             except discord.NotFound:

@@ -31,7 +31,7 @@ class Admin(commands.Cog):
             if guild is not None
         ]
 
-        if len(guilds) == 0:
+        if not guilds:
             await ctx.send(ErrorEmbed("No such guild was found."))
             return
 

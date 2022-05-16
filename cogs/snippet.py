@@ -159,9 +159,12 @@ class Snippet(commands.Cog):
             for snippet in chunk:
                 page.add_field(
                     snippet[0],
-                    snippet[1][:97] + "..." if len(snippet[1]) > 100 else snippet[1],
+                    f"{snippet[1][:97]}..."
+                    if len(snippet[1]) > 100
+                    else snippet[1],
                     False,
                 )
+
 
             page.set_footer("Use the reactions to flip pages.")
             all_pages.append(page)
