@@ -1,4 +1,5 @@
 import logging
+import typing
 
 from discord.errors import Forbidden
 from discord.ext import commands
@@ -7,7 +8,7 @@ from discord.role import Role
 
 from classes.embed import Embed, ErrorEmbed
 from utils import checks, tools
-from utils.converters import PingRoleConverter, RoleConverter
+from utils.converters import ChannelConverter, PingRoleConverter, RoleConverter
 
 log = logging.getLogger(__name__)
 
@@ -264,12 +265,11 @@ class Configuration(commands.Cog):
     @checks.has_permissions(administrator=True)
     @commands.guild_only()
     @commands.command(
-        description="Toggle between enable and disable for ModMail logs. Specify an existing channel to" 
-            "redirect logs there if logging is currently disabled",
+        description="Toggle ticket logging and optionally in an existing channel.",
         aliases=["logs"],
         usage="logging [channel]",
     )
-    async def logging(self, ctx, channel : discord.TextChannel = None):
+    async def logging(self, ctx, channel: typing.Optional[ChannelConverter]):
         data = await tools.get_data(self.bot, ctx.guild.id)
 
         if data[4]:
