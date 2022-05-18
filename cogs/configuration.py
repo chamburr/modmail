@@ -1,5 +1,4 @@
 import logging
-import discord
 
 from discord.errors import Forbidden
 from discord.ext import commands
@@ -274,11 +273,11 @@ class Configuration(commands.Cog):
         data = await tools.get_data(self.bot, ctx.guild.id)
 
         if data[4]:
-             async with self.bot.pool.acquire() as conn:
-                 await conn.execute("UPDATE data SET logging=$1 WHERE guild=$2", None, ctx.guild.id)
+            async with self.bot.pool.acquire() as conn:
+                await conn.execute("UPDATE data SET logging=$1 WHERE guild=$2", None, ctx.guild.id)
 
-             await ctx.send(Embed("ModMail logs are disabled. You may delete the channel manually."))
-             return
+            await ctx.send(Embed("ModMail logging is disabled. You may delete the channel."))
+            return
 
         category = await ctx.guild.get_channel(data[2])
         if category is None:
@@ -295,10 +294,10 @@ class Configuration(commands.Cog):
 
         async with self.bot.pool.acquire() as conn:
             await conn.execute(
-                "UPDATE data SET logging=$1, WHERE guild=$2", channel.id, ctx.guild.id
+                "UPDATE data SET logging=$1 WHERE guild=$2", channel.id, ctx.guild.id
             )
 
-        await ctx.send(Embed(f"Future Modmail logs will be directed to {channel.mention}"))
+        await ctx.send(Embed("ModMail logging is enabled."))
 
     @checks.in_database()
     @checks.has_permissions(administrator=True)
