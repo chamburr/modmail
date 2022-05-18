@@ -270,12 +270,17 @@ class Configuration(commands.Cog):
         aliases=["logs"],
         usage="logging [channel]",
     )
-    async def logging(self, ctx, channel_mentioned : discord.TextChannel = None):
+    async def logging(self, ctx, channel : discord.TextChannel = None):
         data = await tools.get_data(self.bot, ctx.guild.id)
-        category = await ctx.guild.get_channel(data[2])
-        channel = await ctx.guild.get_channel(data[4])
 
-        # If the category does not exist, prompt the user to create one
+        if data[4]:
+             async with self.bot.pool.acquire() as conn:
+                 await conn.execute("UPDATE data SET logging=$1 WHERE guild=$2", None, ctx.guild.id)
+
+             await ctx.send(Embed("ModMail logs are disabled. You may delete the channel manually."))
+             return
+
+        category = await ctx.guild.get_channel(data[2])
         if category is None:
             await ctx.send(
                 ErrorEmbed(
@@ -284,34 +289,16 @@ class Configuration(commands.Cog):
                 )
             )
             return
-        
-        # If there is not currently a channel...
-        # Set the channel to a specified channel if mentioned
-        # Else, create a new channel
+
         if channel is None:
-            if channel_mentioned is None:
-                channel = await ctx.guild.create_text_channel(name="modmail-log", category=category)
-            else:
-                channel = channel_mentioned
+            channel = await ctx.guild.create_text_channel(name="modmail-log", category=category)
 
-            async with self.bot.pool.acquire() as conn:
-                await conn.execute(
-                    "UPDATE data SET logging=$1, WHERE guild=$2", channel.id, ctx.guild.id
-                )
+        async with self.bot.pool.acquire() as conn:
+            await conn.execute(
+                "UPDATE data SET logging=$1, WHERE guild=$2", channel.id, ctx.guild.id
+            )
 
-            await ctx.send(Embed(f"Future Modmail logs will be directed to {channel.mention}"))
-            return
-
-        # Otherwise, a category and channel exist, turn off logging
-        else:
-            async with self.bot.pool.acquire() as conn:
-                await conn.execute("UPDATE data SET logging=$1 WHERE guild=$2", None, ctx.guild.id)
-
-            await ctx.send(Embed(f"ModMail logs are disabled. You can delete {channel.mention} or renable logs" 
-                f"for that channel with \"{ctx.prefix}logging {channel.mention}\"."))
-
-
-
+        await ctx.send(Embed(f"Future Modmail logs will be directed to {channel.mention}"))
 
     @checks.in_database()
     @checks.has_permissions(administrator=True)
