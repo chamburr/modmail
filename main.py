@@ -314,7 +314,8 @@ class Main:
 
 config = Config().load()
 
-loop = asyncio.get_event_loop()
+loop = asyncio.new_event_loop()
+asyncio.set_event_loop(loop)
 main = Main(loop=loop)
 loop.create_task(main.launch())
 
