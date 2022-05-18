@@ -1,4 +1,5 @@
 import logging
+import typing
 
 from discord.errors import Forbidden
 from discord.ext import commands
@@ -7,7 +8,7 @@ from discord.role import Role
 
 from classes.embed import Embed, ErrorEmbed
 from utils import checks, tools
-from utils.converters import PingRoleConverter, RoleConverter
+from utils.converters import ChannelConverter, PingRoleConverter, RoleConverter
 
 log = logging.getLogger(__name__)
 
@@ -264,26 +265,18 @@ class Configuration(commands.Cog):
     @checks.has_permissions(administrator=True)
     @commands.guild_only()
     @commands.command(
-        description="Toggle between enable and disable for ModMail logs.",
+        description="Toggle ticket logging and optionally in an existing channel.",
         aliases=["logs"],
-        usage="logging",
+        usage="logging [channel]",
     )
-    async def logging(self, ctx):
+    async def logging(self, ctx, channel: typing.Optional[ChannelConverter]):
         data = await tools.get_data(self.bot, ctx.guild.id)
-        channel = await ctx.guild.get_channel(data[4])
-
-        if channel:
-            try:
-                await channel.delete()
-            except Forbidden:
-                await ctx.send(ErrorEmbed("Missing permissions to delete the channel."))
-                return
 
         if data[4]:
             async with self.bot.pool.acquire() as conn:
                 await conn.execute("UPDATE data SET logging=$1 WHERE guild=$2", None, ctx.guild.id)
 
-            await ctx.send(Embed("ModMail logs are disabled."))
+            await ctx.send(Embed("ModMail logging is disabled. You may delete the channel."))
             return
 
         category = await ctx.guild.get_channel(data[2])
@@ -296,14 +289,15 @@ class Configuration(commands.Cog):
             )
             return
 
-        channel = await ctx.guild.create_text_channel(name="modmail-log", category=category)
+        if channel is None:
+            channel = await ctx.guild.create_text_channel(name="modmail-log", category=category)
 
         async with self.bot.pool.acquire() as conn:
             await conn.execute(
                 "UPDATE data SET logging=$1 WHERE guild=$2", channel.id, ctx.guild.id
             )
 
-        await ctx.send(Embed("The channel is created successfully."))
+        await ctx.send(Embed("ModMail logging is enabled."))
 
     @checks.in_database()
     @checks.has_permissions(administrator=True)
