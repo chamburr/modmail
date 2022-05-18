@@ -297,14 +297,6 @@ class Main:
         self.bot.id = (await self.bot.real_user()).id
         self.bot.state.id = self.bot.id
 
-        async with self.bot.pool.acquire() as conn:
-            exists = await conn.fetchrow(
-                "SELECT EXISTS (SELECT relname FROM pg_class WHERE relname = 'data')"
-            )
-            if exists[0] is False:
-                with open("schema.sql", "r") as file:
-                    await conn.execute(file.read())
-
         for i in range(int(config.BOT_CLUSTERS)):
             self.instances.append(Instance(i + 1, loop=self.loop, main=self))
 
