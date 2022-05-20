@@ -1,4 +1,4 @@
-CREATE TABLE public.data
+CREATE TABLE data
 (
     guild       bigint   NOT NULL,
     prefix      text,
@@ -15,7 +15,7 @@ CREATE TABLE public.data
     PRIMARY KEY (guild)
 );
 
-CREATE TABLE public.snippet
+CREATE TABLE snippet
 (
     guild   bigint NOT NULL,
     name    text   NOT NULL,
@@ -23,7 +23,7 @@ CREATE TABLE public.snippet
     PRIMARY KEY (guild, name)
 );
 
-CREATE TABLE public.premium
+CREATE TABLE premium
 (
     identifier bigint   NOT NULL,
     guild      bigint[] NOT NULL,
@@ -31,14 +31,14 @@ CREATE TABLE public.premium
     PRIMARY KEY (identifier)
 );
 
-CREATE TABLE public.ban
+CREATE TABLE ban
 (
     identifier bigint  NOT NULL,
     category   integer NOT NULL,
     PRIMARY KEY (identifier, category)
 );
 
-CREATE TABLE public.account
+CREATE TABLE account
 (
     identifier   bigint  NOT NULL,
     confirmation boolean NOT NULL,

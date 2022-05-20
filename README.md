@@ -27,11 +27,24 @@ question. Instead, ask it on our [Discord server][discord].
 
 ## Self-hosting
 
-Due to the complex infrastructure, the bot is unfortunately not suitable to for self-hosting at the
-moment. Please use our public instance while we are working on a way to run the bot with Docker.
+This guide requires you to have basic knowledge about command line, Docker and Discord bots. We
+will not provide any form of support for self-hosting.
 
-Alternatively, you may also host [v2.x](https://github.com/chamburr/modmail/tree/v2.1.2) of this
-bot. There are self-hosting instructions on the README page of those versions.
+First, create a Discord bot on the [developer portal](https://discord.com/developers). You must
+enable the server member intent and the message content intent for the bot to function.
+
+Then, install Git and Docker on your machine. Clone this repository, copy `docker/.env.example` to
+`docker/.env` and fill in all the configurations.
+
+Finally, run the following commands to build and run ModMail. Please note that the initial build
+may take 10 to 15 minutes, depending on your machine. Subsequent builds would be much faster.
+
+```
+cd docker
+docker-compose up -d
+```
+
+Your self-hosted bot should be up now. Congratulations!
 
 ## License
 
