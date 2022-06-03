@@ -35,7 +35,7 @@ Set or clear the roles mentioned when a ticket is opened. You can also use `ever
 
 Toggle ticket logging and optionally in an existing channel.
 
-- Usage: `logging [channel]`
+- Usage: `[channel]`
 - Alias: logs
 
 ## commandonly
