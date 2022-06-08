@@ -271,6 +271,7 @@ class Configuration(commands.Cog):
     )
     async def logging(self, ctx, channel: typing.Optional[ChannelConverter]):
         data = await tools.get_data(self.bot, ctx.guild.id)
+
         if channel is not None:
             async with self.bot.pool.acquire() as conn:
                 await conn.execute(
