@@ -271,16 +271,8 @@ class Configuration(commands.Cog):
     )
     async def logging(self, ctx, channel: typing.Optional[ChannelConverter]):
         data = await tools.get_data(self.bot, ctx.guild.id)
-
-        if channel is not None:
-            async with self.bot.pool.acquire() as conn:
-                await conn.execute(
-                    "UPDATE data SET logging=$1 WHERE guild=$2", channel.id, ctx.guild.id
-                )
-            await ctx.send(Embed("Logging channel is changed."))
-            return
             
-        if data[4]:
+        if data[4] and channel is None:
             async with self.bot.pool.acquire() as conn:
                 await conn.execute("UPDATE data SET logging=$1 WHERE guild=$2", None, ctx.guild.id)
 
@@ -297,7 +289,8 @@ class Configuration(commands.Cog):
             )
             return
 
-        channel = await ctx.guild.create_text_channel(name="modmail-log", category=category)
+        if channel is None:
+            channel = await ctx.guild.create_text_channel(name="modmail-log", category=category)
 
         async with self.bot.pool.acquire() as conn:
             await conn.execute(
