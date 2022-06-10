@@ -9,19 +9,11 @@ Developer, Administrator
 - Reddit: https://www.reddit.com/user/chamburr22
 - LinkedIn: https://linkedin.com/in/chamburr
 
-# FlareonIsCute
-
-Administrator
-
-- Image: https://cdn.discordapp.com/avatars/488283878189039626/6b9a118b7c6933ab61c88d5661f827c3.png
-- GitHub: https://github.com/shus2307
-- Reddit: https://www.reddit.com/user/flareonthecutest
-
 # Foxtrek_64
 
 Administrator
 
-- Image: https://cdn.discordapp.com/avatars/197291773133979648/5c89350b05cf4f5a331708ff5fa0ced4.png
+- Image: https://cdn.discordapp.com/avatars/197291773133979648/a48b8b5fee8d571e06d024cb05d2d4f9.png
 - GitHub: https://github.com/Foxtrek64
 
 # James [a_leon]
@@ -36,14 +28,23 @@ Administrator
 
 Moderator
 
-- Image: https://cdn.discordapp.com/avatars/332314562575597579/8d0761ab0f962ba8f19e2d25a276a9b0.png
+- Image: https://cdn.discordapp.com/avatars/332314562575597579/fcdda2edf76c496bc7327f8697cd84b0.png
 - GitHub: https://github.com/dlsnyder8
 
 # Mikhail
 
 Moderator
 
-- Image: https://cdn.discordapp.com/avatars/247151607647698947/2b60e684be33e20880afbed9e73d171f.png
+- Image: https://cdn.discordapp.com/avatars/247151607647698947/245779119e94951967f5a87a657416cc.png
+
+# Shadowstar
+
+Moderator
+
+- Image: https://cdn.discordapp.com/avatars/433276300703170580/7a83b60a5f14d6375a99fcbca10381c9.png
+- GitHub: https://github.com/ShadowstarUnited
+- Twitter: https://twitter.com/Shadowstardark
+- Reddit: https://www.reddit.com/user/ShadowstarUnited
 
 # SnowyJaguar
 
@@ -56,15 +57,23 @@ Moderator
 - Reddit: https://www.reddit.com/user/NinthTurtle1034
 - LinkedIn: https://www.linkedin.com/in/teagancollyer
 
-# markswrld
+# FlareonIsCute
 
 Support
 
-- Image: https://cdn.discordapp.com/avatars/742367118628225034/75746f1a1ddc28a9507b5b36babdab48.png
+- Image: https://cdn.discordapp.com/avatars/488283878189039626/6b9a118b7c6933ab61c88d5661f827c3.png
+- GitHub: https://github.com/shus2307
+- Reddit: https://www.reddit.com/user/flareonthecutest
+
+# Neptune
+
+Support
+
+- Image: https://cdn.discordapp.com/avatars/548583124062175232/b72664ed8a6a506179a00d6320b3c416.png
 
 # waterflamev8
 
-Support, Contributor
+Support
 
 - Image: https://cdn.discordapp.com/avatars/723794074498367498/04ef2c02bd3341e42bda2ec5d6d2dcd2.png
 - GitHub: https://github.com/waterflamev8
