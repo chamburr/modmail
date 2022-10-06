@@ -3,7 +3,7 @@
 Developer, Administrator
 
 - Image: https://cdn.discordapp.com/avatars/446290930723717120/a23dcacf8b9d10dd3f3ebced4e5f7ffd.png
-- Website: https://chamburr.xyz
+- Website: https://chamburr.com
 - GitHub: https://github.com/chamburr
 - Twitter: https://twitter.com/chamburr22
 - Reddit: https://www.reddit.com/user/chamburr22
@@ -64,12 +64,6 @@ Support
 - Image: https://cdn.discordapp.com/avatars/488283878189039626/6b9a118b7c6933ab61c88d5661f827c3.png
 - GitHub: https://github.com/shus2307
 - Reddit: https://www.reddit.com/user/flareonthecutest
-
-# Neptune
-
-Support
-
-- Image: https://cdn.discordapp.com/avatars/548583124062175232/b72664ed8a6a506179a00d6320b3c416.png
 
 # waterflamev8
 

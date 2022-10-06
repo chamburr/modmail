@@ -11,7 +11,7 @@
             </p>
             <p class="mb-0">
               Copyright © 2019-2022
-              <a class="footer-link" target="_blank" rel="noopener" href="https://chamburr.xyz">
+              <a class="footer-link" target="_blank" rel="noopener" href="https://chamburr.com">
                 CHamburr
               </a>
             </p>
