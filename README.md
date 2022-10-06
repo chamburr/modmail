@@ -5,7 +5,7 @@
 
 A feature-rich Discord bot for easy communication between server staff and users.
 
-![Screenshot](https://chamburr.xyz/u/7PUf0Z.png)
+![Screenshot](https://user-images.githubusercontent.com/42373024/194307657-9a146d26-c5ac-4138-8428-a78d2cacf6a6.png)
 
 A new channel is created whenever a user messages the bot, and the channel will serve as a shared
 inbox for seamless communication between staff and the user.
