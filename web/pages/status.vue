@@ -123,7 +123,7 @@ export default {
 }
 
 .status-legend {
-  /deep/ .icon-shape {
+  ::v-deep .icon-shape {
     width: 1em;
     padding: 0.5em 0;
   }

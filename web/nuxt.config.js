@@ -59,6 +59,7 @@ export default {
   },
 
   build: {
+    postcss: null,
     optimizeCSS: true,
     babel: {
       compact: true,

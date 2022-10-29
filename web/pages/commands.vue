@@ -113,35 +113,35 @@ export default {
   position: sticky;
   top: calc(76px + 2em);
 
-  /deep/ .active {
+  ::v-deep .active {
     background-color: $primary !important;
   }
 
-  /deep/ a {
+  ::v-deep a {
     padding-top: 6px;
     padding-bottom: 6px;
     background-color: $gray-700 !important;
   }
 
-  /deep/ li {
+  ::v-deep li {
     padding-right: 0 !important;
     margin-bottom: 0.5em;
     margin-top: 0.5em;
     display: block;
   }
 
-  /deep/ ul {
+  ::v-deep ul {
     flex-direction: column;
   }
 
-  /deep/ a > div {
+  ::v-deep a > div {
     color: white !important;
     font-weight: 600;
   }
 }
 
 .commands-card {
-  /deep/ div:focus {
+  ::v-deep div:focus {
     outline: none;
   }
 }

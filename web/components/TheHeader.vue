@@ -120,14 +120,14 @@ export default {
   background-color: $gray-900;
   z-index: 1000;
 
-  /deep/ .navbar-collapse {
+  ::v-deep .navbar-collapse {
     display: block;
     background-color: $dark;
     top: 75px;
   }
 
   @include media-breakpoint-down(md) {
-    /deep/ .navbar-collapse:not(.show) {
+    ::v-deep .navbar-collapse:not(.show) {
       pointer-events: none;
     }
   }
@@ -135,7 +135,7 @@ export default {
 
 #header-nav.bg-transparent {
   @include media-breakpoint-up(lg) {
-    /deep/ .navbar-collapse {
+    ::v-deep .navbar-collapse {
       background-color: transparent !important;
     }
   }

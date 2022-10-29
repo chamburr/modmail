@@ -38,7 +38,7 @@ export default {
 
 <style scoped lang="scss">
 .faq-card {
-  /deep/ div:focus {
+  ::v-deep div:focus {
     outline: none;
   }
 }
