@@ -25,14 +25,9 @@ campaigns).
 
 # Sharing Your Information
 
-We share your information with third parties to help us use your information, as described above. We
-also use Google Analytics to help us understand how our customers use our website. You can read more
-about how Google uses your information here: https://www.google.com/intl/en/policies/privacy/. You
-can also opt-out of Google Analytics here: https://tools.google.com/dlpage/gaoptout.
-
-Finally, we may also share your information to comply with applicable laws and regulations, to
-respond to a subpoena, search warrant or other lawful request for information we receive, or to
-otherwise protect our rights.
+We may share your information to comply with applicable laws and regulations, to respond to a
+subpoena, search warrant or other lawful request for information we receive, or to otherwise protect
+our rights.
 
 # Your Rights
 
@@ -59,4 +54,4 @@ practices or for other operational, legal or regulatory reasons.
 For more information about our privacy practices, if you have any questions, or if you would like to
 make a complaint, please contact us through sending email to hi@modmail.xyz.
 
-_Last updated: 1 May 2021_
+_Last updated: 29 October 2022_

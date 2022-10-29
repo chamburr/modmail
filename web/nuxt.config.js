@@ -95,7 +95,6 @@ export default {
   buildModules: [
     '@nuxtjs/eslint-module',
     '@nuxtjs/fontawesome',
-    '@nuxtjs/google-analytics',
     '@nuxtjs/pwa',
     '@nuxtjs/stylelint-module',
     '@nuxtjs/style-resources',
@@ -139,11 +138,6 @@ export default {
       solid: ['faCircle', 'faGlobe'],
       brands: ['faGithub', 'faLinkedin', 'faReddit', 'faTwitter'],
     },
-  },
-
-  googleAnalytics: {
-    dev: isDevelopment(),
-    id: process.env.GOOGLE_ANALYTICS,
   },
 
   pwa: {

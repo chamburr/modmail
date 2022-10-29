@@ -104,7 +104,6 @@ services:
       HTTP_PORT: 6000
       API_HOST: modmail-api
       API_PORT: 6001
-      GOOGLE_ANALYTICS: ''
 
   dispatch:
     image: chamburr/twilight-dispatch:latest
