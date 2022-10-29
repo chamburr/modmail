@@ -37,7 +37,6 @@ services:
       API_SECRET: supersecret
       BOT_API_HOST: modmail-bot
       BOT_API_PORT: 6002
-      SENTRY_DSN: ''
 
   modmail-bot:
     build:
@@ -82,7 +81,6 @@ services:
       BASE_URI: ${BASE_URI}
       BOT_API_HOST: 0.0.0.0
       BOT_API_PORT: 6002
-      SENTRY_DSN: ''
       TOPGG_TOKEN: ''
       DBOTS_TOKEN: ''
       DBL_TOKEN: ''
@@ -107,7 +105,6 @@ services:
       API_HOST: modmail-api
       API_PORT: 6001
       GOOGLE_ANALYTICS: ''
-      SENTRY_DSN: ''
 
   dispatch:
     image: chamburr/twilight-dispatch:latest

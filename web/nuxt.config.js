@@ -90,13 +90,7 @@ export default {
     '~/plugins/modal.js',
   ],
 
-  modules: [
-    '@nuxt/content',
-    '@nuxtjs/axios',
-    '@nuxtjs/proxy',
-    '@nuxtjs/sentry',
-    'bootstrap-vue/nuxt',
-  ],
+  modules: ['@nuxt/content', '@nuxtjs/axios', '@nuxtjs/proxy', 'bootstrap-vue/nuxt'],
 
   buildModules: [
     '@nuxtjs/eslint-module',
@@ -126,11 +120,6 @@ export default {
 
   proxy: {
     '/api': `http://${process.env.API_HOST}:${process.env.API_PORT}`,
-  },
-
-  sentry: {
-    disabled: isDevelopment(),
-    dsn: process.env.SENTRY_DSN,
   },
 
   bootstrapVue: {

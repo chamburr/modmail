@@ -6,7 +6,6 @@ lazy_static! {
     pub static ref CONFIG: Config = Config {
         base_uri: get_env("BASE_URI"),
         environment: get_env_as("ENVIRONMENT"),
-        sentry_dsn: get_env("SENTRY_DSN"),
         bot_token: get_env("BOT_TOKEN"),
         bot_client_id: get_env_as("BOT_CLIENT_ID"),
         bot_client_secret: get_env("BOT_CLIENT_SECRET"),
@@ -47,7 +46,6 @@ impl FromStr for Environment {
 pub struct Config {
     pub base_uri: String,
     pub environment: Environment,
-    pub sentry_dsn: String,
     pub bot_token: String,
     pub bot_client_id: u64,
     pub bot_client_secret: String,

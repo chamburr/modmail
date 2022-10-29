@@ -1,7 +1,7 @@
 #![deny(clippy::all, nonstandard_style, rust_2018_idioms, unused, warnings)]
 
 use crate::{
-    config::{Environment, CONFIG},
+    config::CONFIG,
     routes::{errors, index, logs, users, webhooks, ApiResult},
 };
 
@@ -36,11 +36,6 @@ pub async fn main() {
 }
 
 pub async fn real_main() -> ApiResult<()> {
-    let _guard;
-    if CONFIG.environment == Environment::Production {
-        _guard = sentry::init(CONFIG.sentry_dsn.clone());
-    }
-
     std::env::set_var("RUST_BACKTRACE", "1");
 
     let pool = cache::get_pool()?;
@@ -63,7 +58,6 @@ pub async fn real_main() -> ApiResult<()> {
             )
             .wrap(Logger::default())
             .wrap(NormalizePath::new(TrailingSlash::Trim))
-            .wrap(sentry_actix::Sentry::new())
             .service(
                 web::scope("/api")
                     .service(index::index)
