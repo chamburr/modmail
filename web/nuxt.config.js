@@ -56,6 +56,15 @@ export default {
       { rel: 'manifest', href: '/site.webmanifest' },
       { rel: 'canonical', href: `${process.env.BASE_URI}` },
     ],
+    ...(!isDevelopment() && {
+      script: [
+        {
+          src: 'https://plausible.chamburr.xyz/js/script.js',
+          defer: true,
+          'data-domain': `${process.env.BASE_URI.split('/')[2]}`,
+        },
+      ],
+    }),
   },
 
   build: {
