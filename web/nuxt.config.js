@@ -68,7 +68,7 @@ export default {
   },
 
   build: {
-    postcss: null,
+    postcss: process.env.NODE_ENV === 'production' ? {} : null,
     optimizeCSS: true,
     babel: {
       compact: true,
