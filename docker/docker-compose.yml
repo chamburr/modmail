@@ -7,9 +7,7 @@ volumes:
 
 services:
   modmail-api:
-    build:
-      context: ../
-      dockerfile: docker/api/Dockerfile
+    image: chamburr/modmail-api:latest
     restart: unless-stopped
     depends_on:
       modmail-bot:
@@ -39,9 +37,7 @@ services:
       BOT_API_PORT: 6002
 
   modmail-bot:
-    build:
-      context: ../
-      dockerfile: docker/bot/Dockerfile
+    image: chamburr/modmail-bot:latest
     restart: unless-stopped
     depends_on:
       dispatch:
@@ -88,9 +84,7 @@ services:
       BFD_TOKEN: ''
 
   modmail-web:
-    build:
-      context: ../
-      dockerfile: docker/web/Dockerfile
+    image: chamburr/modmail-web:latest
     restart: unless-stopped
     depends_on:
       modmail-api:
