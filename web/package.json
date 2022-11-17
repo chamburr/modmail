@@ -12,7 +12,7 @@
     "lint:css": "stylelint **/*.{vue,css}",
     "lint:md": "remark -q -f .",
     "format": "prettier --write '**/*.{js,vue,md}'",
-    "format:check": "prettier --list-different '**/*.{js,vue,md}'"
+    "format:check": "prettier --check '**/*.{js,vue,md}'"
   },
   "dependencies": {
     "@fortawesome/fontawesome-svg-core": "^6.2.0",
