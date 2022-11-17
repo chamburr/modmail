@@ -7,11 +7,13 @@ steps:
     image: rust
     commands:
       - cd web
+      - rustup component add clippy
       - cargo clippy
   - name: lint node
     image: node
     commands:
       - cd web
+      - yarn install
       - yarn --silent lint
   - name: lint python
     image: python

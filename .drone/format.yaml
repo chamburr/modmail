@@ -7,11 +7,13 @@ steps:
     image: rust
     commands:
       - cd web
+      - rustup component add rustfmt
       - cargo fmt --check
   - name: format node
     image: node
     commands:
       - cd web
+      - yarn install
       - yarn --silent format:check
   - name: format python
     image: python
