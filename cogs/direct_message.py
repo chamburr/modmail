@@ -310,7 +310,7 @@ class DirectMessageEvents(commands.Cog, name="Direct Message"):
         confirmation = False
         if self.bot.config.DEFAULT_SERVER is not None:
             guild = await self.bot.get_guild(int(self.bot.config.DEFAULT_SERVER))
-        else:    
+        else:
             async for msg in message.channel.history(limit=30):
                 if (
                     msg.author.id == self.bot.id
