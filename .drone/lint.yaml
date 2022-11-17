@@ -1,0 +1,26 @@
+---
+kind: pipeline
+name: lint
+
+steps:
+  - name: lint rust
+    image: rust
+    commands:
+      - cd web
+      - cargo clippy
+  - name: lint node
+    image: node
+    commands:
+      - cd web
+      - yarn --silent lint
+  - name: lint python
+    image: python
+    commands:
+      - pip install flake8
+      - flake8
+
+trigger:
+  event:
+    - push
+  branch:
+    - master

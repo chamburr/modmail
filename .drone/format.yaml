@@ -1,0 +1,27 @@
+---
+kind: pipeline
+name: format
+
+steps:
+  - name: format rust
+    image: rust
+    commands:
+      - cd web
+      - cargo fmt --check
+  - name: format node
+    image: node
+    commands:
+      - cd web
+      - yarn --silent format:check
+  - name: format python
+    image: python
+    commands:
+      - pip install isort black
+      - isort --check .
+      - black --check --line-length 100 .
+
+trigger:
+  event:
+    - push
+  branch:
+    - master

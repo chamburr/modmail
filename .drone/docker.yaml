@@ -1,0 +1,42 @@
+---
+kind: pipeline
+name: docker
+
+steps:
+  - name: publish api
+    image: plugins/docker
+    settings:
+      repo: chamburr/modmail-api
+      auto_tag: true
+      dockerfile: docker/api/Dockerfile
+      username:
+        from_secret: docker_username
+      password:
+        from_secret: docker_password
+  - name: publish bot
+    image: plugins/docker
+    settings:
+      repo: chamburr/modmail-bot
+      auto_tag: true
+      dockerfile: docker/bot/Dockerfile
+      username:
+        from_secret: docker_username
+      password:
+        from_secret: docker_password
+  - name: publish web
+    image: plugins/docker
+    settings:
+      repo: chamburr/modmail-web
+      auto_tag: true
+      dockerfile: docker/web/Dockerfile
+      username:
+        from_secret: docker_username
+      password:
+        from_secret: docker_password
+
+trigger:
+  event:
+    - push
+    - tag
+  branch:
+    - master
