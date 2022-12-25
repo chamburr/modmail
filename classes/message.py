@@ -1,3 +1,4 @@
+import copy
 import logging
 
 from discord import message, utils
@@ -33,7 +34,7 @@ class Message(message.Message):
         self.content = data["content"]
         self.nonce = data.get("nonce")
 
-        ref = data.get("message_reference")
+        ref = copy.copy(data.get("message_reference"))
         self.reference = MessageReference.with_state(state, ref) if ref is not None else None
 
         try:
