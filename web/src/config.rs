@@ -5,7 +5,6 @@ use std::{env, str::FromStr};
 lazy_static! {
     pub static ref CONFIG: Config = Config {
         base_uri: get_env("BASE_URI"),
-        environment: get_env_as("ENVIRONMENT"),
         bot_token: get_env("BOT_TOKEN"),
         bot_client_id: get_env_as("BOT_CLIENT_ID"),
         bot_client_secret: get_env("BOT_CLIENT_SECRET"),
@@ -27,25 +26,9 @@ lazy_static! {
     };
 }
 
-#[derive(Debug, Deserialize, PartialEq, Eq)]
-#[serde(rename_all = "lowercase")]
-pub enum Environment {
-    Development,
-    Production,
-}
-
-impl FromStr for Environment {
-    type Err = serde_json::error::Error;
-
-    fn from_str(s: &str) -> Result<Self, Self::Err> {
-        serde_json::from_str(format!("\"{}\"", s).as_str())
-    }
-}
-
 #[derive(Debug)]
 pub struct Config {
     pub base_uri: String,
-    pub environment: Environment,
     pub bot_token: String,
     pub bot_client_id: u64,
     pub bot_client_secret: String,
