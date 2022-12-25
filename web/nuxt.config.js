@@ -1,9 +1,5 @@
 require('dotenv').config({ path: '../.env' })
 
-function isDevelopment() {
-  return process.env.ENVIRONMENT !== 'production'
-}
-
 export default {
   server: {
     host: process.env.HTTP_HOST,
@@ -73,7 +69,7 @@ export default {
 
   components: true,
 
-  dev: isDevelopment(),
+  dev: process.env.NODE_ENV !== 'production',
 
   loading: {
     color: 'dodgerblue',
