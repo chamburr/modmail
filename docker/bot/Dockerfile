@@ -23,7 +23,7 @@ RUN mkdir logs
 
 COPY --from=builder /build ./bin
 
-COPY docker/entrypoint.sh ./bin/
+COPY docker/bot/entrypoint.sh ./bin/
 COPY main.py worker.py ./
 COPY classes ./classes
 COPY cogs ./cogs
