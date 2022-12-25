@@ -82,13 +82,21 @@ class DirectMessageEvents(commands.Cog, name="Direct Message"):
                     "not change this)",
                 )
             except discord.HTTPException as e:
-                await message.channel.send(
-                    ErrorEmbed(
-                        "An HTTPException error occurred. Please contact an admin on the server "
-                        f"with the following information: {e.text} ({e.code})."
+                if "Contains words not allowed" in e.text:
+                    channel = await guild.create_text_channel(
+                        name=message.author.id,
+                        category=category,
+                        topic=f"ModMail Channel {message.author.id} {message.channel.id} (Please "
+                        "do not change this)",
                     )
-                )
-                return
+                else:
+                    await message.channel.send(
+                        ErrorEmbed(
+                            "An HTTPException error occurred. Please contact an admin on the "
+                            f"server with the following information: {e.text} ({e.code})."
+                        )
+                    )
+                    return
 
             log_channel = await guild.get_channel(data[4])
             if log_channel:
