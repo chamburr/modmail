@@ -36,8 +36,7 @@ enable the server member intent and the message content intent for the bot to fu
 Then, install Git and Docker on your machine. Clone this repository, copy `docker/.env.example` to
 `docker/.env` and fill in all the configurations.
 
-Finally, run the following commands to build and run ModMail. Please note that the initial build
-may take 10 to 15 minutes, depending on your machine. Subsequent builds would be much faster.
+Finally, use the following commands run ModMail.
 
 ```
 cd docker
