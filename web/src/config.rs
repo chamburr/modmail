@@ -1,5 +1,4 @@
 use lazy_static::lazy_static;
-use serde::Deserialize;
 use std::{env, str::FromStr};
 
 lazy_static! {
@@ -53,11 +52,7 @@ fn get_env(name: &str) -> String {
     env::var(name).unwrap_or_else(|_| panic!("Missing environmental variable: {}", name))
 }
 
-fn get_env_as<T>(name: &str) -> T
-where
-    T: std::str::FromStr,
-    <T as std::str::FromStr>::Err: std::fmt::Debug,
-{
+fn get_env_as<T: FromStr>(name: &str) -> T {
     get_env(name)
         .parse::<T>()
         .unwrap_or_else(|_| panic!("Invalid environmental variable: {}", name))

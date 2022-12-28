@@ -127,7 +127,7 @@ pub async fn get_token_cookie(exchange: BasicTokenResponse) -> ApiResult<Cookie<
     let domain = url.domain().unwrap_or_default().to_owned();
 
     let timestamp = Utc::now().timestamp() as u64;
-    let expire_timestamp = timestamp + exchange.expires_in().unwrap_or_default().as_secs() as u64;
+    let expire_timestamp = timestamp + exchange.expires_in().unwrap_or_default().as_secs();
 
     let token = jsonwebtoken::encode(
         &Header::default(),
