@@ -288,4 +288,4 @@ class ModMail(commands.AutoShardedBot):
             async for message in queue_iter:
                 async with message.process(ignore_processed=True):
                     await self.receive_message(message.body)
-                    message.ack()
+                    await message.ack()
