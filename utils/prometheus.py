@@ -4,7 +4,8 @@ import os
 import platform
 import resource
 
-from aioprometheus import Collector, Counter, Gauge, Service
+from aioprometheus import Counter, Gauge
+from aioprometheus.service import Service
 
 
 class Prometheus:
@@ -34,25 +35,15 @@ class Prometheus:
 
         self.info = Gauge("python_info", "Python platform information.")
         self.collected = Counter("python_gc_objects_collected", "Objects collected during GC.")
-        self.uncollectable = Counter(
-            "python_gc_objects_uncollectable", "Uncollectable objects found during GC."
-        )
-        self.collections = Counter(
-            "python_gc_collections", "Number of times this generation was collected."
-        )
+        self.uncollectable = Counter("python_gc_objects_uncollectable", "Uncollectable GC objects.")
+        self.collections = Counter("python_gc_collections", "Number of times collected by GC.")
 
-        self.http = Counter("modmail_http_requests", "Number of http requests sent to Discord.")
-        self.commands = Counter("modmail_commands", "Number of commands used on the bot.")
-        self.tickets = Counter("modmail_tickets", "Number of tickets created by the bot.")
-        self.tickets_message = Counter(
-            "modmail_tickets_message", "Number of messages sent in tickets."
-        )
+        self.http = Counter("modmail_http_requests", "Number of http requests sent.")
+        self.commands = Counter("modmail_commands", "Number of commands used.")
+        self.tickets = Counter("modmail_tickets", "Number of tickets created.")
+        self.tickets_message = Counter("modmail_tickets_message", "Number of ticket messages sent.")
 
     async def start(self):
-        for name, value in vars(self).items():
-            if issubclass(type(value), Collector):
-                self.msvr.register(getattr(self, name))
-
         await self.msvr.start(addr="127.0.0.1", port=6100 + self.bot.cluster)
         self.msvr._runner._server._kwargs["access_log"] = None
 
