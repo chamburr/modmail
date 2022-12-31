@@ -1,5 +1,7 @@
 FROM rust:1.65-alpine AS builder
 
+ENV RUSTFLAGS "-C target-feature=-crt-static"
+
 RUN apk add --no-cache musl-dev openssl-dev
 
 WORKDIR /build
@@ -17,7 +19,7 @@ RUN cargo build --release
 
 FROM alpine:3.17
 
-RUN apk add --no-cache dumb-init
+RUN apk add --no-cache dumb-init libgcc libssl1.1
 
 WORKDIR /app
 
