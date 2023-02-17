@@ -59,6 +59,13 @@ class DirectMessageEvents(commands.Cog, name="Direct Message"):
                 break
 
         if channel is None:
+            if data[12] is not None:
+                reason = "No reason specified." if data[12] == "" else data[12]
+                await message.channel.send(
+                    ErrorEmbed(f"ModMail is currently disabled in **{guild.name}**. **Reason**: {reason}")
+                )
+                return
+
             self.bot.prom.tickets.inc({})
 
             name = "".join(

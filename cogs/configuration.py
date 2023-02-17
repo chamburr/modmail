@@ -260,6 +260,56 @@ class Configuration(commands.Cog):
 
         await ctx.send(Embed("The role(s) are updated successfully."))
 
+    @checks.in_database()
+    @checks.has_permissions(administrator=True)
+    @commands.guild_only()
+    @commands.command(
+        description="Enable ModMail",
+        aliases=["enablebot"],
+        usage="enable",
+    )
+    async def enable(self, ctx):
+        data = await tools.get_data(self.bot, ctx.guild.id)
+
+        if data[12] is None:
+            await ctx.send(
+                ErrorEmbed("ModMail is already enabled!")
+            )
+            return
+
+        async with self.bot.pool.acquire() as conn:
+            await conn.execute(
+                "UPDATE data SET status=$1 WHERE guild=$2", None,
+                ctx.guild.id,
+            )
+
+        await ctx.send(Embed(f"ModMail is now enabled!"))
+
+    @checks.in_database()
+    @checks.has_permissions(administrator=True)
+    @commands.guild_only()
+    @commands.command(
+        description="Disable ModMail",
+        aliases=["disablebot"],
+        usage="disable",
+    )
+    async def disable(self, ctx, reason: str = ""):
+        data = await tools.get_data(self.bot, ctx.guild.id)
+
+        if data[12] is not None:
+            await ctx.send(
+                ErrorEmbed("ModMail is already disabled!")
+            )
+            return
+
+        async with self.bot.pool.acquire() as conn:
+            await conn.execute(
+                "UPDATE data SET status=$1 WHERE guild=$2", reason,
+                ctx.guild.id,
+            )
+
+        await ctx.send(Embed(f"ModMail is now disabled!"))
+
     @checks.bot_has_permissions(manage_channels=True)
     @checks.in_database()
     @checks.has_permissions(administrator=True)
