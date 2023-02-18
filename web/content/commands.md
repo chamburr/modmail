@@ -74,6 +74,13 @@ Toggle default anonymous messages.
 
 View the configurations for the current server.
 
+## toggle
+
+Toggle the ModMail bot
+
+- Usage: `[reason]`
+- Alias: togglebot
+
 # Core
 
 ## reply
