@@ -264,49 +264,33 @@ class Configuration(commands.Cog):
     @checks.has_permissions(administrator=True)
     @commands.guild_only()
     @commands.command(
-        description="Enable ModMail",
-        aliases=["enablebot"],
-        usage="enable",
+        description="Toggle the ModMail bot",
+        aliases=["togglebot"],
+        usage="toggle",
     )
-    async def enable(self, ctx):
+    async def toggle(self, ctx, *, reason: str = ""):
         data = await tools.get_data(self.bot, ctx.guild.id)
 
-        if data[12] is None:
-            await ctx.send(ErrorEmbed("ModMail is already enabled!"))
-            return
+        status = reason if data[12] is None else None
 
         async with self.bot.pool.acquire() as conn:
             await conn.execute(
                 "UPDATE data SET status=$1 WHERE guild=$2",
-                None,
+                status,
                 ctx.guild.id,
             )
 
-        await ctx.send(Embed("ModMail is now enabled!"))
+        reason = "No reason was provided." if reason == "" else reason
 
-    @checks.in_database()
-    @checks.has_permissions(administrator=True)
-    @commands.guild_only()
-    @commands.command(
-        description="Disable ModMail",
-        aliases=["disablebot"],
-        usage="disable",
-    )
-    async def disable(self, ctx, *, reason: str = ""):
-        data = await tools.get_data(self.bot, ctx.guild.id)
+        embed = ErrorEmbed(
+            "ModMail Status",
+            "ModMail is now "
+            f"{'**enabled**.' if status is None else '**disabled**. ' '**Reason**: ' + reason}",
+            timestamp=True,
+        )
+        embed.set_footer(f"{ctx.guild.name} | {ctx.guild.id}", ctx.guild.icon_url)
 
-        if data[12] is not None:
-            await ctx.send(ErrorEmbed("ModMail is already disabled!"))
-            return
-
-        async with self.bot.pool.acquire() as conn:
-            await conn.execute(
-                "UPDATE data SET status=$1 WHERE guild=$2",
-                reason,
-                ctx.guild.id,
-            )
-
-        await ctx.send(Embed("ModMail is now disabled!"))
+        await ctx.send(embed)
 
     @checks.bot_has_permissions(manage_channels=True)
     @checks.in_database()
