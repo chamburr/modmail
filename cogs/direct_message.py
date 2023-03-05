@@ -59,6 +59,16 @@ class DirectMessageEvents(commands.Cog, name="Direct Message"):
                 break
 
         if channel is None:
+            if data[12] is not None:
+                embed = ErrorEmbed(
+                    "Ticket Creation Disabled",
+                    data[12] if data[12] else "No reason was provided.",
+                    timestamp=True,
+                )
+                embed.set_footer(f"{guild.name} | {guild.id}", guild.icon_url)
+                await message.channel.send(embed)
+                return
+
             self.bot.prom.tickets.inc({})
 
             name = "".join(
