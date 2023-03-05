@@ -70,16 +70,16 @@ Toggle advanced logging which includes messages sent and received.
 
 Toggle default anonymous messages.
 
+## toggle
+
+Toggle whether tickets can be created, optionally with reason if disabling.
+
+- Usage: `[reason]`
+- Alias: enable, disable
+
 ## viewconfig
 
 View the configurations for the current server.
-
-## toggle
-
-Toggle the ModMail bot
-
-- Usage: `[reason]`
-- Alias: togglebot
 
 # Core
 

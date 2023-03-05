@@ -260,38 +260,6 @@ class Configuration(commands.Cog):
 
         await ctx.send(Embed("The role(s) are updated successfully."))
 
-    @checks.in_database()
-    @checks.has_permissions(administrator=True)
-    @commands.guild_only()
-    @commands.command(
-        description="Toggle the ModMail bot",
-        aliases=["togglebot"],
-        usage="toggle",
-    )
-    async def toggle(self, ctx, *, reason: str = ""):
-        data = await tools.get_data(self.bot, ctx.guild.id)
-
-        status = reason if data[12] is None else None
-
-        async with self.bot.pool.acquire() as conn:
-            await conn.execute(
-                "UPDATE data SET status=$1 WHERE guild=$2",
-                status,
-                ctx.guild.id,
-            )
-
-        reason = "No reason was provided." if reason == "" else reason
-
-        embed = ErrorEmbed(
-            "ModMail Status",
-            "ModMail is now "
-            f"{'**enabled**.' if status is None else '**disabled**. ' '**Reason**: ' + reason}",
-            timestamp=True,
-        )
-        embed.set_footer(f"{ctx.guild.name} | {ctx.guild.id}", ctx.guild.icon_url)
-
-        await ctx.send(embed)
-
     @checks.bot_has_permissions(manage_channels=True)
     @checks.in_database()
     @checks.has_permissions(administrator=True)
@@ -424,6 +392,28 @@ class Configuration(commands.Cog):
 
         await ctx.send(
             Embed(f"Anonymous messaging is {'enabled' if data[10] is False else 'disabled'}.")
+        )
+
+    @checks.in_database()
+    @checks.has_permissions(administrator=True)
+    @commands.guild_only()
+    @commands.command(
+        description="Toggle whether tickets can be created, optionally with reason if disabling.",
+        aliases=["enable", "disable"],
+        usage="toggle [reason]",
+    )
+    async def toggle(self, ctx, *, reason: str = ""):
+        data = await tools.get_data(self.bot, ctx.guild.id)
+
+        async with self.bot.pool.acquire() as conn:
+            await conn.execute(
+                "UPDATE data SET toggle=$1 WHERE guild=$2",
+                reason if data[12] is None else None,
+                ctx.guild.id,
+            )
+
+        await ctx.send(
+            Embed(f"Ticket creation is {'disabled' if data[12] is None else 'enabled'}.")
         )
 
     @checks.in_database()

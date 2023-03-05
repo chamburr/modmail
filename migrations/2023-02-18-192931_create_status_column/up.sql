@@ -1,1 +1,0 @@
-ALTER TABLE data ADD status text;
