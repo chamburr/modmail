@@ -425,20 +425,26 @@ class Configuration(commands.Cog):
     async def viewconfig(self, ctx):
         data = await tools.get_data(self.bot, ctx.guild.id)
         category = await ctx.guild.get_channel(data[2])
-        logging_channel = await ctx.guild.get_channel(data[4])
+        logging = await ctx.guild.get_channel(data[4])
 
-        access_roles = []
+        access = []
         for role in data[3]:
-            access_roles.append(f"<@&{role}>")
+            access.append(f"<@&{role}>")
 
-        ping_roles = []
+        ping = []
         for role in data[8]:
             if role == -1:
-                ping_roles.append("@here")
+                ping.append("@here")
             elif role == ctx.guild.id:
-                ping_roles.append("@everyone")
+                ping.append("@everyone")
             else:
-                ping_roles.append(f"<@&{role}>")
+                ping.append(f"<@&{role}>")
+
+        toggle = data[12]
+        if toggle and len(toggle) > 989:
+            toggle = toggle[:986] + "..."
+        elif toggle == "":
+            toggle = "No reason was provided."
 
         greeting = data[5]
         if greeting and len(greeting) > 1000:
@@ -451,18 +457,13 @@ class Configuration(commands.Cog):
         embed = Embed(title="Server Configurations")
         embed.add_field("Prefix", ctx.prefix)
         embed.add_field("Category", "*Not set*" if category is None else category.name)
-        embed.add_field(
-            "Access Roles",
-            "*Not set*" if len(access_roles) == 0 else " ".join(access_roles),
-        )
-        embed.add_field("Ping Roles", "*Not set*" if len(ping_roles) == 0 else " ".join(ping_roles))
-        embed.add_field(
-            "Logging",
-            "*Not set*" if logging_channel is None else f"<#{logging_channel.id}>",
-        )
+        embed.add_field("Access Roles", "*Not set*" if len(access) == 0 else " ".join(access))
+        embed.add_field("Ping Roles", "*Not set*" if len(ping) == 0 else " ".join(ping))
+        embed.add_field("Logging", "*Not set*" if logging is None else f"<#{logging.id}>")
         embed.add_field("Advanced Logging", "Enabled" if data[7] is True else "Disabled")
         embed.add_field("Anonymous Messaging", "Enabled" if data[10] is True else "Disabled")
-        embed.add_field("Command Only Mode", "Enabled" if data[11] is True else "Disabled")
+        embed.add_field("Command Only", "Enabled" if data[11] is True else "Disabled")
+        embed.add_field("Ticket Creation", "Enabled" if toggle is None else f"Disabled ({toggle})")
         embed.add_field("Greeting Message", "*Not set*" if greeting is None else greeting, False)
         embed.add_field("Closing Message", "*Not set*" if closing is None else closing, False)
 
