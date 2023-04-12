@@ -99,6 +99,14 @@ class DirectMessageEvents(commands.Cog, name="Direct Message"):
                         topic=f"ModMail Channel {message.author.id} {message.channel.id} (Please "
                         "do not change this)",
                     )
+                elif "Maximum number of channels in category reached" in e.text:
+                    await message.channel.send(
+                        ErrorEmbed(
+                            "The server has reached the maximum number of active tickets. Please "
+                            "try again later."
+                        )
+                    )
+                    return
                 else:
                     await message.channel.send(
                         ErrorEmbed(
