@@ -11,7 +11,8 @@ use std::num::ParseIntError;
 
 lazy_static! {
     static ref RE: Regex =
-        Regex::new(r"^\[[0-9-]{10} [0-9:]{8}\] [^\n]*#[0-9]{4} \((User|Staff|Comment)\):").unwrap();
+        Regex::new(r"^\[([0-9-]{10} [0-9:]{8})\] ([^\n]*)#([0-9]{1,4}) \((User|Staff|Comment)\):")
+            .unwrap();
 }
 
 #[derive(Debug, Serialize)]
@@ -62,25 +63,13 @@ pub async fn get_log(Path(id): Path<String>) -> ApiResult<ApiResponse> {
             continue;
         }
 
-        let mut line_iter = line.splitn(2, '#');
-        let part_one = line_iter.next().unwrap_or_default();
-        let part_two = line_iter.next().unwrap_or_default();
+        let captures = RE.captures(line).unwrap();
+        let timestamp = &captures[1];
+        let username = &captures[2];
+        let discriminator = &captures[3];
+        let role = &captures[4];
 
-        let timestamp = part_one.get(1..20).unwrap_or_default();
-        let username = part_one.get(22..).unwrap_or_default();
-        let discriminator = part_two.get(..4).unwrap_or_default();
-
-        let role = match part_two.get(6..).unwrap_or_default() {
-            item if item.starts_with("Staff") => "Staff",
-            item if item.starts_with("Comment") => "Comment",
-            _ => "User",
-        };
-
-        let mut message = part_two
-            .splitn(2, ": ")
-            .last()
-            .unwrap_or_default()
-            .to_owned();
+        let mut message = line.splitn(2, ": ").last().unwrap_or_default().to_owned();
         if message.starts_with("(Attachment: ") {
             message = format!(" {}", message);
         }
