@@ -34,6 +34,7 @@ COPY --from=builder /build/.nuxt ./.nuxt
 
 COPY web/nuxt.config.js ./
 COPY web/content ./content
+COPY web/static ./static
 
 EXPOSE 6000
 
