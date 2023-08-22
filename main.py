@@ -146,12 +146,6 @@ class Scheduler:
                 headers={"Authorization": config.BOD_TOKEN, "Content-Type": "application/json"},
             )
 
-            await self.session.post(
-                f"https://botsfordiscord.com/api/bot/{self.bot.id}",
-                data=orjson.dumps({"server_count": guilds}),
-                headers={"Authorization": config.BFD_TOKEN, "Content-Type": "application/json"},
-            )
-
             await asyncio.sleep(900)
 
     async def cleanup(self):

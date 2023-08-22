@@ -78,7 +78,6 @@ services:
       - DBOTS_TOKEN=
       - DBL_TOKEN=
       - BOD_TOKEN=
-      - BFD_TOKEN=
     depends_on:
       - dispatch
       - postgres
