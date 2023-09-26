@@ -170,7 +170,7 @@ class Core(commands.Cog):
             except discord.Forbidden:
                 return
 
-            log_url = msg.attachments[0].url[39:-4]
+            log_url = msg.attachments[0].url.split("?")[0][39:-4]
             log_url = log_url.replace("modmail_log_", "")
             log_url = [hex(int(some_id))[2:] for some_id in log_url.split("/")]
             log_url = f"{self.bot.config.BASE_URI}/logs/{'-'.join(log_url)}"
