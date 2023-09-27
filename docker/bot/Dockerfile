@@ -1,4 +1,4 @@
-FROM rust:1.65-slim-buster AS builder
+FROM rust:1.72-slim-buster AS builder
 
 RUN apt update && apt install -y musl-dev libpq-dev
 
