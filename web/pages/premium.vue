@@ -17,6 +17,13 @@
         </Card>
       </div>
     </div>
+    <div class="text-left mt-5 pt-4">
+      <p class="h5">Importnat Notice</p>
+      <p>
+        You must join the support server before making your purchase, as the role Modmail
+        grants you on the support server is required to use the premium features.
+      </p>
+    </div>
     <div class="row mt-4 text-center justify-content-around">
       <div class="col-lg-1"></div>
       <div class="col-12 col-md-4 col-lg-3 mb-4 px-2 my-md-auto">
