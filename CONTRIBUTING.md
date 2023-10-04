@@ -29,7 +29,7 @@ to follow them, because they will be eventually squashed.
 ## Development Environment
 
 To set up your development environment, follow the self-hosting
-guide [here](https://github.com/chamburr/modmail/blob/master/README.md). When you successfully
+guide [here](https://github.com/chamburr/modmail/blob/main/README.md). When you successfully
 self-host the bot, your development environment should more or less be ready.
 
 ## Commit Convention

@@ -25,4 +25,4 @@ trigger:
   event:
     - push
   branch:
-    - master
+    - main
