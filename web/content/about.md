@@ -2,7 +2,7 @@
 
 Developer, Administrator
 
-- Image: https://github.com/chamburr/modmail/assets/51924672/0001f97f-b1da-493c-a297-6b9eb9975e48
+- Image: https://github.com/chamburr/modmail/assets/51924672/18a0dcb8-5f97-4a5d-b4dc-9c3ad5ef7a8a
 - Website: https://chamburr.com
 - GitHub: https://github.com/chamburr
 - Twitter: https://twitter.com/chamburr22
@@ -13,7 +13,7 @@ Developer, Administrator
 
 Administrator
 
-- Image: https://github.com/chamburr/modmail/assets/51924672/eb96bc49-4736-4fe4-99ab-ffa8d1148f1c
+- Image: https://github.com/chamburr/modmail/assets/51924672/7019a9f1-21bf-49cb-891a-fe63503e8096
 - GitHub: https://github.com/jrwallor
 - Twitter: https://twitter.com/jrwallor
 
@@ -21,7 +21,7 @@ Administrator
 
 Administrator
 
-- Image: https://github.com/chamburr/modmail/assets/51924672/a0f6712d-8922-47b1-be99-f654813b4c3a
+- Image: https://github.com/chamburr/modmail/assets/51924672/3d99ba37-dc10-4ac9-85eb-9a3bef176529
 - Website: https://teagancollyer.wordpress.com
 - GitHub: https://github.com/SnowyJaguar1034
 - Twitter: https://twitter.com/SnowyJaguar1034
@@ -33,20 +33,20 @@ Administrator
 
 Moderator
 
-- Image: https://github.com/chamburr/modmail/assets/51924672/6d7b0c7c-af05-4d87-a713-6dea8a650fbd
+- Image: https://github.com/chamburr/modmail/assets/51924672/8b599a3b-44b4-4170-940e-180056f7c11b
 
 # Jordan
 
 Moderator
 
-- Image: https://github.com/chamburr/modmail/assets/51924672/3e99d79f-58ee-4425-b3b4-d6d763e0dea7
+- Image: https://github.com/chamburr/modmail/assets/51924672/f9df2de1-8dd2-4f61-a147-e74ac066dfd1
 
 
 # waterflamev8
 
-Support
+Support, Contributor
 
-- Image: https://github.com/chamburr/modmail/assets/51924672/2c6104d1-04b7-4bdc-b798-e0e2d7417a0f
+- Image: https://github.com/chamburr/modmail/assets/51924672/31b08ac3-5a45-4a73-bfdc-12266349e140
 - GitHub: https://github.com/waterflamev8
 
 
@@ -54,7 +54,7 @@ Support
 
 Support
 
-- Image: https://github.com/chamburr/modmail/assets/51924672/2dfec846-10a2-4680-8638-7c3dbd82bcd6
+- Image: https://github.com/chamburr/modmail/assets/51924672/ea63fa67-b402-48b6-81fa-d773440a386e
 
 # dyl
 
