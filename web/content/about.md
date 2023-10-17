@@ -28,6 +28,11 @@ Administrator
 - Reddit: https://www.reddit.com/user/NinthTurtle1034
 - LinkedIn: https://www.linkedin.com/in/teagancollyer
 
+# Jordan
+
+Moderator
+
+- Image: https://github.com/chamburr/modmail/assets/51924672/f9df2de1-8dd2-4f61-a147-e74ac066dfd1
 
 # Mikhail
 
@@ -35,12 +40,11 @@ Moderator
 
 - Image: https://github.com/chamburr/modmail/assets/51924672/8b599a3b-44b4-4170-940e-180056f7c11b
 
-# Jordan
+# Agent Bunny in Space
 
-Moderator
+Support
 
-- Image: https://github.com/chamburr/modmail/assets/51924672/f9df2de1-8dd2-4f61-a147-e74ac066dfd1
-
+- Image: https://github.com/chamburr/modmail/assets/51924672/ea63fa67-b402-48b6-81fa-d773440a386e
 
 # waterflamev8
 
@@ -48,13 +52,6 @@ Support, Contributor
 
 - Image: https://github.com/chamburr/modmail/assets/51924672/31b08ac3-5a45-4a73-bfdc-12266349e140
 - GitHub: https://github.com/waterflamev8
-
-
-# Agent Bunny in Space
-
-Support
-
-- Image: https://github.com/chamburr/modmail/assets/51924672/ea63fa67-b402-48b6-81fa-d773440a386e
 
 # dyl
 
