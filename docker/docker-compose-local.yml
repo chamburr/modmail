@@ -2,7 +2,9 @@ version: '3'
 
 services:
   web:
-    image: modmail-web:dev
+    build:
+      context: ..
+      dockerfile: docker/web/Dockerfile
     restart: unless-stopped
     ports:
       - '8000:6000'
@@ -16,7 +18,9 @@ services:
       - api
 
   api:
-    image: modmail-api:dev
+    build:
+      context: ..
+      dockerfile: docker/api/Dockerfile
     restart: unless-stopped
     environment:
       - BOT_TOKEN=${BOT_TOKEN}
@@ -43,7 +47,9 @@ services:
       - redis
 
   bot:
-    image: modmail-bot:dev
+    build:
+      context: ..
+      dockerfile: docker/bot/Dockerfile
     restart: unless-stopped
     environment:
       - ENVIRONMENT=development

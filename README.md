@@ -48,7 +48,6 @@ Your self-hosted bot should be up now. Congratulations!
 If you would prefer to build your own images, then instead you can use these commands:
 
 ```
-./build.sh
 cd docker
 docker-compose -f docker-compose-local.yml up -d
 ```
