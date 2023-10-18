@@ -13,7 +13,7 @@
           <div class="pb-4">
             <img
               class="about-icon mw-100 mh-100 rounded-circle"
-              :src="`${element.image}?size=512`"
+              :src="element.image"
               alt="Icon"
             />
           </div>

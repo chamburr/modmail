@@ -15,7 +15,7 @@
             <div class="col-12 col-lg-4 pb-4 px-3 pb-lg-0">
               <img
                 class="partner-icon mw-100 mh-100 rounded-circle"
-                :src="`${element.image}?size=512`"
+                :src="element.image"
                 alt="Icon"
               />
             </div>

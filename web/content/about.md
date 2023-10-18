@@ -2,72 +2,60 @@
 
 Developer, Administrator
 
-- Image: https://cdn.discordapp.com/avatars/446290930723717120/a23dcacf8b9d10dd3f3ebced4e5f7ffd.png
+- Image: https://github.com/chamburr/modmail/assets/51924672/18a0dcb8-5f97-4a5d-b4dc-9c3ad5ef7a8a
 - Website: https://chamburr.com
 - GitHub: https://github.com/chamburr
 - Twitter: https://twitter.com/chamburr22
 - Reddit: https://www.reddit.com/user/chamburr22
 - LinkedIn: https://linkedin.com/in/chamburr
 
-# Foxtrek_64
-
-Administrator
-
-- Image: https://cdn.discordapp.com/avatars/197291773133979648/a48b8b5fee8d571e06d024cb05d2d4f9.png
-- GitHub: https://github.com/Foxtrek64
-
 # James [a_leon]
 
 Administrator
 
-- Image: https://cdn.discordapp.com/avatars/381998065327931392/fe36746e200371a22f8d8974e3d8a2f4.png
+- Image: https://github.com/chamburr/modmail/assets/51924672/7019a9f1-21bf-49cb-891a-fe63503e8096
 - GitHub: https://github.com/jrwallor
 - Twitter: https://twitter.com/jrwallor
 
-# dyl
-
-Moderator
-
-- Image: https://cdn.discordapp.com/avatars/332314562575597579/fcdda2edf76c496bc7327f8697cd84b0.png
-- GitHub: https://github.com/dlsnyder8
-
-# Mikhail
-
-Moderator
-
-- Image: https://cdn.discordapp.com/avatars/247151607647698947/245779119e94951967f5a87a657416cc.png
-
-# Shadowstar
-
-Moderator
-
-- Image: https://cdn.discordapp.com/avatars/433276300703170580/7a83b60a5f14d6375a99fcbca10381c9.png
-- GitHub: https://github.com/ShadowstarUnited
-- Twitter: https://twitter.com/Shadowstardark
-- Reddit: https://www.reddit.com/user/ShadowstarUnited
-
 # SnowyJaguar
 
-Moderator
+Administrator
 
-- Image: https://cdn.discordapp.com/avatars/365262543872327681/d988966ec87afc03de6a648ace4cca6d.png
+- Image: https://github.com/chamburr/modmail/assets/51924672/3d99ba37-dc10-4ac9-85eb-9a3bef176529
 - Website: https://teagancollyer.wordpress.com
 - GitHub: https://github.com/SnowyJaguar1034
 - Twitter: https://twitter.com/SnowyJaguar1034
 - Reddit: https://www.reddit.com/user/NinthTurtle1034
 - LinkedIn: https://www.linkedin.com/in/teagancollyer
 
-# FlareonIsCute
+# Jordan
+
+Moderator
+
+- Image: https://github.com/chamburr/modmail/assets/51924672/f9df2de1-8dd2-4f61-a147-e74ac066dfd1
+
+# Mikhail
+
+Moderator
+
+- Image: https://github.com/chamburr/modmail/assets/51924672/8b599a3b-44b4-4170-940e-180056f7c11b
+
+# Agent Bunny in Space
 
 Support
 
-- Image: https://cdn.discordapp.com/avatars/488283878189039626/6b9a118b7c6933ab61c88d5661f827c3.png
-- GitHub: https://github.com/shus2307
-- Reddit: https://www.reddit.com/user/flareonthecutest
+- Image: https://github.com/chamburr/modmail/assets/51924672/ea63fa67-b402-48b6-81fa-d773440a386e
 
 # waterflamev8
 
-Support
+Support, Contributor
 
-- Image: https://cdn.discordapp.com/avatars/723794074498367498/04ef2c02bd3341e42bda2ec5d6d2dcd2.png
+- Image: https://github.com/chamburr/modmail/assets/51924672/31b08ac3-5a45-4a73-bfdc-12266349e140
 - GitHub: https://github.com/waterflamev8
+
+# dyl
+
+Contributor
+
+- Image: https://github.com/chamburr/modmail/assets/51924672/ff772da4-b9f6-44ba-9b77-11d29e1f2886
+- GitHub: https://github.com/dlsnyder8
