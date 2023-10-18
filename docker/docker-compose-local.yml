@@ -1,0 +1,147 @@
+version: '3'
+
+services:
+  web:
+    image: modmail-web:dev
+    restart: unless-stopped
+    ports:
+      - '8000:6000'
+    environment:
+      - BASE_URI=${BASE_URI}
+      - HTTP_HOST=0.0.0.0
+      - HTTP_PORT=6000
+      - API_HOST=api
+      - API_PORT=6001
+    depends_on:
+      - api
+
+  api:
+    image: modmail-api:dev
+    restart: unless-stopped
+    environment:
+      - BOT_TOKEN=${BOT_TOKEN}
+      - BOT_CLIENT_ID=${BOT_CLIENT_ID}
+      - BOT_CLIENT_SECRET=${BOT_CLIENT_SECRET}
+      - MAIN_SERVER=0
+      - PREMIUM1_ROLE=0
+      - PREMIUM3_ROLE=0
+      - PREMIUM5_ROLE=0
+      - PAYMENT_CHANNEL=0
+      - PATRON_CHANNEL=0
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - REDIS_PASSWORD=
+      - BASE_URI=${BASE_URI}
+      - API_HOST=0.0.0.0
+      - API_PORT=6001
+      - API_WORKERS=1
+      - API_SECRET=supersecret
+      - BOT_API_HOST=bot
+      - BOT_API_PORT=6002
+    depends_on:
+      - bot
+      - redis
+
+  bot:
+    image: modmail-bot:dev
+    restart: unless-stopped
+    environment:
+      - ENVIRONMENT=development
+      - BOT_TOKEN=${BOT_TOKEN}
+      - BOT_CLIENT_ID=${BOT_CLIENT_ID}
+      - BOT_CLIENT_SECRET=${BOT_CLIENT_SECRET}
+      - DEFAULT_PREFIX=${DEFAULT_PREFIX}
+      - DEFAULT_SERVER=${DEFAULT_SERVER}
+      - BOT_CLUSTERS=1
+      - MAIN_SERVER=
+      - OWNER_USERS=${OWNER_USERS}
+      - ADMIN_USERS=${ADMIN_USERS}
+      - PREMIUM1_ROLE=0
+      - PREMIUM3_ROLE=0
+      - PREMIUM5_ROLE=0
+      - POSTGRES_DATABASE=modmail
+      - POSTGRES_USERNAME=postgres
+      - POSTGRES_PASSWORD=
+      - POSTGRES_HOST=postgres
+      - POSTGRES_PORT=5432
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - REDIS_PASSWORD=
+      - RABBIT_USERNAME=guest
+      - RABBIT_PASSWORD=guest
+      - RABBIT_HOST=rabbitmq
+      - RABBIT_PORT=5672
+      - BASE_URI=${BASE_URI}
+      - BOT_API_HOST=0.0.0.0
+      - BOT_API_PORT=6002
+      - TOPGG_TOKEN=
+      - DBOTS_TOKEN=
+      - DBL_TOKEN=
+      - BOD_TOKEN=
+    depends_on:
+      - dispatch
+      - postgres
+      - redis
+      - rabbitmq
+
+  dispatch:
+    image: chamburr/twilight-dispatch:latest
+    restart: unless-stopped
+    environment:
+      - RUST_LOG=info
+      - BOT_TOKEN=${BOT_TOKEN}
+      - SHARDS_START=0
+      - SHARDS_END=1
+      - SHARDS_TOTAL=1
+      - SHARDS_CONCURRENCY=1
+      - SHARDS_WAIT=5
+      - CLUSTERS=1
+      - DEFAULT_QUEUE=true
+      - RESUME=true
+      - INTENTS=46593
+      - LARGE_THRESHOLD=50
+      - STATUS=online
+      - ACTIVITY_TYPE=0
+      - ACTIVITY_NAME=DM to Contact Staff | =help
+      - LOG_CHANNEL=0
+      - LOG_GUILD_CHANNEL=0
+      - STATE_ENABLED=true
+      - STATE_MEMBER=false
+      - STATE_MEMBER_TTL=60000
+      - STATE_MESSAGE=false
+      - STATE_MESSAGE_TTL=60000
+      - STATE_PRESENCE=false
+      - STATE_EMOJI=false
+      - STATE_VOICE=false
+      - STATE_OLD=false
+      - RABBIT_HOST=rabbitmq
+      - RABBIT_PORT=5672
+      - RABBIT_USERNAME=guest
+      - RABBIT_PASSWORD=guest
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - PROMETHEUS_HOST=0.0.0.0
+      - PROMETHEUS_PORT=8005
+    depends_on:
+      - redis
+      - rabbitmq
+
+  postgres:
+    image: postgres:15-alpine
+    restart: unless-stopped
+    environment:
+      - POSTGRES_DB=modmail
+      - POSTGRES_HOST_AUTH_METHOD=trust
+    volumes:
+      - postgres:/var/lib/postgresql/data
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+
+  rabbitmq:
+    image: rabbitmq:3-alpine
+    restart: unless-stopped
+
+volumes:
+  postgres:
