@@ -55,8 +55,10 @@ export default {
   },
   methods: {
     supportedAttachments(elements) {
-      const supported = ['.bmp', '.gif', '.jpg', '.jpeg', '.png']
-      return elements.filter(element => supported.includes(element.slice(-4).toLowerCase()))
+      const supported = ['bmp', 'gif', 'jpg', 'jpeg', 'png']
+      return elements.filter(element =>
+        supported.includes(element.split('?')[0].split('.').pop().toLowerCase())
+      )
     },
     unsupportedAttachments(elements) {
       const supported = this.supportedAttachments(elements)
