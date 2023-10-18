@@ -100,7 +100,7 @@ class Core(commands.Cog):
 
         if member is None:
             try:
-                member = await self.bot.fetch_user(tools.get_modmail_user(ctx.channel))
+                member = await self.bot.fetch_user(tools.get_modmail_user(ctx.channel).id)
             except discord.NotFound:
                 pass
 
