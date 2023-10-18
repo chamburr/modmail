@@ -11,11 +11,7 @@
       >
         <Card class="h-100" body-classes="d-flex flex-column text-center">
           <div class="pb-4">
-            <img
-              class="about-icon mw-100 mh-100 rounded-circle"
-              :src="element.image"
-              alt="Icon"
-            />
+            <img class="about-icon mw-100 mh-100 rounded-circle" :src="element.image" alt="Icon" />
           </div>
           <div class="flex-grow-1 d-flex flex-column">
             <p class="font-weight-bold h4">
