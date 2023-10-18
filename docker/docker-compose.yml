@@ -2,8 +2,7 @@ version: '3'
 
 services:
   web:
-    image: modmail-web:dev
-    # image: chamburr/modmail-web:latest
+    image: chamburr/modmail-web:latest
     restart: unless-stopped
     ports:
       - '8000:6000'
@@ -17,8 +16,7 @@ services:
       - api
 
   api:
-    image: modmail-api:dev
-    # image: chamburr/modmail-api:latest
+    image: chamburr/modmail-api:latest
     restart: unless-stopped
     environment:
       - BOT_TOKEN=${BOT_TOKEN}
@@ -45,8 +43,7 @@ services:
       - redis
 
   bot:
-    image: modmail-bot:dev
-    # image: chamburr/modmail-bot:latest
+    image: chamburr/modmail-bot:latest
     restart: unless-stopped
     environment:
       - ENVIRONMENT=development
