@@ -36,14 +36,17 @@ enable the server member intent and the message content intent for the bot to fu
 Then, install Git and Docker on your machine. Clone this repository, copy `docker/.env.example` to
 `docker/.env` and fill in all the configurations.
 
-Finally, use the following commands run ModMail.
+Finally, use the following commands to start ModMail.
 
 ```
+./build.sh
 cd docker
 docker-compose up -d
 ```
 
 Your self-hosted bot should be up now. Congratulations!
+
+If you would prefer to not build your own images, then in `docker/docker-compose.yml` comment out the `modmail-xxx:dev` lines and uncomment the `chamburr/modmail-xxx:latest` lines and do not run `./build.sh`
 
 ## License
 
