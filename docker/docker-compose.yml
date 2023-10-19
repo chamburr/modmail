@@ -2,7 +2,12 @@ version: '3'
 
 services:
   web:
-    image: chamburr/modmail-web:latest
+    build:
+      context: ..
+      dockerfile: docker/web/Dockerfile
+      tags: 
+        - "chamburr/modmail-web:dev"
+    image: chamburr/modmail-web:${DOCKER_TAG:-latest}
     restart: unless-stopped
     ports:
       - '8000:6000'
@@ -16,7 +21,12 @@ services:
       - api
 
   api:
-    image: chamburr/modmail-api:latest
+    build:
+      context: ..
+      dockerfile: docker/api/Dockerfile
+      tags: 
+        - "chamburr/modmail-api:dev"
+    image: chamburr/modmail-api:${DOCKER_TAG:-latest}
     restart: unless-stopped
     environment:
       - BOT_TOKEN=${BOT_TOKEN}
@@ -43,7 +53,12 @@ services:
       - redis
 
   bot:
-    image: chamburr/modmail-bot:latest
+    build:
+      context: ..
+      dockerfile: docker/bot/Dockerfile
+      tags: 
+        - "chamburr/modmail-bot:dev"
+    image: chamburr/modmail-bot:${DOCKER_TAG:-latest}
     restart: unless-stopped
     environment:
       - ENVIRONMENT=development
