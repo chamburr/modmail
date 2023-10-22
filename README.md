@@ -47,11 +47,11 @@ Your self-hosted bot should be up now. Congratulations!
 
 ---
 
-If you would prefer to build your own images, then follow these steps:
+If you would prefer to build your own images for local development, then follow these steps:
 
-- In the `docker/.env` file, change `DOCKER_TAG=dev`
 ```
 cd docker
+docker-compose build
 docker-compose up -d
 ```
 
