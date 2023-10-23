@@ -34,13 +34,21 @@ First, create a Discord bot on the [developer portal](https://discord.com/develo
 enable the server member intent and the message content intent for the bot to function.
 
 Then, install Git and Docker on your machine. Clone this repository, copy `docker/.env.example` to
-`docker/.env` and fill in all the configurations.
+`docker/.env` and fill in all the empty configurations.
 
-Finally, use the following commands run ModMail.
+Finally, use the following commands to start ModMail.
 
 ```
 cd docker
-docker-compose up -d
+docker compose up -d
+```
+
+If you prefer to build your own images for local development, then use these commands.
+
+```
+cd docker
+docker compose build
+docker compose up -d
 ```
 
 Your self-hosted bot should be up now. Congratulations!
