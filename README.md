@@ -40,20 +40,18 @@ Finally, use the following commands to start ModMail.
 
 ```
 cd docker
-docker-compose up -d
+docker compose up -d
 ```
 
-Your self-hosted bot should be up now. Congratulations!
-
----
-
-If you would prefer to build your own images for local development, then follow these steps:
+If you prefer to build your own images for local development, then use these commands.
 
 ```
 cd docker
-docker-compose build
-docker-compose up -d
+docker compose build
+docker compose up -d
 ```
+
+Your self-hosted bot should be up now. Congratulations!
 
 ## License
 
