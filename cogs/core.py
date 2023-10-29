@@ -25,6 +25,7 @@ class Core(commands.Cog):
     @commands.command(
         description="Reply to the ticket, useful when anonymous messaging is enabled.",
         usage="reply <message>",
+        aliases=["r"],
     )
     async def reply(self, ctx, *, message):
         ctx.message.content = message
@@ -34,7 +35,7 @@ class Core(commands.Cog):
     @checks.in_database()
     @checks.is_mod()
     @commands.guild_only()
-    @commands.command(description="Reply to the ticket anonymously.", usage="areply <message>")
+    @commands.command(description="Reply to the ticket anonymously.", usage="areply <message>", aliases=["ar"])
     async def areply(self, ctx, *, message):
         ctx.message.content = message
         await self.bot.cogs["ModMailEvents"].send_mail_mod(ctx.message, ctx.prefix, anon=True)
@@ -190,7 +191,7 @@ class Core(commands.Cog):
     @checks.is_mod()
     @checks.bot_has_permissions(manage_channels=True)
     @commands.guild_only()
-    @commands.command(description="Close the channel.", usage="close [reason]")
+    @commands.command(description="Close the channel.", usage="close [reason]",aliases=["c"])
     async def close(self, ctx, *, reason: str = None):
         await self.close_channel(ctx, reason)
 
@@ -199,7 +200,7 @@ class Core(commands.Cog):
     @checks.is_mod()
     @checks.bot_has_permissions(manage_channels=True)
     @commands.guild_only()
-    @commands.command(description="Close the channel anonymously.", usage="aclose [reason]")
+    @commands.command(description="Close the channel anonymously.", usage="aclose [reason]", aliases=["ac"])
     async def aclose(self, ctx, *, reason: str = None):
         await self.close_channel(ctx, reason, True)
 
