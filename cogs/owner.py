@@ -206,5 +206,5 @@ class Owner(commands.Cog):
         await ctx.send(Embed("Successfully unbanned that server from the bot."))
 
 
-def setup(bot):
-    bot.add_cog(Owner(bot))
+async def setup(bot):
+    await bot.add_cog(Owner(bot))

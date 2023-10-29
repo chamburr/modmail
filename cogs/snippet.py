@@ -175,5 +175,5 @@ class Snippet(commands.Cog):
         await tools.create_paginator(self.bot, ctx, all_pages)
 
 
-def setup(bot):
-    bot.add_cog(Snippet(bot))
+async def setup(bot):
+    await bot.add_cog(Snippet(bot))

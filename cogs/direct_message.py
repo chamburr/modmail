@@ -446,5 +446,5 @@ class DirectMessageEvents(commands.Cog, name="Direct Message"):
         await ctx.send(Embed("Confirmation messages are enabled."))
 
 
-def setup(bot):
-    bot.add_cog(DirectMessageEvents(bot))
+async def setup(bot):
+    await bot.add_cog(DirectMessageEvents(bot))

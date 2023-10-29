@@ -6,7 +6,7 @@ import traceback
 
 import aio_pika
 import aiohttp
-import aioredis
+from redis import asyncio as aioredis
 import asyncpg
 import orjson
 
@@ -46,7 +46,7 @@ class ModMail(commands.AutoShardedBot):
 
         self.ws = None
         self.loop = asyncio.get_event_loop()
-        self.http = HTTPClient(None, loop=self.loop)
+        self.http = HTTPClient(loop=self.loop)
 
         self._handlers = {"ready": self._handle_ready}
         self._hooks = {}
@@ -214,15 +214,15 @@ class ModMail(commands.AutoShardedBot):
         )
 
     async def start(self, worker=True):
+        print("In Start")
         trace_config = aiohttp.TraceConfig()
         trace_config.on_request_start.append(self.on_http_request_start)
         trace_config.on_request_end.append(self.on_http_request_end)
-        self.http._HTTPClient__session = aiohttp.ClientSession(
-            connector=self.http.connector,
+        self.http.__session = aiohttp.ClientSession(
             ws_response_class=DiscordClientWebSocketResponse,
             trace_configs=[trace_config],
         )
-        self.http._token(self.config.BOT_TOKEN, bot=True)
+        self.http.token = self.config.BOT_TOKEN
 
         self.pool = await asyncpg.create_pool(
             database=self.config.POSTGRES_DATABASE,
@@ -233,14 +233,10 @@ class ModMail(commands.AutoShardedBot):
             max_size=10,
             command_timeout=60,
         )
-
-        self._redis = await aioredis.create_redis_pool(
-            (self.config.REDIS_HOST, int(self.config.REDIS_PORT)),
-            password=self.config.REDIS_PASSWORD,
-            minsize=5,
-            maxsize=10,
-            loop=self.loop,
+        pool = aioredis.ConnectionPool.from_url(
+            f'redis://{self.config.REDIS_HOST}:{self.config.REDIS_PORT}'
         )
+        self._redis = aioredis.Redis(connection_pool=pool)
 
         if worker:
             self._amqp = await aio_pika.connect_robust(
@@ -279,7 +275,7 @@ class ModMail(commands.AutoShardedBot):
 
         for extension in self._cogs:
             try:
-                self.load_extension("cogs." + extension)
+                await self.load_extension("cogs." + extension)
             except Exception:
                 log.error(f"Failed to load extension {extension}.", file=sys.stderr)
                 log.error(traceback.print_exc())

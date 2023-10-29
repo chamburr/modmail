@@ -176,5 +176,5 @@ class General(commands.Cog):
         await ctx.send(Embed("GitHub Repository", "https://github.com/chamburr/modmail"))
 
 
-def setup(bot):
-    bot.add_cog(General(bot))
+async def setup(bot):
+    await bot.add_cog(General(bot))
