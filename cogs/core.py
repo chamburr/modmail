@@ -22,11 +22,7 @@ class Core(commands.Cog):
     @checks.in_database()
     @checks.is_mod()
     @commands.guild_only()
-    @commands.command(
-        description="Reply to the ticket, useful when anonymous messaging is enabled.",
-        usage="reply <message>",
-        aliases=["r"],
-    )
+    @commands.command(description="Reply to the ticket.", usage="reply <message>", aliases=["r"])
     async def reply(self, ctx, *, message):
         ctx.message.content = message
         await self.bot.cogs["ModMailEvents"].send_mail_mod(ctx.message, ctx.prefix, anon=False)
@@ -35,13 +31,15 @@ class Core(commands.Cog):
     @checks.in_database()
     @checks.is_mod()
     @commands.guild_only()
-    @commands.command(description="Reply to the ticket anonymously.", usage="areply <message>", aliases=["ar"])
+    @commands.command(
+        description="Reply to the ticket anonymously.", usage="areply <message>", aliases=["ar"]
+    )
     async def areply(self, ctx, *, message):
         ctx.message.content = message
         await self.bot.cogs["ModMailEvents"].send_mail_mod(ctx.message, ctx.prefix, anon=True)
 
     async def close_channel(self, ctx, reason, anon: bool = False):
-        await ctx.send(Embed("Closing channel..."))
+        await ctx.send(Embed("Closing ticket..."))
 
         data = await tools.get_data(self.bot, ctx.guild.id)
 
@@ -191,7 +189,7 @@ class Core(commands.Cog):
     @checks.is_mod()
     @checks.bot_has_permissions(manage_channels=True)
     @commands.guild_only()
-    @commands.command(description="Close the channel.", usage="close [reason]",aliases=["c"])
+    @commands.command(description="Close the ticket.", usage="close [reason]", aliases=["c"])
     async def close(self, ctx, *, reason: str = None):
         await self.close_channel(ctx, reason)
 
@@ -200,7 +198,9 @@ class Core(commands.Cog):
     @checks.is_mod()
     @checks.bot_has_permissions(manage_channels=True)
     @commands.guild_only()
-    @commands.command(description="Close the channel anonymously.", usage="aclose [reason]", aliases=["ac"])
+    @commands.command(
+        description="Close the ticket anonymously.", usage="aclose [reason]", aliases=["ac"]
+    )
     async def aclose(self, ctx, *, reason: str = None):
         await self.close_channel(ctx, reason, True)
 
@@ -208,7 +208,7 @@ class Core(commands.Cog):
     @checks.is_mod()
     @checks.bot_has_permissions(manage_channels=True)
     @commands.guild_only()
-    @commands.command(description="Close all of the channels.", usage="closeall [reason]")
+    @commands.command(description="Close all the tickets.", usage="closeall [reason]")
     async def closeall(self, ctx, *, reason: str = None):
         for channel in await ctx.guild.text_channels():
             if tools.is_modmail_channel(channel):
@@ -218,7 +218,7 @@ class Core(commands.Cog):
                 await self.close_channel(new_ctx, reason)
 
         try:
-            await ctx.send(Embed("All channels are successfully closed."))
+            await ctx.send(Embed("All tickets are successfully closed."))
         except discord.HTTPException:
             pass
 
@@ -227,7 +227,7 @@ class Core(commands.Cog):
     @checks.bot_has_permissions(manage_channels=True)
     @commands.guild_only()
     @commands.command(
-        description="Close all of the channels anonymously.", usage="acloseall [reason]"
+        description="Close all the tickets anonymously.", usage="acloseall [reason]"
     )
     async def acloseall(self, ctx, *, reason: str = None):
         for channel in await ctx.guild.text_channels():
@@ -238,7 +238,7 @@ class Core(commands.Cog):
                 await self.close_channel(new_ctx, reason, True)
 
         try:
-            await ctx.send(Embed("All channels are successfully closed anonymously."))
+            await ctx.send(Embed("All tickets are successfully closed anonymously."))
         except discord.HTTPException:
             pass
 
