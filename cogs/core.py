@@ -226,9 +226,7 @@ class Core(commands.Cog):
     @checks.is_mod()
     @checks.bot_has_permissions(manage_channels=True)
     @commands.guild_only()
-    @commands.command(
-        description="Close all the tickets anonymously.", usage="acloseall [reason]"
-    )
+    @commands.command(description="Close all the tickets anonymously.", usage="acloseall [reason]")
     async def acloseall(self, ctx, *, reason: str = None):
         for channel in await ctx.guild.text_channels():
             if tools.is_modmail_channel(channel):
