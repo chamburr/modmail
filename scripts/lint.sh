@@ -11,3 +11,4 @@ cd "$WORKDIR/web" && yarn --silent lint
 echo "Linting Python..."
 cd "$WORKDIR/cogs" && flake8
 cd "$WORKDIR/classes" && flake8
+cd "$WORKDIR/utils" && flake8
