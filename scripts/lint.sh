@@ -9,4 +9,5 @@ echo "Linting Node..."
 cd "$WORKDIR/web" && yarn --silent lint
 
 echo "Linting Python..."
-cd "$WORKDIR" && flake8
+cd "$WORKDIR/cogs" && flake8
+cd "$WORKDIR/classes" && flake8
