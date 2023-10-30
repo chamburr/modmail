@@ -80,7 +80,8 @@ class Snippet(commands.Cog):
         async with self.bot.pool.acquire() as conn:
             try:
                 await conn.execute(
-                    "INSERT INTO snippet VALUES ($1, $2, $3, $4)", ctx.guild.id, name.lower(), content, ctx.author.id
+                    "INSERT INTO snippet VALUES ($1, $2, $3, $4)",
+                    ctx.guild.id, name.lower(), content, ctx.author.id
                 )
             except asyncpg.UniqueViolationError:
                 await ctx.send(ErrorEmbed("A snippet with that name already exists."))
@@ -147,7 +148,9 @@ class Snippet(commands.Cog):
             return
 
         async with self.bot.pool.acquire() as conn:
-            res = await conn.fetch("SELECT name, content, author FROM snippet WHERE guild=$1", ctx.guild.id)
+            res = await conn.fetch(
+                "SELECT name, content, author FROM snippet WHERE guild=$1",
+                ctx.guild.id)
 
         if not res:
             await ctx.send(Embed("No snippet has been added yet."))
