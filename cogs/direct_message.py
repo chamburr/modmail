@@ -8,7 +8,7 @@ import discord
 from discord.ext import commands
 
 from classes.embed import Embed, ErrorEmbed
-from classes.message import Message
+from discord.message import Message
 from utils import tools
 from utils.converters import GuildConverter
 

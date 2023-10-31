@@ -3,15 +3,39 @@ import copy
 import datetime
 import inspect
 import logging
+import os
 
 import orjson
 
+from typing import (
+    TYPE_CHECKING,
+    Any,
+    Callable,
+    Coroutine,
+    Deque,
+    Dict,
+    Generic,
+    List,
+    Literal,
+    Optional,
+    Sequence,
+    Tuple,
+    TypeVar,
+    Union,
+    overload,
+)
+
+import discord
 from discord import utils
+from discord.activity import BaseActivity
 from discord.emoji import Emoji
-from discord.enums import ChannelType, try_enum
+from discord.enums import ChannelType, try_enum, Status
+from discord.flags import ApplicationFlags, Intents, MemberCacheFlags
 from discord.invite import Invite
 from discord.member import VoiceState
+from discord.mentions import AllowedMentions
 from discord.partial_emoji import PartialEmoji
+from discord.sticker import GuildSticker
 from discord.raw_models import (
     RawBulkMessageDeleteEvent,
     RawMessageDeleteEvent,
@@ -23,41 +47,178 @@ from discord.raw_models import (
 from discord.reaction import Reaction
 from discord.role import Role
 from discord.user import ClientUser, User
+from discord.ui.view import View, ViewStore
 
 from classes.channel import DMChannel, TextChannel, _channel_factory
 from classes.guild import Guild
 from classes.member import Member
 from classes.message import Message
 
-log = logging.getLogger(__name__)
+
+from discord.abc import PrivateChannel
+from discord.app_commands import CommandTree, Translator
+from discord.gateway import DiscordWebSocket
+from classes.guild import GuildChannel
+from classes.http import HTTPClient
+from classes.message import PartialMessageable as PartialMessageablePayload
+from discord.types import gateway as gw
+from discord.types.activity import Activity as ActivityPayload
+from discord.types.automod import AutoModerationActionExecution, AutoModerationRule
+from discord.types.channel import DMChannel as DMChannelPayload
+from discord.types.command import (
+    GuildApplicationCommandPermissions as GuildApplicationCommandPermissionsPayload,
+)
+from discord.types.emoji import Emoji as EmojiPayload
+from discord.types.emoji import PartialEmoji as PartialEmojiPayload
+from discord.types.guild import Guild as GuildPayload
+from discord.types.message import Message as MessagePayload
+from discord.types.message import PartialMessage as PartialMessagePayload
+from discord.types.snowflake import Snowflake
+from discord.types.sticker import GuildSticker as GuildStickerPayload
+from discord.types.user import PartialUser as PartialUserPayload
+from discord.types.user import User as UserPayload
+from discord.voice_client import VoiceProtocol
+
+T = TypeVar('T')
+Channel = Union[GuildChannel, PrivateChannel, PartialMessagePayload]
+
+_log = logging.getLogger(__name__)
+
+class ChunkRequest:
+    def __init__(
+        self,
+        guild_id: int,
+        loop: asyncio.AbstractEventLoop,
+        resolver: Callable[[int], Any],
+        *,
+        cache: bool = True,
+    ) -> None:
+        self.guild_id: int = guild_id
+        self.resolver: Callable[[int], Any] = resolver
+        self.loop: asyncio.AbstractEventLoop = loop
+        self.cache: bool = cache
+        self.nonce: str = os.urandom(16).hex()
+        self.buffer: List[Member] = []
+        self.waiters: List[asyncio.Future[List[Member]]] = []
+
+    def add_members(self, members: List[Member]) -> None:
+        self.buffer.extend(members)
+        if self.cache:
+            guild = self.resolver(self.guild_id)
+            if guild is None:
+                return
+
+            for member in members:
+                existing = guild.get_member(member.id)
+                if existing is None or existing.joined_at is None:
+                    guild._add_member(member)
+
+    async def wait(self) -> List[Member]:
+        future = self.loop.create_future()
+        self.waiters.append(future)
+        try:
+            return await future
+        finally:
+            self.waiters.remove(future)
+
+    def get_future(self) -> asyncio.Future[List[Member]]:
+        future = self.loop.create_future()
+        self.waiters.append(future)
+        return future
+
+    def done(self) -> None:
+        for future in self.waiters:
+            if not future.done():
+                future.set_result(self.buffer)
 
 
 class State:
     def __init__(
-        self, *, dispatch, handlers, hooks, http, loop, redis=None, shard_count=None, id, **options
+        self, *, dispatch, handlers, hooks, http, redis=None, shard_count=None, id, **options
     ):
-        self.dispatch = dispatch
-        self.handlers = handlers
-        self.hooks = hooks
-        self.http = http
-        self.loop = loop
-        self.redis = redis
-        self.shard_count = shard_count
-        self.id = id
+         # Set later, after Client.login
+        self.loop: asyncio.AbstractEventLoop = utils.MISSING
+        self.http: HTTPClient = http
+        self.max_messages: Optional[int] = options.get('max_messages', 1000)
+        if self.max_messages is not None and self.max_messages <= 0:
+            self.max_messages = 1000
 
-        self._ready_task = None
-        self._ready_state = None
-        self._ready_timeout = options.get("guild_ready_timeout", 2.0)
+        self.dispatch: Callable[..., Any] = dispatch
+        self.handlers: Dict[str, Callable[..., Any]] = handlers
+        self.hooks: Dict[str, Callable[..., Coroutine[Any, Any, Any]]] = hooks
+        self.shard_count: Optional[int] = None
+        self._ready_task: Optional[asyncio.Task] = None
+        self.application_id: Optional[int] = utils._get_as_snowflake(options, 'application_id')
+        self.application_flags: ApplicationFlags = utils.MISSING
+        self.heartbeat_timeout: float = options.get('heartbeat_timeout', 60.0)
+        self.guild_ready_timeout: float = options.get('guild_ready_timeout', 2.0)
+        if self.guild_ready_timeout < 0:
+            raise ValueError('guild_ready_timeout cannot be negative')
 
-        self._voice_clients = {}
-        self._private_channels_by_user = {}
+        allowed_mentions = options.get('allowed_mentions')
 
-        self.allowed_mentions = options.get("allowed_mentions")
+        if allowed_mentions is not None and not isinstance(allowed_mentions, AllowedMentions):
+            raise TypeError('allowed_mentions parameter must be AllowedMentions')
 
-        self.parsers = {}
+        self.allowed_mentions: Optional[AllowedMentions] = allowed_mentions
+        self._chunk_requests: Dict[Union[int, str], ChunkRequest] = {}
+
+        activity = options.get('activity', None)
+        if activity:
+            if not isinstance(activity, BaseActivity):
+                raise TypeError('activity parameter must derive from BaseActivity.')
+
+            activity = activity.to_dict()
+
+        status = options.get('status', None)
+        if status:
+            if status is Status.offline:
+                status = 'invisible'
+            else:
+                status = str(status)
+
+        intents = options.get('intents', None)
+        if intents is not None:
+            if not isinstance(intents, Intents):
+                raise TypeError(f'intents parameter must be Intent not {type(intents)!r}')
+        else:
+            intents = Intents.default()
+
+        if not intents.guilds:
+            _log.warning('Guilds intent seems to be disabled. This may cause state related issues.')
+
+        self._chunk_guilds: bool = options.get('chunk_guilds_at_startup', intents.members)
+
+        # Ensure these two are set properly
+        if not intents.members and self._chunk_guilds:
+            raise ValueError('Intents.members must be enabled to chunk guilds at startup.')
+
+        cache_flags = options.get('member_cache_flags', None)
+        if cache_flags is None:
+            cache_flags = MemberCacheFlags.from_intents(intents)
+        else:
+            if not isinstance(cache_flags, MemberCacheFlags):
+                raise TypeError(f'member_cache_flags parameter must be MemberCacheFlags not {type(cache_flags)!r}')
+
+            cache_flags._verify_intents(intents)
+
+        self.member_cache_flags: MemberCacheFlags = cache_flags
+        self._activity: Optional[ActivityPayload] = activity
+        self._status: Optional[str] = status
+        self._intents: Intents = intents
+        self._command_tree: Optional[CommandTree] = None
+        self._translator: Optional[Translator] = None
+
+        if not intents.members or cache_flags._empty:
+            self.store_user = self.store_user_no_intents
+
+        self.parsers: Dict[str, Callable[[Any], None]]
+        self.parsers = parsers = {}
         for attr, func in inspect.getmembers(self):
-            if attr.startswith("parse_"):
-                self.parsers[attr[6:].upper()] = func
+            if attr.startswith('parse_'):
+                parsers[attr[6:].upper()] = func
+
+        self.clear()
 
     def _loads(self, value, decode):
         if value is None:
@@ -246,6 +407,9 @@ class State:
 
     def store_user(self, data):
         return User(state=self, data=data)
+    
+    def store_user_no_intents(self, data: Union[UserPayload, PartialUserPayload], *, cache: bool = True) -> User:
+        return User(state=self, data=data)
 
     async def get_user(self, user_id):
         result = await self._members_get("member", second=user_id)
@@ -257,6 +421,17 @@ class State:
 
     def store_emoji(self, guild, data):
         return Emoji(guild=guild, state=self, data=data)
+    
+    def store_sticker(self, guild: Guild, data: GuildStickerPayload) -> GuildSticker:
+        return GuildSticker(state=self, data=data)
+    
+    def store_view(self, view: View, message_id: Optional[int] = None, interaction_id: Optional[int] = None) -> None:
+        if interaction_id is not None:
+            self._view_store.remove_interaction_mapping(interaction_id)
+        self._view_store.add_view(view, message_id)
+
+    def prevent_view_updates_for(self, message_id: int) -> Optional[View]:
+        return self._view_store.remove_message_tracking(message_id)
 
     async def guilds(self):
         return await self._guilds()
@@ -270,6 +445,9 @@ class State:
                 return guild
 
         return None
+    
+    def _get_or_create_unavailable_guild(self, guild_id: int) -> Guild:
+        return self._guilds.get(guild_id) or Guild._create_unavailable(state=self, guild_id=guild_id)
 
     def _add_guild(self, guild):
         return

@@ -15,7 +15,7 @@ from discord.ext.commands.core import _CaseInsensitiveDict
 from discord.gateway import DiscordClientWebSocketResponse, DiscordWebSocket
 from discord.utils import parse_time
 
-from classes.http import HTTPClient
+from discord.http import HTTPClient
 from classes.misc import Session, Status
 from classes.state import State
 from utils import tools
@@ -257,7 +257,6 @@ class ModMail(commands.AutoShardedBot):
             handlers=self._handlers,
             hooks=self._hooks,
             http=self.http,
-            loop=self.loop,
             redis=self._redis,
             shard_count=int(await self._redis.get("gateway_shards")),
         )

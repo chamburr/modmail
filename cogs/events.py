@@ -5,7 +5,7 @@ import discord
 
 from discord.ext import commands
 
-from classes.context import Context
+from discord.ext.commands import Context
 from classes.embed import Embed, ErrorEmbed
 from utils import tools
 

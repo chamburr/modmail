@@ -6,7 +6,7 @@ from discord.enums import ChannelType, try_enum
 from discord.permissions import Permissions
 
 from classes.embed import Embed
-from classes.invite import Invite
+from discord.invite import Invite
 
 log = logging.getLogger(__name__)
 
