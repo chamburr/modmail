@@ -146,7 +146,7 @@ class Snippet(commands.Cog):
             embed = Embed(title="Snippet")
             embed.add_field("Name", res[0], False)
             embed.add_field("Content", res[1], False)
-            embed.add_field("Author", f"<@{res[2]}>" if res[2] is not None else "Unknown", False)
+            embed.add_field("Author", f"<@{res[2]}>", False)
             await ctx.send(embed)
             return
 

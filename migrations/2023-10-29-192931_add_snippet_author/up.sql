@@ -1,1 +1,1 @@
-ALTER TABLE snippet ADD COLUMN author bigint;
+ALTER TABLE snippet ADD COLUMN author bigint NOT NULL;
