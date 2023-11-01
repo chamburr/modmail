@@ -151,9 +151,7 @@ class Snippet(commands.Cog):
             return
 
         async with self.bot.pool.acquire() as conn:
-            res = await conn.fetch(
-                "SELECT name, content, author FROM snippet WHERE guild=$1", ctx.guild.id
-            )
+            res = await conn.fetch("SELECT name, content FROM snippet WHERE guild=$1", ctx.guild.id)
 
         if not res:
             await ctx.send(Embed("No snippet has been added yet."))
