@@ -81,7 +81,10 @@ class Snippet(commands.Cog):
             try:
                 await conn.execute(
                     "INSERT INTO snippet VALUES ($1, $2, $3, $4)",
-                    ctx.guild.id, name.lower(), content, ctx.author.id
+                    ctx.guild.id,
+                    name.lower(),
+                    content,
+                    ctx.author.id,
                 )
             except asyncpg.UniqueViolationError:
                 await ctx.send(ErrorEmbed("A snippet with that name already exists."))
@@ -143,14 +146,14 @@ class Snippet(commands.Cog):
             embed = Embed(title="Snippet")
             embed.add_field("Name", res[0], False)
             embed.add_field("Content", res[1], False)
-            embed.add_field("Author", f'<@{res[2]}>' if res[2] is not None else "Unknown", False)
+            embed.add_field("Author", f"<@{res[2]}>" if res[2] is not None else "Unknown", False)
             await ctx.send(embed)
             return
 
         async with self.bot.pool.acquire() as conn:
             res = await conn.fetch(
-                "SELECT name, content, author FROM snippet WHERE guild=$1",
-                ctx.guild.id)
+                "SELECT name, content, author FROM snippet WHERE guild=$1", ctx.guild.id
+            )
 
         if not res:
             await ctx.send(Embed("No snippet has been added yet."))
@@ -163,8 +166,7 @@ class Snippet(commands.Cog):
             for snippet in chunk:
                 page.add_field(
                     snippet[0],
-                    (snippet[1][:97] + "..." if len(snippet[1]) > 100 else snippet[1]) + "\n" +
-                    (f'Author: <@{snippet[2]}>' if snippet[2] is not None else "Author Unknown"),
+                    snippet[1][:97] + "..." if len(snippet[1]) > 100 else snippet[1],
                     False,
                 )
 
