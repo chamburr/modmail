@@ -22,8 +22,11 @@ log = logging.getLogger(__name__)
 
 class Guild(guild.Guild):
     def __init__(self, *, data, state):
+        super().__init__(state=state, data=data)
+        return
         self._state = state
         self._from_data(data)
+        
 
     def _add_channel(self, channel):
         return

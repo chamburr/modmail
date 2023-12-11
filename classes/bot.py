@@ -17,7 +17,8 @@ from discord.utils import parse_time
 
 from discord.http import HTTPClient
 from classes.misc import Session, Status
-from classes.state import State
+# from classes.state import State
+# from discord import state as State
 from utils import tools
 from utils.config import Config
 from utils.prometheus import Prometheus
@@ -44,7 +45,7 @@ class ModMail(commands.AutoShardedBot):
         self.all_commands = _CaseInsensitiveDict() if self.case_insensitive else {}
         self.strip_after_prefix = False
 
-        self.ws = None
+        # self.ws = None
         self.loop = asyncio.get_event_loop()
         self.http = HTTPClient(loop=self.loop)
 
@@ -61,7 +62,7 @@ class ModMail(commands.AutoShardedBot):
         self._amqp_queue = None
 
         self.config = Config()
-        self.session = aiohttp.ClientSession(loop=self.loop)
+        self.session = aiohttp.ClientSession(loop=asyncio.get_event_loop())
         self.http_uri = f"http://{self.config.BOT_API_HOST}:{self.config.BOT_API_PORT}"
         self.id = kwargs.get("bot_id")
         self.cluster = kwargs.get("cluster_id")
@@ -90,10 +91,15 @@ class ModMail(commands.AutoShardedBot):
             "premium",
             "snippet",
         ]
+        super().__init__(command_prefix=command_prefix, **kwargs)   
+        
+    async def on_ready(self):
+        self.id = self.user.id
+        
 
-    @property
-    def state(self):
-        return self._connection
+    # @property
+    # def state(self):
+    #     return self._connection
 
     @property
     def user(self):
@@ -102,46 +108,46 @@ class ModMail(commands.AutoShardedBot):
     async def real_user(self):
         return await self._connection.user()
 
-    async def users(self):
-        return await self._connection._users()
+    # async def users(self):
+    #     return await self._connection._users()
 
-    async def guilds(self):
-        return await self._connection.guilds()
+    # async def guilds(self):
+    #     return await self._connection.guilds()
 
-    async def emojis(self):
-        return await self._connection.emojis()
+    # async def emojis(self):
+    #     return await self._connection.emojis()
 
-    async def cached_messages(self):
-        return await self._connection._messages()
+    # async def cached_messages(self):
+    #     return await self._connection._messages()
 
-    async def private_channels(self):
-        return await self._connection.private_channels()
+    # async def private_channels(self):
+    #     return await self._connection.private_channels()
 
-    async def shard_count(self):
-        return int(await self._connection.get("gateway_shards"))
+    # async def shard_count(self):
+    #     return int(await self._connection.get("gateway_shards"))
 
-    async def started(self):
-        return parse_time(str(await self._connection.get("gateway_started")).split(".")[0])
+    # async def started(self):
+    #     return parse_time(str(await self._connection.get("gateway_started")).split(".")[0])
 
-    async def statuses(self):
-        return [Status(x) for x in await self._connection.get("gateway_statuses")]
+    # async def statuses(self):
+    #     return [Status(x) for x in await self._connection.get("gateway_statuses")]
 
-    async def sessions(self):
-        return {
-            int(x): Session(y) for x, y in (await self._connection.get("gateway_sessions")).items()
-        }
+    # async def sessions(self):
+    #     return {
+    #         int(x): Session(y) for x, y in (await self._connection.get("gateway_sessions")).items()
+    #     }
 
-    async def get_channel(self, channel_id):
-        return await self._connection.get_channel(channel_id)
+    # async def get_channel(self, channel_id):
+    #     return await self._connection.get_channel(channel_id)
 
-    async def get_guild(self, guild_id):
-        return await self._connection._get_guild(guild_id)
+    # async def get_guild(self, guild_id):
+    #     return await self._connection._get_guild(guild_id)
 
-    async def get_user(self, user_id):
-        return await self._connection.get_user(user_id)
+    # async def get_user(self, user_id):
+    #     return await self._connection.get_user(user_id)
 
-    async def get_emoji(self, emoji_id):
-        return await self._connection.get_emoji(emoji_id)
+    # async def get_emoji(self, emoji_id):
+    #     return await self._connection.get_emoji(emoji_id)
 
     async def get_all_channels(self):
         pass
@@ -249,29 +255,35 @@ class ModMail(commands.AutoShardedBot):
             self._amqp_queue = await self._amqp_channel.get_queue("gateway.recv")
 
         self.prom = Prometheus(self)
-        await self.prom.start()
+        # await self.prom.start() # TODO: Fix Prometheus
+        try:
+            shards = int(await self._redis.get("gateway_shards"))
+        except TypeError:
+            shards = 1
+        # self._connection = State(
+        #     id=self.id,
+        #     dispatch=self.dispatch,
+        #     handlers=self._handlers,
+        #     hooks=self._hooks,
+        #     http=self.http,
+        #     redis=self._redis,
+        #     shard_count=shards,
+        # )
+        # self._connection._get_client = lambda: self
 
-        self._connection = State(
-            id=self.id,
-            dispatch=self.dispatch,
-            handlers=self._handlers,
-            hooks=self._hooks,
-            http=self.http,
-            redis=self._redis,
-            shard_count=int(await self._redis.get("gateway_shards")),
-        )
-        self._connection._get_client = lambda: self
-
-        self.ws = DiscordWebSocket(socket=None, loop=self.loop)
-        self.ws.token = self.http.token
-        self.ws._connection = self._connection
-        self.ws._discord_parsers = self._connection.parsers
-        self.ws._dispatch = self.dispatch
-        self.ws.call_hooks = self._connection.call_hooks
+        # self.ws = DiscordWebSocket(socket=None, loop=self.loop)
+        # self.ws.token = self.http.token
+        # self.ws._connection = self._connection
+        # self.ws._discord_parsers = self._connection.parsers
+        # self.ws._dispatch = self.dispatch
+        # self.ws.call_hooks = self._connection.call_hooks
 
         if not worker:
             return
-
+        
+        super().start(self.config.BOT_TOKEN)
+        
+    async def setup_hook(self):
         for extension in self._cogs:
             try:
                 await self.load_extension("cogs." + extension)
