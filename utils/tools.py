@@ -288,24 +288,9 @@ async def get_premium_slots(bot, user):
     if str(user) in bot.config.OWNER_USERS.split(",") + bot.config.ADMIN_USERS.split(","):
         return 1000
 
-    guild = await bot.get_guild(int(bot.config.MAIN_SERVER))
-    if guild:
-        member = await guild.fetch_member(user)
-        if member:
-            if int(bot.config.PREMIUM5_ROLE) in member._roles:
-                return 5
-            elif int(bot.config.PREMIUM3_ROLE) in member._roles:
-                return 3
-            elif int(bot.config.PREMIUM1_ROLE) in member._roles:
-                return 1
-
     async with bot.pool.acquire() as conn:
-        res = await conn.fetchrow("SELECT guild FROM premium WHERE identifier=$1", user)
-
-    if res:
-        return 1
-
-    return 0
+        res = await conn.fetchrow("SELECT slots from premium where identifier=$1", user)
+        return res[0] if res else 0
 
 
 async def remove_premium(bot, guild):
