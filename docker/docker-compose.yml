@@ -44,6 +44,11 @@ services:
       - API_SECRET=supersecret
       - BOT_API_HOST=bot
       - BOT_API_PORT=6002
+      - POSTGRES_DATABASE=modmail
+      - POSTGRES_USERNAME=postgres
+      - POSTGRES_PASSWORD=
+      - POSTGRES_HOST=postgres
+      - POSTGRES_PORT=5432
     depends_on:
       - bot
       - redis
