@@ -1,0 +1,1 @@
+ALTER TABLE premium DROP COLUMN slots;
