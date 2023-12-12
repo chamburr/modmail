@@ -153,7 +153,7 @@ async fn post_payment_request(data: String) -> ApiResult<()> {
         .await??;
         block_on(pg.execute(
             "INSERT INTO premium VALUES ($1, [], NULL, 5) 
-            ON CONFLICT (user_id) 
+            ON CONFLICT (identifier) 
             DO NOTHING",
             &[&user_id]
         ).unwrap())
@@ -167,7 +167,7 @@ async fn post_payment_request(data: String) -> ApiResult<()> {
         .await??;
         block_on(pg.execute(
             "INSERT INTO premium VALUES ($1, [], NULL, 3) 
-            ON CONFLICT (user_id) 
+            ON CONFLICT (identifier) 
             DO UPDATE SET slots = GREATEST(premium.slots, EXCLUDED.slots)",
             &[&user_id]
         ).unwrap())
@@ -181,7 +181,7 @@ async fn post_payment_request(data: String) -> ApiResult<()> {
         .await??;
         block_on(pg.execute(
             "INSERT INTO premium VALUES ($1, [], NULL, 1) 
-            ON CONFLICT (user_id) 
+            ON CONFLICT (identifier) 
             DO UPDATE SET slots = LEAST(premium.slots + 2,5)",
             &[&user_id]
         ).unwrap())
