@@ -136,7 +136,7 @@ class Owner(commands.Cog):
 
         async with self.bot.pool.acquire() as conn:
             timestamp = int(expiry.replace(tzinfo=timezone.utc).timestamp() * 1000)
-            await conn.execute("INSERT INTO premium VALUES ($1, $2, $3)", user.id, [], timestamp)
+            await conn.execute("INSERT INTO premium VALUES ($1, $2, $3, 1)", user.id, [], timestamp)
 
         await ctx.send(Embed("Successfully assigned that user premium temporarily."))
 
