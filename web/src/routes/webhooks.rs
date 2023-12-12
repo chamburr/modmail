@@ -15,10 +15,23 @@ use tokio::{runtime::Runtime, time::Duration};
 use twilight_embed_builder::{EmbedBuilder, EmbedFieldBuilder, EmbedFooterBuilder};
 use twilight_http::Client;
 use twilight_model::id::{ChannelId, GuildId, RoleId, UserId};
+use postgres::Client as PostgresClient;
 
 lazy_static! {
     static ref CLIENT: Client = Client::new(CONFIG.bot_token.as_str());
     static ref RUNTIME: Runtime = Runtime::new().unwrap();
+    let mut pg = PostgresClient::connect(
+        format!(
+            "host={} port={} user={} password={} dbname={}",
+            CONFIG.postgres_host,
+            CONFIG.postgres_port,
+            CONFIG.postgres_username,
+            CONFIG.postgres_password,
+            CONFIG.postgres_database
+        )
+        .as_str(),
+        postgres::NoTls,
+    )
 }
 
 async fn block_on<F>(fut: F) -> Result<F::Output, ()>
@@ -138,6 +151,13 @@ async fn post_payment_request(data: String) -> ApiResult<()> {
             RoleId(CONFIG.premium5_role),
         ))
         .await??;
+        block_on(pg.execute(
+            "INSERT INTO premium VALUES ($1, [], NULL, 5) 
+            ON CONFLICT (user_id) 
+            DO NOTHING",
+            &[&user_id]
+        ).unwrap())
+        .await??;
     } else if event.mc_gross >= 60.0 {
         block_on(CLIENT.add_guild_member_role(
             member.guild_id,
@@ -145,12 +165,26 @@ async fn post_payment_request(data: String) -> ApiResult<()> {
             RoleId(CONFIG.premium3_role),
         ))
         .await??;
+        block_on(pg.execute(
+            "INSERT INTO premium VALUES ($1, [], NULL, 3) 
+            ON CONFLICT (user_id) 
+            DO UPDATE SET slots = GREATEST(premium.slots, EXCLUDED.slots)",
+            &[&user_id]
+        ).unwrap())
+        .await??;
     } else if event.mc_gross >= 30.0 {
         block_on(CLIENT.add_guild_member_role(
             member.guild_id,
             member.user.id,
             RoleId(CONFIG.premium1_role),
         ))
+        .await??;
+        block_on(pg.execute(
+            "INSERT INTO premium VALUES ($1, [], NULL, 1) 
+            ON CONFLICT (user_id) 
+            DO UPDATE SET slots = LEAST(premium.slots + 2,5)",
+            &[&user_id]
+        ).unwrap())
         .await??;
     } else {
         return Err(().into());
