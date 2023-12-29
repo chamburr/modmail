@@ -321,7 +321,11 @@ class DirectMessageEvents(commands.Cog, name="Direct Message"):
 
     @commands.Cog.listener()
     async def on_message(self, message):
-        if message.author.bot or not isinstance(message.channel, discord.DMChannel):
+        if (
+            message.is_system()
+            or message.author.bot
+            or not isinstance(message.channel, discord.DMChannel)
+        ):
             return
 
         for prefix in [f"<@{self.bot.id}> ", f"<@!{self.bot.id}> ", self.bot.config.DEFAULT_PREFIX]:
