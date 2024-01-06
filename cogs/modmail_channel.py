@@ -72,10 +72,10 @@ class ModMailEvents(commands.Cog):
 
         embed = Embed("Message Received", message.content, colour=0xFF4500, timestamp=True)
         embed.set_author(
-            str(message.author) if anon is False else "Anonymous#0000",
+            str(message.author) if anon is False else self.bot.config.DEFAULT_ANON_USER_NAME,
             message.author.avatar_url
             if anon is False
-            else "https://cdn.discordapp.com/embed/avatars/0.png",
+            else self.bot.config.DEFAULT_ANON_USER_ICON,
         )
         embed.set_footer(f"{message.guild.name} | {message.guild.id}", message.guild.icon_url)
 
