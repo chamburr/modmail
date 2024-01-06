@@ -58,10 +58,10 @@ class Core(commands.Cog):
             timestamp=True,
         )
         embed.set_author(
-            str(ctx.author) if anon is False else "Anonymous#0000",
+            str(ctx.author) if anon is False else self.bot.config.DEFAULT_ANON_USER_NAME,
             ctx.author.avatar_url
             if anon is False
-            else "https://cdn.discordapp.com/embed/avatars/0.png",
+            else self.bot.config.DEFAULT_ANON_USER_ICON,
         )
         embed.set_footer(f"{ctx.guild.name} | {ctx.guild.id}", ctx.guild.icon_url)
 
