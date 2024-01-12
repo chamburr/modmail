@@ -5,7 +5,7 @@ import logging
 
 import discord
 
-from discord.ext import commands
+from discord.ext import commands, user
 
 from classes.embed import Embed, ErrorEmbed
 from utils import checks, tools
@@ -271,7 +271,7 @@ class Core(commands.Cog):
         usage="whitelist <member>",
         aliases=["unblock"],
     )
-    async def whitelist(self, ctx, *, member: MemberConverter):
+    async def whitelist(self, ctx, *, member: user):
         blacklist = (await tools.get_data(self.bot, ctx.guild.id))[9]
 
         if member.id not in blacklist:
