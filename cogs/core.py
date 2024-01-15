@@ -5,11 +5,11 @@ import logging
 
 import discord
 
-from discord.ext import commands, user
+from discord.ext import commands
 
 from classes.embed import Embed, ErrorEmbed
 from utils import checks, tools
-from utils.converters import MemberConverter
+from utils.converters import MemberConverter, UserConverter
 
 log = logging.getLogger(__name__)
 
@@ -248,7 +248,7 @@ class Core(commands.Cog):
         usage="blacklist <member>",
         aliases=["block"],
     )
-    async def blacklist(self, ctx, *, member: MemberConverter):
+    async def blacklist(self, ctx, *, member: UserConverter):
         blacklist = (await tools.get_data(self.bot, ctx.guild.id))[9]
         if member.id in blacklist:
             await ctx.send(ErrorEmbed("The user is already blacklisted."))
@@ -271,7 +271,7 @@ class Core(commands.Cog):
         usage="whitelist <member>",
         aliases=["unblock"],
     )
-    async def whitelist(self, ctx, *, member: user):
+    async def whitelist(self, ctx, *, member: UserConverter):
         blacklist = (await tools.get_data(self.bot, ctx.guild.id))[9]
 
         if member.id not in blacklist:
