@@ -82,19 +82,13 @@ def is_patron():
         if res:
             return True
 
-        if await tools.get_premium_slots(ctx.bot, ctx.author.id) == 0:
-            await ctx.send(
-                ErrorEmbed(
-                    "This command requires you to be a patron. Want to become a patron? More "
-                    f"information is available with the `{ctx.prefix}premium` command."
-                )
+        await ctx.send(
+            ErrorEmbed(
+                "This command requires you to be a patron. Want to become a patron? More "
+                f"information is available with the `{ctx.prefix}premium` command."
             )
-            return False
-
-        async with ctx.bot.pool.acquire() as conn:
-            await conn.execute("INSERT INTO premium VALUES ($1, $2, NULL)", ctx.author.id, [])
-
-        return True
+        )
+        return False
 
     return commands.check(predicate)
 

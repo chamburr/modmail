@@ -22,6 +22,11 @@ lazy_static! {
         redis_host: get_env("REDIS_HOST"),
         redis_port: get_env_as("REDIS_PORT"),
         redis_password: get_env("REDIS_PASSWORD"),
+        postgres_database: get_env("POSTGRES_DATABASE"),
+        postgres_username: get_env("POSTGRES_USERNAME"),
+        postgres_password: get_env("POSTGRES_PASSWORD"),
+        postgres_host: get_env("POSTGRES_HOST"),
+        postgres_port: get_env_as("POSTGRES_PORT"),
     };
 }
 
@@ -46,6 +51,11 @@ pub struct Config {
     pub redis_host: String,
     pub redis_port: u16,
     pub redis_password: String,
+    pub postgres_database: String,
+    pub postgres_username: String,
+    pub postgres_password: String,
+    pub postgres_host: String,
+    pub postgres_port: u16,
 }
 
 fn get_env(name: &str) -> String {
