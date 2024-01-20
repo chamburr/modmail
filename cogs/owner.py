@@ -7,21 +7,14 @@ import traceback
 import typing
 
 from contextlib import redirect_stdout
-from datetime import timezone
 
 import discord
 
 from discord.ext import commands
 
 from classes.embed import Embed, ErrorEmbed
-from utils import checks, tools
-from utils.converters import (
-    ChannelConverter,
-    DateTimeConverter,
-    GuildConverter,
-    MemberConverter,
-    UserConverter,
-)
+from utils import checks
+from utils.converters import ChannelConverter, GuildConverter, MemberConverter, UserConverter
 
 log = logging.getLogger(__name__)
 
@@ -125,35 +118,6 @@ class Owner(commands.Cog):
         await self.bot.invoke(await self.bot.get_context(msg, cls=type(ctx)))
 
     @checks.is_owner()
-    @commands.command(
-        description="Give a user temporary premium.", usage="givepremium <user> <expiry>"
-    )
-    async def givepremium(self, ctx, user: UserConverter, *, expiry: DateTimeConverter):
-        premium = await tools.get_premium_slots(self.bot, user.id)
-        if premium:
-            await ctx.send(ErrorEmbed("That user already has premium."))
-            return
-
-        async with self.bot.pool.acquire() as conn:
-            timestamp = int(expiry.replace(tzinfo=timezone.utc).timestamp() * 1000)
-            await conn.execute("INSERT INTO premium VALUES ($1, $2, $3)", user.id, [], timestamp)
-
-        await ctx.send(Embed("Successfully assigned that user premium temporarily."))
-
-    @checks.is_owner()
-    @commands.command(description="Remove a user's premium.", usage="wipepremium <user>")
-    async def wipepremium(self, ctx, *, user: UserConverter):
-        async with self.bot.pool.acquire() as conn:
-            res = await conn.fetchrow("SELECT guild FROM premium WHERE identifier=$1", user.id)
-            if res:
-                for guild in res[0]:
-                    await tools.remove_premium(self.bot, guild)
-
-            await conn.execute("DELETE FROM premium WHERE identifier=$1", user.id)
-
-        await ctx.send(Embed("Successfully removed that user's premium."))
-
-    @checks.is_owner()
     @commands.command(description="Ban a user from the bot", usage="banuser <user>")
     async def banuser(self, ctx, *, user: UserConverter):
         async with self.bot.pool.acquire() as conn:
@@ -191,17 +155,17 @@ class Owner(commands.Cog):
 
     @checks.is_owner()
     @commands.command(description="Unban a server from the bot", usage="unbanserver <server ID>")
-    async def unbanserver(self, ctx, *, guild_id: int):
+    async def unbanserver(self, ctx, *, guild: int):
         async with self.bot.pool.acquire() as conn:
             res = await conn.execute(
-                "DELETE FROM ban WHERE identifier=$1 AND category=$2", guild_id, 1
+                "DELETE FROM ban WHERE identifier=$1 AND category=$2", guild, 1
             )
 
         if res == "DELETE 0":
             await ctx.send(ErrorEmbed("That server is not banned."))
             return
 
-        await self.bot.state.srem("banned_guilds", guild_id)
+        await self.bot.state.srem("banned_guilds", guild)
 
         await ctx.send(Embed("Successfully unbanned that server from the bot."))
 

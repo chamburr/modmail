@@ -1,13 +1,15 @@
 import logging
 import typing
 
+from datetime import timezone
+
 import discord
 
 from discord.ext import commands
 
 from classes.embed import Embed, ErrorEmbed
 from utils import checks, tools
-from utils.converters import ChannelConverter, GuildConverter, UserConverter
+from utils.converters import ChannelConverter, DateTimeConverter, GuildConverter, UserConverter
 
 log = logging.getLogger(__name__)
 
@@ -66,6 +68,35 @@ class Admin(commands.Cog):
                 return
 
         await ctx.send(Embed(f"Here is the invite link: {invite.url}"))
+
+    @checks.is_admin()
+    @commands.command(
+        description="Give a user temporary premium.", usage="givepremium <user> <expiry>"
+    )
+    async def givepremium(self, ctx, user: UserConverter, *, expiry: DateTimeConverter):
+        premium = await tools.get_premium_slots(self.bot, user.id)
+        if premium:
+            await ctx.send(ErrorEmbed("That user already has premium."))
+            return
+
+        async with self.bot.pool.acquire() as conn:
+            timestamp = int(expiry.replace(tzinfo=timezone.utc).timestamp() * 1000)
+            await conn.execute("INSERT INTO premium VALUES ($1, $2, $3)", user.id, [], timestamp)
+
+        await ctx.send(Embed("Successfully assigned that user premium temporarily."))
+
+    @checks.is_admin()
+    @commands.command(description="Remove a user's premium.", usage="wipepremium <user>")
+    async def wipepremium(self, ctx, *, user: UserConverter):
+        async with self.bot.pool.acquire() as conn:
+            res = await conn.fetchrow("SELECT guild FROM premium WHERE identifier=$1", user.id)
+            if res:
+                for guild in res[0]:
+                    await tools.remove_premium(self.bot, guild)
+
+            await conn.execute("DELETE FROM premium WHERE identifier=$1", user.id)
+
+        await ctx.send(Embed("Successfully removed that user's premium."))
 
     @checks.is_admin()
     @commands.command(description="Make me say something.", usage="echo [channel] <message>")
