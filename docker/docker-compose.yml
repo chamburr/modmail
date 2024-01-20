@@ -5,8 +5,7 @@ services:
     build:
       context: ..
       dockerfile: docker/web/Dockerfile
-    image: chamburr/modmail-web:latest
-    container_name: web
+    image: chamburr/modmail-web:lates
     restart: unless-stopped
     ports:
       - '8000:6000'
@@ -24,7 +23,6 @@ services:
       context: ..
       dockerfile: docker/api/Dockerfile
     image: chamburr/modmail-api:latest
-    container_name: api
     restart: unless-stopped
     environment:
       - BOT_TOKEN=${BOT_TOKEN}
@@ -55,7 +53,6 @@ services:
       context: ..
       dockerfile: docker/bot/Dockerfile
     image: chamburr/modmail-bot:latest
-    container_name: bot
     restart: unless-stopped
     environment:
       - ENVIRONMENT=development
@@ -98,7 +95,6 @@ services:
 
   dispatch:
     image: chamburr/twilight-dispatch:latest
-    container_name: dispatch
     restart: unless-stopped
     environment:
       - RUST_LOG=info
@@ -141,7 +137,6 @@ services:
 
   postgres:
     image: postgres:15-alpine
-    container_name: postgres
     restart: unless-stopped
     environment:
       - POSTGRES_DB=modmail
@@ -151,12 +146,10 @@ services:
 
   redis:
     image: redis:7-alpine
-    container_name: redis
     restart: unless-stopped
 
   rabbitmq:
     image: rabbitmq:3-alpine
-    container_name: rabitmq
     restart: unless-stopped
 
 volumes:
