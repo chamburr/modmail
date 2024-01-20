@@ -123,14 +123,14 @@ Close all of the channels anonymously.
 
 Blacklist a user to prevent them from creating tickets.
 
-- Usage: `<member>`
+- Usage: `<user>`
 - Alias: block
 
 ## whitelist
 
 Whitelist a user to allow them to creating tickets.
 
-- Usage: `<member>`
+- Usage: `<user>`
 - Alias: unblock
 
 ## blacklistclear

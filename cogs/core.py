@@ -9,7 +9,7 @@ from discord.ext import commands
 
 from classes.embed import Embed, ErrorEmbed
 from utils import checks, tools
-from utils.converters import MemberConverter
+from utils.converters import UserConverter
 
 log = logging.getLogger(__name__)
 
@@ -245,19 +245,19 @@ class Core(commands.Cog):
     @commands.guild_only()
     @commands.command(
         description="Blacklist a user to prevent them from creating tickets.",
-        usage="blacklist <member>",
+        usage="blacklist <user>",
         aliases=["block"],
     )
-    async def blacklist(self, ctx, *, member: MemberConverter):
+    async def blacklist(self, ctx, *, user: UserConverter):
         blacklist = (await tools.get_data(self.bot, ctx.guild.id))[9]
-        if member.id in blacklist:
+        if user.id in blacklist:
             await ctx.send(ErrorEmbed("The user is already blacklisted."))
             return
 
         async with self.bot.pool.acquire() as conn:
             await conn.execute(
                 "UPDATE data SET blacklist=array_append(blacklist, $1) WHERE guild=$2",
-                member.id,
+                user.id,
                 ctx.guild.id,
             )
 
@@ -268,20 +268,20 @@ class Core(commands.Cog):
     @commands.guild_only()
     @commands.command(
         description="Whitelist a user to allow them to create tickets.",
-        usage="whitelist <member>",
+        usage="whitelist <user>",
         aliases=["unblock"],
     )
-    async def whitelist(self, ctx, *, member: MemberConverter):
+    async def whitelist(self, ctx, *, user: UserConverter):
         blacklist = (await tools.get_data(self.bot, ctx.guild.id))[9]
 
-        if member.id not in blacklist:
+        if user.id not in blacklist:
             await ctx.send(ErrorEmbed("The user is not blacklisted."))
             return
 
         async with self.bot.pool.acquire() as conn:
             await conn.execute(
                 "UPDATE data SET blacklist=array_remove(blacklist, $1) WHERE guild=$2",
-                member.id,
+                user.id,
                 ctx.guild.id,
             )
 
