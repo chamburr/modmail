@@ -99,6 +99,24 @@ class Admin(commands.Cog):
         await ctx.send(Embed("Successfully removed that user's premium."))
 
     @checks.is_admin()
+    @commands.command(
+        description="Transfer a user's premium to another user.",
+        usage="transferpremium <user> <other>",
+    )
+    async def transferpremium(self, ctx, user: UserConverter, *, other: UserConverter):
+        premium = await tools.get_premium_slots(self.bot, other.id)
+        if premium:
+            await ctx.send(ErrorEmbed("That user already has premium."))
+            return
+
+        async with self.bot.pool.acquire() as conn:
+            await conn.execute(
+                "UPDATE premium SET identifier=$1 WHERE identifier=$2", other.id, user.id
+            )
+
+        await ctx.send(Embed("Successfully transferred that user's premium."))
+
+    @checks.is_admin()
     @commands.command(description="Make me say something.", usage="echo [channel] <message>")
     async def echo(self, ctx, channel: typing.Optional[ChannelConverter], *, content: str):
         channel = channel or ctx.channel
