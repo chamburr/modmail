@@ -5,7 +5,7 @@ services:
     build:
       context: ..
       dockerfile: docker/web/Dockerfile
-    image: chamburr/modmail-web:lates
+    image: chamburr/modmail-web:latest
     restart: unless-stopped
     ports:
       - '8000:6000'
