@@ -57,13 +57,10 @@ class Core(commands.Cog):
             reason if reason else "No reason was provided.",
             timestamp=True,
         )
-        embed.set_author(
-            str(ctx.author) if anon is False else "Anonymous#0000",
-            ctx.author.avatar_url
-            if anon is False
-            else "https://cdn.discordapp.com/embed/avatars/0.png",
-        )
         embed.set_footer(f"{ctx.guild.name} | {ctx.guild.id}", ctx.guild.icon_url)
+
+        if anon is False:
+            embed.set_author(str(ctx.author), ctx.author.avatar_url)
 
         try:
             member = await ctx.guild.fetch_member(tools.get_modmail_user(ctx.channel).id)

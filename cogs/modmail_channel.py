@@ -71,13 +71,10 @@ class ModMailEvents(commands.Cog):
             message.content = tools.tag_format(message.content, member)
 
         embed = Embed("Message Received", message.content, colour=0xFF4500, timestamp=True)
-        embed.set_author(
-            str(message.author) if anon is False else "Anonymous#0000",
-            message.author.avatar_url
-            if anon is False
-            else "https://cdn.discordapp.com/embed/avatars/0.png",
-        )
         embed.set_footer(f"{message.guild.name} | {message.guild.id}", message.guild.icon_url)
+
+        if anon is False:
+            embed.set_author(str(message.author), message.author.avatar_url)
 
         files = []
         for file in message.attachments:
