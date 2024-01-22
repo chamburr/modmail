@@ -16,7 +16,7 @@ from aiohttp import web
 
 from classes.bot import ModMail
 from classes.embed import ErrorEmbed
-from classes.message import Message
+from discord.message import Message
 from utils import tools
 from utils.config import Config
 
@@ -57,7 +57,7 @@ class Instance:
 
         self._process = await asyncio.create_subprocess_shell(
             f"{sys.executable} \"{Path.cwd() / 'worker.py'}\" {self.id} {config.BOT_CLUSTERS} "
-            f"{self.main.bot.id} {VERSION}",
+            f"{self.main} {VERSION}",
             stdin=asyncio.subprocess.DEVNULL,
             stdout=asyncio.subprocess.PIPE,
             stderr=asyncio.subprocess.PIPE,
@@ -285,11 +285,10 @@ class Main:
     async def launch(self):
         print(f"[Cluster Manager] Starting a total of {config.BOT_CLUSTERS} clusters.")
 
-        self.bot = ModMail(cluster_id=0, cluster_count=int(config.BOT_CLUSTERS))
+        self.bot = ModMail(cluster_id=0, cluster_count=int(config.BOT_CLUSTERS), intents=discord.Intents.all())
+        print('main bot start')
         await self.bot.start(worker=False)
-
-        self.bot.id = (await self.bot.real_user()).id
-        self.bot.state.id = self.bot.id
+        self.bot.id = (await self.bot.real_user())
 
         for i in range(int(config.BOT_CLUSTERS)):
             self.instances.append(Instance(i + 1, loop=self.loop, main=self))
@@ -335,3 +334,4 @@ except KeyboardInterrupt:
 finally:
     loop.run_until_complete(loop.shutdown_asyncgens())
     loop.close()
+    

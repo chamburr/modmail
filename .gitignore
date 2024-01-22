@@ -266,3 +266,4 @@ target/
 targets.json
 web/static/sw.js
 !web/pages/*
+.vscode/settings.json
