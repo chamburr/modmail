@@ -8,7 +8,7 @@ from discord.message import Attachment, MessageReference, flatten_handlers
 from discord.reaction import Reaction
 
 from classes.embed import Embed
-from classes.member import Member
+from classes._member import Member
 
 log = logging.getLogger(__name__)
 
@@ -57,6 +57,8 @@ class Message(message.Message):
                 getattr(self, f"_handle_{handler}")(data[handler])
             except KeyError:
                 continue
+            
+        super().__init__(state=state, channel=channel, data=data)
 
     @property
     def author(self):
