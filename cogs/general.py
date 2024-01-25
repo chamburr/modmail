@@ -24,7 +24,7 @@ class General(commands.Cog):
         usage="help [command]",
         aliases=["h", "commands"],
     )
-    async def help(self, ctx, *, command: str = None):
+    async def help2(self, ctx, *, command: str = None):
         if command:
             command = self.bot.get_command(command.lower())
             if not command:

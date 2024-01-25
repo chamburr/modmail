@@ -6,10 +6,10 @@ import discord
 from discord.http import Route
 from discord.user import User
 
-from discord.channel import DMChannel
+from classes.channel import DMChannel
 from classes.embed import Embed, ErrorEmbed
-from discord.http import HTTPClient
-from discord.message import Message
+from classes.http import HTTPClient
+from classes.message import Message
 
 log = logging.getLogger(__name__)
 

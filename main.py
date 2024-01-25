@@ -1,5 +1,6 @@
 import asyncio
 import json
+import logging
 import os
 import signal
 import sys
@@ -21,7 +22,7 @@ from utils import tools
 from utils.config import Config
 
 VERSION = "3.3.0"
-
+logger = logging.getLogger()
 
 class Instance:
     def __init__(self, instance_id, loop, main):
@@ -46,34 +47,41 @@ class Instance:
 
             if line:
                 line = line.decode("utf-8")[:-1]
-                print(f"[Cluster {self.id}] {line}")
+                logger.info(f"[Cluster Report {self.id}] {line}")
             else:
                 break
 
     async def start(self):
         if self.is_active:
-            print(f"[Cluster {self.id}] Already active.")
+            logger.info(f"[Cluster {self.id}] Already active.")
             return
-
+        
+        logger.info(f"{sys.executable} \"{Path.cwd() / 'worker.py'}\" {self.id} {config.BOT_CLUSTERS} "
+            f"{self.main.bot.id} {VERSION}")
+        
         self._process = await asyncio.create_subprocess_shell(
             f"{sys.executable} \"{Path.cwd() / 'worker.py'}\" {self.id} {config.BOT_CLUSTERS} "
-            f"{self.main} {VERSION}",
+            f"{self.main.bot.id} {VERSION}",
             stdin=asyncio.subprocess.DEVNULL,
             stdout=asyncio.subprocess.PIPE,
             stderr=asyncio.subprocess.PIPE,
-            preexec_fn=os.setsid,
-            limit=1024 * 256,
         )
+        
+        # self._process = await asyncio.create_subprocess_shell(
+        #     f"/usr/bin/local/python3 /app/worker.py {self.id} {config.BOT_CLUSTERS} {self.main.bot.id} {VERSION}",
+        #     stdin=asyncio.subprocess.DEVNULL,
+        #     stdout=asyncio.subprocess.PIPE,
+        #     stderr=asyncio.subprocess.PIPE,
+        # )
 
         self.status = "running"
 
-        print(f"[Cluster {self.id}] The cluster is starting.")
+        logger.info(f"[Cluster {self.id}] The cluster is starting.")
 
         stdout = self.loop.create_task(self.read_stream(self._process.stdout))
         stderr = self.loop.create_task(self.read_stream(self._process.stderr))
 
         await asyncio.wait([stdout, stderr])
-
         return self
 
     def kill(self):
@@ -228,15 +236,15 @@ class Main:
 
     def dead_process_handler(self, result):
         instance = result.result()
-        print(
+        logger.info(
             f"[Cluster {instance.id}] The cluster exited with code {instance._process.returncode}."
         )
 
         if instance._process.returncode in [0, -15]:
-            print(f"[Cluster {instance.id}] The cluster stopped gracefully.")
+            logger.info(f"[Cluster {instance.id}] The cluster stopped gracefully.")
             return
 
-        print(f"[Cluster {instance.id}] The cluster is restarting.")
+        logger.info(f"[Cluster {instance.id}] The cluster is restarting.")
         instance.loop.create_task(instance.start())
 
     async def user_select_handler(self, body):
@@ -283,12 +291,13 @@ class Main:
             json.dump(data, file, indent=2)
 
     async def launch(self):
-        print(f"[Cluster Manager] Starting a total of {config.BOT_CLUSTERS} clusters.")
+        logger.info(f"[Cluster Manager] Starting a total of {config.BOT_CLUSTERS} clusters.")
 
-        self.bot = ModMail(cluster_id=0, cluster_count=int(config.BOT_CLUSTERS), intents=discord.Intents.all())
-        print('main bot start')
+        self.bot = ModMail(intents=discord.Intents.all(), cluster_id=0, cluster_count=int(config.BOT_CLUSTERS))
         await self.bot.start(worker=False)
-        self.bot.id = (await self.bot.real_user())
+        self.bot.id = (await self.bot.real_user()).id
+        self.bot.state.id = self.bot.id
+        
 
         for i in range(int(config.BOT_CLUSTERS)):
             self.instances.append(Instance(i + 1, loop=self.loop, main=self))
@@ -306,13 +315,14 @@ class Main:
 
 
 config = Config().load()
-
+discord.utils.setup_logging(level=logging.INFO)
 loop = asyncio.new_event_loop()
 asyncio.set_event_loop(loop)
 main = Main(loop=loop)
 loop.create_task(main.launch())
 
 try:
+    logger.info("Entering forever loop")
     loop.run_forever()
 except KeyboardInterrupt:
 

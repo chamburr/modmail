@@ -1,4 +1,5 @@
 import asyncio
+import discord
 import logging
 import re
 import sys
@@ -15,20 +16,20 @@ from discord.ext.commands.core import _CaseInsensitiveDict
 from discord.gateway import DiscordClientWebSocketResponse, DiscordWebSocket
 from discord.utils import parse_time
 
-from discord.http import HTTPClient
+from classes.http import HTTPClient
 from classes.misc import Session, Status
 from classes.state import State
-# from discord import state as State
 from utils import tools
 from utils.config import Config
 from utils.prometheus import Prometheus
 
-log = logging.getLogger(__name__)
-log.setLevel(logging.DEBUG)
+
+logger = logging.getLogger(__name__)
+
 
 
 class ModMail(commands.AutoShardedBot):
-    def __init__(self, command_prefix=None, **kwargs):
+    def __init__(self, command_prefix=None, intents: discord.Intents=None,  **kwargs):
         self.command_prefix = command_prefix
         self.extra_events = {}
         self._BotBase__cogs = {}
@@ -45,8 +46,9 @@ class ModMail(commands.AutoShardedBot):
         self.case_insensitive = True
         self.all_commands = _CaseInsensitiveDict() if self.case_insensitive else {}
         self.strip_after_prefix = False
+      
 
-        # self.ws = None
+        self.ws = None
         self.loop = asyncio.get_event_loop()
         self.http = HTTPClient(loop=self.loop)
 
@@ -92,11 +94,8 @@ class ModMail(commands.AutoShardedBot):
             "premium",
             "snippet",
         ]
-        super().__init__(command_prefix=command_prefix, **kwargs)   
-        
-    async def on_ready(self):
-        self.id = self.user.id
-
+        print(kwargs)
+        super().__init__(command_prefix=command_prefix, intents=intents, **kwargs)   
 
     @property
     def user(self):
@@ -107,7 +106,7 @@ class ModMail(commands.AutoShardedBot):
         return self._connection
 
     async def real_user(self):
-        return self._connection.self_id
+        return await self._connection.get_me()
 
     async def get_all_channels(self):
         pass
@@ -116,6 +115,7 @@ class ModMail(commands.AutoShardedBot):
         pass
 
     async def receive_message(self, msg):
+        logger.info(msg)
         self.ws._dispatch("socket_raw_receive", msg)
         msg = orjson.loads(msg)
         self.ws._dispatch("socket_response", msg)
@@ -131,7 +131,7 @@ class ModMail(commands.AutoShardedBot):
         try:
             func = self.ws._discord_parsers[event]
         except KeyError:
-            log.debug(f"Unknown event {event}.")
+            logger.debug(f"Unknown event {event}.")
             return
 
         if event not in self._enabled_events:
@@ -161,7 +161,7 @@ class ModMail(commands.AutoShardedBot):
         elapsed = asyncio.get_event_loop().time() - trace_config_ctx.start
 
         if elapsed > 1:
-            log.warning(f"{params.method} {params.url} took {round(elapsed, 2)} seconds")
+            logger.warning(f"{params.method} {params.url} took {round(elapsed, 2)} seconds")
 
         route = str(params.url)
         route = re.sub(r"https:\/\/[a-z\.]+\/api\/v[0-9]+", "", route)
@@ -180,7 +180,7 @@ class ModMail(commands.AutoShardedBot):
         )
 
     async def start(self, worker=True):
-        print("In Start")
+        logger.info("In Setup")
         trace_config = aiohttp.TraceConfig()
         trace_config.on_request_start.append(self.on_http_request_start)
         trace_config.on_request_end.append(self.on_http_request_end)
@@ -189,6 +189,7 @@ class ModMail(commands.AutoShardedBot):
             trace_configs=[trace_config],
         )
         self.http.token = self.config.BOT_TOKEN
+        
 
         self.pool = await asyncpg.create_pool(
             database=self.config.POSTGRES_DATABASE,
@@ -213,6 +214,9 @@ class ModMail(commands.AutoShardedBot):
             )
             self._amqp_channel = await self._amqp.channel()
             self._amqp_queue = await self._amqp_channel.get_queue("gateway.recv")
+            
+            logger.info(self._cogs)
+            
 
         self.prom = Prometheus(self)
         # await self.prom.start() # TODO: Fix Prometheus
@@ -223,7 +227,7 @@ class ModMail(commands.AutoShardedBot):
                 await asyncio.sleep(2)
                 continue
             break
-        print(f"Shards: {shards}")
+        logger.debug(f"Shards: {shards}")
      
         self._connection = State(
             id=self.id,
@@ -233,7 +237,9 @@ class ModMail(commands.AutoShardedBot):
             http=self.http,
             redis=self._redis,
             shard_count=shards,
+            intents=self.intents,
         )
+        self._connection.id = (await self._connection.get_me()).id
         self._connection._get_client = lambda: self
 
         self.ws = DiscordWebSocket(socket=None, loop=self.loop)
@@ -242,27 +248,34 @@ class ModMail(commands.AutoShardedBot):
         self.ws._discord_parsers = self._connection.parsers
         self.ws._dispatch = self.dispatch
         self.ws.call_hooks = self._connection.call_hooks
+        
+        logger.info('right here')
 
         if not worker:
+            # await self.login(self.config.BOT_TOKEN)
+            # await self.connect(reconnect=True)
             return
         
-        print('finna start')
-        super().start(self.config.BOT_TOKEN)
-        print('started')
         
-    async def setup_hook(self):
-        print("Hit Setup Hook")
         for extension in self._cogs:
             try:
                 await self.load_extension("cogs." + extension)
+                logger.info(f"Loaded extension {extension}.")
             except Exception:
-                log.error(f"Failed to load extension {extension}.", file=sys.stderr)
-                log.error(traceback.print_exc())
-
+                logger.error(f"Failed to load extension {extension}.")
+                logger.error(traceback.print_exc())
+            
         async with self._amqp_queue.iterator() as queue_iter:
             async for message in queue_iter:
+                logger.info(message)
                 async with message.process(ignore_processed=True):
                     await self.receive_message(message.body)
                     await message.ack()
+        
+        
+       
+        
+      
+        
                     
         

@@ -3,7 +3,7 @@ import logging
 from discord.ext import commands
 from discord.ext.commands import BotMissingPermissions, MissingPermissions
 
-from discord.channel import TextChannel
+from classes.channel import TextChannel
 from classes.embed import ErrorEmbed
 from utils import tools
 

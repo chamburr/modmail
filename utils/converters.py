@@ -14,8 +14,8 @@ from discord.ext.commands.errors import (
     UserNotFound,
 )
 
-from discord.channel import TextChannel
-from discord.member import Member
+from classes.channel import TextChannel
+from classes.member import Member
 
 log = logging.getLogger(__name__)
 

@@ -13,9 +13,9 @@ from discord.enums import (
 from discord.member import VoiceState
 from discord.role import Role
 
-from classes._channel import TextChannel, _channel_factory
-from classes._invite import Invite
-from classes._member import Member
+from classes.channel import TextChannel, _channel_factory
+from classes.invite import Invite
+from classes.member import Member
 
 log = logging.getLogger(__name__)
 

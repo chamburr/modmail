@@ -8,7 +8,7 @@ from discord.message import Attachment, MessageReference, flatten_handlers
 from discord.reaction import Reaction
 
 from classes.embed import Embed
-from classes._member import Member
+from classes.member import Member
 
 log = logging.getLogger(__name__)
 

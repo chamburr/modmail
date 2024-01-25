@@ -62,7 +62,7 @@ services:
       - DEFAULT_PREFIX=${DEFAULT_PREFIX}
       - DEFAULT_SERVER=${DEFAULT_SERVER}
       - BOT_CLUSTERS=1
-      - MAIN_SERVER=
+      - MAIN_SERVER=538144211866746883
       - OWNER_USERS=${OWNER_USERS}
       - ADMIN_USERS=${ADMIN_USERS}
       - PREMIUM1_ROLE=0
@@ -100,7 +100,7 @@ services:
       - RUST_LOG=info
       - BOT_TOKEN=${BOT_TOKEN}
       - SHARDS_START=0
-      - SHARDS_END=1
+      - SHARDS_END=0
       - SHARDS_TOTAL=1
       - SHARDS_CONCURRENCY=1
       - SHARDS_WAIT=5
@@ -149,7 +149,10 @@ services:
     restart: unless-stopped
 
   rabbitmq:
-    image: rabbitmq:3-alpine
+    image: rabbitmq:3-management-alpine
+    ports:
+      - "5672:5672"
+      - "15672:15672"
     restart: unless-stopped
 
 volumes:
