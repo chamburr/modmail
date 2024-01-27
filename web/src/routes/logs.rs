@@ -1,18 +1,38 @@
-use crate::routes::{ApiResponse, ApiResult};
+use crate::{
+    routes::{ApiResponse, ApiResult},
+    CONFIG,
+};
 
 use actix_web::{
     get,
     web::{block, Path},
 };
+use futures::Future;
 use lazy_static::lazy_static;
 use regex::Regex;
 use serde::Serialize;
 use std::num::ParseIntError;
+use tokio::runtime::Runtime;
+use twilight_http::Client;
+use twilight_model::id::{ChannelId, MessageId};
 
 lazy_static! {
+    static ref CLIENT: Client = Client::new(CONFIG.bot_token.as_str());
+    static ref RUNTIME: Runtime = Runtime::new().unwrap();
     static ref RE: Regex =
         Regex::new(r"^\[([0-9-]{10} [0-9:]{8})\] ([^\n]*)#([0-9]{1,4}) \((User|Staff|Comment)\):")
             .unwrap();
+}
+
+#[allow(unused)]
+async fn block_on<F>(fut: F) -> Result<F::Output, ()>
+where
+    F: Future + Send + 'static,
+    F::Output: Send + Sync,
+{
+    block(move || -> Result<F::Output, ()> { Ok(RUNTIME.block_on(fut)) })
+        .await
+        .map_err(|_| ())
 }
 
 #[derive(Debug, Serialize)]
@@ -37,16 +57,16 @@ pub async fn get_log(Path(id): Path<String>) -> ApiResult<ApiResponse> {
         return ApiResponse::not_found().finish();
     }
 
-    let response = block(move || {
-        reqwest::blocking::get(
-            format!(
-                "https://cdn.discordapp.com/attachments/{}/{}/modmail_log_{}.txt",
-                ids[0], ids[1], ids[2]
-            )
-            .as_str(),
-        )
-    })
-    .await?;
+    let attachment = block_on(CLIENT.message(ChannelId(ids[0]), MessageId(ids[1])))
+        .await??
+        .ok_or_else(ApiResponse::not_found)?
+        .attachments
+        .into_iter()
+        .find(|item| item.id.0 == ids[2])
+        .ok_or_else(ApiResponse::not_found)?
+        .url;
+
+    let response = block(move || reqwest::blocking::get(attachment)).await?;
 
     if response.status() != 200 {
         return ApiResponse::not_found().finish();
