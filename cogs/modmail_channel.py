@@ -25,8 +25,9 @@ class ModMailEvents(commands.Cog):
             return
 
         prefix = await tools.get_guild_prefix(self.bot, message.guild)
-        if message.content.startswith(prefix):
-            return
+        for prefixes in [f"<@{self.bot.id}> ", f"<@!{self.bot.id}> ", prefix]:
+            if message.content.startswith(prefixes):
+                return
 
         data = await tools.get_data(self.bot, message.guild.id)
         if data[11] is True:
