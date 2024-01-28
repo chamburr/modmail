@@ -24,9 +24,9 @@ class ModMailEvents(commands.Cog):
         if permissions.send_messages is False or permissions.embed_links is False:
             return
 
-        prefix = await tools.get_guild_prefix(self.bot, message.guild)
-        for prefixes in [f"<@{self.bot.id}> ", f"<@!{self.bot.id}> ", prefix]:
-            if message.content.startswith(prefixes):
+        guild_prefix = await tools.get_guild_prefix(self.bot, message.guild)
+        for prefix in [f"<@{self.bot.id}> ", f"<@!{self.bot.id}> ", guild_prefix]:
+            if message.content.startswith(prefix):
                 return
 
         data = await tools.get_data(self.bot, message.guild.id)
