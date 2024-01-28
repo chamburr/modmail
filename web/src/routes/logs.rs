@@ -58,7 +58,8 @@ pub async fn get_log(Path(id): Path<String>) -> ApiResult<ApiResponse> {
     }
 
     let attachment = block_on(CLIENT.message(ChannelId(ids[0]), MessageId(ids[1])))
-        .await??
+        .await?
+        .map_err(|_| ApiResponse::not_found())?
         .ok_or_else(ApiResponse::not_found)?
         .attachments
         .into_iter()
