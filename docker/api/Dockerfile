@@ -19,7 +19,7 @@ RUN cargo build --release
 
 FROM alpine:3.18
 
-RUN apk add --no-cache dumb-init libgcc libssl1.1
+RUN apk add --no-cache dumb-init libgcc
 
 WORKDIR /app
 
