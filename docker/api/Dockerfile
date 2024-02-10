@@ -1,4 +1,4 @@
-FROM rust:1.72-alpine AS builder
+FROM rust:1.76-alpine AS builder
 
 ENV RUSTFLAGS "-C target-feature=-crt-static"
 
@@ -17,7 +17,7 @@ COPY web/src ./src
 
 RUN cargo build --release
 
-FROM alpine:3.18
+FROM alpine:3.19
 
 RUN apk add --no-cache dumb-init libgcc
 
