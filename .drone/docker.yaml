@@ -6,7 +6,8 @@ steps:
   - name: publish api
     image: plugins/docker
     settings:
-      repo: chamburr/modmail-api
+      registry: ghcr.io
+      repo: ghcr.io/chamburr/modmail-api
       auto_tag: true
       dockerfile: docker/api/Dockerfile
       username:
@@ -16,7 +17,8 @@ steps:
   - name: publish bot
     image: plugins/docker
     settings:
-      repo: chamburr/modmail-bot
+      registry: ghcr.io
+      repo: ghcr.io/chamburr/modmail-bot
       auto_tag: true
       dockerfile: docker/bot/Dockerfile
       username:
@@ -26,7 +28,8 @@ steps:
   - name: publish web
     image: plugins/docker
     settings:
-      repo: chamburr/modmail-web
+      registry: ghcr.io
+      repo: ghcr.io/chamburr/modmail-web
       auto_tag: true
       dockerfile: docker/web/Dockerfile
       username:
