@@ -45,6 +45,11 @@ class General(commands.Cog):
             elif len(command.aliases) > 0:
                 embed.add_field("Alias", f"`{command.aliases[0]}`")
 
+            embed.set_footer(
+                "Arguments wrapped in <> are required, ones in [] are optional\n"
+                "Don't include <> or [] in the command, it won't work as expected."
+            )
+
             await ctx.send(embed)
             return
 
