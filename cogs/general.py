@@ -47,7 +47,8 @@ class General(commands.Cog):
 
             embed.set_footer(
                 "Arguments wrapped in <> are required, ones in [] are optional\n"
-                "Don't include <> or [] in the command, it won't work as expected."
+                "Don't include <> or [] in the command, otherwise, the command won't "
+                "work as expected."
             )
 
             await ctx.send(embed)
