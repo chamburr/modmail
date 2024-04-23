@@ -48,7 +48,6 @@ Moderator
 
 - Image: https://github.com/chamburr/modmail/assets/51924672/ea63fa67-b402-48b6-81fa-d773440a386e
 
-
 # Jordan
 
 Moderator
@@ -66,8 +65,8 @@ Moderator
 Support
 
 - Image: https://github.com/chamburr/modmail/assets/51924672/bfc6001d-8c75-48f0-a7f4-350c1a98262f
-- GitHub: https://github.com/Scyye
 - Website: https://scyye.github.io
+- GitHub: https://github.com/Scyye
 
 # waterflamev8
 
@@ -75,5 +74,3 @@ Support, Contributor
 
 - Image: https://github.com/chamburr/modmail/assets/51924672/31b08ac3-5a45-4a73-bfdc-12266349e140
 - GitHub: https://github.com/waterflamev8
-
-
