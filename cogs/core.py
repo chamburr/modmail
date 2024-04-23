@@ -9,6 +9,7 @@ from discord.ext import commands
 
 from classes.embed import Embed, ErrorEmbed
 from utils import checks, tools
+from utils.converters import UserConverter
 
 log = logging.getLogger(__name__)
 
@@ -247,7 +248,7 @@ class Core(commands.Cog):
             if not tools.is_modmail_channel(ctx.channel):
                 await ctx.send(ErrorEmbed("You must provide a user(s) to blacklist, or run this command in a ModMail ticket."))
                 return
-            users=(await UserListConverter.convert(None, ctx, ctx.channel.topic.split()[2]))
+            users=(await UserConverter.convert(None, ctx, ctx.channel.topic.split()[2]))
 
         response = ""
 
@@ -276,7 +277,7 @@ class Core(commands.Cog):
             if not tools.is_modmail_channel(ctx.channel):
                 await ctx.send(ErrorEmbed("You must provide a user(s) to blacklist, or run this command in a ModMail ticket.\nUses the user from the current ticket if no user(s) is provided."))
                 return
-            users=(await UserListConverter.convert(None, ctx, ctx.channel.topic.split()[2]))
+            users=(await UserConverter.convert(None, ctx, ctx.channel.topic.split()[2]))
 
         blacklist = (await tools.get_data(self.bot, ctx.guild.id))[9]
 
