@@ -240,12 +240,15 @@ class Core(commands.Cog):
     @commands.guild_only()
     @commands.command(
         description="Blacklist a user to prevent them from creating tickets.",
-        usage="blacklist <users>",
+        usage="blacklist [users]",
         aliases=["block"],
     )
     async def blacklist(self, ctx, *, users: UserListConverter = None):
         if users is None:
-            users = []
+            if not tools.is_modmail_channel(ctx.channel):
+                await ctx.send(ErrorEmbed("You must provide a user(s) to blacklist, or run this command in a ModMail ticket."))
+                return
+            users=(await UserListConverter.convert(None, ctx, ctx.channel.topic.split()[2]))
 
         response = ""
 
