@@ -9,6 +9,14 @@ Developer, Administrator
 - Reddit: https://www.reddit.com/user/chamburr22
 - LinkedIn: https://linkedin.com/in/chamburr
 
+# dyl
+
+Administrator, Contributor
+
+- Image: https://github.com/chamburr/modmail/assets/51924672/ff772da4-b9f6-44ba-9b77-11d29e1f2886
+- Website: https://wiredcoding.xyz
+- GitHub: https://github.com/dlsnyder8
+
 # James [a_leon]
 
 Administrator
@@ -28,6 +36,19 @@ Administrator
 - Reddit: https://www.reddit.com/user/NinthTurtle1034
 - LinkedIn: https://www.linkedin.com/in/teagancollyer
 
+# Wixx
+
+Administrator
+
+- Image: todo
+
+# Agent Bunny in Space
+
+Moderator
+
+- Image: https://github.com/chamburr/modmail/assets/51924672/ea63fa67-b402-48b6-81fa-d773440a386e
+
+
 # Jordan
 
 Moderator
@@ -40,11 +61,12 @@ Moderator
 
 - Image: https://github.com/chamburr/modmail/assets/51924672/8b599a3b-44b4-4170-940e-180056f7c11b
 
-# Agent Bunny in Space
+# Scyye
 
 Support
 
-- Image: https://github.com/chamburr/modmail/assets/51924672/ea63fa67-b402-48b6-81fa-d773440a386e
+- Image: todo
+- GitHub: https://github.com/Scyye
 
 # waterflamev8
 
@@ -53,9 +75,4 @@ Support, Contributor
 - Image: https://github.com/chamburr/modmail/assets/51924672/31b08ac3-5a45-4a73-bfdc-12266349e140
 - GitHub: https://github.com/waterflamev8
 
-# dyl
 
-Contributor
-
-- Image: https://github.com/chamburr/modmail/assets/51924672/ff772da4-b9f6-44ba-9b77-11d29e1f2886
-- GitHub: https://github.com/dlsnyder8
