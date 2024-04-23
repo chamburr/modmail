@@ -120,19 +120,3 @@ class UserConverter(commands.UserConverter):
                 pass
 
         raise UserNotFound(argument)
-
-class UserListConverter(UserConverter):
-    async def convert(self, ctx, argument):
-        split = argument.split()
-        users = []
-
-        for user in split:
-            try:
-                users.append(await UserConverter.convert(self, ctx, user))
-            except UserNotFound:
-                pass
-
-        if len(users) == 0:
-            raise UserNotFound(argument)
-
-        return users

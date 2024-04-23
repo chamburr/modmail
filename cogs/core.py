@@ -239,11 +239,11 @@ class Core(commands.Cog):
     @checks.is_mod()
     @commands.guild_only()
     @commands.command(
-        description="Blacklist a user to prevent them from creating tickets.",
+        description="Blacklist a user(s) to prevent them from creating tickets.\nUses the user from the current ticket if no user(s) is provided.",
         usage="blacklist [users]",
         aliases=["block"],
     )
-    async def blacklist(self, ctx, *, users: UserListConverter = None):
+    async def blacklist(self, ctx, *, users: commands.Greedy[discord.Member] = None):
         if users is None:
             if not tools.is_modmail_channel(ctx.channel):
                 await ctx.send(ErrorEmbed("You must provide a user(s) to blacklist, or run this command in a ModMail ticket."))
@@ -272,9 +272,12 @@ class Core(commands.Cog):
         usage="whitelist <users>",
         aliases=["unblock"],
     )
-    async def whitelist(self, ctx, *, users: UserListConverter = None):
+    async def whitelist(self, ctx, *, users: commands.Greedy[discord.Member] = None):
         if users is None:
-            users = []
+            if not tools.is_modmail_channel(ctx.channel):
+                await ctx.send(ErrorEmbed("You must provide a user(s) to blacklist, or run this command in a ModMail ticket."))
+                return
+            users=(await UserListConverter.convert(None, ctx, ctx.channel.topic.split()[2]))
 
         blacklist = (await tools.get_data(self.bot, ctx.guild.id))[9]
 
