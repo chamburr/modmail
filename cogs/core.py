@@ -275,7 +275,7 @@ class Core(commands.Cog):
     async def whitelist(self, ctx, *, users: commands.Greedy[discord.Member] = None):
         if users is None:
             if not tools.is_modmail_channel(ctx.channel):
-                await ctx.send(ErrorEmbed("You must provide a user(s) to blacklist, or run this command in a ModMail ticket."))
+                await ctx.send(ErrorEmbed("You must provide a user(s) to blacklist, or run this command in a ModMail ticket.\nUses the user from the current ticket if no user(s) is provided."))
                 return
             users=(await UserListConverter.convert(None, ctx, ctx.channel.topic.split()[2]))
 
