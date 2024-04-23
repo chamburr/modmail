@@ -243,23 +243,33 @@ class Core(commands.Cog):
         usage="blacklist [users]",
         aliases=["block"],
     )
-    async def blacklist(self, ctx, *, users: commands.Greedy[discord.Member] = None):
+    async def blacklist(self, ctx, *, users: commands.Greedy[UserConverter] = None):
+        await ctx.send(ErrorEmbed(users))
         if users is None:
+            users = []
             if not tools.is_modmail_channel(ctx.channel):
-                await ctx.send(ErrorEmbed("You must provide a user(s) to blacklist, or run this command in a ModMail ticket."))
+                await ctx.send(ErrorEmbed("You must provide a user(s) to blacklist, or run this command in a ModMail ticket.\nUses the user from the current ticket if no user(s) is provided."))
                 return
-            users=(await UserConverter.convert(None, ctx, ctx.channel.topic.split()[2]))
+            users.append(await UserConverter.convert(None, ctx, ctx.channel.topic.split()[2]))
+
+        blacklist = (await tools.get_data(self.bot, ctx.guild.id))[9]
+
+        #user_ids = [user.id for user in users]
 
         response = ""
 
-        async with self.bot.pool.acquire() as conn:
-            for user in users:
-                response += f"<@{user.id}> blacklisted successfully\n"
+        for user in users:
+            if user in blacklist:
+                response += f"<@{user}> is already blacklisted\n"
+                continue
+
+            async with self.bot.pool.acquire() as conn:
                 await conn.execute(
                     "UPDATE data SET blacklist=array_append(blacklist, $1) WHERE guild=$2",
-                    user.id,
+                    user,
                     ctx.guild.id,
                 )
+                response += f"<@{user}> whitelisted successfully\n"
 
         await ctx.send(Embed(response))
 
@@ -272,29 +282,32 @@ class Core(commands.Cog):
         usage="whitelist [users]",
         aliases=["unblock"],
     )
-    async def whitelist(self, ctx, *, users: commands.Greedy[discord.Member] = None):
+    async def whitelist(self, ctx, *, users: commands.Greedy[UserConverter] = None):
         if users is None:
+            users = []
             if not tools.is_modmail_channel(ctx.channel):
-                await ctx.send(ErrorEmbed("You must provide a user(s) to blacklist, or run this command in a ModMail ticket.\nUses the user from the current ticket if no user(s) is provided."))
+                await ctx.send(ErrorEmbed("You must provide a user(s) to whitelist, or run this command in a ModMail ticket.\nUses the user from the current ticket if no user(s) is provided."))
                 return
-            users=(await UserConverter.convert(None, ctx, ctx.channel.topic.split()[2]))
+            users.append(await UserConverter.convert(None, ctx, ctx.channel.topic.split()[2]))
 
         blacklist = (await tools.get_data(self.bot, ctx.guild.id))[9]
 
+        user_ids = [user.id for user in users]
+
         response = ""
 
-        for user in users:
-            if user.id not in blacklist:
+        for user in user_ids:
+            if user not in blacklist:
                 await ctx.send(ErrorEmbed("The user is not blacklisted."))
                 return
 
             async with self.bot.pool.acquire() as conn:
                 await conn.execute(
                     "UPDATE data SET blacklist=array_remove(blacklist, $1) WHERE guild=$2",
-                    user.id,
+                    user,
                     ctx.guild.id,
                 )
-                response += f"<@{user.id}> whitelisted successfully\n"
+                response += f"<@{user}> whitelisted successfully\n"
 
         await ctx.send(Embed(response))
 
