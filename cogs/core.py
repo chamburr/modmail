@@ -269,7 +269,7 @@ class Core(commands.Cog):
     @commands.guild_only()
     @commands.command(
         description="Whitelist a user to allow them to create tickets.",
-        usage="whitelist <users>",
+        usage="whitelist [users]",
         aliases=["unblock"],
     )
     async def whitelist(self, ctx, *, users: commands.Greedy[discord.Member] = None):
