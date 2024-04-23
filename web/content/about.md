@@ -40,7 +40,7 @@ Administrator
 
 Administrator
 
-- Image: todo
+- Image: https://github.com/chamburr/modmail/assets/51924672/56e5094d-ac22-4870-8c2c-52f62c7c30c7
 
 # Agent Bunny in Space
 
@@ -65,8 +65,9 @@ Moderator
 
 Support
 
-- Image: todo
+- Image: https://github.com/chamburr/modmail/assets/51924672/bfc6001d-8c75-48f0-a7f4-350c1a98262f
 - GitHub: https://github.com/Scyye
+- Website: https://scyye.github.io
 
 # waterflamev8
 
