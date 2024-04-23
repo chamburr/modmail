@@ -9,7 +9,6 @@ from discord.ext import commands
 
 from classes.embed import Embed, ErrorEmbed
 from utils import checks, tools
-from utils.converters import UserListConverter
 
 log = logging.getLogger(__name__)
 
