@@ -14,7 +14,7 @@ from discord.ext import commands
 
 from classes.embed import Embed, ErrorEmbed
 from utils import checks
-from utils.converters import ChannelConverter, GuildConverter, MemberConverter, UserConverter
+from utils.converters import ChannelConverter, GuildConverter, MemberConverter, UserConverter, PingUserConverter
 
 log = logging.getLogger(__name__)
 

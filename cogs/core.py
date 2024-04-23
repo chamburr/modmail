@@ -9,7 +9,7 @@ from discord.ext import commands
 
 from classes.embed import Embed, ErrorEmbed
 from utils import checks, tools
-from utils.converters import UserConverter
+from utils.converters import UserListConverter
 
 log = logging.getLogger(__name__)
 
@@ -240,47 +240,57 @@ class Core(commands.Cog):
     @commands.guild_only()
     @commands.command(
         description="Blacklist a user to prevent them from creating tickets.",
-        usage="blacklist <user>",
+        usage="blacklist <users>",
         aliases=["block"],
     )
-    async def blacklist(self, ctx, *, user: UserConverter):
-        blacklist = (await tools.get_data(self.bot, ctx.guild.id))[9]
-        if user.id in blacklist:
-            await ctx.send(ErrorEmbed("The user is already blacklisted."))
-            return
+    async def blacklist(self, ctx, *, users: UserListConverter = None):
+        if users is None:
+            users = []
+
+        response = ""
 
         async with self.bot.pool.acquire() as conn:
-            await conn.execute(
-                "UPDATE data SET blacklist=array_append(blacklist, $1) WHERE guild=$2",
-                user.id,
-                ctx.guild.id,
-            )
+            for user in users:
+                response += f"<@{user.id}> blacklisted successfully\n"
+                await conn.execute(
+                    "UPDATE data SET blacklist=array_append(blacklist, $1) WHERE guild=$2",
+                    user.id,
+                    ctx.guild.id,
+                )
 
-        await ctx.send(Embed(f"<@{user.id}> is blacklisted successfully."))
+        await ctx.send(Embed(response))
+
 
     @checks.in_database()
     @checks.is_mod()
     @commands.guild_only()
     @commands.command(
         description="Whitelist a user to allow them to create tickets.",
-        usage="whitelist <user>",
+        usage="whitelist <users>",
         aliases=["unblock"],
     )
-    async def whitelist(self, ctx, *, user: UserConverter):
+    async def whitelist(self, ctx, *, users: UserListConverter = None):
+        if users is None:
+            users = []
+
         blacklist = (await tools.get_data(self.bot, ctx.guild.id))[9]
 
-        if user.id not in blacklist:
-            await ctx.send(ErrorEmbed("The user is not blacklisted."))
-            return
+        response = ""
 
-        async with self.bot.pool.acquire() as conn:
-            await conn.execute(
-                "UPDATE data SET blacklist=array_remove(blacklist, $1) WHERE guild=$2",
-                user.id,
-                ctx.guild.id,
-            )
+        for user in users:
+            if user.id not in blacklist:
+                await ctx.send(ErrorEmbed("The user is not blacklisted."))
+                return
 
-        await ctx.send(Embed(f"<@{user.id}> is whitelisted successfully."))
+            async with self.bot.pool.acquire() as conn:
+                await conn.execute(
+                    "UPDATE data SET blacklist=array_remove(blacklist, $1) WHERE guild=$2",
+                    user.id,
+                    ctx.guild.id,
+                )
+                response += f"<@{user.id}> whitelisted successfully\n"
+
+        await ctx.send(Embed(response))
 
     @checks.in_database()
     @checks.is_mod()
