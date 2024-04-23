@@ -253,6 +253,7 @@ class Core(commands.Cog):
 
         response = ""
         for user in users:
+            # If they're not in the blacklist await tools.get_data(self.bot, ctx.guild.id))[9], append error and continue
             if user.id in (await tools.get_data(self.bot, ctx.guild.id))[9]:
                 response += f"<@{user.id}> is already blacklisted\n"
                 continue
@@ -284,12 +285,11 @@ class Core(commands.Cog):
                 return
             users.append(await UserConverter.convert(None, ctx, ctx.channel.topic.split()[2]))
 
-        blacklist = (await tools.get_data(self.bot, ctx.guild.id))[9]
-
         response = ""
 
         for user in users:
-            if not user.id in blacklist:
+            # If they're not in the blacklist await tools.get_data(self.bot, ctx.guild.id))[9], append error and continue
+            if not user.id in (await tools.get_data(self.bot, ctx.guild.id))[9]:
                 response += f"<@{user.id}> is not blacklisted\n"
                 continue
 
