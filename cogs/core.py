@@ -251,10 +251,11 @@ class Core(commands.Cog):
                 return
             users.append(await UserConverter.convert(None, ctx, ctx.channel.topic.split()[2]))
 
+        blacklist = (await tools.get_data(self.bot, ctx.guild.id))[9]
         response = ""
+
         for user in users:
-            # If they're not in the blacklist await tools.get_data(self.bot, ctx.guild.id))[9], append error and continue
-            if user.id in (await tools.get_data(self.bot, ctx.guild.id))[9]:
+            if user.id in blacklist:
                 response += f"<@{user.id}> is already blacklisted\n"
                 continue
 
@@ -277,7 +278,7 @@ class Core(commands.Cog):
         usage="whitelist [users]",
         aliases=["unblock"],
     )
-    async def whitelist(self, ctx, *, users: UserListConverter = None):
+    async def whitelist(self, ctx, *, users: commands.Greedy[UserConverter] = None):
         if users is None:
             users = []
             if not tools.is_modmail_channel(ctx.channel):
@@ -285,11 +286,11 @@ class Core(commands.Cog):
                 return
             users.append(await UserConverter.convert(None, ctx, ctx.channel.topic.split()[2]))
 
+        blacklist = (await tools.get_data(self.bot, ctx.guild.id))[9]
         response = ""
 
         for user in users:
-            # If they're not in the blacklist await tools.get_data(self.bot, ctx.guild.id))[9], append error and continue
-            if not user.id in (await tools.get_data(self.bot, ctx.guild.id))[9]:
+            if not user.id in blacklist:
                 response += f"<@{user.id}> is not blacklisted\n"
                 continue
 
