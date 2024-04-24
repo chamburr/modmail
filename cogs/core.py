@@ -239,7 +239,8 @@ class Core(commands.Cog):
     @checks.is_mod()
     @commands.guild_only()
     @commands.command(
-        description="Blacklist a user(s) to prevent them from creating tickets.\nUses the user from the current ticket if no user(s) is provided.",
+        description="Blacklist user(s) to prevent them from creating tickets."
+                    "\nUses the user from the current ticket if no user(s) is provided.",
         usage="blacklist [users]",
         aliases=["block"],
     )
@@ -274,7 +275,8 @@ class Core(commands.Cog):
     @checks.is_mod()
     @commands.guild_only()
     @commands.command(
-        description="Whitelist a user to allow them to create tickets.",
+        description="Whitelist user(s) to allow them to create tickets."
+                    "\nUses the user from the current ticket if no user(s) is provided.",
         usage="whitelist [users]",
         aliases=["unblock"],
     )
