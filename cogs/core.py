@@ -277,11 +277,10 @@ class Core(commands.Cog):
                 )
 
         for user in users:
-                #await ctx.send(Embed(f"User ID: {user.id}"))
-                if user.id in users_to_blacklist:
-                    response += f"<@{user.id}> blacklisted successfully\n"
-                else:
-                    response += f"<@{user.id}> is already blacklisted\n"
+            if user.id in users_to_blacklist:
+                response += f"<@{user.id}> blacklisted successfully\n"
+            else:
+                response += f"<@{user.id}> is already blacklisted\n"
 
         await ctx.send(Embed(response))
 
@@ -328,11 +327,10 @@ class Core(commands.Cog):
                 )
 
         for user in users:
-                #await ctx.send(Embed(f"User ID: {user.id}"))
-                if user.id in users_to_whitelist:
-                    response += f"<@{user.id}> whitelisted successfully\n"
-                else:
-                    response += f"<@{user.id}> is not blacklisted\n"
+            if user.id in users_to_whitelist:
+                response += f"<@{user.id}> whitelisted successfully\n"
+            else:
+                response += f"<@{user.id}> is not blacklisted\n"
 
         await ctx.send(Embed(response))
 
