@@ -4,13 +4,12 @@ import io
 import logging
 
 import discord
-from discord import Member
 
 from discord.ext import commands
 
 from classes.embed import Embed, ErrorEmbed
 from utils import checks, tools
-from utils.converters import UserConverter, MemberConverter
+from utils.converters import UserConverter
 
 log = logging.getLogger(__name__)
 
