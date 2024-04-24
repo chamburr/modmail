@@ -121,16 +121,18 @@ Close all of the channels anonymously.
 
 ## blacklist
 
-Blacklist a user to prevent them from creating tickets.
+Blacklist user(s) to prevent them from creating tickets.
+Uses the user from the current ticket if no user(s) is provided.
 
-- Usage: `<user>`
+- Usage: `[users]`
 - Alias: block
 
 ## whitelist
 
-Whitelist a user to allow them to creating tickets.
+Whitelist user(s) to allow them to create tickets.
+Uses the user from the current ticket if no user(s) is provided.
 
-- Usage: `<user>`
+- Usage: `[users]`
 - Alias: unblock
 
 ## blacklistclear
