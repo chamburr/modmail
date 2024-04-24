@@ -4,12 +4,13 @@ import io
 import logging
 
 import discord
+from discord import Member
 
 from discord.ext import commands
 
 from classes.embed import Embed, ErrorEmbed
 from utils import checks, tools
-from utils.converters import UserConverter, UserListConverter
+from utils.converters import UserConverter, MemberConverter
 
 log = logging.getLogger(__name__)
 
@@ -244,31 +245,47 @@ class Core(commands.Cog):
         usage="blacklist [users]",
         aliases=["block"],
     )
-    async def blacklist(self, ctx, *, users: UserListConverter = None):
+    async def blacklist(self, ctx, users: commands.Greedy[UserConverter] = None, *, check=None):
         if users is None:
             users = []
             if not tools.is_modmail_channel(ctx.channel):
-                await ctx.send(ErrorEmbed("You must provide a user(s) to blacklist, or run this command in a ModMail ticket.\nUses the user from the current ticket if no user(s) is provided."))
+                await ctx.send(ErrorEmbed("You must provide a user(s) to blacklist, or run this command in a ModMail ticket."
+                                          "\nUses the user from the current ticket if no user(s) is provided."))
                 return
             users.append(await UserConverter.convert(None, ctx, ctx.channel.topic.split()[2]))
 
-        blacklist = (await tools.get_data(self.bot, ctx.guild.id))[9]
+        if check:
+            await ctx.send(ErrorEmbed("The user(s) are not found. Please try again."))
+            return
+
+        # Get the blacklist from the database
+        blacklist = set((await tools.get_data(self.bot, ctx.guild.id))[9])
         response = ""
 
-        for user in users:
-            if user.id in blacklist:
-                response += f"<@{user.id}> is already blacklisted\n"
-                continue
+        # Collect user IDs to be whitelisted
+        users_to_blacklist = [user.id for user in users if user.id not in blacklist]
+
+        if users_to_blacklist:
+            # Remove the users to be whitelisted from the blacklist
+            blacklist.update(set(users_to_blacklist))
 
             async with self.bot.pool.acquire() as conn:
+                # Update the blacklist in the database
                 await conn.execute(
-                    "UPDATE data SET blacklist=array_append(blacklist, $1) WHERE guild=$2",
-                    user.id,
+                    "UPDATE data SET blacklist = $1 WHERE guild = $2",
+                    blacklist,
                     ctx.guild.id,
                 )
-                response += f"<@{user.id}> blacklisted successfully\n"
+
+        for user in users:
+                #await ctx.send(Embed(f"User ID: {user.id}"))
+                if user.id in users_to_blacklist:
+                    response += f"<@{user.id}> blacklisted successfully\n"
+                else:
+                    response += f"<@{user.id}> is already blacklisted\n"
 
         await ctx.send(Embed(response))
+
 
 
     @checks.in_database()
@@ -280,7 +297,7 @@ class Core(commands.Cog):
         usage="whitelist [users]",
         aliases=["unblock"],
     )
-    async def whitelist(self, ctx, *, users: commands.Greedy[UserConverter] = None):
+    async def whitelist(self, ctx, users: commands.Greedy[UserConverter] = None, *, check=None):
         if users is None:
             users = []
             if not tools.is_modmail_channel(ctx.channel):
@@ -288,23 +305,39 @@ class Core(commands.Cog):
                 return
             users.append(await UserConverter.convert(None, ctx, ctx.channel.topic.split()[2]))
 
-        blacklist = (await tools.get_data(self.bot, ctx.guild.id))[9]
+        if check:
+            await ctx.send(ErrorEmbed("The user(s) are not found. Please try again."))
+            return
+
+        # Get the blacklist from the database
+        blacklist = set((await tools.get_data(self.bot, ctx.guild.id))[9])
         response = ""
 
-        for user in users:
-            if not user.id in blacklist:
-                response += f"<@{user.id}> is not blacklisted\n"
-                continue
+        # Collect user IDs to be whitelisted
+        users_to_whitelist = [user.id for user in users if user.id in blacklist]
+
+        if users_to_whitelist:
+            # Remove the users to be whitelisted from the blacklist
+            new_blacklist = list(blacklist - set(users_to_whitelist))
 
             async with self.bot.pool.acquire() as conn:
+                # Update the blacklist in the database
                 await conn.execute(
-                    "UPDATE data SET blacklist=array_remove(blacklist, $1) WHERE guild=$2",
-                    user.id,
+                    "UPDATE data SET blacklist = $1 WHERE guild = $2",
+                    new_blacklist,
                     ctx.guild.id,
                 )
-                response += f"<@{user.id}> whitelisted successfully\n"
+
+        for user in users:
+                #await ctx.send(Embed(f"User ID: {user.id}"))
+                if user.id in users_to_whitelist:
+                    response += f"<@{user.id}> whitelisted successfully\n"
+                else:
+                    response += f"<@{user.id}> is not blacklisted\n"
 
         await ctx.send(Embed(response))
+
+
 
     @checks.in_database()
     @checks.is_mod()
