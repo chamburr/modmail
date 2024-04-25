@@ -1,4 +1,5 @@
 import asyncio
+import discord
 import logging
 import re
 import sys
@@ -6,7 +7,7 @@ import traceback
 
 import aio_pika
 import aiohttp
-import aioredis
+from redis import asyncio as aioredis
 import asyncpg
 import orjson
 
@@ -22,11 +23,13 @@ from utils import tools
 from utils.config import Config
 from utils.prometheus import Prometheus
 
-log = logging.getLogger(__name__)
+
+logger = logging.getLogger(__name__)
+
 
 
 class ModMail(commands.AutoShardedBot):
-    def __init__(self, command_prefix=None, **kwargs):
+    def __init__(self, command_prefix=None, intents: discord.Intents=None,  **kwargs):
         self.command_prefix = command_prefix
         self.extra_events = {}
         self._BotBase__cogs = {}
@@ -43,10 +46,11 @@ class ModMail(commands.AutoShardedBot):
         self.case_insensitive = True
         self.all_commands = _CaseInsensitiveDict() if self.case_insensitive else {}
         self.strip_after_prefix = False
+      
 
         self.ws = None
         self.loop = asyncio.get_event_loop()
-        self.http = HTTPClient(None, loop=self.loop)
+        self.http = HTTPClient(loop=self.loop)
 
         self._handlers = {"ready": self._handle_ready}
         self._hooks = {}
@@ -61,7 +65,7 @@ class ModMail(commands.AutoShardedBot):
         self._amqp_queue = None
 
         self.config = Config()
-        self.session = aiohttp.ClientSession(loop=self.loop)
+        self.session = aiohttp.ClientSession(loop=asyncio.get_event_loop())
         self.http_uri = f"http://{self.config.BOT_API_HOST}:{self.config.BOT_API_PORT}"
         self.id = kwargs.get("bot_id")
         self.cluster = kwargs.get("cluster_id")
@@ -90,58 +94,19 @@ class ModMail(commands.AutoShardedBot):
             "premium",
             "snippet",
         ]
-
-    @property
-    def state(self):
-        return self._connection
+        print(kwargs)
+        super().__init__(command_prefix=command_prefix, intents=intents, **kwargs)   
 
     @property
     def user(self):
         return tools.create_fake_user(self.id)
+    
+    @property
+    def state(self):
+        return self._connection
 
     async def real_user(self):
-        return await self._connection.user()
-
-    async def users(self):
-        return await self._connection._users()
-
-    async def guilds(self):
-        return await self._connection.guilds()
-
-    async def emojis(self):
-        return await self._connection.emojis()
-
-    async def cached_messages(self):
-        return await self._connection._messages()
-
-    async def private_channels(self):
-        return await self._connection.private_channels()
-
-    async def shard_count(self):
-        return int(await self._connection.get("gateway_shards"))
-
-    async def started(self):
-        return parse_time(str(await self._connection.get("gateway_started")).split(".")[0])
-
-    async def statuses(self):
-        return [Status(x) for x in await self._connection.get("gateway_statuses")]
-
-    async def sessions(self):
-        return {
-            int(x): Session(y) for x, y in (await self._connection.get("gateway_sessions")).items()
-        }
-
-    async def get_channel(self, channel_id):
-        return await self._connection.get_channel(channel_id)
-
-    async def get_guild(self, guild_id):
-        return await self._connection._get_guild(guild_id)
-
-    async def get_user(self, user_id):
-        return await self._connection.get_user(user_id)
-
-    async def get_emoji(self, emoji_id):
-        return await self._connection.get_emoji(emoji_id)
+        return await self._connection.get_me()
 
     async def get_all_channels(self):
         pass
@@ -150,6 +115,7 @@ class ModMail(commands.AutoShardedBot):
         pass
 
     async def receive_message(self, msg):
+        logger.info(msg)
         self.ws._dispatch("socket_raw_receive", msg)
         msg = orjson.loads(msg)
         self.ws._dispatch("socket_response", msg)
@@ -165,7 +131,7 @@ class ModMail(commands.AutoShardedBot):
         try:
             func = self.ws._discord_parsers[event]
         except KeyError:
-            log.debug(f"Unknown event {event}.")
+            logger.debug(f"Unknown event {event}.")
             return
 
         if event not in self._enabled_events:
@@ -195,7 +161,7 @@ class ModMail(commands.AutoShardedBot):
         elapsed = asyncio.get_event_loop().time() - trace_config_ctx.start
 
         if elapsed > 1:
-            log.warning(f"{params.method} {params.url} took {round(elapsed, 2)} seconds")
+            logger.warning(f"{params.method} {params.url} took {round(elapsed, 2)} seconds")
 
         route = str(params.url)
         route = re.sub(r"https:\/\/[a-z\.]+\/api\/v[0-9]+", "", route)
@@ -214,15 +180,16 @@ class ModMail(commands.AutoShardedBot):
         )
 
     async def start(self, worker=True):
+        logger.info("In Setup")
         trace_config = aiohttp.TraceConfig()
         trace_config.on_request_start.append(self.on_http_request_start)
         trace_config.on_request_end.append(self.on_http_request_end)
-        self.http._HTTPClient__session = aiohttp.ClientSession(
-            connector=self.http.connector,
+        self.http.__session = aiohttp.ClientSession(
             ws_response_class=DiscordClientWebSocketResponse,
             trace_configs=[trace_config],
         )
-        self.http._token(self.config.BOT_TOKEN, bot=True)
+        self.http.token = self.config.BOT_TOKEN
+        
 
         self.pool = await asyncpg.create_pool(
             database=self.config.POSTGRES_DATABASE,
@@ -233,14 +200,10 @@ class ModMail(commands.AutoShardedBot):
             max_size=10,
             command_timeout=60,
         )
-
-        self._redis = await aioredis.create_redis_pool(
-            (self.config.REDIS_HOST, int(self.config.REDIS_PORT)),
-            password=self.config.REDIS_PASSWORD,
-            minsize=5,
-            maxsize=10,
-            loop=self.loop,
+        pool = aioredis.ConnectionPool.from_url(
+            f'redis://{self.config.REDIS_HOST}:{self.config.REDIS_PORT}'
         )
+        self._redis = aioredis.Redis(connection_pool=pool)
 
         if worker:
             self._amqp = await aio_pika.connect_robust(
@@ -251,20 +214,32 @@ class ModMail(commands.AutoShardedBot):
             )
             self._amqp_channel = await self._amqp.channel()
             self._amqp_queue = await self._amqp_channel.get_queue("gateway.recv")
+            
+            logger.info(self._cogs)
+            
 
         self.prom = Prometheus(self)
-        await self.prom.start()
-
+        # await self.prom.start() # TODO: Fix Prometheus
+        while True:
+            try:
+                shards = int(await self._redis.get("gateway_shards"))
+            except TypeError:
+                await asyncio.sleep(2)
+                continue
+            break
+        logger.debug(f"Shards: {shards}")
+     
         self._connection = State(
             id=self.id,
             dispatch=self.dispatch,
             handlers=self._handlers,
             hooks=self._hooks,
             http=self.http,
-            loop=self.loop,
             redis=self._redis,
-            shard_count=int(await self._redis.get("gateway_shards")),
+            shard_count=shards,
+            intents=self.intents,
         )
+        self._connection.id = (await self._connection.get_me()).id
         self._connection._get_client = lambda: self
 
         self.ws = DiscordWebSocket(socket=None, loop=self.loop)
@@ -273,19 +248,34 @@ class ModMail(commands.AutoShardedBot):
         self.ws._discord_parsers = self._connection.parsers
         self.ws._dispatch = self.dispatch
         self.ws.call_hooks = self._connection.call_hooks
+        
+        logger.info('right here')
 
         if not worker:
+            # await self.login(self.config.BOT_TOKEN)
+            # await self.connect(reconnect=True)
             return
-
+        
+        
         for extension in self._cogs:
             try:
-                self.load_extension("cogs." + extension)
+                await self.load_extension("cogs." + extension)
+                logger.info(f"Loaded extension {extension}.")
             except Exception:
-                log.error(f"Failed to load extension {extension}.", file=sys.stderr)
-                log.error(traceback.print_exc())
-
+                logger.error(f"Failed to load extension {extension}.")
+                logger.error(traceback.print_exc())
+            
         async with self._amqp_queue.iterator() as queue_iter:
             async for message in queue_iter:
+                logger.info(message)
                 async with message.process(ignore_processed=True):
                     await self.receive_message(message.body)
                     await message.ack()
+        
+        
+       
+        
+      
+        
+                    
+        

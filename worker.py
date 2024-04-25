@@ -1,4 +1,5 @@
 import asyncio
+import discord
 import logging
 import sys
 
@@ -14,13 +15,13 @@ bot_id = int(sys.argv[3])
 version = sys.argv[4]
 
 logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger()
+logger = logging.getLogger(f"cluster-{cluster_id}")
 logger.setLevel(logging.INFO)
 handler = logging.FileHandler(filename=f"logs/cluster-{cluster_id}.log", encoding="utf-8", mode="w")
 handler.setFormatter(logging.Formatter("%(asctime)s:%(levelname)s:%(name)s: %(message)s"))
 logger.addHandler(handler)
+logger.info("Logging initialized")
 
-log = logging.getLogger(__name__)
 
 
 async def command_prefix(bot2, message):
@@ -38,6 +39,7 @@ bot = ModMail(
     cluster_id=cluster_id,
     cluster_count=cluster_count,
     version=version,
+    intents = discord.Intents.all()
 )
 
 
@@ -45,5 +47,5 @@ bot = ModMail(
 async def on_message(_):
     pass
 
-
+logger.info("Starting bot")
 loop.run_until_complete(bot.start())

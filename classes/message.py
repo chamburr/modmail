@@ -57,6 +57,8 @@ class Message(message.Message):
                 getattr(self, f"_handle_{handler}")(data[handler])
             except KeyError:
                 continue
+            
+        super().__init__(state=state, channel=channel, data=data)
 
     @property
     def author(self):

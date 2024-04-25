@@ -8,7 +8,7 @@ import discord
 from discord.ext import commands
 
 from classes.embed import Embed, ErrorEmbed
-from classes.message import Message
+from discord.message import Message
 from utils import tools
 from utils.converters import GuildConverter
 
@@ -454,5 +454,5 @@ class DirectMessageEvents(commands.Cog, name="Direct Message"):
         await ctx.send(Embed("Confirmation messages are enabled."))
 
 
-def setup(bot):
-    bot.add_cog(DirectMessageEvents(bot))
+async def setup(bot):
+    await bot.add_cog(DirectMessageEvents(bot))

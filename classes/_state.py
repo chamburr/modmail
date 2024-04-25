@@ -1,44 +1,12 @@
 import asyncio
 import copy
 import datetime
-import discord
 import inspect
 import logging
-from redis import asyncio as aioredis
+
 import orjson
-from typing import (
-    TYPE_CHECKING,
-    Any,
-    Callable,
-    Coroutine,
-    Deque,
-    Dict,
-    Generic,
-    List,
-    Literal,
-    Optional,
-    Sequence,
-    Tuple,
-    TypeVar,
-    Union,
-    overload,
-)
+
 from discord import utils
-from discord._types import ClientT
-from discord.channel import *
-from discord.channel import _channel_factory
-from discord.emoji import Emoji
-from discord.enums import ChannelType, Status, try_enum
-from discord.guild import Guild
-from discord.invite import Invite
-from discord.member import Member
-from discord.message import Message
-from discord.partial_emoji import PartialEmoji
-from discord.raw_models import *
-from discord.role import Role
-from discord.user import ClientUser, User
-from discord import utils, state
-from discord.channel import *
 from discord.emoji import Emoji
 from discord.enums import ChannelType, try_enum
 from discord.invite import Invite
@@ -51,45 +19,46 @@ from discord.raw_models import (
     RawReactionActionEvent,
     RawReactionClearEmojiEvent,
     RawReactionClearEvent,
-    RawMemberRemoveEvent
 )
 from discord.reaction import Reaction
 from discord.role import Role
 from discord.user import ClientUser, User
 
-from classes.channel import DMChannel
-from classes.guild import Guild
-from classes.member import Member
-from classes.message import Message
+from discord.channel import DMChannel, TextChannel, _channel_factory
+from discord.guild import Guild
+from discord.member import Member
+from discord.message import Message
 
-# if TYPE_CHECKING: 
-#     from discord.types import gateway as gw
-#     from discord.types.user import PartialUser as PartialUserPayload
-#     from discord.types.user import User as UserPayload
-#     T = TypeVar('T')
-#     Channel = Union[GuildChannel, PrivateChannel, PartialMessageable]
-
-logger = logging.getLogger(__name__)
+log = logging.getLogger(__name__)
 
 
-
-# Overriding AutoShardedConnectionState
-# Replace built in cache with redis cache
-# Overrides methods related to:
-# Users, Guilds, Channels, Messages
-
-class State(state.AutoShardedConnectionState):
+class State:
     def __init__(
-        self, *, dispatch, handlers, hooks, http, redis: aioredis.Redis = None, shard_count=None, id, **options
+        self, *, dispatch, handlers, hooks, http, loop, redis=None, shard_count=None, id, **options
     ):
-        super().__init__(dispatch=dispatch, handlers=handlers, hooks=hooks, http=http, **options)
-        
-        # self.loop = loop
+        self.dispatch = dispatch
+        self.handlers = handlers
+        self.hooks = hooks
+        self.http = http
+        self.loop = loop
         self.redis = redis
         self.shard_count = shard_count
-        
+        self.id = id
 
-    ######### REDIS METHODS #########
+        self._ready_task = None
+        self._ready_state = None
+        self._ready_timeout = options.get("guild_ready_timeout", 2.0)
+
+        self._voice_clients = {}
+        self._private_channels_by_user = {}
+
+        self.allowed_mentions = options.get("allowed_mentions")
+
+        self.parsers = {}
+        for attr, func in inspect.getmembers(self):
+            if attr.startswith("parse_"):
+                self.parsers[attr[6:].upper()] = func
+
     def _loads(self, value, decode):
         if value is None:
             return value
@@ -122,11 +91,12 @@ class State(state.AutoShardedConnectionState):
         for index, value in enumerate(results):
             if isinstance(value, dict):
                 value["_key"] = keys[index] if isinstance(keys, (list, tuple)) else keys
+
                 results[index] = value
 
         if isinstance(keys, (list, tuple)):
             return [x for x in results if x is not None]
-        
+
         return results[0]
 
     async def expire(self, key, time):
@@ -134,8 +104,7 @@ class State(state.AutoShardedConnectionState):
 
     async def set(self, key, value=None):
         if isinstance(key, (list, tuple)):
-            kvd = dict(list(zip(key[::2], key[1::2])))
-            return await self.redis.mset(kvd)
+            return await self.redis.mset(*key)
 
         return await self.redis.set(key, self._dumps(value))
 
@@ -153,20 +122,33 @@ class State(state.AutoShardedConnectionState):
 
     async def scard(self, key):
         return await self.redis.scard(key)
-    
-    def _members(self, key, key_id=None):
+
+    async def _members(self, key, key_id=None):
         key += "_keys"
 
         if key_id:
             key += f":{key_id}"
 
-        return [x.decode("utf-8") for x in self.redis.smembers(key)]
-    
-    def _members_get_all(
+        return [x.decode("utf-8") for x in await self.redis.smembers(key)]
+
+    async def _members_get(
+        self, key, key_id=None, name=None, first=None, second=None, predicate=None
+    ):
+        for match in await self._members(key, key_id):
+            keys = match.split(":")
+            if name is None or keys[0] == str(name):
+                if first is None or (len(keys) >= 2 and keys[1] == str(first)):
+                    if second is None or (len(keys) >= 3 and keys[2] == str(second)):
+                        if predicate is None or predicate(match) is True:
+                            return await self.get(match)
+
+        return None
+
+    async def _members_get_all(
         self, key, key_id=None, name=None, first=None, second=None, predicate=None
     ):
         matches = []
-        for match in self._members(key, key_id):
+        for match in await self._members(key, key_id):
             keys = match.split(":")
             if name is None or keys[0] == str(name):
                 if first is None or (len(keys) >= 1 and keys[1] == str(first)):
@@ -174,10 +156,12 @@ class State(state.AutoShardedConnectionState):
                         if predicate is None or predicate(match) is True:
                             matches.append(match)
 
-        return self.get(matches)
-    
-    ######### END REDIS METHODS #########
-    
+        return await self.get(matches)
+
+    def _key_first(self, obj):
+        keys = obj["_key"].split(":")
+        return int(keys[1])
+
     async def _users(self):
         user_ids = set([x.split(":")[2] for x in await self._members("member")])
         return [User(state=self, data=x["user"]) for x in await self.get(user_ids)]
@@ -231,11 +215,10 @@ class State(state.AutoShardedConnectionState):
         else:
             await func(*args, **kwargs)
 
-    async def get_me(self):
+    async def user(self):
         result = await self.get("bot_user")
         if result:
             return ClientUser(state=self, data=result)
-        print("No bot_user in redis")
         return None
 
     def self_id(self):
@@ -243,7 +226,7 @@ class State(state.AutoShardedConnectionState):
 
     @property
     def intents(self):
-        return discord.Intents.all()
+        return
 
     @property
     def voice_clients(self):
@@ -261,7 +244,7 @@ class State(state.AutoShardedConnectionState):
     def _update_references(self, ws):
         return
 
-    def store_user(self, data, cache):
+    def store_user(self, data):
         return User(state=self, data=data)
 
     async def get_user(self, user_id):
@@ -365,7 +348,7 @@ class State(state.AutoShardedConnectionState):
             while True:
                 try:
                     guild = await asyncio.wait_for(
-                        await self._ready_state.get(), timeout=self._ready_timeout
+                        self._ready_state.get(), timeout=self._ready_timeout
                     )
                 except asyncio.TimeoutError:
                     break
@@ -392,7 +375,7 @@ class State(state.AutoShardedConnectionState):
 
         self.dispatch("connect")
         self._ready_state = asyncio.Queue()
-        self._ready_task = asyncio.ensure_future(await self._delay_ready(), loop=self.loop)
+        self._ready_task = asyncio.ensure_future(self._delay_ready(), loop=self.loop)
 
     async def parse_resumed(self, data, old):
         self.dispatch("resumed")
@@ -401,7 +384,7 @@ class State(state.AutoShardedConnectionState):
         channel = await self.get_channel(int(data["channel_id"]))
 
         if not channel and not data.get("guild_id"):
-            channel = DMChannel(me=await self.get_me(), state=self, data={"id": data["channel_id"]})
+            channel = DMChannel(me=await self.user(), state=self, data={"id": data["channel_id"]})
 
         if channel:
             message = self.create_message(channel=channel, data=data)
