@@ -127,7 +127,7 @@ class Snippet(commands.Cog):
     @commands.guild_only()
     @commands.command(
         description="View all the snippets or a specific one if specified.",
-        aliases=["viewsnippets", "snippetlist"],
+        aliases=["viewsnippets", "snippetlist", "vs"],
         usage="viewsnippet [name]",
     )
     async def viewsnippet(self, ctx, *, name: str = None):

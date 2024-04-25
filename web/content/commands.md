@@ -121,16 +121,16 @@ Close all of the channels anonymously.
 
 ## blacklist
 
-Blacklist user(s) to prevent them from creating tickets.
-Uses the user from the current ticket if no user(s) is provided.
+Blacklist users to prevent them from creating tickets. If no users are provided, this will blacklist
+the user of the current ticket.
 
 - Usage: `[users]`
 - Alias: block
 
 ## whitelist
 
-Whitelist user(s) to allow them to create tickets.
-Uses the user from the current ticket if no user(s) is provided.
+Whitelist users to allow them to create tickets. If no users are provided, this will whitelist the
+user of the current ticket.
 
 - Usage: `[users]`
 - Alias: unblock
@@ -294,4 +294,4 @@ Remove all the snippets.
 View all the snippets or a specific one if specified.
 
 - Usage: `[name]`
-- Alias: viewsnippets, snippetlist
+- Alias: viewsnippets, snippetlist, vs

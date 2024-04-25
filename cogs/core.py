@@ -239,102 +239,77 @@ class Core(commands.Cog):
     @checks.is_mod()
     @commands.guild_only()
     @commands.command(
-        description="Blacklist user(s) to prevent them from creating tickets."
-                    "\nUses the user from the current ticket if no user(s) is provided.",
+        description="Blacklist users to prevent them from creating tickets. If no users are "
+        "provided, this will blacklist the user of the current ticket.",
         usage="blacklist [users]",
         aliases=["block"],
     )
     async def blacklist(self, ctx, users: commands.Greedy[UserConverter] = None, *, check=None):
         if users is None:
             users = []
-            if not tools.is_modmail_channel(ctx.channel):
-                await ctx.send(ErrorEmbed("You must provide a user(s) to blacklist, or run this command in a ModMail ticket."
-                                          "\nUses the user from the current ticket if no user(s) is provided."))
-                return
-            users.append(await UserConverter.convert(None, ctx, ctx.channel.topic.split()[2]))
+            if tools.is_modmail_channel(ctx.channel):
+                try:
+                    users.append(await self.bot.fetch_user(tools.get_modmail_user(ctx.channel).id))
+                except discord.NotFound:
+                    pass
+
+        if len(users) == 0:
+            await ctx.send(ErrorEmbed("You must provide users or run this command in a ticket."))
+            return
 
         if check:
             await ctx.send(ErrorEmbed("The user(s) are not found. Please try again."))
             return
 
-        # Get the blacklist from the database
-        blacklist = set((await tools.get_data(self.bot, ctx.guild.id))[9])
-        response = ""
-
-        # Collect user IDs to be whitelisted
-        users_to_blacklist = [user.id for user in users if user.id not in blacklist]
-
-        if users_to_blacklist:
-            # Remove the users to be whitelisted from the blacklist
-            blacklist.update(set(users_to_blacklist))
-
-            async with self.bot.pool.acquire() as conn:
-                # Update the blacklist in the database
-                await conn.execute(
-                    "UPDATE data SET blacklist = $1 WHERE guild = $2",
-                    blacklist,
-                    ctx.guild.id,
-                )
-
+        blacklist = (await tools.get_data(self.bot, ctx.guild.id))[9]
         for user in users:
-            if user.id in users_to_blacklist:
-                response += f"<@{user.id}> blacklisted successfully\n"
-            else:
-                response += f"<@{user.id}> is already blacklisted\n"
+            if user.id not in blacklist:
+                blacklist.append(user.id)
 
-        await ctx.send(Embed(response))
+        async with self.bot.pool.acquire() as conn:
+            await conn.execute(
+                "UPDATE data SET blacklist=$1 WHERE guild=$2", blacklist, ctx.guild.id
+            )
 
-
+        await ctx.send(Embed("The user(s) are blacklisted successfully."))
 
     @checks.in_database()
     @checks.is_mod()
     @commands.guild_only()
     @commands.command(
-        description="Whitelist user(s) to allow them to create tickets."
-                    "\nUses the user from the current ticket if no user(s) is provided.",
+        description="Whitelist users to allow them to create tickets. If no users are provided, "
+        "this will whitelist the user of the current ticket.",
         usage="whitelist [users]",
         aliases=["unblock"],
     )
     async def whitelist(self, ctx, users: commands.Greedy[UserConverter] = None, *, check=None):
         if users is None:
             users = []
-            if not tools.is_modmail_channel(ctx.channel):
-                await ctx.send(ErrorEmbed("You must provide a user(s) to whitelist, or run this command in a ModMail ticket.\nUses the user from the current ticket if no user(s) is provided."))
-                return
-            users.append(await UserConverter.convert(None, ctx, ctx.channel.topic.split()[2]))
+            if tools.is_modmail_channel(ctx.channel):
+                try:
+                    users.append(await self.bot.fetch_user(tools.get_modmail_user(ctx.channel).id))
+                except discord.NotFound:
+                    pass
+
+        if len(users) == 0:
+            await ctx.send(ErrorEmbed("You must provide users or run this command in a ticket."))
+            return
 
         if check:
             await ctx.send(ErrorEmbed("The user(s) are not found. Please try again."))
             return
 
-        # Get the blacklist from the database
-        blacklist = set((await tools.get_data(self.bot, ctx.guild.id))[9])
-        response = ""
-
-        # Collect user IDs to be whitelisted
-        users_to_whitelist = [user.id for user in users if user.id in blacklist]
-
-        if users_to_whitelist:
-            # Remove the users to be whitelisted from the blacklist
-            new_blacklist = list(blacklist - set(users_to_whitelist))
-
-            async with self.bot.pool.acquire() as conn:
-                # Update the blacklist in the database
-                await conn.execute(
-                    "UPDATE data SET blacklist = $1 WHERE guild = $2",
-                    new_blacklist,
-                    ctx.guild.id,
-                )
-
+        blacklist = (await tools.get_data(self.bot, ctx.guild.id))[9]
         for user in users:
-            if user.id in users_to_whitelist:
-                response += f"<@{user.id}> whitelisted successfully\n"
-            else:
-                response += f"<@{user.id}> is not blacklisted\n"
+            if user.id in blacklist:
+                blacklist.remove(user.id)
 
-        await ctx.send(Embed(response))
+        async with self.bot.pool.acquire() as conn:
+            await conn.execute(
+                "UPDATE data SET blacklist=$1 WHERE guild=$2", blacklist, ctx.guild.id
+            )
 
-
+        await ctx.send(Embed("The user(s) are whitelisted successfully."))
 
     @checks.in_database()
     @checks.is_mod()

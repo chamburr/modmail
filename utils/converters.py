@@ -112,7 +112,7 @@ class PingRoleConverter(RoleConverter):
 
 class UserConverter(commands.UserConverter):
     async def convert(self, ctx, argument):
-        match = re.match(r'([0-9]{15,20})$', argument) or re.match(r"<@!?([0-9]+)>$", argument)
+        match = self._get_id_match(argument) or re.match(r"<@!?([0-9]+)>$", argument)
         if match:
             try:
                 return await ctx.bot.fetch_user(int(match.group(1)))
