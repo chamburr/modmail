@@ -80,7 +80,11 @@ class Snippet(commands.Cog):
         async with self.bot.pool.acquire() as conn:
             try:
                 await conn.execute(
-                    "INSERT INTO snippet VALUES ($1, $2, $3)", ctx.guild.id, name.lower(), content
+                    "INSERT INTO snippet VALUES ($1, $2, $3, $4)",
+                    ctx.guild.id,
+                    name.lower(),
+                    content,
+                    ctx.author.id,
                 )
             except asyncpg.UniqueViolationError:
                 await ctx.send(ErrorEmbed("A snippet with that name already exists."))
@@ -123,14 +127,14 @@ class Snippet(commands.Cog):
     @commands.guild_only()
     @commands.command(
         description="View all the snippets or a specific one if specified.",
-        aliases=["viewsnippets", "snippetlist"],
+        aliases=["viewsnippets", "snippetlist", "vs"],
         usage="viewsnippet [name]",
     )
     async def viewsnippet(self, ctx, *, name: str = None):
         if name:
             async with self.bot.pool.acquire() as conn:
                 res = await conn.fetchrow(
-                    "SELECT name, content FROM snippet WHERE name=$1 AND guild=$2",
+                    "SELECT name, content, author FROM snippet WHERE name=$1 AND guild=$2",
                     name.lower(),
                     ctx.guild.id,
                 )
@@ -142,6 +146,7 @@ class Snippet(commands.Cog):
             embed = Embed(title="Snippet")
             embed.add_field("Name", res[0], False)
             embed.add_field("Content", res[1], False)
+            embed.add_field("Author", f"<@{res[2]}>", False)
             await ctx.send(embed)
             return
 

@@ -1,7 +1,7 @@
 <template>
   <Card header-classes="card-premium-header pt-3 pb-0">
     <template v-if="popular" #header>
-      <span class="card-premium-popular text-uppercase font-weight-bolder"> Most popular </span>
+      <span class="card-premium-recommended text-uppercase font-weight-bolder">Recommended</span>
     </template>
     <p class="card-title h3 mb-4 pb-2">{{ name }}</p>
     <p class="card-subtitle h6 mb-3">Premium for {{ server }} server{{ server > 1 ? 's' : '' }}</p>
@@ -73,7 +73,7 @@ export default {
   border-radius: 50%;
 }
 
-.card-premium-popular {
+.card-premium-recommended {
   color: #ffd700 !important;
 }
 </style>

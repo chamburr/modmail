@@ -21,8 +21,12 @@ from discord.message import Message
 from utils import tools
 from utils.config import Config
 
-VERSION = "3.3.0"
+
+VERSION = "3.3.2"
+
+
 logger = logging.getLogger()
+
 
 class Instance:
     def __init__(self, instance_id, loop, main):

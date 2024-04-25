@@ -24,9 +24,10 @@ class ModMailEvents(commands.Cog):
         if permissions.send_messages is False or permissions.embed_links is False:
             return
 
-        prefix = await tools.get_guild_prefix(self.bot, message.guild)
-        if message.content.startswith(prefix):
-            return
+        guild_prefix = await tools.get_guild_prefix(self.bot, message.guild)
+        for prefix in [f"<@{self.bot.id}> ", f"<@!{self.bot.id}> ", guild_prefix]:
+            if message.content.startswith(prefix):
+                return
 
         data = await tools.get_data(self.bot, message.guild.id)
         if data[11] is True:
@@ -71,13 +72,10 @@ class ModMailEvents(commands.Cog):
             message.content = tools.tag_format(message.content, member)
 
         embed = Embed("Message Received", message.content, colour=0xFF4500, timestamp=True)
-        embed.set_author(
-            str(message.author) if anon is False else "Anonymous#0000",
-            message.author.avatar_url
-            if anon is False
-            else "https://cdn.discordapp.com/embed/avatars/0.png",
-        )
         embed.set_footer(f"{message.guild.name} | {message.guild.id}", message.guild.icon_url)
+
+        if anon is False:
+            embed.set_author(str(message.author), message.author.avatar_url)
 
         files = []
         for file in message.attachments:

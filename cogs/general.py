@@ -45,6 +45,10 @@ class General(commands.Cog):
             elif len(command.aliases) > 0:
                 embed.add_field("Alias", f"`{command.aliases[0]}`")
 
+            embed.set_footer(
+                "<> - required, [] - optional.\nDo not include <> or [] when using the command."
+            )
+
             await ctx.send(embed)
             return
 
@@ -130,7 +134,7 @@ class General(commands.Cog):
             f"Visit the bot status page [here]({self.bot.config.BASE_URI}/status) for more "
             "information.",
         )
-        embed.add_field("Owner", "CHamburr#2591")
+        embed.add_field("Owner", "CHamburr")
         embed.add_field("Bot Version", self.bot.version)
         if days:
             embed.add_field("Uptime", f"{days}d {hours}h {minutes}m {seconds}s")

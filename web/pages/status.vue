@@ -69,7 +69,7 @@ export default {
       return this.status.filter(element => element.status === 'Connected').length
     },
     connectedPercent() {
-      return Math.floor((this.connectedShards / this.status.length) * 100)
+      return Math.floor((this.connectedShards / this.stats.shards) * 100)
     },
   },
   mounted() {

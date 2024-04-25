@@ -9,7 +9,7 @@ from discord.ext import commands
 
 from classes.embed import Embed, ErrorEmbed
 from utils import checks, tools
-from utils.converters import MemberConverter
+from utils.converters import UserConverter
 
 log = logging.getLogger(__name__)
 
@@ -22,10 +22,7 @@ class Core(commands.Cog):
     @checks.in_database()
     @checks.is_mod()
     @commands.guild_only()
-    @commands.command(
-        description="Reply to the ticket, useful when anonymous messaging is enabled.",
-        usage="reply <message>",
-    )
+    @commands.command(description="Reply to the ticket.", usage="reply <message>", aliases=["r"])
     async def reply(self, ctx, *, message):
         ctx.message.content = message
         await self.bot.cogs["ModMailEvents"].send_mail_mod(ctx.message, ctx.prefix, anon=False)
@@ -34,13 +31,15 @@ class Core(commands.Cog):
     @checks.in_database()
     @checks.is_mod()
     @commands.guild_only()
-    @commands.command(description="Reply to the ticket anonymously.", usage="areply <message>")
+    @commands.command(
+        description="Reply to the ticket anonymously.", usage="areply <message>", aliases=["ar"]
+    )
     async def areply(self, ctx, *, message):
         ctx.message.content = message
         await self.bot.cogs["ModMailEvents"].send_mail_mod(ctx.message, ctx.prefix, anon=True)
 
     async def close_channel(self, ctx, reason, anon: bool = False):
-        await ctx.send(Embed("Closing channel..."))
+        await ctx.send(Embed("Closing ticket..."))
 
         data = await tools.get_data(self.bot, ctx.guild.id)
 
@@ -58,13 +57,10 @@ class Core(commands.Cog):
             reason if reason else "No reason was provided.",
             timestamp=True,
         )
-        embed.set_author(
-            str(ctx.author) if anon is False else "Anonymous#0000",
-            ctx.author.avatar_url
-            if anon is False
-            else "https://cdn.discordapp.com/embed/avatars/0.png",
-        )
         embed.set_footer(f"{ctx.guild.name} | {ctx.guild.id}", ctx.guild.icon_url)
+
+        if anon is False:
+            embed.set_author(str(ctx.author), ctx.author.avatar_url)
 
         try:
             member = await ctx.guild.fetch_member(tools.get_modmail_user(ctx.channel).id)
@@ -170,10 +166,8 @@ class Core(commands.Cog):
             except discord.Forbidden:
                 return
 
-            log_url = msg.attachments[0].url.split("?")[0][39:-4]
-            log_url = log_url.replace("modmail_log_", "")
-            log_url = [hex(int(some_id))[2:] for some_id in log_url.split("/")]
-            log_url = f"{self.bot.config.BASE_URI}/logs/{'-'.join(log_url)}"
+            log_url = f"{self.bot.config.BASE_URI}/logs/"
+            log_url += f"{hex(channel.id)[2:]}-{hex(msg.id)[2:]}-{hex(msg.attachments[0].id)[2:]}"
             embed.add_field("Message Logs", log_url, False)
 
             await asyncio.sleep(0.5)
@@ -190,7 +184,7 @@ class Core(commands.Cog):
     @checks.is_mod()
     @checks.bot_has_permissions(manage_channels=True)
     @commands.guild_only()
-    @commands.command(description="Close the channel.", usage="close [reason]")
+    @commands.command(description="Close the ticket.", usage="close [reason]", aliases=["c"])
     async def close(self, ctx, *, reason: str = None):
         await self.close_channel(ctx, reason)
 
@@ -199,7 +193,9 @@ class Core(commands.Cog):
     @checks.is_mod()
     @checks.bot_has_permissions(manage_channels=True)
     @commands.guild_only()
-    @commands.command(description="Close the channel anonymously.", usage="aclose [reason]")
+    @commands.command(
+        description="Close the ticket anonymously.", usage="aclose [reason]", aliases=["ac"]
+    )
     async def aclose(self, ctx, *, reason: str = None):
         await self.close_channel(ctx, reason, True)
 
@@ -207,7 +203,7 @@ class Core(commands.Cog):
     @checks.is_mod()
     @checks.bot_has_permissions(manage_channels=True)
     @commands.guild_only()
-    @commands.command(description="Close all of the channels.", usage="closeall [reason]")
+    @commands.command(description="Close all the tickets.", usage="closeall [reason]")
     async def closeall(self, ctx, *, reason: str = None):
         for channel in await ctx.guild.text_channels():
             if tools.is_modmail_channel(channel):
@@ -217,7 +213,7 @@ class Core(commands.Cog):
                 await self.close_channel(new_ctx, reason)
 
         try:
-            await ctx.send(Embed("All channels are successfully closed."))
+            await ctx.send(Embed("All tickets are successfully closed."))
         except discord.HTTPException:
             pass
 
@@ -225,9 +221,7 @@ class Core(commands.Cog):
     @checks.is_mod()
     @checks.bot_has_permissions(manage_channels=True)
     @commands.guild_only()
-    @commands.command(
-        description="Close all of the channels anonymously.", usage="acloseall [reason]"
-    )
+    @commands.command(description="Close all the tickets anonymously.", usage="acloseall [reason]")
     async def acloseall(self, ctx, *, reason: str = None):
         for channel in await ctx.guild.text_channels():
             if tools.is_modmail_channel(channel):
@@ -237,7 +231,7 @@ class Core(commands.Cog):
                 await self.close_channel(new_ctx, reason, True)
 
         try:
-            await ctx.send(Embed("All channels are successfully closed anonymously."))
+            await ctx.send(Embed("All tickets are successfully closed anonymously."))
         except discord.HTTPException:
             pass
 
@@ -245,48 +239,77 @@ class Core(commands.Cog):
     @checks.is_mod()
     @commands.guild_only()
     @commands.command(
-        description="Blacklist a user to prevent them from creating tickets.",
-        usage="blacklist <member>",
+        description="Blacklist users to prevent them from creating tickets. If no users are "
+        "provided, this will blacklist the user of the current ticket.",
+        usage="blacklist [users]",
         aliases=["block"],
     )
-    async def blacklist(self, ctx, *, member: MemberConverter):
-        blacklist = (await tools.get_data(self.bot, ctx.guild.id))[9]
-        if member.id in blacklist:
-            await ctx.send(ErrorEmbed("The user is already blacklisted."))
+    async def blacklist(self, ctx, users: commands.Greedy[UserConverter] = None, *, check=None):
+        if users is None:
+            users = []
+            if tools.is_modmail_channel(ctx.channel):
+                try:
+                    users.append(await self.bot.fetch_user(tools.get_modmail_user(ctx.channel).id))
+                except discord.NotFound:
+                    pass
+
+        if len(users) == 0:
+            await ctx.send(ErrorEmbed("You must provide users or run this command in a ticket."))
             return
+
+        if check:
+            await ctx.send(ErrorEmbed("The user(s) are not found. Please try again."))
+            return
+
+        blacklist = (await tools.get_data(self.bot, ctx.guild.id))[9]
+        for user in users:
+            if user.id not in blacklist:
+                blacklist.append(user.id)
 
         async with self.bot.pool.acquire() as conn:
             await conn.execute(
-                "UPDATE data SET blacklist=array_append(blacklist, $1) WHERE guild=$2",
-                member.id,
-                ctx.guild.id,
+                "UPDATE data SET blacklist=$1 WHERE guild=$2", blacklist, ctx.guild.id
             )
 
-        await ctx.send(Embed("The user is blacklisted successfully."))
+        await ctx.send(Embed("The user(s) are blacklisted successfully."))
 
     @checks.in_database()
     @checks.is_mod()
     @commands.guild_only()
     @commands.command(
-        description="Whitelist a user to allow them to create tickets.",
-        usage="whitelist <member>",
+        description="Whitelist users to allow them to create tickets. If no users are provided, "
+        "this will whitelist the user of the current ticket.",
+        usage="whitelist [users]",
         aliases=["unblock"],
     )
-    async def whitelist(self, ctx, *, member: MemberConverter):
-        blacklist = (await tools.get_data(self.bot, ctx.guild.id))[9]
+    async def whitelist(self, ctx, users: commands.Greedy[UserConverter] = None, *, check=None):
+        if users is None:
+            users = []
+            if tools.is_modmail_channel(ctx.channel):
+                try:
+                    users.append(await self.bot.fetch_user(tools.get_modmail_user(ctx.channel).id))
+                except discord.NotFound:
+                    pass
 
-        if member.id not in blacklist:
-            await ctx.send(ErrorEmbed("The user is not blacklisted."))
+        if len(users) == 0:
+            await ctx.send(ErrorEmbed("You must provide users or run this command in a ticket."))
             return
+
+        if check:
+            await ctx.send(ErrorEmbed("The user(s) are not found. Please try again."))
+            return
+
+        blacklist = (await tools.get_data(self.bot, ctx.guild.id))[9]
+        for user in users:
+            if user.id in blacklist:
+                blacklist.remove(user.id)
 
         async with self.bot.pool.acquire() as conn:
             await conn.execute(
-                "UPDATE data SET blacklist=array_remove(blacklist, $1) WHERE guild=$2",
-                member.id,
-                ctx.guild.id,
+                "UPDATE data SET blacklist=$1 WHERE guild=$2", blacklist, ctx.guild.id
             )
 
-        await ctx.send(Embed("The user is whitelisted successfully."))
+        await ctx.send(Embed("The user(s) are whitelisted successfully."))
 
     @checks.in_database()
     @checks.is_mod()

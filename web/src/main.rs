@@ -26,7 +26,7 @@ pub async fn main() {
     }
 
     tracing_subscriber::fmt::init();
-    tracing_log::env_logger::init();
+    tracing_log::LogTracer::init().unwrap();
 
     let result = real_main().await;
 

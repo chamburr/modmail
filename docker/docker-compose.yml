@@ -5,7 +5,7 @@ services:
     build:
       context: ..
       dockerfile: docker/web/Dockerfile
-    image: chamburr/modmail-web:latest
+    image: ghcr.io/chamburr/modmail-web:latest
     restart: unless-stopped
     ports:
       - '8000:6000'
@@ -22,7 +22,7 @@ services:
     build:
       context: ..
       dockerfile: docker/api/Dockerfile
-    image: chamburr/modmail-api:latest
+    image: ghcr.io/chamburr/modmail-api:latest
     restart: unless-stopped
     environment:
       - BOT_TOKEN=${BOT_TOKEN}
@@ -52,7 +52,7 @@ services:
     build:
       context: ..
       dockerfile: docker/bot/Dockerfile
-    image: chamburr/modmail-bot:latest
+    image: ghcr.io/chamburr/modmail-bot:latest
     restart: unless-stopped
     environment:
       - ENVIRONMENT=development
@@ -94,7 +94,7 @@ services:
       - rabbitmq
 
   dispatch:
-    image: chamburr/twilight-dispatch:latest
+    image: ghcr.io/chamburr/twilight-dispatch:latest
     restart: unless-stopped
     environment:
       - RUST_LOG=info
