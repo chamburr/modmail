@@ -6,7 +6,7 @@ import signal
 import sys
 import time
 
-from datetime import datetime
+import datetime
 from pathlib import Path
 
 import aiohttp
@@ -111,7 +111,7 @@ class Scheduler:
             async with self.bot.pool.acquire() as conn:
                 premium = await conn.fetch(
                     "SELECT identifier, guild FROM premium WHERE expiry IS NOT NULL AND expiry<$1",
-                    int(datetime.utcnow().timestamp() * 1000),
+                    int(datetime.datetime.now(datetime.UTC).timestamp() * 1000),
                 )
 
                 for row in premium:

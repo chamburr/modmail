@@ -87,12 +87,13 @@ class ModMailEvents(commands.Cog):
 
         try:
             dm_message = await dm_channel.send(embed, files=files)
-        except discord.Forbidden:
+        except discord.Forbidden as e:
             await message.channel.send(
                 ErrorEmbed(
                     "The message could not be sent. The user might have disabled Direct Messages."
                 )
             )
+            log.log(log.error, e)
             return
 
         embed.title = "Message Sent"
