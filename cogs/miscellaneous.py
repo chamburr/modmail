@@ -60,9 +60,11 @@ class Miscellaneous(commands.Cog):
         embed.add_field("Avatar", f"[Link]({member.avatar_url_as(static_format='png')})")
         embed.add_field(
             "Joined Server",
-            f"<t:{round(member.joined_at.replace(microsecond=0).timestamp())}:R>" if member.joined_at else "Unknown",
+            f"<t:{round(member.joined_at.replace(microsecond=0)
+                        .timestamp())}:R>" if member.joined_at else "Unknown",
         )
-        embed.add_field("Account Created", f"<t:{round(member.created_at.replace(microsecond=0).timestamp())}:R>")
+        embed.add_field("Account Created", f"<t:{round(member.created_at.replace(microsecond=0)
+                                                       .timestamp())}:R>")
         embed.add_field(
             "Roles",
             f"{len(roles)} roles" if len(", ".join(roles)) > 1000 else ", ".join(roles),
@@ -88,11 +90,11 @@ class Miscellaneous(commands.Cog):
             "Icon",
             f"[Link]({guild.icon_url_as(static_format='png')})" if guild.icon else "*Not set*",
         )
-        embed.add_field("Server Created", f"<t:{round(guild.created_at.replace(microsecond=0).timestamp())}:R>")
+        embed.add_field("Server Created", f"<t:{round(guild.created_at.replace(microsecond=0)
+                                                      .timestamp())}:R>")
         embed.add_field("Members", guild.member_count)
         embed.add_field("Channels", str(len(await guild.channels())))
         embed.add_field("Roles", str(len(await guild.roles())))
-
         if guild.icon:
             embed.set_thumbnail(guild.icon_url)
 
