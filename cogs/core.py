@@ -239,48 +239,77 @@ class Core(commands.Cog):
     @checks.is_mod()
     @commands.guild_only()
     @commands.command(
-        description="Blacklist a user to prevent them from creating tickets.",
-        usage="blacklist <user>",
+        description="Blacklist users to prevent them from creating tickets. If no users are "
+        "provided, this will blacklist the user of the current ticket.",
+        usage="blacklist [users]",
         aliases=["block"],
     )
-    async def blacklist(self, ctx, *, user: UserConverter):
-        blacklist = (await tools.get_data(self.bot, ctx.guild.id))[9]
-        if user.id in blacklist:
-            await ctx.send(ErrorEmbed("The user is already blacklisted."))
+    async def blacklist(self, ctx, users: commands.Greedy[UserConverter] = None, *, check=None):
+        if users is None:
+            users = []
+            if tools.is_modmail_channel(ctx.channel):
+                try:
+                    users.append(await self.bot.fetch_user(tools.get_modmail_user(ctx.channel).id))
+                except discord.NotFound:
+                    pass
+
+        if len(users) == 0:
+            await ctx.send(ErrorEmbed("You must provide users or run this command in a ticket."))
             return
+
+        if check:
+            await ctx.send(ErrorEmbed("The user(s) are not found. Please try again."))
+            return
+
+        blacklist = (await tools.get_data(self.bot, ctx.guild.id))[9]
+        for user in users:
+            if user.id not in blacklist:
+                blacklist.append(user.id)
 
         async with self.bot.pool.acquire() as conn:
             await conn.execute(
-                "UPDATE data SET blacklist=array_append(blacklist, $1) WHERE guild=$2",
-                user.id,
-                ctx.guild.id,
+                "UPDATE data SET blacklist=$1 WHERE guild=$2", blacklist, ctx.guild.id
             )
 
-        await ctx.send(Embed("The user is blacklisted successfully."))
+        await ctx.send(Embed("The user(s) are blacklisted successfully."))
 
     @checks.in_database()
     @checks.is_mod()
     @commands.guild_only()
     @commands.command(
-        description="Whitelist a user to allow them to create tickets.",
-        usage="whitelist <user>",
+        description="Whitelist users to allow them to create tickets. If no users are provided, "
+        "this will whitelist the user of the current ticket.",
+        usage="whitelist [users]",
         aliases=["unblock"],
     )
-    async def whitelist(self, ctx, *, user: UserConverter):
-        blacklist = (await tools.get_data(self.bot, ctx.guild.id))[9]
+    async def whitelist(self, ctx, users: commands.Greedy[UserConverter] = None, *, check=None):
+        if users is None:
+            users = []
+            if tools.is_modmail_channel(ctx.channel):
+                try:
+                    users.append(await self.bot.fetch_user(tools.get_modmail_user(ctx.channel).id))
+                except discord.NotFound:
+                    pass
 
-        if user.id not in blacklist:
-            await ctx.send(ErrorEmbed("The user is not blacklisted."))
+        if len(users) == 0:
+            await ctx.send(ErrorEmbed("You must provide users or run this command in a ticket."))
             return
+
+        if check:
+            await ctx.send(ErrorEmbed("The user(s) are not found. Please try again."))
+            return
+
+        blacklist = (await tools.get_data(self.bot, ctx.guild.id))[9]
+        for user in users:
+            if user.id in blacklist:
+                blacklist.remove(user.id)
 
         async with self.bot.pool.acquire() as conn:
             await conn.execute(
-                "UPDATE data SET blacklist=array_remove(blacklist, $1) WHERE guild=$2",
-                user.id,
-                ctx.guild.id,
+                "UPDATE data SET blacklist=$1 WHERE guild=$2", blacklist, ctx.guild.id
             )
 
-        await ctx.send(Embed("The user is whitelisted successfully."))
+        await ctx.send(Embed("The user(s) are whitelisted successfully."))
 
     @checks.in_database()
     @checks.is_mod()
