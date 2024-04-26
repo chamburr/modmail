@@ -95,6 +95,7 @@ class Miscellaneous(commands.Cog):
         embed.add_field("Members", guild.member_count)
         embed.add_field("Channels", str(len(await guild.channels())))
         embed.add_field("Roles", str(len(await guild.roles())))
+
         if guild.icon:
             embed.set_thumbnail(guild.icon_url)
 
