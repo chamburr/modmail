@@ -29,16 +29,11 @@ class Miscellaneous(commands.Cog):
         embed = Embed(title="Permission Information")
         embed.add_field("User", str(member), False)
         embed.add_field(
-            "Allowed",
-            "\n".join(
-                [tools.perm_format(name) for name, value in permissions if value]
-            ),
+            "Allowed", "\n".join([tools.perm_format(name) for name, value in permissions if value])
         )
         embed.add_field(
             "Denied",
-            "\n".join(
-                [tools.perm_format(name) for name, value in permissions if not value]
-            ),
+            "\n".join([tools.perm_format(name) for name, value in permissions if not value]),
         )
 
         await ctx.send(embed)
@@ -61,9 +56,7 @@ class Miscellaneous(commands.Cog):
         embed.add_field("Name", str(member))
         embed.add_field("ID", member.id)
         embed.add_field("Nickname", member.nick if member.nick else "*Not set*")
-        embed.add_field(
-            "Avatar", f"[Link]({member.avatar_url_as(static_format='png')})"
-        )
+        embed.add_field("Avatar", f"[Link]({member.avatar_url_as(static_format='png')})")
         embed.add_field(
             "Joined Server",
             f"<t:{round(member.joined_at.replace(microsecond=0).timestamp())}:R>"
@@ -75,8 +68,7 @@ class Miscellaneous(commands.Cog):
             f"<t:{round(member.created_at.replace(microsecond=0).timestamp())}:R>",
         )
         embed.add_field(
-            "Roles",
-            f"{len(roles)} roles" if len(", ".join(roles)) > 1000 else ", ".join(roles),
+            "Roles", f"{len(roles)} roles" if len(", ".join(roles)) > 1000 else ", ".join(roles)
         )
         embed.set_thumbnail(member.avatar_url)
 
@@ -94,18 +86,13 @@ class Miscellaneous(commands.Cog):
         embed = Embed(title="Server Information")
         embed.add_field("Name", guild.name)
         embed.add_field("ID", guild.id)
-        embed.add_field(
-            "Owner", f"<@{guild.owner_id}>" if guild.owner_id else "Unknown"
-        )
+        embed.add_field("Owner", f"<@{guild.owner_id}>" if guild.owner_id else "Unknown")
         embed.add_field(
             "Icon",
-            f"[Link]({guild.icon_url_as(static_format='png')})"
-            if guild.icon
-            else "*Not set*",
+            f"[Link]({guild.icon_url_as(static_format='png')})" if guild.icon else "*Not set*",
         )
         embed.add_field(
-            "Server Created",
-            f"<t:{round(guild.created_at.replace(microsecond=0).timestamp())}:R>",
+            "Server Created", f"<t:{round(guild.created_at.replace(microsecond=0).timestamp())}:R>"
         )
         embed.add_field("Members", guild.member_count)
         embed.add_field("Channels", str(len(await guild.channels())))
