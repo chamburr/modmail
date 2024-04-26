@@ -59,9 +59,11 @@ class Miscellaneous(commands.Cog):
         embed.add_field("Avatar", f"[Link]({member.avatar_url_as(static_format='png')})")
         embed.add_field(
             "Joined Server",
-            f"<t:{round(member.joined_at.replace(microsecond=0).timestamp())}:R>"
-            if member.joined_at
-            else "Unknown",
+            (
+                f"<t:{round(member.joined_at.replace(microsecond=0).timestamp())}:R>"
+                if member.joined_at
+                else "Unknown"
+            ),
         )
         embed.add_field(
             "Account Created",
