@@ -256,7 +256,7 @@ class Core(commands.Cog):
                 ctx.guild.id,
             )
 
-        await ctx.send(Embed(f"<@{user.id}> is blacklisted successfully."))
+        await ctx.send(Embed("The user is blacklisted successfully."))
 
     @checks.in_database()
     @checks.is_mod()
@@ -280,7 +280,7 @@ class Core(commands.Cog):
                 ctx.guild.id,
             )
 
-        await ctx.send(Embed(f"<@{user.id}> is whitelisted successfully."))
+        await ctx.send(Embed("The user is whitelisted successfully."))
 
     @checks.in_database()
     @checks.is_mod()
