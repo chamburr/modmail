@@ -67,6 +67,7 @@ class General(commands.Cog):
         page.set_footer("Use the reactions to flip pages.")
         page.add_field("Invite", f"{self.bot.config.BASE_URI}/invite", False)
         page.add_field("Support Server", "https://discord.gg/wjWJwJB", False)
+
         all_pages.append(page)
 
         for cog_name in self.bot.cogs:
@@ -81,7 +82,7 @@ class General(commands.Cog):
 
             page = Embed(
                 cog_name,
-                f"My prefix is `{ctx.prefix}`. Use `{ctx.prefix}help <command>` for more "
+                f"My prefix is `{ctx.prefix}`, you can also ping me as a prefix. Use `{ctx.prefix}help <command>` for more "
                 "information on a command.",
             )
 
