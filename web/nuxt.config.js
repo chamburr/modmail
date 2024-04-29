@@ -106,7 +106,7 @@ export default {
   },
 
   axios: {
-    baseURL: '/api',
+    baseURL: `http://${process.env.HTTP_HOST}:${process.env.HTTP_PORT}/api`,
     browserBaseURL: `${process.env.BASE_URI}/api`,
     credentials: true,
     headers: {
