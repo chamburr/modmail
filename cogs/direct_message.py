@@ -52,6 +52,16 @@ class DirectMessageEvents(commands.Cog, name="Direct Message"):
             )
             return
 
+        if data[15] is True:
+            embed = ErrorEmbed(
+                "Ticket Not Created",
+                "You can't create a ticket because you are timed out.",
+                timestamp=True,
+            )
+            embed.set_footer(f"{guild.name} | {guild.id}", guild.icon_url)
+            await message.channel.send(embed)
+            return
+
         channel = None
         for text_channel in await guild.text_channels():
             if tools.is_modmail_channel(text_channel, message.author.id):
@@ -63,16 +73,6 @@ class DirectMessageEvents(commands.Cog, name="Direct Message"):
                 embed = ErrorEmbed(
                     "Ticket Creation Disabled",
                     data[12] if data[12] else "No reason was provided.",
-                    timestamp=True,
-                )
-                embed.set_footer(f"{guild.name} | {guild.id}", guild.icon_url)
-                await message.channel.send(embed)
-                return
-
-            if data[14] is True:
-                embed = ErrorEmbed(
-                    "Ticket Not Created",
-                    "You can't create a ticket because you are timed out.",
                     timestamp=True,
                 )
                 embed.set_footer(f"{guild.name} | {guild.id}", guild.icon_url)
