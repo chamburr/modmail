@@ -52,7 +52,7 @@ class DirectMessageEvents(commands.Cog, name="Direct Message"):
             )
             return
 
-        if data[15] is True:
+        if data[15] is True and message.author.communication_disabled_until is not None:
             embed = ErrorEmbed(
                 "Ticket Not Created",
                 "You can't create a ticket because you are timed out.",
