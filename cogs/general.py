@@ -81,7 +81,7 @@ class General(commands.Cog):
 
             page = Embed(
                 cog_name,
-                f"My prefix is `{ctx.prefix}`, you can also ping me as a prefix. Use `{ctx.prefix}help <command>` for more "
+                f"To run a command, either prefix your message with `{ctx.prefix}`, or {bot_user.mention}. Use `{ctx.prefix}help <command>` for more "
                 "information on a command.",
             )
 
