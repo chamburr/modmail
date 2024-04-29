@@ -78,6 +78,11 @@ export default {
   color: #ff4500;
 }
 
+.log-anonymous {
+  font-weight: bold;
+  color: #e01929;
+}
+
 .log-user {
   font-weight: bold;
   color: #0f0;

@@ -131,7 +131,7 @@ class Core(commands.Cog):
                     if not message.embeds[0].author.name:
                         author = f"{' '.join(message.embeds[0].footer.text.split()[:-2])} (User)"
                     elif message.embeds[0].author.name.endswith(" (Anonymous)"):
-                        author = f"{message.embeds[0].author.name[:-1]} Staff)"
+                        author = f"{message.embeds[0].author.name}"
                     else:
                         author = f"{message.embeds[0].author.name} (Staff)"
 
