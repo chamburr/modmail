@@ -13,6 +13,7 @@ services:
       - BASE_URI=${BASE_URI}
       - HTTP_HOST=0.0.0.0
       - HTTP_PORT=6000
+      - API_URI=${API_URI}
       - API_HOST=api
       - API_PORT=6001
     depends_on:
