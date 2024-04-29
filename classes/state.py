@@ -261,7 +261,7 @@ class State(state.AutoShardedConnectionState):
     def _update_references(self, ws):
         return
 
-    def store_user(self, data, cache):
+    def store_user(self, data):
         return User(state=self, data=data)
 
     async def get_user(self, user_id):
@@ -822,4 +822,5 @@ class State(state.AutoShardedConnectionState):
 
     def create_message(self, *, channel, data):
         message = Message(state=self, channel=channel, data=data)
+        # logger.info(message)
         return message

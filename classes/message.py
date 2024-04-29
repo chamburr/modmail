@@ -4,13 +4,14 @@ import logging
 from discord import message, utils
 from discord.enums import MessageType, try_enum
 from discord.flags import MessageFlags
+from discord.guild import Guild
 from discord.message import Attachment, MessageReference, flatten_handlers
 from discord.reaction import Reaction
 
 from classes.embed import Embed
 from classes.member import Member
 
-log = logging.getLogger(__name__)
+logger = logging.getLogger(__name__)
 
 
 @flatten_handlers
@@ -33,6 +34,7 @@ class Message(message.Message):
         self.tts = data["tts"]
         self.content = data["content"]
         self.nonce = data.get("nonce")
+        self.guild = utils.
 
         ref = copy.copy(data.get("message_reference"))
         self.reference = MessageReference.with_state(state, ref) if ref is not None else None
@@ -47,6 +49,7 @@ class Message(message.Message):
             try:
                 author._update_from_message(self._data["member"])
             except AttributeError:
+                logger.info(self)
                 author = Member._from_message(message=self, data=self._data["member"])
             self._member = author
         except KeyError:
