@@ -69,6 +69,16 @@ class DirectMessageEvents(commands.Cog, name="Direct Message"):
                 await message.channel.send(embed)
                 return
 
+            if data[14] is True:
+                embed = ErrorEmbed(
+                    "Ticket Not Created",
+                    "You can't create a ticket because you are timed out.",
+                    timestamp=True,
+                )
+                embed.set_footer(f"{guild.name} | {guild.id}", guild.icon_url)
+                await message.channel.send(embed)
+                return
+
             self.bot.prom.tickets.inc({})
 
             name = "".join(
