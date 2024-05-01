@@ -106,11 +106,17 @@ export default {
   },
 
   axios: {
-    baseURL: `http://${process.env.HTTP_HOST}:${process.env.HTTP_PORT}/api`,
-    browserBaseURL: `${process.env.BASE_URI}/api`,
+    baseURL: '/api',
     credentials: true,
     headers: {
       'Cache-Control': 'max-age=0',
+    },
+  },
+
+  publicRuntimeConfig: {
+    axios: {
+      baseURL: `http://${process.env.HTTP_HOST}:${process.env.HTTP_PORT}/api`,
+      browserBaseURL: `${process.env.BASE_URI}/api`,
     },
   },
 
