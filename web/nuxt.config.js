@@ -115,7 +115,8 @@ export default {
 
   publicRuntimeConfig: {
     axios: {
-      baseURL: `${process.env.BASE_URI}/api`,
+      baseURL: `http://${process.env.HTTP_HOST}:${process.env.HTTP_PORT}/api`,
+      browserBaseURL: `${process.env.BASE_URI}/api`,
     },
   },
 
