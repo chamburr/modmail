@@ -125,7 +125,7 @@ Blacklist users to prevent them from creating tickets. If no users are provided,
 the user of the current ticket.
 
 - Usage: `[users]`
-- Alias: block
+- Alias: block, b
 
 ## whitelist
 
@@ -133,7 +133,7 @@ Whitelist users to allow them to create tickets. If no users are provided, this 
 user of the current ticket.
 
 - Usage: `[users]`
-- Alias: unblock
+- Alias: unblock, ub
 
 ## blacklistclear
 
