@@ -242,7 +242,7 @@ class Core(commands.Cog):
         description="Blacklist users to prevent them from creating tickets. If no users are "
         "provided, this will blacklist the user of the current ticket.",
         usage="blacklist [users]",
-        aliases=["block"],
+        aliases=["block", "b"],
     )
     async def blacklist(self, ctx, users: commands.Greedy[UserConverter] = None, *, check=None):
         if users is None:
@@ -280,7 +280,7 @@ class Core(commands.Cog):
         description="Whitelist users to allow them to create tickets. If no users are provided, "
         "this will whitelist the user of the current ticket.",
         usage="whitelist [users]",
-        aliases=["unblock"],
+        aliases=["unblock", "ub"],
     )
     async def whitelist(self, ctx, users: commands.Greedy[UserConverter] = None, *, check=None):
         if users is None:
