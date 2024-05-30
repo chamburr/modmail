@@ -57,7 +57,7 @@
       <p>
         We can host an exclusive instance just for your server! This include the premium features
         listed above, and you will also get to customise the bot username, avatar and status. Please
-        contact James [a_leon]#6196 on Discord for more information.
+        contact @jrwallor on Discord for more information.
       </p>
     </div>
   </div>
