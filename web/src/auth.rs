@@ -169,7 +169,7 @@ impl User {
     async fn from_token(pool: &RedisPool, token: &str) -> ApiResult<Self> {
         let user: Option<User> = cache::get(pool, token_key(token)).await?;
         if let Some(mut user) = user {
-            user.token = token.to_owned();
+            token.clone_into(&mut user.token);
             return Ok(user);
         }
 
@@ -189,7 +189,7 @@ impl User {
 
         cache::set(pool, token_key(token), &user, TOKEN_KEY_TTL).await?;
 
-        user.token = token.to_owned();
+        token.clone_into(&mut user.token);
         Ok(user)
     }
 
