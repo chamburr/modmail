@@ -20,7 +20,7 @@ lazy_static! {
     static ref CLIENT: Client = Client::new(CONFIG.bot_token.as_str());
     static ref RUNTIME: Runtime = Runtime::new().unwrap();
     static ref RE: Regex =
-        Regex::new(r"^\[([0-9-]{10} [0-9:]{8})\] ([^\n]*)#([0-9]{1,4}) \((User|Staff|Comment)\):")
+        Regex::new(r"^\[([0-9-]{10} [0-9:]{8})\] ([^\n]*)#([0-9]{1,4}) \((User|Staff|Comment|Anonymous)\):")
             .unwrap();
 }
 
