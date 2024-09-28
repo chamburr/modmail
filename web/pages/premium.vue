@@ -55,9 +55,9 @@
     <div class="text-left mt-5 pt-4">
       <p class="h5">Need Something Professional?</p>
       <p>
-        We can host an exclusive instance just for your server! This include the premium features
-        listed above, and you will also get to customise the bot username, avatar and status. Please
-        contact @jrwallor on Discord for more information.
+        We can host an exclusive instance just for your server! This will include the premium
+        features listed above, and you will also get to change the username, avatar and status.
+        Please contact @jrwallor on Discord for more information (do not make a purchase here).
       </p>
     </div>
   </div>
