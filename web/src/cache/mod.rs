@@ -85,14 +85,15 @@ pub async fn set<T: Serialize>(
     let pool = pool.clone();
     let mut conn = block(move || pool.get()).await?;
 
-    conn.set(
-        key.to_string(),
-        serde_json::to_string(value)?.trim_matches('"'),
-    )
-    .await?;
+    let _: () = conn
+        .set(
+            key.to_string(),
+            serde_json::to_string(value)?.trim_matches('"'),
+        )
+        .await?;
 
     if expiry != 0 {
-        conn.expire(key.to_string(), expiry).await?;
+        let _: () = conn.expire(key.to_string(), expiry).await?;
     }
 
     Ok(())
@@ -102,7 +103,7 @@ pub async fn del(pool: &RedisPool, key: impl ToString) -> ApiResult<()> {
     let pool = pool.clone();
     let mut conn = block(move || pool.get()).await?;
 
-    conn.del(key.to_string()).await?;
+    let _: () = conn.del(key.to_string()).await?;
 
     Ok(())
 }
