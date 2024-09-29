@@ -24,7 +24,7 @@ class General(commands.Cog):
         usage="help [command]",
         aliases=["h", "commands"],
     )
-    async def help(self, ctx, *, command: str = None):
+    async def help2(self, ctx, *, command: str = None):
         if command:
             command = self.bot.get_command(command.lower())
             if not command:
@@ -180,5 +180,5 @@ class General(commands.Cog):
         await ctx.send(Embed("GitHub Repository", "https://github.com/chamburr/modmail"))
 
 
-def setup(bot):
-    bot.add_cog(General(bot))
+async def setup(bot):
+    await bot.add_cog(General(bot))

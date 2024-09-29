@@ -5,7 +5,7 @@ import discord
 
 from discord.ext import commands
 
-from classes.context import Context
+from discord.ext.commands import Context
 from classes.embed import Embed, ErrorEmbed
 from utils import tools
 
@@ -113,5 +113,5 @@ class Events(commands.Cog):
         await self.bot.invoke(ctx)
 
 
-def setup(bot):
-    bot.add_cog(Events(bot))
+async def setup(bot):
+    await bot.add_cog(Events(bot))
