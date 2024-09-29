@@ -51,6 +51,16 @@ class DirectMessageEvents(commands.Cog, name="Direct Message"):
                 ErrorEmbed("That server has blacklisted you from sending a message there.")
             )
             return
+        
+        if data[15] is True and member.timed_out_until is not None:
+            embed = ErrorEmbed(
+                "Ticket Not Created",
+                "You can't create a ticket because you are timed out.",
+                timestamp=True,
+            )
+            embed.set_footer(f"{guild.name} | {guild.id}", guild.icon_url)
+            await message.channel.send(embed)
+            return
 
         channel = None
         for text_channel in await guild.text_channels():

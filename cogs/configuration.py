@@ -91,6 +91,31 @@ class Configuration(commands.Cog):
 
     @commands.guild_only()
     @commands.command(
+        description="Prohibit muted members from creating a ticket",
+        usage="excludemuted",
+    )
+    async def excludemuted(self, ctx):
+        if (await ctx.message.member.guild_permissions()).administrator is False:
+            raise commands.MissingPermissions(["administrator"])
+            
+        data = await tools.get_data(self.bot, ctx.guild.id)
+        toset = True
+        if data[15] is True:
+            toset = False
+        
+        async with self.bot.pool.acquire() as conn:
+            await conn.execute("UPDATE data SET excludemuted=$1 WHERE guild=$2", toset, ctx.guild.id)
+        
+        await ctx.send(
+            Embed(
+                "Block timed out members is now "
+                f"`{'Enabled' if toset is True else 'Disabled'}`.",
+            )
+        )
+
+    
+    @commands.guild_only()
+    @commands.command(
         description="Change the prefix or view the current prefix.",
         usage="prefix [new prefix]",
         aliases=["setprefix"],
@@ -463,6 +488,7 @@ class Configuration(commands.Cog):
         embed.add_field("Advanced Logging", "Enabled" if data[7] is True else "Disabled")
         embed.add_field("Anonymous Messaging", "Enabled" if data[10] is True else "Disabled")
         embed.add_field("Command Only", "Enabled" if data[11] is True else "Disabled")
+        embed.add_field("Exclude Muted", "Enabled" if data[15] is True else "Disabled")
         embed.add_field("Ticket Creation", "Enabled" if toggle is None else f"Disabled ({toggle})")
         embed.add_field("Greeting Message", "*Not set*" if greeting is None else greeting, False)
         embed.add_field("Closing Message", "*Not set*" if closing is None else closing, False)

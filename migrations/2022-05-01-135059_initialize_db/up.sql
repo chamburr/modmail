@@ -12,6 +12,7 @@ CREATE TABLE data
     blacklist   bigint[] NOT NULL,
     anonymous   boolean  NOT NULL,
     commandonly boolean  NOT NULL,
+    excludemuted boolean NOT NULL,
     PRIMARY KEY (guild)
 );
 
