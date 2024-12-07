@@ -38,6 +38,35 @@ class Core(commands.Cog):
         ctx.message.content = message
         await self.bot.cogs["ModMailEvents"].send_mail_mod(ctx.message, ctx.prefix, anon=True)
 
+    @checks.is_modmail_channel()
+    @checks.in_database()
+    @checks.is_mod()
+    @commands.guild_only()
+    @commands.command(
+        description="Reply to the ticket using the last AI generated message.", usage="aireply", aliases=["autoreply"]
+    )
+    async def aireply(self, ctx):
+        channel = ctx.channel
+        msg = None
+        messages = await channel.history(limit=10000).flatten()
+        ai_message= None
+        for message in messages:
+            if not message.author.bot:
+                continue
+            if message.author.bot and (message.author.id != self.bot.id or len(message.embeds) <= 0 or message.embeds[0].title not in ["Auto-response"]):
+                continue
+
+            msg = message.embeds[0].description
+            ai_message = message
+            break
+
+        if msg is None:
+            await ctx.send(ErrorEmbed("No AI generated message found."))
+            return
+        ctx.message.content = msg
+        await ai_message.delete()
+        await self.bot.cogs["ModMailEvents"].send_mail_mod(ctx.message, ctx.prefix, anon=True)
+
     async def close_channel(self, ctx, reason, anon: bool = False):
         await ctx.send(Embed("Closing ticket..."))
 
@@ -154,6 +183,11 @@ class Core(commands.Cog):
                     f"[{str(message.created_at.replace(microsecond=0))}] {author}: {description}\n"
                     + history
                 )
+            try: 
+                summary = self.bot.model.generate_content(f"The following is the entire history of the conversation between staff and the user. Please summarise the entire interaction into 1 or 2 sentences, with at most 20 words. Only give 1 response option. Do not input additional text such as \'My response would be...\'  \n Full transcript: {history}")
+                summary = summary.text
+            except:
+                summary = "Failed to generate summary"
 
             history = io.BytesIO(history.encode())
 
@@ -169,6 +203,7 @@ class Core(commands.Cog):
             log_url = f"{self.bot.config.BASE_URI}/logs/"
             log_url += f"{hex(channel.id)[2:]}-{hex(msg.id)[2:]}-{hex(msg.attachments[0].id)[2:]}"
             embed.add_field("Message Logs", log_url, False)
+            embed.add_field("Summary", summary)
 
             await asyncio.sleep(0.5)
             await msg.edit(embed)

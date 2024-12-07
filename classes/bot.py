@@ -9,12 +9,12 @@ import aiohttp
 import aioredis
 import asyncpg
 import orjson
-
+import os 
 from discord.ext import commands
 from discord.ext.commands.core import _CaseInsensitiveDict
 from discord.gateway import DiscordClientWebSocketResponse, DiscordWebSocket
 from discord.utils import parse_time
-
+import google.generativeai as genai
 from classes.http import HTTPClient
 from classes.misc import Session, Status
 from classes.state import State
@@ -69,6 +69,7 @@ class ModMail(commands.AutoShardedBot):
         self.version = kwargs.get("version")
         self.pool = None
         self.prom = None
+ 
 
         self._enabled_events = [
             "MESSAGE_CREATE",
@@ -223,7 +224,9 @@ class ModMail(commands.AutoShardedBot):
             trace_configs=[trace_config],
         )
         self.http._token(self.config.BOT_TOKEN, bot=True)
-
+        genai.configure(api_key=self.config.GEMINI_API_KEY) # TODO: Make this into .env
+        self.model = genai.GenerativeModel("gemini-1.5-flash")
+    
         self.pool = await asyncpg.create_pool(
             database=self.config.POSTGRES_DATABASE,
             user=self.config.POSTGRES_USERNAME,

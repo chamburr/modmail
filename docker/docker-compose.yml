@@ -44,6 +44,8 @@ services:
       - API_SECRET=supersecret
       - BOT_API_HOST=bot
       - BOT_API_PORT=6002
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
+      - GEMINI_MODEL=gemini-1.5-flash
     depends_on:
       - bot
       - redis
@@ -87,6 +89,8 @@ services:
       - DBOTS_TOKEN=
       - DBL_TOKEN=
       - BOD_TOKEN=
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
+      - GEMINI_MODEL=gemini-1.5-flash
     depends_on:
       - dispatch
       - postgres
@@ -94,7 +98,7 @@ services:
       - rabbitmq
 
   dispatch:
-    image: ghcr.io/chamburr/twilight-dispatch:latest
+    image: twilight-dispatch:latest
     restart: unless-stopped
     environment:
       - RUST_LOG=info
@@ -131,6 +135,8 @@ services:
       - REDIS_PORT=6379
       - PROMETHEUS_HOST=0.0.0.0
       - PROMETHEUS_PORT=8005
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
+      - GEMINI_MODEL=gemini-1.5-flash
     depends_on:
       - redis
       - rabbitmq

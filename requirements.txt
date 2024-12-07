@@ -8,5 +8,5 @@ orjson==3.9.13
 psutil==5.9.8
 python-dotenv==1.0.1
 subprocess32==3.5.4
-
+google-generativeai==0.8.3
 git+https://github.com/chamburr/discord.py.git

@@ -4,9 +4,9 @@ import string
 import time
 
 import discord
-
+import asyncio
 from discord.ext import commands
-
+import random
 from classes.embed import Embed, ErrorEmbed
 from classes.message import Message
 from utils import tools
@@ -223,11 +223,78 @@ class DirectMessageEvents(commands.Cog, name="Direct Message"):
 
         try:
             await channel.send(embed, files=files)
+            
+            if data[13]: 
+                author = message.author
+                history = ""
+                messages = await channel.history(limit=10000).flatten()
+                new_message=message.content
+                toggle_auto_reply_count = 0
+                dmchannel = message.channel
+                for message in messages:
+                    if message.author.id == self.bot.id and len(message.embeds) > 0 and message.embeds[0].description == "Toggled automatic sending of AI responses":
+                        toggle_auto_reply_count += 1
+                        continue
+                    if message.author.bot and (
+                        message.author.id != self.bot.id
+                        or len(message.embeds) <= 0
+                        or message.embeds[0].title not in ["Message Received", "Message Sent"]
+                    ):
+                        continue
+
+                    if not message.author.bot and message.content == "":
+                        continue
+
+                    if message.author.bot:
+                        if not message.embeds[0].author.name:
+                            author = f"{' '.join(message.embeds[0].footer.text.split()[:-2])} (User)"
+                        elif message.embeds[0].author.name.endswith(" (Anonymous)"):
+                            author = f"{message.embeds[0].author.name[:-12]} (Staff)"
+                        else:
+                            author = f"{message.embeds[0].author.name} (Staff)"
+
+                        description = message.embeds[0].description
+
+                        for attachment in [
+                            field.value
+                            for field in message.embeds[0].fields
+                            if field.name.startswith("Attachment ")
+                        ]:
+                            if not description:
+                                description = f"(Attachment: {attachment})"
+                            else:
+                                description += f" (Attachment: {attachment})"
+                    else:
+                        author = f"{message.author} (Comment)"
+                        description = message.content
+
+                    history = (
+                        f"[{str(message.created_at.replace(microsecond=0))}] {author}: {description}\n"
+                        + history
+                    )
+                # history += "\n" + f"[{str(dm_message.created_at.replace(microsecond=0))}] {author} (User): {new_message}"
+                prompt = data[14]
+                try:
+                    response = self.bot.model.generate_content(f"You are a discord moderator for a server. The following is the entire history of the conversation between staff and the user. Please fill in the suitable response given the transcript. Only give 1 response option. Do not input additional text such as \'My response would be...\' Try to appear as supportive as possible. \n Here are additional information you should consider (if any): {prompt} Full transcript: {history}. \nStaff response:")
+                except:
+                    response = ""
+                if toggle_auto_reply_count % 2 == 1:
+                    # invoke the user to use the =aireply command
+                    await channel.send(Embed("Auto-response sending!",response.text))
+                    await asyncio.sleep(random.randint(5,10))
+                    await dmchannel.send(Embed(response.text))
+                    
+                else:
+                    await channel.send(Embed("Auto-response",response.text))
+
+
         except discord.Forbidden:
             await dm_message.delete()
             await message.channel.send(
                 ErrorEmbed("The bot is missing permissions. Please contact an admin on the server.")
             )
+        
+
 
     @commands.Cog.listener()
     async def on_raw_reaction_add(self, payload):

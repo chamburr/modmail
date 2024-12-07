@@ -375,6 +375,88 @@ class Configuration(commands.Cog):
         await ctx.send(
             Embed(f"Advanced logging is {'enabled' if data[7] is False else 'disabled'}.")
         )
+    @checks.in_database()
+    @checks.is_premium()
+    @checks.has_permissions(administrator=True)
+    @commands.guild_only()
+    @commands.command(
+        description="Toggle advanced logging which includes messages sent and received.",
+        aliases=["setautoreply"],
+        usage="toggleautoreply",
+    )
+    async def toggleautoreply(self, ctx):
+        data = await tools.get_data(self.bot, ctx.guild.id)
+
+        async with self.bot.pool.acquire() as conn:
+            await conn.execute(
+                "UPDATE data SET autoreply=$1 WHERE guild=$2", # TODO: Add autoreply message to database column
+                True if data[13] is False else False,
+                ctx.guild.id,
+            )
+
+        await ctx.send(
+            Embed(f"Auto-reply is {'enabled' if data[13] is False else 'disabled'}.")
+        )
+
+    @checks.in_database()
+    @checks.is_premium()
+    @checks.has_permissions(administrator=True)
+    @commands.guild_only()
+    @commands.command(
+        description="Set additional prompts for the AI's autoreply. For example, you can paste your server's FAQs here.",
+        aliases=[],
+        usage="setprompt [prompt]",
+    )
+    async def setprompt(self, ctx, *, prompt: str = None):
+        data = await tools.get_data(self.bot, ctx.guild.id)
+        # the length of the prompt should be less than 2000 characters
+        if len(prompt) > 2000:
+            await ctx.send(ErrorEmbed("The prompt is too long."))
+            return
+        
+        async with self.bot.pool.acquire() as conn:
+            await conn.execute(
+                "UPDATE data SET prompt=$1 WHERE guild=$2", # TODO: Add autoreply message to database column
+                prompt,
+                ctx.guild.id,
+            )
+
+        await ctx.send(
+            Embed(f"Prompt has been successfully changed to {prompt}.")
+        )
+    @checks.in_database()
+    @checks.is_premium()
+    @checks.has_permissions(administrator=True)
+    @commands.guild_only()
+    @commands.command(
+        description="Toggle whether you want to have the bot automatically respond to this particular user using AI immediately.",
+        aliases=[],
+        usage="toggleautosend",
+    )
+    async def toggleautosend(self, ctx):
+        await ctx.send(
+            Embed("Toggled automatic sending of AI responses")
+        )
+
+    
+    @checks.in_database()
+    @checks.is_premium()
+    @checks.has_permissions(administrator=True)
+    @commands.guild_only()
+    @commands.command(
+        description="View current prompt set for this server.",
+        aliases=[],
+        usage="viewprompt",
+    )
+    async def viewprompt(self, ctx):
+        data = await tools.get_data(self.bot, ctx.guild.id)
+        prompt = data[14]
+        if prompt == "":
+            prompt = "No prompt was provided."
+        await ctx.send(
+            Embed(f"Prompt for this server is {prompt}.")
+        )
+
 
     @checks.in_database()
     @checks.has_permissions(administrator=True)
@@ -394,6 +476,7 @@ class Configuration(commands.Cog):
             Embed(f"Anonymous messaging is {'enabled' if data[10] is False else 'disabled'}.")
         )
 
+    
     @checks.in_database()
     @checks.has_permissions(administrator=True)
     @commands.guild_only()
