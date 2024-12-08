@@ -83,6 +83,8 @@ services:
       - BASE_URI=${BASE_URI}
       - BOT_API_HOST=0.0.0.0
       - BOT_API_PORT=6002
+      - GEMINI_KEY=${GEMINI_KEY}
+      - GEMINI_MODEL=${GEMINI_MODEL}
       - TOPGG_TOKEN=
       - DBOTS_TOKEN=
       - DBL_TOKEN=

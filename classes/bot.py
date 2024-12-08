@@ -8,6 +8,7 @@ import aio_pika
 import aiohttp
 import aioredis
 import asyncpg
+import google.generativeai as genai
 import orjson
 
 from discord.ext import commands
@@ -69,6 +70,7 @@ class ModMail(commands.AutoShardedBot):
         self.version = kwargs.get("version")
         self.pool = None
         self.prom = None
+        self.ai = None
 
         self._enabled_events = [
             "MESSAGE_CREATE",
@@ -254,6 +256,10 @@ class ModMail(commands.AutoShardedBot):
 
         self.prom = Prometheus(self)
         await self.prom.start()
+
+        if self.config.GEMINI_KEY is not None:
+            genai.configure(api_key=self.config.GEMINI_KEY)
+            self.ai = genai.GenerativeModel(self.config.GEMINI_MODEL)
 
         self._connection = State(
             id=self.id,

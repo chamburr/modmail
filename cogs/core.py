@@ -155,16 +155,28 @@ class Core(commands.Cog):
                     + history
                 )
 
-            history = io.BytesIO(history.encode())
-
             file = discord.File(
-                history, f"modmail_log_{tools.get_modmail_user(ctx.channel).id}.txt"
+                io.BytesIO(history.encode()),
+                f"modmail_log_{tools.get_modmail_user(ctx.channel).id}.txt",
             )
 
             try:
                 msg = await channel.send(embed, file=file)
             except discord.Forbidden:
                 return
+
+            if self.bot.ai is not None:
+                try:
+                    summary = await self.bot.ai.generate_content_async(
+                        "The following is the entire history of the conversation between staff and "
+                        "the user. Please summarise the entire interaction into 1 or 2 sentences, "
+                        "with at most 20 words. Only give 1 response option. Do not output "
+                        "additional text such as 'My response would be...'.\n\nFull transcript:\n"
+                        + history
+                    )
+                    embed.add_field("Summary", summary.text)
+                except Exception:
+                    pass
 
             log_url = f"{self.bot.config.BASE_URI}/logs/"
             log_url += f"{hex(channel.id)[2:]}-{hex(msg.id)[2:]}-{hex(msg.attachments[0].id)[2:]}"
