@@ -102,7 +102,7 @@ services:
       - RUST_LOG=info
       - BOT_TOKEN=${BOT_TOKEN}
       - SHARDS_START=0
-      - SHARDS_END=1
+      - SHARDS_END=0
       - SHARDS_TOTAL=1
       - SHARDS_CONCURRENCY=1
       - SHARDS_WAIT=5
