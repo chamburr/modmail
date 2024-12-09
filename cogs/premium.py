@@ -50,6 +50,10 @@ class Premium(commands.Cog):
                 "SELECT identifier FROM premium WHERE $1=any(guild)", ctx.guild.id
             )
 
+        if not res:
+            await ctx.send(Embed("This server has premium"))
+            return
+
         await ctx.send(Embed(f"This server has premium. Offered by: <@{res[0]}>."))
 
     @checks.is_patron()
