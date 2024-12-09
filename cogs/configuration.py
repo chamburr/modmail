@@ -358,7 +358,8 @@ class Configuration(commands.Cog):
     @checks.has_permissions(administrator=True)
     @commands.guild_only()
     @commands.command(
-        description="Toggle advanced logging which includes messages sent and received.",
+        description="Toggle advanced logging which includes messages sent and received, between "
+        "disabled, enabled with AI summary, and enabled without AI summary.",
         aliases=["advancedlogging", "advancedlogs"],
         usage="loggingplus",
     )
@@ -368,13 +369,16 @@ class Configuration(commands.Cog):
         async with self.bot.pool.acquire() as conn:
             await conn.execute(
                 "UPDATE data SET loggingplus=$1 WHERE guild=$2",
-                True if data[7] is False else False,
+                (data[7] + 1) % 3,
                 ctx.guild.id,
             )
 
-        await ctx.send(
-            Embed(f"Advanced logging is {'enabled' if data[7] is False else 'disabled'}.")
-        )
+        if data[7] == 0:
+            await ctx.send(Embed("Advanced logging is enabled with AI summary."))
+        elif data[7] == 1:
+            await ctx.send(Embed("Advanced logging is enabled without AI summary."))
+        else:
+            await ctx.send(Embed("Advanced logging is disabled."))
 
     @checks.in_database()
     @checks.has_permissions(administrator=True)
@@ -454,6 +458,14 @@ class Configuration(commands.Cog):
             else:
                 ping.append(f"<@&{role}>")
 
+        loggingplus = ""
+        if data[7] == 0:
+            loggingplus = "Disabled"
+        elif data[7] == 1:
+            loggingplus = "Enabled with AI summary"
+        else:
+            loggingplus = "Enabled without AI summary"
+
         toggle = data[12]
         if toggle and len(toggle) > 989:
             toggle = toggle[:986] + "..."
@@ -478,7 +490,7 @@ class Configuration(commands.Cog):
         embed.add_field("Access Roles", "*Not set*" if len(access) == 0 else " ".join(access))
         embed.add_field("Ping Roles", "*Not set*" if len(ping) == 0 else " ".join(ping))
         embed.add_field("Logging", "*Not set*" if logging is None else f"<#{logging.id}>")
-        embed.add_field("Advanced Logging", "Enabled" if data[7] is True else "Disabled")
+        embed.add_field("Advanced Logging", loggingplus)
         embed.add_field("Anonymous Messaging", "Enabled" if data[10] is True else "Disabled")
         embed.add_field("Command Only", "Enabled" if data[11] is True else "Disabled")
         embed.add_field("Ticket Creation", "Enabled" if toggle is None else f"Disabled ({toggle})")

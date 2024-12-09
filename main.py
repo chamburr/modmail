@@ -105,10 +105,12 @@ class Scheduler:
                 for row in premium:
                     for guild in row[1]:
                         await conn.execute(
-                            "UPDATE data SET welcome=$1, goodbye=$2, loggingplus=$3 WHERE guild=$4",
+                            "UPDATE data SET welcome=$1, goodbye=$2, loggingplus=$3, aiprompt=$4 "
+                            "WHERE guild=$5",
                             None,
                             None,
-                            False,
+                            0,
+                            None,
                             guild,
                         )
                         await conn.execute("DELETE FROM snippet WHERE guild=$1", guild)

@@ -62,7 +62,8 @@ Set or clear the message that is sent when a ticket is closed. Tags \`{username}
 
 ## loggingplus
 
-Toggle advanced logging which includes messages sent and received.
+Toggle advanced logging which includes messages sent and received, between disabled, enabled with AI
+summary, and enabled without AI summary.
 
 - Alias: advancedlogging, advancedlogs
 

@@ -190,7 +190,7 @@ async def get_data(bot, guild):
             None,
             None,
             None,
-            False,
+            0,
             [],
             [],
             False,
@@ -315,7 +315,7 @@ async def remove_premium(bot, guild):
             "UPDATE data SET welcome=$1, goodbye=$2, loggingplus=$3, aiprompt=$4 WHERE guild=$5",
             None,
             None,
-            False,
+            0,
             None,
             guild,
         )

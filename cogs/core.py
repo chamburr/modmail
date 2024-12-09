@@ -152,7 +152,7 @@ class Core(commands.Cog):
 
         data = await tools.get_data(self.bot, ctx.guild.id)
 
-        if data[7] is True:
+        if data[7] > 0:
             history = await self.generate_history(ctx.channel)
 
         try:
@@ -222,7 +222,7 @@ class Core(commands.Cog):
             ctx.author.avatar_url,
         )
 
-        if data[7] is True:
+        if data[7] > 0:
             file = discord.File(
                 io.BytesIO(history.encode()),
                 f"modmail_log_{tools.get_modmail_user(ctx.channel).id}.txt",
@@ -233,7 +233,7 @@ class Core(commands.Cog):
             except discord.Forbidden:
                 return
 
-            if self.bot.ai is not None:
+            if self.bot.ai is not None and data[7] == 1:
                 try:
                     summary = await self.bot.ai.generate_content_async(
                         "The following is the entire history of the conversation between staff and "
