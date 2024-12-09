@@ -77,6 +77,12 @@ Toggle whether tickets can be created, optionally with reason if disabling.
 - Usage: `[reason]`
 - Alias: enable, disable
 
+## aiprompt
+
+Set or clear the additional AI prompt used by the \`aireply\` command.
+
+- Usage: `[text]`
+
 ## viewconfig
 
 View the configurations for the current server.
@@ -88,24 +94,36 @@ View the configurations for the current server.
 Reply to the ticket, useful when anonymous messaging is enabled.
 
 - Usage: `<message>`
+- Alias: r
 
 ## areply
 
 Reply to the ticket anonymously.
 
 - Usage: `<message>`
+- Alias: ar
+
+## aireply
+
+Use AI to generate a response based on the context and the prompt, with optional additional
+instructions. This command will prompt for confirmation.
+
+- Usage: `[instructions]`
+- Alias: air
 
 ## close
 
 Close the channel.
 
 - Usage: `[reason]`
+- Alias: c
 
 ## aclose
 
 Close the channel anonymously.
 
 - Usage: `[reason]`
+- Alias: ac
 
 ## closeall
 

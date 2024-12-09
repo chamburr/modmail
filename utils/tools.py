@@ -181,7 +181,7 @@ async def get_data(bot, guild):
             return res
 
         return await conn.fetchrow(
-            "INSERT INTO data VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13) "
+            "INSERT INTO data VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14) "
             "RETURNING *",
             guild,
             None,
@@ -195,6 +195,7 @@ async def get_data(bot, guild):
             [],
             False,
             False,
+            None,
             None,
         )
 
@@ -311,10 +312,11 @@ async def get_premium_slots(bot, user):
 async def remove_premium(bot, guild):
     async with bot.pool.acquire() as conn:
         await conn.execute(
-            "UPDATE data SET welcome=$1, goodbye=$2, loggingplus=$3 WHERE guild=$4",
+            "UPDATE data SET welcome=$1, goodbye=$2, loggingplus=$3, aiprompt=$4 WHERE guild=$5",
             None,
             None,
             False,
+            None,
             guild,
         )
         await conn.execute("DELETE FROM snippet WHERE guild=$1", guild)

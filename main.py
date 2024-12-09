@@ -184,6 +184,12 @@ class Scheduler:
                         await message.edit(ErrorEmbed("Time out. You did not choose anything."))
                     except discord.HTTPException:
                         emojis = []
+                elif menu["kind"] == "aireply":
+                    emojis = ["✅", "❌"]
+                    try:
+                        await message.edit(ErrorEmbed("Time out. You did not choose anything."))
+                    except discord.HTTPException:
+                        emojis = []
 
                 await self.bot.state.delete(menu_key)
                 await self.bot.state.srem("reaction_menu_keys", menu_key)

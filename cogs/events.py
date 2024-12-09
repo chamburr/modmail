@@ -28,22 +28,25 @@ class Events(commands.Cog):
         if payload.member and payload.member.bot:
             return
 
-        if payload.emoji.name not in ["⏮️", "◀️", "⏹️", "▶️", "⏭️"]:
-            return
+        if payload.emoji.name in ["✅", "❌"]:
+            menu, channel, message = await tools.get_reaction_menu(self.bot, payload, "aireply")
+            if menu is None:
+                return
 
-        menu, channel, message = await tools.get_reaction_menu(self.bot, payload, "paginator")
-        if menu is None:
-            return
-
-        if payload.emoji.name == "⏹️":
-            try:
-                await message.clear_reactions()
-            except discord.Forbidden:
-                for emoji in ["⏮️", "◀️", "⏹️", "▶️", "⏭️"]:
-                    try:
-                        await message.remove_reaction(emoji, self.bot.user)
-                    except discord.NotFound:
-                        pass
+            if payload.emoji.name == "✅":
+                guild = await self.bot.get_guild(menu["data"]["guild"])
+                channel = await guild.get_channel(channel.id)
+                message = await channel.fetch_message(message.id)
+                message.author = await self.bot.fetch_user(menu["data"]["author"])
+                message.content = message.embeds[0].description
+                await self.bot.cogs["ModMailEvents"].send_mail_mod(
+                    message, menu["data"]["prefix"], anon=menu["data"]["anon"]
+                )
+            elif payload.emoji.name == "❌":
+                try:
+                    await message.delete()
+                except (discord.Forbidden, discord.NotFound):
+                    pass
 
             await self.bot.state.delete(f"reaction_menu:{channel.id}:{message.id}")
             await self.bot.state.srem(
@@ -52,29 +55,51 @@ class Events(commands.Cog):
             )
             return
 
-        page = menu["data"]["page"]
-        all_pages = menu["data"]["all_pages"]
+        if payload.emoji.name in ["⏮️", "◀️", "⏹️", "▶️", "⏭️"]:
+            menu, channel, message = await tools.get_reaction_menu(self.bot, payload, "paginator")
+            if menu is None:
+                return
 
-        if payload.emoji.name == "⏮️":
-            page = 0
-        elif payload.emoji.name == "◀️" and page > 0:
-            page -= 1
-        elif payload.emoji.name == "▶️" and page < len(all_pages) - 1:
-            page += 1
-        elif payload.emoji.name == "⏭️":
-            page = len(all_pages) - 1
+            if payload.emoji.name == "⏹️":
+                try:
+                    await message.clear_reactions()
+                except discord.Forbidden:
+                    for emoji in ["⏮️", "◀️", "⏹️", "▶️", "⏭️"]:
+                        try:
+                            await message.remove_reaction(emoji, self.bot.user)
+                        except discord.NotFound:
+                            pass
 
-        await message.edit(Embed.from_dict(all_pages[page]))
+                await self.bot.state.delete(f"reaction_menu:{channel.id}:{message.id}")
+                await self.bot.state.srem(
+                    "reaction_menu_keys",
+                    f"reaction_menu:{channel.id}:{message.id}",
+                )
+                return
 
-        try:
-            member = tools.create_fake_user(payload.user_id)
-            await message.remove_reaction(payload.emoji, member)
-        except (discord.Forbidden, discord.NotFound):
-            pass
+            page = menu["data"]["page"]
+            all_pages = menu["data"]["all_pages"]
 
-        menu["data"]["page"] = page
-        menu["end"] = int(time.time()) + 180
-        await self.bot.state.set(f"reaction_menu:{channel.id}:{message.id}", menu)
+            if payload.emoji.name == "⏮️":
+                page = 0
+            elif payload.emoji.name == "◀️" and page > 0:
+                page -= 1
+            elif payload.emoji.name == "▶️" and page < len(all_pages) - 1:
+                page += 1
+            elif payload.emoji.name == "⏭️":
+                page = len(all_pages) - 1
+
+            await message.edit(Embed.from_dict(all_pages[page]))
+
+            try:
+                member = tools.create_fake_user(payload.user_id)
+                await message.remove_reaction(payload.emoji, member)
+            except (discord.Forbidden, discord.NotFound):
+                pass
+
+            menu["data"]["page"] = page
+            menu["end"] = int(time.time()) + 180
+            await self.bot.state.set(f"reaction_menu:{channel.id}:{message.id}", menu)
 
     @commands.Cog.listener()
     async def on_message(self, message):

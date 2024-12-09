@@ -417,6 +417,20 @@ class Configuration(commands.Cog):
         )
 
     @checks.in_database()
+    @checks.is_premium()
+    @checks.has_permissions(administrator=True)
+    @commands.guild_only()
+    @commands.command(
+        description="Set or clear the additional AI prompt used by the `aireply` command.",
+        usage="aiprompt [text]",
+    )
+    async def aiprompt(self, ctx, *, text: str = None):
+        async with self.bot.pool.acquire() as conn:
+            await conn.execute("UPDATE data SET aiprompt=$1 WHERE guild=$2", text, ctx.guild.id)
+
+        await ctx.send(Embed("The AI prompt is set successfully."))
+
+    @checks.in_database()
     @checks.has_permissions(administrator=True)
     @commands.guild_only()
     @commands.command(
@@ -454,6 +468,10 @@ class Configuration(commands.Cog):
         if closing and len(closing) > 1000:
             closing = closing[:997] + "..."
 
+        prompt = data[13]
+        if prompt and len(prompt) > 1000:
+            prompt = prompt[:997] + "..."
+
         embed = Embed(title="Server Configurations")
         embed.add_field("Prefix", ctx.prefix)
         embed.add_field("Category", "*Not set*" if category is None else category.name)
@@ -466,6 +484,7 @@ class Configuration(commands.Cog):
         embed.add_field("Ticket Creation", "Enabled" if toggle is None else f"Disabled ({toggle})")
         embed.add_field("Greeting Message", "*Not set*" if greeting is None else greeting, False)
         embed.add_field("Closing Message", "*Not set*" if closing is None else closing, False)
+        embed.add_field("AI Prompt", "*Not set*" if prompt is None else prompt, False)
 
         await ctx.send(embed)
 
