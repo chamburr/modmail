@@ -8,13 +8,13 @@ import aio_pika
 import aiohttp
 import aioredis
 import asyncpg
-import google.generativeai as genai
 import orjson
 
 from discord.ext import commands
 from discord.ext.commands.core import _CaseInsensitiveDict
 from discord.gateway import DiscordClientWebSocketResponse, DiscordWebSocket
 from discord.utils import parse_time
+from groq import AsyncGroq
 
 from classes.http import HTTPClient
 from classes.misc import Session, Status
@@ -215,6 +215,13 @@ class ModMail(commands.AutoShardedBot):
             }
         )
 
+    async def ai_generate(self, text):
+        completion = await self.ai.chat.completions.create(
+            messages=[{"role": "user", "content": text}],
+            model=self.config.GROQ_MODEL,
+        )
+        return completion.choices[0].message.content
+
     async def start(self, worker=True):
         trace_config = aiohttp.TraceConfig()
         trace_config.on_request_start.append(self.on_http_request_start)
@@ -257,9 +264,8 @@ class ModMail(commands.AutoShardedBot):
         self.prom = Prometheus(self)
         await self.prom.start()
 
-        if self.config.GEMINI_KEY is not None:
-            genai.configure(api_key=self.config.GEMINI_KEY)
-            self.ai = genai.GenerativeModel(self.config.GEMINI_MODEL)
+        if self.config.GROQ_KEY is not None:
+            self.ai = AsyncGroq(api_key=self.config.GROQ_KEY)
 
         self._connection = State(
             id=self.id,

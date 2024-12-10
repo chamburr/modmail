@@ -58,6 +58,7 @@ class Core(commands.Cog):
         data = await tools.get_data(self.bot, ctx.guild.id)
 
         history = await self.generate_history(ctx.channel)
+        truncated_history = "\n".join(history.splitlines()[-100:])
         prompt = (
             "You are a Discord moderator for a server. The following is the entire history of "
             "the conversation between staff and the user. Please fill in the suitable response "
@@ -65,11 +66,11 @@ class Core(commands.Cog):
             "as 'My response would be...'. Try to appear as supportive as possible.\nHere are "
             f"additional information you should consider (if any): {data[13]}\nHere are additional "
             f"instructions for your response (if any): {instructions}\n\nFull transcript: "
-            f"{history}.\n\nStaff response: "
+            f"{truncated_history}.\n\nStaff response: "
         )
 
         try:
-            response = await self.bot.ai.generate_content_async(prompt)
+            response = await self.bot.ai_generate(prompt)
         except Exception:
             await ctx.send(ErrorEmbed("Failed to generate a response."))
             return
@@ -79,7 +80,7 @@ class Core(commands.Cog):
         except (discord.Forbidden, discord.NotFound):
             pass
 
-        msg = await ctx.send(Embed("AI Reply", response.text[:2048]))
+        msg = await ctx.send(Embed("AI Reply", response[:2048]))
 
         await msg.add_reaction("✅")
         await msg.add_reaction("❌")
@@ -235,14 +236,14 @@ class Core(commands.Cog):
 
             if self.bot.ai is not None and data[7] == 1:
                 try:
-                    summary = await self.bot.ai.generate_content_async(
+                    truncated_history = "\n".join(history.splitlines()[-100:])
+                    summary = await self.bot.ai_generate(
                         "The following is the entire history of the conversation between staff and "
-                        "the user. Please summarise the entire interaction into 1 or 2 sentences, "
-                        "with at most 20 words. Only give 1 response option. Do not output "
-                        "additional text such as 'My response would be...'.\n\nFull transcript:\n"
-                        + history
+                        "the user. Please summarise the entire interaction into 1 or 2 sentences. "
+                        "Only give 1 response option. Do not output additional text such as 'Here "
+                        "is the summary...'.\n\nFull transcript:\n" + truncated_history
                     )
-                    embed.add_field("AI Summary", summary.text)
+                    embed.add_field("AI Summary", summary[:1024])
                 except Exception:
                     pass
 
