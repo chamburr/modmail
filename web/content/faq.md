@@ -57,6 +57,19 @@ Use the command =prefix \<new prefix\>.
 
 Yes. you can.
 
+# How do the AI features work?
+
+Experimental AI features currently include conversation summary and generated response, and are
+available to premium users only. Conversation summary is shown alongside of transcript, while
+generated response will use conversation context and your custom prompts to craft a response. An
+external service, Groq, is used for all AI features.
+
+# Will you train models with my data when using AI features?
+
+Each time an AI feature is used, the context of the current conversation will be sent to Groq for
+processing, together with various prompts. Neither ModMail nor Groq will retain your data or train
+any models with the data. Furthermore, all AI features can be disabled.
+
 # Is the bot open source?
 
 Yes! See https://github.com/chamburr/modmail. However, we will not provide any help for
