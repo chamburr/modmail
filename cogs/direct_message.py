@@ -345,15 +345,19 @@ class DirectMessageEvents(commands.Cog, name="Direct Message"):
         if self.bot.config.DEFAULT_SERVER is not None:
             guild = await self.bot.get_guild(int(self.bot.config.DEFAULT_SERVER))
         else:
-            async for msg in message.channel.history(limit=30):
-                if (
-                    msg.author.id == self.bot.id
-                    and len(msg.embeds) > 0
-                    and msg.embeds[0].title in ["Message Received", "Message Sent"]
-                ):
-                    guild = msg.embeds[0].footer.text.split()[-1]
-                    guild = await self.bot.get_guild(int(guild))
-                    break
+            guild_id = tools.get_guild_id_from_content_links(message.content)
+            if guild_id is None:
+                async for msg in message.channel.history(limit=30):
+                    if (
+                        msg.author.id == self.bot.id
+                        and len(msg.embeds) > 0
+                        and msg.embeds[0].title in ["Message Received", "Message Sent"]
+                    ):
+                        guild_id = int(msg.embeds[0].footer.text.split()[-1])
+                        break
+
+            if guild_id:
+                guild = await self.bot.get_guild(guild_id)
 
             settings = await tools.get_user_settings(self.bot, message.author.id)
             if settings is None or settings[0] is True:
