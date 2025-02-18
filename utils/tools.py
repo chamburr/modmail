@@ -1,4 +1,5 @@
 import logging
+import re
 import time
 
 import discord
@@ -371,3 +372,8 @@ def tag_format(message, author):
         return message[:2045] + "..."
 
     return message
+
+
+def get_guild_id_from_content_links(content):
+    urls = re.findall(r"https:\/\/discord\.com\/channels\/(\d+)", content)
+    return int(urls[0]) if urls else None
