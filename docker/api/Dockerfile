@@ -1,6 +1,6 @@
 FROM rust:1.78-alpine AS builder
 
-ENV RUSTFLAGS "-C target-feature=-crt-static"
+ENV RUSTFLAGS="-C target-feature=-crt-static"
 
 RUN apk add --no-cache musl-dev openssl-dev
 
