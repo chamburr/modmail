@@ -1,6 +1,7 @@
----
-kind: pipeline
-name: format
+when:
+  - event: pull_request
+  - event: push
+    branch: main
 
 steps:
   - name: format rust
@@ -21,10 +22,3 @@ steps:
       - pip install isort black
       - isort --check .
       - black --check --line-length 100 .
-
-trigger:
-  event:
-    - push
-    - pull_request
-  branch:
-    - main

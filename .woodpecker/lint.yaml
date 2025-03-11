@@ -1,6 +1,7 @@
----
-kind: pipeline
-name: lint
+when:
+  - event: pull_request
+  - event: push
+    branch: main
 
 steps:
   - name: lint rust
@@ -20,10 +21,3 @@ steps:
     commands:
       - pip install flake8
       - flake8
-
-trigger:
-  event:
-    - push
-    - pull_request
-  branch:
-    - main

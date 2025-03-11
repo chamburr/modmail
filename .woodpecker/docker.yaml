@@ -1,10 +1,11 @@
----
-kind: pipeline
-name: docker
+when:
+  - event: tag
+  - event: push
+    branch: main
 
 steps:
   - name: publish api
-    image: plugins/docker
+    image: woodpeckerci/plugin-docker-buildx
     settings:
       registry: ghcr.io
       repo: ghcr.io/chamburr/modmail-api
@@ -15,7 +16,7 @@ steps:
       password:
         from_secret: docker_password
   - name: publish bot
-    image: plugins/docker
+    image: woodpeckerci/plugin-docker-buildx
     settings:
       registry: ghcr.io
       repo: ghcr.io/chamburr/modmail-bot
@@ -26,7 +27,7 @@ steps:
       password:
         from_secret: docker_password
   - name: publish web
-    image: plugins/docker
+    image: woodpeckerci/plugin-docker-buildx
     settings:
       registry: ghcr.io
       repo: ghcr.io/chamburr/modmail-web
@@ -36,10 +37,3 @@ steps:
         from_secret: docker_username
       password:
         from_secret: docker_password
-
-trigger:
-  event:
-    - push
-    - tag
-  branch:
-    - main
