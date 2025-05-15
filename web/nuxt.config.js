@@ -139,7 +139,7 @@ export default {
     useLayersText: false,
     icons: {
       solid: ['faCircle', 'faGlobe'],
-      brands: ['faGithub', 'faLinkedin', 'faReddit', 'faTwitter'],
+      brands: ['faGithub', 'faLinkedin', 'faXTwitter'],
     },
   },
 

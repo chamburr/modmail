@@ -134,7 +134,7 @@ class General(commands.Cog):
             f"Visit the bot status page [here]({self.bot.config.BASE_URI}/status) for more "
             "information.",
         )
-        embed.add_field("Owner", "CHamburr")
+        embed.add_field("Owner", "chamburr")
         embed.add_field("Bot Version", self.bot.version)
         if days:
             embed.add_field("Uptime", f"{days}d {hours}h {minutes}m {seconds}s")

@@ -10,9 +10,9 @@
               A feature-rich Discord bot for easy communication between server staff and users.
             </p>
             <p class="mb-0">
-              Copyright © 2019-2023
+              Copyright © 2019-2025
               <a class="footer-link" target="_blank" rel="noopener" href="https://chamburr.com">
-                CHamburr
+                Han Cen
               </a>
             </p>
           </div>

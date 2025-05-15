@@ -1,12 +1,11 @@
-# CHamburr
+# chamburr
 
 Developer, Administrator
 
 - Image: https://github.com/chamburr/modmail/assets/51924672/18a0dcb8-5f97-4a5d-b4dc-9c3ad5ef7a8a
 - Website: https://chamburr.com
 - GitHub: https://github.com/chamburr
-- Twitter: https://twitter.com/chamburr22
-- Reddit: https://www.reddit.com/user/chamburr22
+- X: https://x.com/chamburr22
 - LinkedIn: https://linkedin.com/in/chamburr
 
 # dyl
@@ -23,7 +22,13 @@ Administrator
 
 - Image: https://github.com/chamburr/modmail/assets/51924672/7019a9f1-21bf-49cb-891a-fe63503e8096
 - GitHub: https://github.com/jrwallor
-- Twitter: https://twitter.com/jrwallor
+- X: https://x.com/jrwallor
+
+# Mikhail
+
+Administrator
+
+- Image: https://github.com/chamburr/modmail/assets/51924672/8b599a3b-44b4-4170-940e-180056f7c11b
 
 # SnowyJaguar
 
@@ -32,21 +37,8 @@ Administrator
 - Image: https://github.com/chamburr/modmail/assets/51924672/3d99ba37-dc10-4ac9-85eb-9a3bef176529
 - Website: https://teagancollyer.wordpress.com
 - GitHub: https://github.com/SnowyJaguar1034
-- Twitter: https://twitter.com/SnowyJaguar1034
-- Reddit: https://www.reddit.com/user/NinthTurtle1034
+- X: https://x.com/SnowyJaguar1034
 - LinkedIn: https://www.linkedin.com/in/teagancollyer
-
-# Wixx
-
-Administrator
-
-- Image: https://github.com/chamburr/modmail/assets/51924672/56e5094d-ac22-4870-8c2c-52f62c7c30c7
-
-# Agent Bunny in Space
-
-Moderator
-
-- Image: https://github.com/chamburr/modmail/assets/51924672/ea63fa67-b402-48b6-81fa-d773440a386e
 
 # Jordan
 
@@ -54,19 +46,12 @@ Moderator
 
 - Image: https://github.com/chamburr/modmail/assets/51924672/f9df2de1-8dd2-4f61-a147-e74ac066dfd1
 
-# Mikhail
+# kym
 
-Moderator
+Support, Contributor
 
-- Image: https://github.com/chamburr/modmail/assets/51924672/8b599a3b-44b4-4170-940e-180056f7c11b
-
-# Scyye
-
-Support
-
-- Image: https://github.com/chamburr/modmail/assets/51924672/bfc6001d-8c75-48f0-a7f4-350c1a98262f
-- Website: https://scyye.github.io
-- GitHub: https://github.com/Scyye
+- Image: https://github.com/user-attachments/assets/f3c008a6-459c-4f22-be7d-23f6e9ad30b1
+- GitHub: https://github.com/kym2006
 
 # waterflamev8
 

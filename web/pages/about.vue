@@ -23,8 +23,7 @@
                 v-if="
                   element.website ||
                   element.github ||
-                  element.twitter ||
-                  element.reddit ||
+                  element.x ||
                   element.linkedin
                 "
                 class="my-3"
@@ -36,11 +35,8 @@
                 <a v-if="element.github" target="_blank" :href="element.github">
                   <BaseIcon name="fab github" class="big" />
                 </a>
-                <a v-if="element.twitter" target="_blank" :href="element.twitter">
-                  <BaseIcon name="fab twitter" class="big" />
-                </a>
-                <a v-if="element.reddit" target="_blank" :href="element.reddit">
-                  <BaseIcon name="fab reddit" class="big" />
+                <a v-if="element.x" target="_blank" :href="element.x">
+                  <BaseIcon name="fab x-twitter" class="big" />
                 </a>
                 <a v-if="element.linkedin" target="_blank" :href="element.linkedin">
                   <BaseIcon name="fab linkedin" class="big" />
