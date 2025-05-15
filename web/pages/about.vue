@@ -20,12 +20,7 @@
             <p class="about-description mb-0">{{ element.description.replace(', ', '\n') }}</p>
             <div class="flex-grow-1 d-flex flex-column justify-content-end">
               <hr
-                v-if="
-                  element.website ||
-                  element.github ||
-                  element.x ||
-                  element.linkedin
-                "
+                v-if="element.website || element.github || element.x || element.linkedin"
                 class="my-3"
               />
               <div>
