@@ -122,8 +122,7 @@ class DirectMessageEvents(commands.Cog, name="Direct Message"):
                     timestamp=True,
                 )
                 embed.set_footer(
-                    f"{message.author.name}#{message.author.discriminator} | "
-                    f"{message.author.id}",
+                    f"{message.author.name} | {message.author.id}",
                     message.author.avatar_url,
                 )
 
@@ -207,7 +206,7 @@ class DirectMessageEvents(commands.Cog, name="Direct Message"):
 
         embed.title = "Message Received"
         embed.set_footer(
-            f"{message.author.name}#{message.author.discriminator} | {message.author.id}",
+            f"{message.author.name} | {message.author.id}",
             message.author.avatar_url,
         )
 
