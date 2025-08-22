@@ -118,7 +118,7 @@ export default {
               <a target="_blank" href="/support">support server</a> to receive the role and rewards.
             </p>
             <p class="mb-0">
-              Signed in as ${username}#${user.discriminator}.
+              Signed in as ${username}.
               <a href="/logout">Not you?</a>
             </p>
             <form id="premium-form" action="https://www.paypal.com/cgi-bin/webscr" method="post"
