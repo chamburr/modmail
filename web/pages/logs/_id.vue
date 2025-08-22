@@ -13,7 +13,7 @@
       >
         <template #header>
           <span :class="`log-${element.role.toLowerCase()}`">
-            {{ element.username }}#{{ element.discriminator }}
+            {{ element.username }}{{ element.discriminator ? `#${element.discriminator}` : "" }}
           </span>
           <span class="text-muted">{{ element.timestamp }}</span>
         </template>
