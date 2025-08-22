@@ -79,9 +79,7 @@ class DirectMessageEvents(commands.Cog, name="Direct Message"):
                 ]
             )
 
-            if name:
-                name = name + f"-{message.author.discriminator}"
-            else:
+            if not name:
                 name = message.author.id
 
             try:
