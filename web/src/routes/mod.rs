@@ -41,6 +41,7 @@ pub struct ApiResponse {
 }
 
 impl ApiResponse {
+    #[allow(clippy::result_large_err)]
     pub fn finish(self) -> ApiResult<Self> {
         match self.error {
             Some(err) => Err(err),
@@ -217,7 +218,7 @@ pub enum ApiError {
 
 impl Display for ApiError {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
-        write!(f, "{:?}", self)
+        write!(f, "{self:?}")
     }
 }
 

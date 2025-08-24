@@ -13,13 +13,13 @@ pub const CSRF_TOKEN_KEY_TTL: usize = 300;
 pub const TOKEN_KEY_TTL: usize = 60;
 
 pub fn csrf_token_key(id: &str) -> String {
-    format!("{}:{}", CSRF_TOKEN_KEY, id)
+    format!("{CSRF_TOKEN_KEY}:{id}")
 }
 
 pub fn token_key(id: &str) -> String {
-    format!("{}:{}", TOKEN_KEY, id)
+    format!("{TOKEN_KEY}:{id}")
 }
 
 pub fn user_token_key(id: &str) -> String {
-    format!("{}:{}", USER_TOKEN_KEY, id)
+    format!("{USER_TOKEN_KEY}:{id}")
 }

@@ -79,7 +79,7 @@ pub async fn get_log(Path(id): Path<String>) -> ApiResult<ApiResponse> {
     for line in body.split('\n') {
         if !RE.is_match(line) {
             if let Some(last) = messages.last_mut() {
-                last.message += format!("\n{}", line).as_str()
+                last.message += format!("\n{line}").as_str()
             }
             continue;
         }
@@ -92,7 +92,7 @@ pub async fn get_log(Path(id): Path<String>) -> ApiResult<ApiResponse> {
 
         let mut message = line.splitn(2, ": ").last().unwrap_or_default().to_owned();
         if message.starts_with("(Attachment: ") {
-            message = format!(" {}", message);
+            message = format!(" {message}");
         }
 
         let mut message_iter = message.splitn(2, "(Attachment: ");

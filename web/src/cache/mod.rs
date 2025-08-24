@@ -45,6 +45,7 @@ impl ManageConnection for RedisConnectionManager {
 
 pub type RedisPool = Pool<RedisConnectionManager>;
 
+#[allow(clippy::result_large_err)]
 pub fn get_pool() -> ApiResult<RedisPool> {
     let mut uri = Url::parse("redis://")?;
     uri.set_host(Some(CONFIG.redis_host.as_str()))?;
@@ -71,7 +72,7 @@ pub async fn get<T: DeserializeOwned>(
     Ok(res
         .map(|value| {
             serde_json::from_str(value.as_str())
-                .or_else(|_| serde_json::from_str(format!("\"{}\"", value).as_str()))
+                .or_else(|_| serde_json::from_str(format!("\"{value}\"").as_str()))
         })
         .transpose()?)
 }

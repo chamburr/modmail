@@ -59,8 +59,7 @@ async fn post_payment_request(data: String) -> ApiResult<()> {
     let event: Payment = serde_urlencoded::from_str(data.as_str())?;
 
     let uri = format!(
-        "https://ipnpb.paypal.com/cgi-bin/webscr?cmd=_notify-validate&{}",
-        data
+        "https://ipnpb.paypal.com/cgi-bin/webscr?cmd=_notify-validate&{data}"
     );
 
     let validity = block(move || reqwest::blocking::Client::new().post(uri).send()).await?;
