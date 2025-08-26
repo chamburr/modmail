@@ -80,7 +80,7 @@ async fn post_payment_request(data: String) -> ApiResult<()> {
         .title(format!("{} Payment", event.payment_status))
         .field(EmbedFieldBuilder::new(
             "User",
-            format!("{}#{} ({})", user.name, user.discriminator, user.id),
+            format!("{} ({})", user.name, user.id),
         ))
         .field(EmbedFieldBuilder::new(
             "Customer",

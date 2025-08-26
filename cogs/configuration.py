@@ -327,7 +327,7 @@ class Configuration(commands.Cog):
     @commands.guild_only()
     @commands.command(
         description="Set or clear the message that is sent when a new ticket is opened. Tags "
-        "`{username}`, `{usertag}`, `{userid}` and `{usermention}` can be used.",
+        "`{username}`, `{userid}` and `{usermention}` can be used.",
         aliases=["welcomemessage", "greetmessage"],
         usage="greetingmessage [text]",
     )
@@ -343,7 +343,7 @@ class Configuration(commands.Cog):
     @commands.guild_only()
     @commands.command(
         description="Set or clear the message that is sent when a ticket is closed. Tags "
-        "`{username}`, `{usertag}`, `{userid}` and `{usermention}` can be used.",
+        "`{username}`, `{userid}` and `{usermention}` can be used.",
         aliases=["goodbyemessage", "closemessage"],
         usage="closingmessage [text]",
     )

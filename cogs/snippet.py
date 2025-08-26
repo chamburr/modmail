@@ -64,7 +64,7 @@ class Snippet(commands.Cog):
     @checks.is_mod()
     @commands.guild_only()
     @commands.command(
-        description="Add a snippet. Tags `{username}`, `{usertag}`, `{userid}` and `{usermention}` "
+        description="Add a snippet. Tags `{username}`, `{userid}` and `{usermention}` "
         "can be used.",
         usage="snippetadd <name> <content>",
     )
