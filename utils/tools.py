@@ -359,7 +359,6 @@ def perm_format(perm):
 def tag_format(message, author):
     tags = {
         "{username}": author.name,
-        "{usertag}": author.discriminator,
         "{userid}": str(author.id),
         "{usermention}": author.mention,
     }

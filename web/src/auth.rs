@@ -177,10 +177,7 @@ impl User {
         let response = block(move || {
             reqwest::blocking::Client::new()
                 .get("https://discord.com/api/v9/users/@me")
-                .header(
-                    http::header::AUTHORIZATION,
-                    format!("Bearer {token_clone}"),
-                )
+                .header(http::header::AUTHORIZATION, format!("Bearer {token_clone}"))
                 .send()
         })
         .await?;

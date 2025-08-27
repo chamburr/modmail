@@ -46,16 +46,16 @@ Toggle whether commands are required to reply to a ticket.
 
 ## greetingmessage
 
-Set or clear the message that is sent when a new ticket is opened. Tags \`{username}\`, \`
-{usertag}\`, \`{userid}\` and \`{usermention}\` can be used.
+Set or clear the message that is sent when a new ticket is opened. Tags \`{username}\`, \`{userid}\`
+and \`{usermention}\` can be used.
 
 - Usage: `[text]`
 - Alias: welcomemessage, greetmessage
 
 ## closingmessage
 
-Set or clear the message that is sent when a ticket is closed. Tags \`{username}\`, \`{usertag}\`,
-\`{userid}\` and \`{usermention}\` can be used.
+Set or clear the message that is sent when a ticket is closed. Tags \`{username}\`, \`{userid}\` and
+\`{usermention}\` can be used.
 
 - Usage: `[text]`
 - Alias: goodbyemessage, closemessage
@@ -294,7 +294,7 @@ Use a snippet anonymously.
 
 ## snippetadd
 
-Add a snippet. Tags \`{username}\`, \`{usertag}\`, \`{userid}\` and \`{usermention}\` can be used.
+Add a snippet. Tags \`{username}\`, \`{userid}\` and \`{usermention}\` can be used.
 
 - Usage: `<name> <content>`
 
