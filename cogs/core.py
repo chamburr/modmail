@@ -138,7 +138,7 @@ class Core(commands.Cog):
                     else:
                         description += f" (Attachment: {attachment})"
             else:
-                author = f"{message.author} (Comment)"
+                author = f"{message.author.name} (Comment)"
                 description = message.content
 
             history = (
@@ -170,7 +170,7 @@ class Core(commands.Cog):
         embed.set_footer(f"{ctx.guild.name} | {ctx.guild.id}", ctx.guild.icon_url)
 
         if anon is False:
-            embed.set_author(str(ctx.author), ctx.author.avatar_url)
+            embed.set_author(str(ctx.author.name), ctx.author.avatar_url)
 
         try:
             member = await ctx.guild.fetch_member(tools.get_modmail_user(ctx.channel).id)
@@ -211,15 +211,15 @@ class Core(commands.Cog):
                 pass
 
         if member:
-            embed.set_footer(f"{member} | {member.id}", member.avatar_url)
+            embed.set_footer(f"{member.name} | {member.id}", member.avatar_url)
         else:
             embed.set_footer(
-                "Unknown#0000 | 000000000000000000",
+                "Unknown | 000000000000000000",
                 "https://cdn.discordapp.com/embed/avatars/0.png",
             )
 
         embed.set_author(
-            str(ctx.author) if anon is False else f"{ctx.author} (Anonymous)",
+            str(ctx.author.name) if anon is False else f"{ctx.author.name} (Anonymous)",
             ctx.author.avatar_url,
         )
 

@@ -75,7 +75,7 @@ class ModMailEvents(commands.Cog):
         embed.set_footer(f"{message.guild.name} | {message.guild.id}", message.guild.icon_url)
 
         if anon is False:
-            embed.set_author(str(message.author), message.author.avatar_url)
+            embed.set_author(str(message.author.name), message.author.avatar_url)
 
         files = []
         for file in message.attachments:
@@ -97,10 +97,10 @@ class ModMailEvents(commands.Cog):
 
         embed.title = "Message Sent"
         embed.set_author(
-            str(message.author) if anon is False else f"{message.author} (Anonymous)",
+            str(message.author.name) if anon is False else f"{message.author.name} (Anonymous)",
             message.author.avatar_url,
         )
-        embed.set_footer(f"{member} | {member.id}", member.avatar_url)
+        embed.set_footer(f"{member.name} | {member.id}", member.avatar_url)
 
         for count, attachment in enumerate(
             [attachment.url for attachment in dm_message.attachments], start=1

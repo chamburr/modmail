@@ -161,7 +161,9 @@ class DirectMessageEvents(commands.Cog, name="Direct Message"):
                     )
                 ),
             )
-            embed.set_footer(f"{message.author} | {message.author.id}", message.author.avatar_url)
+            embed.set_footer(
+                f"{message.author.name} | {message.author.id}", message.author.avatar_url
+            )
 
             roles = []
             for role in data[8]:
