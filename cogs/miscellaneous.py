@@ -27,7 +27,7 @@ class Miscellaneous(commands.Cog):
         permissions = await ctx.channel.permissions_for(member)
 
         embed = Embed(title="Permission Information")
-        embed.add_field("User", str(member), False)
+        embed.add_field("User", str(member) if member.bot else str(member.name), False)
         embed.add_field(
             "Allowed",
             "\n".join([tools.perm_format(name) for name, value in permissions if value]),
@@ -54,7 +54,7 @@ class Miscellaneous(commands.Cog):
             roles.append("*No roles*")
 
         embed = Embed(title="User Information")
-        embed.add_field("Name", str(member))
+        embed.add_field("Name", str(member) if member.bot else str(member.name), False)
         embed.add_field("ID", member.id)
         embed.add_field("Nickname", member.nick if member.nick else "*Not set*")
         embed.add_field("Avatar", f"[Link]({member.avatar_url_as(static_format='png')})")
