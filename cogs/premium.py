@@ -81,16 +81,19 @@ class Premium(commands.Cog):
 
     @checks.is_patron()
     @commands.command(
-        description="Assign premium slot to a server.", usage="premiumassign <server ID>"
+        description="Assign premium slot to a server.", usage="premiumassign [server ID]"
     )
-    async def premiumassign(self, ctx, *, guild: GuildConverter):
+    async def premiumassign(self, ctx, *, guild: GuildConverter = None):
+        if guild is None:
+            guild = ctx.guild
+
         async with self.bot.pool.acquire() as conn:
             res = await conn.fetchrow(
                 "SELECT identifier FROM premium WHERE $1=any(guild)", guild.id
             )
 
         if res:
-            await ctx.send(ErrorEmbed("That server already has premium."))
+            await ctx.send(ErrorEmbed("The server already has premium."))
             return
 
         async with self.bot.pool.acquire() as conn:
@@ -114,13 +117,16 @@ class Premium(commands.Cog):
                 ctx.author.id,
             )
 
-        await ctx.send(Embed("That server now has premium."))
+        await ctx.send(Embed("The server now has premium."))
 
     @checks.is_patron()
     @commands.command(
-        description="Remove premium slot from a server.", usage="premiumremove <server ID>"
+        description="Remove premium slot from a server.", usage="premiumremove [server ID]"
     )
-    async def premiumremove(self, ctx, *, guild: int):
+    async def premiumremove(self, ctx, *, guild: int = None):
+        if guild is None:
+            guild = ctx.guild.id
+
         async with self.bot.pool.acquire() as conn:
             res = await conn.fetchrow(
                 "SELECT identifier FROM premium WHERE identifier=$1 AND $2=any(guild)",
@@ -129,7 +135,7 @@ class Premium(commands.Cog):
             )
 
         if not res:
-            await ctx.send(ErrorEmbed("You did not assign premium to that server."))
+            await ctx.send(ErrorEmbed("You did not assign premium to the server."))
             return
 
         async with self.bot.pool.acquire() as conn:
@@ -141,7 +147,7 @@ class Premium(commands.Cog):
 
         await tools.remove_premium(self.bot, guild)
 
-        await ctx.send(Embed("That server no longer has premium."))
+        await ctx.send(Embed("The server no longer has premium."))
 
 
 def setup(bot):

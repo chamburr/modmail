@@ -268,13 +268,13 @@ Get a list of servers you assigned premium to.
 
 Assign premium slot to a server.
 
-- Usage: `<server ID>`
+- Usage: `[server ID]`
 
 ## premiumremove
 
 Remove premium slot from a server.
 
-- Usage: `<server ID>`
+- Usage: `[server ID]`
 
 # Snippet
 
