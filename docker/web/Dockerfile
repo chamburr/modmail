@@ -1,4 +1,4 @@
-FROM node:20-alpine AS builder
+FROM node:24-alpine AS builder
 
 RUN npm install -g -f yarn
 
@@ -20,7 +20,7 @@ COPY web/store ./store
 
 RUN yarn build
 
-FROM node:20-alpine
+FROM node:24-alpine
 
 RUN apk add --no-cache dumb-init
 

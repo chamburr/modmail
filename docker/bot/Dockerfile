@@ -1,4 +1,4 @@
-FROM rust:1.85-slim-bookworm AS builder
+FROM rust:1.91-slim-trixie AS builder
 
 RUN apt update && apt install -y musl-dev libpq-dev
 
@@ -8,7 +8,7 @@ WORKDIR /build
 
 RUN cp /usr/local/cargo/bin/diesel ./
 
-FROM python:3.12-slim-bookworm
+FROM python:3.14-slim-trixie
 
 RUN apt update && apt install -y dumb-init git gcc netcat-traditional libpq-dev
 RUN rm -rf /var/lib/apt/lists/*
