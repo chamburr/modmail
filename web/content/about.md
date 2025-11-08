@@ -5,14 +5,13 @@ Developer, Administrator
 - Image: https://github.com/chamburr/modmail/assets/51924672/18a0dcb8-5f97-4a5d-b4dc-9c3ad5ef7a8a
 - Website: https://chamburr.com
 - GitHub: https://github.com/chamburr
-- X: https://x.com/chamburr22
 - LinkedIn: https://linkedin.com/in/chamburr
 
 # dyl
 
 Administrator, Contributor
 
-- Image: https://github.com/chamburr/modmail/assets/51924672/ff772da4-b9f6-44ba-9b77-11d29e1f2886
+- Image: https://avatars.githubusercontent.com/u/51924672?v=4
 - Website: https://wiredcoding.xyz
 - GitHub: https://github.com/dlsnyder8
 
@@ -36,9 +35,17 @@ Administrator
 
 - Image: https://github.com/chamburr/modmail/assets/51924672/3d99ba37-dc10-4ac9-85eb-9a3bef176529
 - Website: https://teagancollyer.wordpress.com
-- GitHub: https://github.com/SnowyJaguar1034
+- GitHub: https://github.com/snowy-jaguar
 - X: https://x.com/SnowyJaguar1034
 - LinkedIn: https://www.linkedin.com/in/teagancollyer
+
+# ian
+
+Moderator, Contributor
+
+- Image: https://avatars.githubusercontent.com/u/83577534?v=4
+- Website: https://iancheung.dev
+- GitHub: https://github.com/iancheung0202
 
 # Jordan
 
@@ -46,11 +53,17 @@ Moderator
 
 - Image: https://github.com/chamburr/modmail/assets/51924672/f9df2de1-8dd2-4f61-a147-e74ac066dfd1
 
+# Bestwin
+
+Support
+
+- Image: https://avatars.githubusercontent.com/u/242867311?v=4
+
 # kym
 
 Support, Contributor
 
-- Image: https://github.com/user-attachments/assets/f3c008a6-459c-4f22-be7d-23f6e9ad30b1
+- Image: https://avatars.githubusercontent.com/u/49974739?v=4
 - GitHub: https://github.com/kym2006
 
 # waterflamev8
