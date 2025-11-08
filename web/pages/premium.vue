@@ -60,6 +60,14 @@
         Please contact @jrwallor on Discord for more information (do not make a purchase here).
       </p>
     </div>
+    <div class="text-left pt-4">
+      <p class="h5">Refund Policy</p>
+      <p>
+        We want everyone to have a great experience with ModMail Premium. If you're not satisfied,
+        please contact us within 7 days and we will issue a full refund (minus a $3 processing fee
+        to cover the non-refundable charges from our payment processor).
+      </p>
+    </div>
   </div>
 </template>
 
