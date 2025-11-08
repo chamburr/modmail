@@ -8,7 +8,7 @@ WORKDIR /build
 
 RUN cp /usr/local/cargo/bin/diesel ./
 
-FROM python:3.14-slim-trixie
+FROM python:3.12-slim-trixie
 
 RUN apt update && apt install -y dumb-init git gcc netcat-traditional libpq-dev
 RUN rm -rf /var/lib/apt/lists/*
