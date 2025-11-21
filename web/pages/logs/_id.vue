@@ -24,7 +24,7 @@
             :key="`${index}-1-${index2}`"
             class="col flex-grow-0"
           >
-            <a :href="attachment" target="_blank">
+            <a :href="attachment" target="_blank" rel="noopener">
               <img :src="attachment" alt="Attachment" class="log-attachment" />
             </a>
           </div>

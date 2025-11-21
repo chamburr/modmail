@@ -24,16 +24,16 @@
                 class="my-3"
               />
               <div>
-                <a v-if="element.website" target="_blank" :href="element.website">
+                <a v-if="element.website" target="_blank" rel="noopener" :href="element.website">
                   <BaseIcon name="fas globe" class="big" />
                 </a>
-                <a v-if="element.github" target="_blank" :href="element.github">
+                <a v-if="element.github" target="_blank" rel="noopener" :href="element.github">
                   <BaseIcon name="fab github" class="big" />
                 </a>
-                <a v-if="element.x" target="_blank" :href="element.x">
+                <a v-if="element.x" target="_blank" rel="noopener" :href="element.x">
                   <BaseIcon name="fab x-twitter" class="big" />
                 </a>
-                <a v-if="element.linkedin" target="_blank" :href="element.linkedin">
+                <a v-if="element.linkedin" target="_blank" rel="noopener" :href="element.linkedin">
                   <BaseIcon name="fab linkedin" class="big" />
                 </a>
               </div>

@@ -24,7 +24,7 @@
                 {{ element.name }}
               </p>
               <p>{{ element.description }}</p>
-              <a :href="element.link">Learn more</a>
+              <a :href="element.link" target="_blank" rel="noopener">Learn more</a>
             </div>
           </div>
         </Card>
