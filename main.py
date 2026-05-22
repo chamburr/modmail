@@ -191,7 +191,20 @@ class Scheduler:
                     except discord.HTTPException:
                         emojis = []
                 elif menu["kind"] == "selection":
-                    emojis = ["1⃣", "2⃣", "3⃣", "4⃣", "5⃣", "6⃣", "7⃣", "8⃣", "9⃣", "🔟", "◀️", "▶️"]
+                    emojis = [
+                        "1⃣",
+                        "2⃣",
+                        "3⃣",
+                        "4⃣",
+                        "5⃣",
+                        "6⃣",
+                        "7⃣",
+                        "8⃣",
+                        "9⃣",
+                        "🔟",
+                        "◀️",
+                        "▶️",
+                    ]
                     try:
                         await message.edit(ErrorEmbed("Time out. You did not choose anything."))
                     except discord.HTTPException:
