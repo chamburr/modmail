@@ -14,6 +14,7 @@ steps:
     image: node
     commands:
       - cd web
+      - npm install -g yarn
       - yarn install
       - yarn --silent format:check
   - name: format python
