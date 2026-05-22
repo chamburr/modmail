@@ -94,6 +94,16 @@ class Scheduler:
         self.bot = bot
         self.session = aiohttp.ClientSession()
 
+    async def run_task(self, task):
+        while True:
+            try:
+                await task()
+            except asyncio.CancelledError:
+                break
+            except Exception as e:
+                print(f"[Cluster Manager] Task {task.__name__} crashed: {e}")
+                await asyncio.sleep(10)
+
     async def premium_updater(self):
         while True:
             async with self.bot.pool.acquire() as conn:
@@ -205,26 +215,11 @@ class Scheduler:
             await asyncio.sleep(30)
 
     async def launch(self):
-        async with self.bot.pool.acquire() as conn:
-            data = await conn.fetch("SELECT guild, prefix FROM data")
-            bans = await conn.fetch("SELECT identifier, category FROM ban")
-
-        if len(data) >= 1:
-            await self.bot.state.set(
-                [y for x in data for y in (f"prefix:{x[0]}", "" if x[1] is None else x[1])]
-            )
-
-        if len([x[0] for x in bans if x[1] == 0]) >= 1:
-            await self.bot.state.sadd("banned_users", *[x[0] for x in bans if x[1] == 0])
-
-        if len([x[0] for x in bans if x[1] == 1]) >= 1:
-            await self.bot.state.sadd("banned_guilds", *[x[0] for x in bans if x[1] == 1])
-
         if config.ENVIRONMENT == "production":
-            self.loop.create_task(self.bot_stats_updater())
+            self.loop.create_task(self.run_task(self.bot_stats_updater))
 
-        self.loop.create_task(self.premium_updater())
-        self.loop.create_task(self.cleanup())
+        self.loop.create_task(self.run_task(self.premium_updater))
+        self.loop.create_task(self.run_task(self.cleanup))
 
 
 class Main:
@@ -290,6 +285,22 @@ class Main:
         with open("targets.json", "w") as file:
             json.dump(data, file, indent=2)
 
+    async def load_cache(self):
+        async with self.bot.pool.acquire() as conn:
+            data = await conn.fetch("SELECT guild, prefix FROM data")
+            bans = await conn.fetch("SELECT identifier, category FROM ban")
+
+        if len(data) >= 1:
+            await self.bot.state.set(
+                [y for x in data for y in (f"prefix:{x[0]}", "" if x[1] is None else x[1])]
+            )
+
+        if len([x[0] for x in bans if x[1] == 0]) >= 1:
+            await self.bot.state.sadd("banned_users", *[x[0] for x in bans if x[1] == 0])
+
+        if len([x[0] for x in bans if x[1] == 1]) >= 1:
+            await self.bot.state.sadd("banned_guilds", *[x[0] for x in bans if x[1] == 1])
+
     async def launch(self):
         print(f"[Cluster Manager] Starting a total of {config.BOT_CLUSTERS} clusters.")
 
@@ -303,6 +314,7 @@ class Main:
             self.instances.append(Instance(i + 1, loop=self.loop, main=self))
 
         self.write_targets()
+        await self.load_cache()
 
         scheduler = Scheduler(loop=self.loop, bot=self.bot)
         loop.create_task(scheduler.launch())
