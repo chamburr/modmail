@@ -164,7 +164,7 @@ class State:
 
     async def _users(self):
         user_ids = set([x.split(":")[2] for x in await self._members("member")])
-        return [User(state=self, data=x["user"]) for x in await self.get(user_ids)]
+        return [User(state=self, data=x["user"]) for x in await self.get(list(user_ids))]
 
     async def _emojis(self):
         results = await self._members_get_all("emoji")
@@ -375,7 +375,7 @@ class State:
 
         self.dispatch("connect")
         self._ready_state = asyncio.Queue()
-        self._ready_task = asyncio.ensure_future(self._delay_ready(), loop=self.loop)
+        self._ready_task = asyncio.ensure_future(self._delay_ready())
 
     async def parse_resumed(self, data, old):
         self.dispatch("resumed")
@@ -519,7 +519,7 @@ class State:
             if user_update:
                 self.dispatch("user_update", user_update[1], user_update[0])
 
-        self.dispatch("member_update", old_member, member)
+        self.dispatch("presence_update", old_member, member)
 
     async def parse_user_update(self, data, old):
         return
@@ -754,7 +754,7 @@ class State:
                     "typing",
                     channel,
                     member,
-                    datetime.datetime.utcfromtimestamp(data.get("timestamp")),
+                    datetime.datetime.fromtimestamp(data.get("timestamp"), tz=datetime.timezone.utc),
                 )
 
     async def parse_relationship_add(self, data, old):

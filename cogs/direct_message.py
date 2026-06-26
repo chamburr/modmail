@@ -65,7 +65,7 @@ class DirectMessageEvents(commands.Cog, name="Direct Message"):
                     data[12] if data[12] else "No reason was provided.",
                     timestamp=True,
                 )
-                embed.set_footer(f"{guild.name} | {guild.id}", guild.icon_url)
+                embed.set_footer(f"{guild.name} | {guild.id}", (guild.icon.url if guild.icon else None))
                 await message.channel.send(embed)
                 return
 
@@ -123,7 +123,7 @@ class DirectMessageEvents(commands.Cog, name="Direct Message"):
                 )
                 embed.set_footer(
                     f"{message.author.name} | {message.author.id}",
-                    message.author.avatar_url,
+                    message.author.display_avatar.url,
                 )
 
                 try:
@@ -162,7 +162,7 @@ class DirectMessageEvents(commands.Cog, name="Direct Message"):
                 ),
             )
             embed.set_footer(
-                f"{message.author.name} | {message.author.id}", message.author.avatar_url
+                f"{message.author.name} | {message.author.id}", message.author.display_avatar.url
             )
 
             roles = []
@@ -191,12 +191,12 @@ class DirectMessageEvents(commands.Cog, name="Direct Message"):
                     colour=0xFF4500,
                     timestamp=True,
                 )
-                embed.set_footer(f"{guild.name} | {guild.id}", guild.icon_url)
+                embed.set_footer(f"{guild.name} | {guild.id}", (guild.icon.url if guild.icon else None))
 
                 await message.channel.send(embed)
 
         embed = Embed("Message Sent", message.content, colour=0x00FF00, timestamp=True)
-        embed.set_footer(f"{guild.name} | {guild.id}", guild.icon_url)
+        embed.set_footer(f"{guild.name} | {guild.id}", (guild.icon.url if guild.icon else None))
 
         files = []
         for file in message.attachments:
@@ -209,7 +209,7 @@ class DirectMessageEvents(commands.Cog, name="Direct Message"):
         embed.title = "Message Received"
         embed.set_footer(
             f"{message.author.name} | {message.author.id}",
-            message.author.avatar_url,
+            message.author.display_avatar.url,
         )
 
         for count, attachment in enumerate(
@@ -325,7 +325,7 @@ class DirectMessageEvents(commands.Cog, name="Direct Message"):
     @commands.Cog.listener()
     async def on_message(self, message):
         if (
-            message.is_system()
+            message.is_system
             or message.author.bot
             or not isinstance(message.channel, discord.DMChannel)
         ):
@@ -453,5 +453,5 @@ class DirectMessageEvents(commands.Cog, name="Direct Message"):
         await ctx.send(Embed("Confirmation messages are enabled."))
 
 
-def setup(bot):
-    bot.add_cog(DirectMessageEvents(bot))
+async def setup(bot):
+    await bot.add_cog(DirectMessageEvents(bot))

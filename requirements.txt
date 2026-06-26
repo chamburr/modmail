@@ -1,5 +1,5 @@
 aio-pika==9.4.0
-aiohttp==3.7.4.post0
+aiohttp>=3.10.0
 aioprometheus==23.3.0
 aioredis==1.3.1
 asyncpg==0.29.0
@@ -9,5 +9,4 @@ orjson==3.9.13
 psutil==5.9.8
 python-dotenv==1.0.1
 subprocess32==3.5.4
-
-git+https://github.com/chamburr/discord.py.git
+discord.py==2.7.1

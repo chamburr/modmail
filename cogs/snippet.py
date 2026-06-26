@@ -173,12 +173,12 @@ class Snippet(commands.Cog):
 
         if len(all_pages) == 1:
             embed = all_pages[0]
-            embed.set_footer(discord.Embed.Empty)
+            embed.set_footer(None)
             await ctx.send(embed)
             return
 
         await tools.create_paginator(self.bot, ctx, all_pages)
 
 
-def setup(bot):
-    bot.add_cog(Snippet(bot))
+async def setup(bot):
+    await bot.add_cog(Snippet(bot))

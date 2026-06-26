@@ -17,6 +17,7 @@ class Member(member.Member):
         self.premium_since = utils.parse_time(data.get("premium_since"))
         self._update_roles(data)
         self.nick = data.get("nick", None)
+        self._avatar = data.get("user", {}).get("avatar")
 
     async def guild_permissions(self):
         if self.guild.owner_id == self.id:

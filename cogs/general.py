@@ -1,6 +1,7 @@
 import logging
 import platform
 import time
+import discord
 
 from datetime import datetime
 
@@ -63,7 +64,7 @@ class General(commands.Cog):
             "can also invite me to your server with the link below, or join our support server if "
             f"you need further help.\n\nTo setup the bot, run `{ctx.prefix}setup`.",
         )
-        page.set_thumbnail(bot_user.avatar_url)
+        page.set_thumbnail(bot_user.display_avatar.url)
         page.set_footer("Use the reactions to flip pages.")
         page.add_field("Invite", f"{self.bot.config.BASE_URI}/invite", False)
         page.add_field("Support Server", "https://discord.gg/wjWJwJB", False)
@@ -85,8 +86,8 @@ class General(commands.Cog):
                 "information on a command.",
             )
 
-            page.set_author("ModMail Help Menu", bot_user.avatar_url)
-            page.set_thumbnail(bot_user.avatar_url)
+            page.set_author("ModMail Help Menu", bot_user.display_avatar.url)
+            page.set_thumbnail(bot_user.display_avatar.url)
             page.set_footer("Use the reactions to flip pages.")
 
             for cmd in cog_commands:
@@ -122,7 +123,7 @@ class General(commands.Cog):
         aliases=["statistics", "info"],
     )
     async def stats(self, ctx):
-        total_seconds = int((datetime.utcnow() - await self.bot.started()).total_seconds())
+        total_seconds = int((discord.utils.utcnow() - await self.bot.started()).total_seconds())
         hours, remainder = divmod(total_seconds, 3600)
         minutes, seconds = divmod(remainder, 60)
         days, hours = divmod(hours, 24)
@@ -149,7 +150,7 @@ class General(commands.Cog):
         embed.add_field("CPU Usage", f"{psutil.cpu_percent(interval=None)}%")
         embed.add_field("RAM Usage", f"{psutil.virtual_memory().percent}%")
         embed.add_field("Python Version", platform.python_version())
-        embed.set_thumbnail(bot_user.avatar_url)
+        embed.set_thumbnail(bot_user.display_avatar.url)
 
         await ctx.send(embed)
 
@@ -180,5 +181,5 @@ class General(commands.Cog):
         await ctx.send(Embed("GitHub Repository", "https://github.com/chamburr/modmail"))
 
 
-def setup(bot):
-    bot.add_cog(General(bot))
+async def setup(bot):
+    await bot.add_cog(General(bot))

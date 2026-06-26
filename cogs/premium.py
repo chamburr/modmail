@@ -150,5 +150,5 @@ class Premium(commands.Cog):
         await ctx.send(Embed("The server no longer has premium."))
 
 
-def setup(bot):
-    bot.add_cog(Premium(bot))
+async def setup(bot):
+    await bot.add_cog(Premium(bot))

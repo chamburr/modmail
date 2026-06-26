@@ -9,11 +9,11 @@ import aiohttp
 import aioredis
 import asyncpg
 import orjson
+import discord
 
 from discord.ext import commands
 from discord.ext.commands.core import _CaseInsensitiveDict
 from discord.gateway import DiscordClientWebSocketResponse, DiscordWebSocket
-from discord.utils import parse_time
 from groq import AsyncGroq
 
 from classes.http import HTTPClient
@@ -28,26 +28,19 @@ log = logging.getLogger(__name__)
 
 class ModMail(commands.AutoShardedBot):
     def __init__(self, command_prefix=None, **kwargs):
-        self.command_prefix = command_prefix
-        self.extra_events = {}
-        self._BotBase__cogs = {}
-        self._BotBase__extensions = {}
-        self._checks = []
-        self._check_once = []
-        self._before_invoke = None
-        self._after_invoke = None
-        self._help_command = None
-        self.description = ""
-        self.owner_id = None
-        self.owner_ids = set()
-        self._skip_check = lambda x, y: x == y
-        self.case_insensitive = True
-        self.all_commands = _CaseInsensitiveDict() if self.case_insensitive else {}
-        self.strip_after_prefix = False
+        intents = discord.Intents.default()
+        intents.message_content = True
+        intents.members = True
+
+        super().__init__(
+            command_prefix=command_prefix,
+            intents=intents,
+            case_insensitive=True,
+            **kwargs
+        )
 
         self.ws = None
-        self.loop = asyncio.get_event_loop()
-        self.http = HTTPClient(None, loop=self.loop)
+        self.http = HTTPClient(None)
 
         self._handlers = {"ready": self._handle_ready}
         self._hooks = {}
@@ -123,7 +116,10 @@ class ModMail(commands.AutoShardedBot):
         return int(await self._connection.get("gateway_shards"))
 
     async def started(self):
-        return parse_time(str(await self._connection.get("gateway_started")).split(".")[0])
+        started_at = await self._connection.get("gateway_started")
+        if started_at:
+            return discord.utils.parse_time(str(started_at).split(".")[0])
+        return None
 
     async def statuses(self):
         return [Status(x) for x in await self._connection.get("gateway_statuses")]
@@ -222,16 +218,26 @@ class ModMail(commands.AutoShardedBot):
         )
         return completion.choices[0].message.content
 
+    async def setup_hook(self):
+        self.prom = Prometheus(self)
+        await self.prom.start()
+
+        if self.config.GROQ_KEY is not None:
+            self.ai = AsyncGroq(api_key=self.config.GROQ_KEY)
+
     async def start(self, worker=True):
         trace_config = aiohttp.TraceConfig()
         trace_config.on_request_start.append(self.on_http_request_start)
         trace_config.on_request_end.append(self.on_http_request_end)
+
+        self.http.connector = aiohttp.TCPConnector()
         self.http._HTTPClient__session = aiohttp.ClientSession(
             connector=self.http.connector,
             ws_response_class=DiscordClientWebSocketResponse,
             trace_configs=[trace_config],
         )
-        self.http._token(self.config.BOT_TOKEN, bot=True)
+        self.http.token = self.config.BOT_TOKEN
+        self.session = self.http._HTTPClient__session
 
         self.pool = await asyncpg.create_pool(
             database=self.config.POSTGRES_DATABASE,
@@ -267,34 +273,34 @@ class ModMail(commands.AutoShardedBot):
         if self.config.GROQ_KEY is not None:
             self.ai = AsyncGroq(api_key=self.config.GROQ_KEY)
 
+        shard_count_val = await self._redis.get("gateway_shards")
         self._connection = State(
             id=self.id,
             dispatch=self.dispatch,
             handlers=self._handlers,
             hooks=self._hooks,
             http=self.http,
-            loop=self.loop,
+            loop=asyncio.get_event_loop(),
             redis=self._redis,
-            shard_count=int(await self._redis.get("gateway_shards")),
+            shard_count=int(shard_count_val) if shard_count_val else 1,
         )
         self._connection._get_client = lambda: self
 
-        self.ws = DiscordWebSocket(socket=None, loop=self.loop)
-        self.ws.token = self.http.token
+        self.ws = DiscordWebSocket(socket=None, loop=asyncio.get_event_loop())
+        self.ws.token = self.config.BOT_TOKEN
         self.ws._connection = self._connection
         self.ws._discord_parsers = self._connection.parsers
         self.ws._dispatch = self.dispatch
-        self.ws.call_hooks = self._connection.call_hooks
 
         if not worker:
             return
 
         for extension in self._cogs:
             try:
-                self.load_extension("cogs." + extension)
+                await self.load_extension("cogs." + extension)
             except Exception:
                 log.error(f"Failed to load extension {extension}.", file=sys.stderr)
-                log.error(traceback.print_exc())
+                log.error(traceback.format_exc())
 
         async with self._amqp_queue.iterator() as queue_iter:
             async for message in queue_iter:

@@ -105,7 +105,7 @@ class Core(commands.Cog):
 
     async def generate_history(self, channel):
         history = ""
-        messages = await channel.history(limit=10000).flatten()
+        messages = [message async for message in channel.history(limit=10000)]
 
         for message in messages:
             if message.author.bot and (
@@ -167,10 +167,10 @@ class Core(commands.Cog):
             reason if reason else "No reason was provided.",
             timestamp=True,
         )
-        embed.set_footer(f"{ctx.guild.name} | {ctx.guild.id}", ctx.guild.icon_url)
+        embed.set_footer(f"{ctx.guild.name} | {ctx.guild.id}", (ctx.guild.icon.url if ctx.guild.icon else None))
 
         if anon is False:
-            embed.set_author(str(ctx.author.name), ctx.author.avatar_url)
+            embed.set_author(str(ctx.author.name), ctx.author.display_avatar.url)
 
         try:
             member = await ctx.guild.fetch_member(tools.get_modmail_user(ctx.channel).id)
@@ -186,7 +186,7 @@ class Core(commands.Cog):
                     colour=0xFF4500,
                     timestamp=True,
                 )
-                embed2.set_footer(f"{ctx.guild.name} | {ctx.guild.id}", ctx.guild.icon_url)
+                embed2.set_footer(f"{ctx.guild.name} | {ctx.guild.id}", (ctx.guild.icon.url if ctx.guild.icon else None))
                 try:
                     await dm_channel.send(embed2)
                 except discord.Forbidden:
@@ -211,7 +211,7 @@ class Core(commands.Cog):
                 pass
 
         if member:
-            embed.set_footer(f"{member.name} | {member.id}", member.avatar_url)
+            embed.set_footer(f"{member.name} | {member.id}", member.display_avatar.url)
         else:
             embed.set_footer(
                 "Unknown | 000000000000000000",
@@ -220,7 +220,7 @@ class Core(commands.Cog):
 
         embed.set_author(
             str(ctx.author.name) if anon is False else f"{ctx.author.name} (Anonymous)",
-            ctx.author.avatar_url,
+            ctx.author.display_avatar.url,
         )
 
         if data[7] > 0:
@@ -420,12 +420,12 @@ class Core(commands.Cog):
 
         if len(all_pages) == 1:
             embed = all_pages[0]
-            embed.set_footer(discord.Embed.Empty)
+            embed.set_footer(None)
             await ctx.send(embed)
             return
 
         await tools.create_paginator(self.bot, ctx, all_pages)
 
 
-def setup(bot):
-    bot.add_cog(Core(bot))
+async def setup(bot):
+    await bot.add_cog(Core(bot))

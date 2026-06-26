@@ -43,7 +43,7 @@ class Admin(commands.Cog):
             page = Embed(title="Shared Servers")
 
             for guild in chunk:
-                if page.description == discord.Embed.Empty:
+                if page.description is None:
                     page.description = guild
                 else:
                     page.description += f"\n{guild}"
@@ -130,5 +130,5 @@ class Admin(commands.Cog):
         await self.bot.session.post(f"{self.bot.http_uri}/restart")
 
 
-def setup(bot):
-    bot.add_cog(Admin(bot))
+async def setup(bot):
+    await bot.add_cog(Admin(bot))

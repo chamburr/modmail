@@ -8,7 +8,6 @@ from discord.enums import (
     ContentFilter,
     NotificationLevel,
     VerificationLevel,
-    VoiceRegion,
     try_enum,
 )
 from discord.member import VoiceState
@@ -55,7 +54,6 @@ class Guild(guild.Guild):
             self._member_count = 0
 
         self.name = guild.get("name")
-        self.region = try_enum(VoiceRegion, guild.get("region"))
         self.verification_level = try_enum(VerificationLevel, guild.get("verification_level"))
         self.default_notifications = try_enum(
             NotificationLevel, guild.get("default_message_notifications")
@@ -64,13 +62,13 @@ class Guild(guild.Guild):
             ContentFilter, guild.get("explicit_content_filter", 0)
         )
         self.afk_timeout = guild.get("afk_timeout")
-        self.icon = guild.get("icon")
-        self.banner = guild.get("banner")
+        self._icon = guild.get("icon")
+        self._banner = guild.get("banner")
         self.unavailable = guild.get("unavailable", False)
         self.id = int(guild["id"])
         self.mfa_level = guild.get("mfa_level")
         self.features = guild.get("features", [])
-        self.splash = guild.get("splash")
+        self._splash = guild.get("splash")
         self._system_channel_id = utils._get_as_snowflake(guild, "system_channel_id")
         self.description = guild.get("description")
         self.max_presences = guild.get("max_presences")
@@ -80,7 +78,7 @@ class Guild(guild.Guild):
         self.premium_subscription_count = guild.get("premium_subscription_count") or 0
         self._system_channel_flags = guild.get("system_channel_flags", 0)
         self.preferred_locale = guild.get("preferred_locale")
-        self.discovery_splash = guild.get("discovery_splash")
+        self._discovery_splash = guild.get("discovery_splash")
         self._rules_channel_id = utils._get_as_snowflake(guild, "rules_channel_id")
         self._public_updates_channel_id = utils._get_as_snowflake(
             guild, "public_updates_channel_id"

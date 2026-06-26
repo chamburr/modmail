@@ -72,10 +72,10 @@ class ModMailEvents(commands.Cog):
             message.content = tools.tag_format(message.content, member)
 
         embed = Embed("Message Received", message.content, colour=0xFF4500, timestamp=True)
-        embed.set_footer(f"{message.guild.name} | {message.guild.id}", message.guild.icon_url)
+        embed.set_footer(f"{message.guild.name} | {message.guild.id}", (message.guild.icon.url if message.guild.icon else None))
 
         if anon is False:
-            embed.set_author(str(message.author.name), message.author.avatar_url)
+            embed.set_author(str(message.author.name), message.author.display_avatar.url)
 
         files = []
         for file in message.attachments:
@@ -98,9 +98,9 @@ class ModMailEvents(commands.Cog):
         embed.title = "Message Sent"
         embed.set_author(
             str(message.author.name) if anon is False else f"{message.author.name} (Anonymous)",
-            message.author.avatar_url,
+            message.author.display_avatar.url,
         )
-        embed.set_footer(f"{member.name} | {member.id}", member.avatar_url)
+        embed.set_footer(f"{member.name} | {member.id}", member.display_avatar.url)
 
         for count, attachment in enumerate(
             [attachment.url for attachment in dm_message.attachments], start=1
@@ -118,5 +118,5 @@ class ModMailEvents(commands.Cog):
             pass
 
 
-def setup(bot):
-    bot.add_cog(ModMailEvents(bot))
+async def setup(bot):
+    await bot.add_cog(ModMailEvents(bot))

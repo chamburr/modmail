@@ -46,4 +46,11 @@ async def on_message(_):
     pass
 
 
-loop.run_until_complete(bot.start())
+async def main():
+    async with bot:
+        await bot.start()
+
+try:
+    loop.run_until_complete(main())
+except KeyboardInterrupt:
+    pass
