@@ -1,27 +1,34 @@
+from __future__ import annotations
+
 import logging
 import time
+
+from typing import Any
 
 import discord
 
 from discord.ext import commands
+from discord.http import Route
 
+from classes.bot import ModMail
 from classes.context import Context
 from classes.embed import Embed, ErrorEmbed
+from classes.message import Message
 from utils import tools
 
 log = logging.getLogger(__name__)
 
 
 class Events(commands.Cog):
-    def __init__(self, bot):
+    def __init__(self, bot: ModMail) -> None:
         self.bot = bot
 
     @commands.Cog.listener()
-    async def on_ready(self):
+    async def on_ready(self) -> None:
         pass
 
     @commands.Cog.listener()
-    async def on_raw_reaction_add(self, payload):
+    async def on_raw_reaction_add(self, payload: discord.RawReactionActionEvent) -> None:
         if payload.user_id == self.bot.id:
             return
 
@@ -102,41 +109,114 @@ class Events(commands.Cog):
             await self.bot.state.set(f"reaction_menu:{channel.id}:{message.id}", menu)
 
     @commands.Cog.listener()
-    async def on_message(self, message):
+    async def on_interaction_create(self, data: dict[str, Any]) -> None:
+        if data.get("type") != 2:
+            return
+
+        name = data["data"]["name"]
+        options = {x["name"]: str(x["value"]) for x in data["data"].get("options", [])}
+
+        args = ""
+        command = self.bot.get_command(name)
+        if command:
+            for param in command.clean_params.values():
+                value = options.get(param.name.lower())
+                if value is not None:
+                    args += f" {value}"
+
+        try:
+            await self.bot.http.request(
+                Route(
+                    "POST",
+                    "/interactions/{interaction_id}/{interaction_token}/callback",
+                    interaction_id=data["id"],
+                    interaction_token=data["token"],
+                ),
+                json={"type": 5},
+            )
+        except discord.HTTPException:
+            log.warning(f"Failed to acknowledge the {name} slash command.")
+            return
+
+        payload = {
+            "id": data["id"],
+            "channel_id": data["channel_id"],
+            "guild_id": data.get("guild_id"),
+            "author": data["member"]["user"] if data.get("member") else data["user"],
+            "content": f"<@{self.bot.id}> {name}{args}",
+            "edited_timestamp": None,
+            "type": 0,
+            "pinned": False,
+            "mention_everyone": False,
+            "tts": False,
+            "attachments": [],
+            "embeds": [],
+            "_interaction": {
+                "application_id": data["application_id"],
+                "token": data["token"],
+                "responded": False,
+            },
+        }
+
+        if data.get("member"):
+            payload["member"] = data["member"]
+
+        await self.bot.state.parse_message_create(payload, None)
+
+    @commands.Cog.listener()
+    async def on_message(self, message: Message) -> None:
         if message.author.bot:
             return
 
         ctx = await self.bot.get_context(message, cls=Context)
-        if not ctx.command:
-            return
 
-        self.bot.prom.commands.inc({"name": ctx.command.name})
-
-        if message.guild:
-            if await tools.is_guild_banned(self.bot, message.guild):
-                await message.guild.leave()
+        try:
+            if not ctx.command:
                 return
 
-            permissions = await message.channel.permissions_for(await ctx.guild.me())
+            self.bot.prom.commands.inc({"name": ctx.command.name})
 
-            if permissions.send_messages is False:
+            if message.guild:
+                if await tools.is_guild_banned(self.bot, message.guild):
+                    await message.guild.leave()
+                    return
+
+                permissions = await message.channel.permissions_for(await ctx.guild.me())
+
+                if permissions.send_messages is False:
+                    return
+
+                if permissions.embed_links is False:
+                    await message.channel.send(
+                        "The Embed Links permission is needed for basic commands to work."
+                    )
+                    return
+
+            if await tools.is_user_banned(self.bot, message.author):
+                await ctx.send(ErrorEmbed("You are banned from the bot."))
                 return
 
-            if permissions.embed_links is False:
-                await message.channel.send(
-                    "The Embed Links permission is needed for basic commands to work."
-                )
-                return
+            if ctx.prefix in [f"<@{self.bot.id}> ", f"<@!{self.bot.id}> "]:
+                ctx.prefix = await tools.get_guild_prefix(self.bot, message.guild)
 
-        if await tools.is_user_banned(self.bot, message.author):
-            await ctx.send(ErrorEmbed("You are banned from the bot."))
-            return
+            await self.bot.invoke(ctx)
+        finally:
+            interaction = getattr(message, "_interaction", None)
+            if interaction is not None and not interaction.get("responded"):
+                interaction["responded"] = True
+                try:
+                    await self.bot.http.request(
+                        Route(
+                            "PATCH",
+                            "/webhooks/{application_id}/{interaction_token}/messages/@original",
+                            application_id=interaction["application_id"],
+                            interaction_token=interaction["token"],
+                        ),
+                        json={"content": "The command was executed."},
+                    )
+                except discord.HTTPException:
+                    pass
 
-        if ctx.prefix in [f"<@{self.bot.id}> ", f"<@!{self.bot.id}> "]:
-            ctx.prefix = await tools.get_guild_prefix(self.bot, message.guild)
 
-        await self.bot.invoke(ctx)
-
-
-async def setup(bot):
+async def setup(bot: ModMail) -> None:
     await bot.add_cog(Events(bot))

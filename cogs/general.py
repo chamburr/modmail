@@ -1,14 +1,16 @@
+from __future__ import annotations
+
 import logging
 import platform
 import time
+
 import discord
-
-from datetime import datetime
-
 import psutil
 
 from discord.ext import commands
 
+from classes.bot import ModMail
+from classes.context import Context
 from classes.embed import Embed
 from utils import checks, tools
 
@@ -16,7 +18,7 @@ log = logging.getLogger(__name__)
 
 
 class General(commands.Cog):
-    def __init__(self, bot):
+    def __init__(self, bot: ModMail) -> None:
         self.bot = bot
 
     @checks.bot_has_permissions(add_reactions=True)
@@ -25,7 +27,7 @@ class General(commands.Cog):
         usage="help [command]",
         aliases=["h", "commands"],
     )
-    async def help(self, ctx, *, command: str = None):
+    async def help(self, ctx: Context, *, command: str | None = None) -> None:
         if command:
             command = self.bot.get_command(command.lower())
             if not command:
@@ -103,7 +105,7 @@ class General(commands.Cog):
         await tools.create_paginator(self.bot, ctx, all_pages)
 
     @commands.command(description="Pong! Get my latency.", usage="ping")
-    async def ping(self, ctx):
+    async def ping(self, ctx: Context) -> None:
         start = time.time()
         shard = ctx.guild.shard_id if ctx.guild else 0
 
@@ -122,7 +124,7 @@ class General(commands.Cog):
         usage="stats",
         aliases=["statistics", "info"],
     )
-    async def stats(self, ctx):
+    async def stats(self, ctx: Context) -> None:
         total_seconds = int((discord.utils.utcnow() - await self.bot.started()).total_seconds())
         hours, remainder = divmod(total_seconds, 3600)
         minutes, seconds = divmod(remainder, 60)
@@ -155,21 +157,21 @@ class General(commands.Cog):
         await ctx.send(embed)
 
     @commands.command(description="See the amazing stuff we have partnered with.", usage="partners")
-    async def partners(self, ctx):
+    async def partners(self, ctx: Context) -> None:
         await ctx.send(Embed("Partners", f"{self.bot.config.BASE_URI}/partners"))
 
     @commands.command(description="Get a link to invite me.", usage="invite")
-    async def invite(self, ctx):
+    async def invite(self, ctx: Context) -> None:
         await ctx.send(Embed("Invite Link", f"{self.bot.config.BASE_URI}/invite"))
 
     @commands.command(
         description="Get a link to my support server.", usage="support", aliases=["server"]
     )
-    async def support(self, ctx):
+    async def support(self, ctx: Context) -> None:
         await ctx.send(Embed("Support Server", "https://discord.gg/wjWJwJB"))
 
     @commands.command(description="Get the link to ModMail's website.", usage="website")
-    async def website(self, ctx):
+    async def website(self, ctx: Context) -> None:
         await ctx.send(Embed("Website", f"{self.bot.config.BASE_URI}"))
 
     @commands.command(
@@ -177,9 +179,9 @@ class General(commands.Cog):
         usage="source",
         aliases=["github"],
     )
-    async def source(self, ctx):
+    async def source(self, ctx: Context) -> None:
         await ctx.send(Embed("GitHub Repository", "https://github.com/chamburr/modmail"))
 
 
-async def setup(bot):
+async def setup(bot: ModMail) -> None:
     await bot.add_cog(General(bot))

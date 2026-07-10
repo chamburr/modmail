@@ -1,4 +1,10 @@
+from __future__ import annotations
+
 import logging
+
+from typing import TYPE_CHECKING, Any
+
+import discord
 
 from discord import channel, utils
 from discord.channel import CategoryChannel, GroupChannel, StageChannel, VoiceChannel
@@ -8,17 +14,24 @@ from discord.permissions import Permissions
 from classes.embed import Embed
 from classes.invite import Invite
 
+if TYPE_CHECKING:
+    from classes.guild import Guild
+    from classes.member import Member
+    from classes.state import State
+
 log = logging.getLogger(__name__)
 
 
 class TextChannel(channel.TextChannel):
-    def __init__(self, *, state, guild, data):
+    def __init__(self, *, state: State, guild: Guild, data: dict[str, Any]) -> None:
         self._state = state
         self.id = int(data["id"])
         self._type = data.get("type", 0)
         self._update(guild, data)
 
-    def _update(self, guild, data):
+    def _update(
+        self, guild: Guild, data: dict[str, Any]
+    ) -> None:
         self.guild = guild
         self.name = data.get("name", "")
         self.category_id = utils._get_as_snowflake(data, "parent_id")
@@ -30,11 +43,11 @@ class TextChannel(channel.TextChannel):
         self.last_message_id = utils._get_as_snowflake(data, "last_message_id")
         self._fill_overwrites(data)
 
-    async def create_invite(self, *, reason=None, **fields):
+    async def create_invite(self, *, reason: str | None = None, **fields: Any) -> Invite:
         data = await self._state.http.create_invite(self.id, reason=reason, **fields)
         return await Invite.from_incomplete(data=data, state=self._state)
 
-    async def _permissions_for(self, member):
+    async def _permissions_for(self, member: Member) -> Permissions:
         if self.guild.owner_id == member.id:
             return Permissions.all()
 
@@ -80,7 +93,9 @@ class TextChannel(channel.TextChannel):
 
         return base
 
-    async def permissions_for(self, member):
+    async def permissions_for(
+        self, member: Member
+    ) -> Permissions:
         base = await self._permissions_for(member)
 
         denied = Permissions.voice()
@@ -88,26 +103,26 @@ class TextChannel(channel.TextChannel):
 
         return base
 
-    async def send(self, content=None, **kwargs):
+    async def send(self, content: Any = None, **kwargs: Any) -> discord.Message:
         if isinstance(content, Embed):
             return await super().send(embed=content, **kwargs)
         return await super().send(content, **kwargs)
 
 
 class DMChannel(channel.DMChannel):
-    def __init__(self, *, me, state, data):
+    def __init__(self, *, me: Any, state: State, data: dict[str, Any]) -> None:
         self._state = state
-        self.recipient = None
+        self.recipients = []
         self.me = me
         self.id = int(data["id"])
 
-    async def send(self, content=None, **kwargs):
+    async def send(self, content: Any = None, **kwargs: Any) -> discord.Message:
         if isinstance(content, Embed):
             return await super().send(embed=content, **kwargs)
         return await super().send(content, **kwargs)
 
 
-def _channel_factory(channel_type):
+def _channel_factory(channel_type: int) -> tuple[type[Any], ChannelType]:
     value = try_enum(ChannelType, channel_type)
     if value is ChannelType.text:
         return TextChannel, value

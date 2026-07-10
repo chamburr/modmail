@@ -1,18 +1,21 @@
+from __future__ import annotations
+
 import asyncio
+import datetime
 import logging
 import re
-import sys
 import traceback
+
+from typing import TYPE_CHECKING, Any
 
 import aio_pika
 import aiohttp
 import aioredis
 import asyncpg
-import orjson
 import discord
+import orjson
 
 from discord.ext import commands
-from discord.ext.commands.core import _CaseInsensitiveDict
 from discord.gateway import DiscordClientWebSocketResponse, DiscordWebSocket
 from groq import AsyncGroq
 
@@ -23,11 +26,17 @@ from utils import tools
 from utils.config import Config
 from utils.prometheus import Prometheus
 
+if TYPE_CHECKING:
+    from classes.guild import Guild
+    from classes.message import Message
+
 log = logging.getLogger(__name__)
 
 
 class ModMail(commands.AutoShardedBot):
-    def __init__(self, command_prefix=None, **kwargs):
+    _connection: State
+
+    def __init__(self, command_prefix: Any = None, **kwargs: Any) -> None:
         intents = discord.Intents.default()
         intents.message_content = True
         intents.members = True
@@ -36,7 +45,8 @@ class ModMail(commands.AutoShardedBot):
             command_prefix=command_prefix,
             intents=intents,
             case_insensitive=True,
-            **kwargs
+            help_command=None,
+            **kwargs,
         )
 
         self.ws = None
@@ -49,25 +59,26 @@ class ModMail(commands.AutoShardedBot):
         self._closed = False
         self._ready = asyncio.Event()
 
-        self._redis = None
-        self._amqp = None
-        self._amqp_channel = None
-        self._amqp_queue = None
+        self._redis: aioredis.Redis | None = None
+        self._amqp: aio_pika.abc.AbstractRobustConnection | None = None
+        self._amqp_channel: aio_pika.abc.AbstractRobustChannel | None = None
+        self._amqp_queue: aio_pika.abc.AbstractRobustQueue | None = None
 
         self.config = Config()
-        self.session = aiohttp.ClientSession(loop=self.loop)
+        self.session: aiohttp.ClientSession = discord.utils.MISSING
         self.http_uri = f"http://{self.config.BOT_API_HOST}:{self.config.BOT_API_PORT}"
-        self.id = kwargs.get("bot_id")
-        self.cluster = kwargs.get("cluster_id")
-        self.cluster_count = kwargs.get("cluster_count")
-        self.version = kwargs.get("version")
-        self.pool = None
-        self.prom = None
-        self.ai = None
+        self.id: int | None = kwargs.get("bot_id")
+        self.cluster: int | None = kwargs.get("cluster_id")
+        self.cluster_count: int | None = kwargs.get("cluster_count")
+        self.version: str | None = kwargs.get("version")
+        self.pool: asyncpg.Pool = discord.utils.MISSING
+        self.prom: Prometheus = discord.utils.MISSING
+        self.ai: AsyncGroq | None = None
 
         self._enabled_events = [
             "MESSAGE_CREATE",
             "MESSAGE_REACTION_ADD",
+            "INTERACTION_CREATE",
             "READY",
         ]
 
@@ -87,67 +98,90 @@ class ModMail(commands.AutoShardedBot):
         ]
 
     @property
-    def state(self):
+    def state(self) -> State:
         return self._connection
 
     @property
-    def user(self):
+    def user(self) -> discord.User:
         return tools.create_fake_user(self.id)
 
-    async def real_user(self):
+    async def real_user(self) -> discord.ClientUser | None:
         return await self._connection.user()
 
-    async def users(self):
+    async def users(
+        self,
+    ) -> list[discord.User]:
         return await self._connection._users()
 
-    async def guilds(self):
+    async def guilds(self) -> list[Guild]:
         return await self._connection.guilds()
 
-    async def emojis(self):
+    async def emojis(
+        self,
+    ) -> list[discord.Emoji]:
         return await self._connection.emojis()
 
-    async def cached_messages(self):
+    async def cached_messages(
+        self,
+    ) -> list[Message]:
         return await self._connection._messages()
 
-    async def private_channels(self):
+    async def private_channels(
+        self,
+    ) -> list[Any]:
         return await self._connection.private_channels()
 
-    async def shard_count(self):
+    async def shard_count(self) -> int:
         return int(await self._connection.get("gateway_shards"))
 
-    async def started(self):
+    async def started(self) -> datetime.datetime | None:
         started_at = await self._connection.get("gateway_started")
         if started_at:
-            return discord.utils.parse_time(str(started_at).split(".")[0])
+            started = discord.utils.parse_time(str(started_at).split(".")[0])
+            if started.tzinfo is None:
+                started = started.replace(tzinfo=datetime.timezone.utc)
+            return started
         return None
 
-    async def statuses(self):
+    async def statuses(self) -> list[Status]:
         return [Status(x) for x in await self._connection.get("gateway_statuses")]
 
-    async def sessions(self):
+    async def sessions(self) -> dict[int, Session]:
         return {
             int(x): Session(y) for x, y in (await self._connection.get("gateway_sessions")).items()
         }
 
-    async def get_channel(self, channel_id):
+    async def get_channel(
+        self, channel_id: int | None
+    ) -> Any:
         return await self._connection.get_channel(channel_id)
 
-    async def get_guild(self, guild_id):
+    async def get_guild(
+        self, guild_id: int | None
+    ) -> Guild | None:
         return await self._connection._get_guild(guild_id)
 
-    async def get_user(self, user_id):
+    async def get_user(
+        self, user_id: int
+    ) -> discord.User | None:
         return await self._connection.get_user(user_id)
 
-    async def get_emoji(self, emoji_id):
+    async def get_emoji(
+        self, emoji_id: int | None
+    ) -> discord.Emoji | None:
         return await self._connection.get_emoji(emoji_id)
 
-    async def get_all_channels(self):
+    async def get_all_channels(
+        self,
+    ) -> None:
         pass
 
-    async def get_all_members(self):
+    async def get_all_members(
+        self,
+    ) -> None:
         pass
 
-    async def receive_message(self, msg):
+    async def receive_message(self, msg: bytes) -> None:
         self.ws._dispatch("socket_raw_receive", msg)
         msg = orjson.loads(msg)
         self.ws._dispatch("socket_response", msg)
@@ -179,17 +213,21 @@ class ModMail(commands.AutoShardedBot):
             except asyncio.CancelledError:
                 pass
 
-    async def send_message(self, msg):
+    async def send_message(self, msg: Any) -> None:
         data = orjson.dumps(msg)
         self.ws._dispatch("socket_raw_send", data)
         await self._amqp_channel.default_exchange.publish(
             aio_pika.Message(body=data), routing_key="gateway.send"
         )
 
-    async def on_http_request_start(self, _session, trace_config_ctx, _params):
+    async def on_http_request_start(
+        self, _session: aiohttp.ClientSession, trace_config_ctx: Any, _params: Any
+    ) -> None:
         trace_config_ctx.start = asyncio.get_event_loop().time()
 
-    async def on_http_request_end(self, _session, trace_config_ctx, params):
+    async def on_http_request_end(
+        self, _session: aiohttp.ClientSession, trace_config_ctx: Any, params: Any
+    ) -> None:
         elapsed = asyncio.get_event_loop().time() - trace_config_ctx.start
 
         if elapsed > 1:
@@ -211,26 +249,45 @@ class ModMail(commands.AutoShardedBot):
             }
         )
 
-    async def ai_generate(self, text):
+    async def ai_generate(self, text: str) -> str | None:
         completion = await self.ai.chat.completions.create(
             messages=[{"role": "user", "content": text}],
             model=self.config.GROQ_MODEL,
         )
         return completion.choices[0].message.content
 
-    async def setup_hook(self):
-        self.prom = Prometheus(self)
-        await self.prom.start()
+    async def close(self) -> None:
+        if self._closed:
+            return
 
-        if self.config.GROQ_KEY is not None:
-            self.ai = AsyncGroq(api_key=self.config.GROQ_KEY)
+        self._closed = True
 
-    async def start(self, worker=True):
+        await self.http.close()
+
+        if self.session and not self.session.closed:
+            await self.session.close()
+
+        if self._redis is not None:
+            self._redis.close()
+            await self._redis.wait_closed()
+
+        if self._amqp is not None:
+            await self._amqp.close()
+
+    async def start(
+        self, worker: bool = True
+    ) -> None:
+        loop = asyncio.get_running_loop()
+        self.loop = loop
+        self.http.loop = loop
+
         trace_config = aiohttp.TraceConfig()
         trace_config.on_request_start.append(self.on_http_request_start)
         trace_config.on_request_end.append(self.on_http_request_end)
 
         self.http.connector = aiohttp.TCPConnector()
+        self.http._global_over = asyncio.Event()
+        self.http._global_over.set()
         self.http._HTTPClient__session = aiohttp.ClientSession(
             connector=self.http.connector,
             ws_response_class=DiscordClientWebSocketResponse,
@@ -280,13 +337,13 @@ class ModMail(commands.AutoShardedBot):
             handlers=self._handlers,
             hooks=self._hooks,
             http=self.http,
-            loop=asyncio.get_event_loop(),
+            loop=self.loop,
             redis=self._redis,
             shard_count=int(shard_count_val) if shard_count_val else 1,
         )
         self._connection._get_client = lambda: self
 
-        self.ws = DiscordWebSocket(socket=None, loop=asyncio.get_event_loop())
+        self.ws = DiscordWebSocket(socket=None, loop=self.loop)
         self.ws.token = self.config.BOT_TOKEN
         self.ws._connection = self._connection
         self.ws._discord_parsers = self._connection.parsers
@@ -299,7 +356,16 @@ class ModMail(commands.AutoShardedBot):
             try:
                 await self.load_extension("cogs." + extension)
             except Exception:
-                log.error(f"Failed to load extension {extension}.", file=sys.stderr)
+                log.error(f"Failed to load extension {extension}.")
+                log.error(traceback.format_exc())
+
+        if self.cluster == 1:
+            try:
+                payload = tools.build_slash_commands(self)
+                await self.http.bulk_upsert_global_commands(int(self.config.BOT_CLIENT_ID), payload)
+                log.info(f"Registered {len(payload)} slash commands.")
+            except Exception:
+                log.error("Failed to register slash commands.")
                 log.error(traceback.format_exc())
 
         async with self._amqp_queue.iterator() as queue_iter:

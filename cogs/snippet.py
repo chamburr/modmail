@@ -1,10 +1,13 @@
+from __future__ import annotations
+
 import logging
 
 import asyncpg
-import discord
 
 from discord.ext import commands
 
+from classes.bot import ModMail
+from classes.context import Context
 from classes.embed import Embed, ErrorEmbed
 from utils import checks, tools
 
@@ -12,7 +15,7 @@ log = logging.getLogger(__name__)
 
 
 class Snippet(commands.Cog):
-    def __init__(self, bot):
+    def __init__(self, bot: ModMail) -> None:
         self.bot = bot
 
     @checks.is_modmail_channel()
@@ -21,7 +24,7 @@ class Snippet(commands.Cog):
     @checks.is_mod()
     @commands.guild_only()
     @commands.command(description="Use a snippet.", aliases=["s"], usage="snippet <name>")
-    async def snippet(self, ctx, *, name: str):
+    async def snippet(self, ctx: Context, *, name: str) -> None:
         async with self.bot.pool.acquire() as conn:
             res = await conn.fetchrow(
                 "SELECT content FROM snippet WHERE name=$1 AND guild=$2", name.lower(), ctx.guild.id
@@ -44,7 +47,7 @@ class Snippet(commands.Cog):
     @commands.command(
         description="Use a snippet anonymously.", aliases=["as"], usage="asnippet <name>"
     )
-    async def asnippet(self, ctx, *, name: str):
+    async def asnippet(self, ctx: Context, *, name: str) -> None:
         async with self.bot.pool.acquire() as conn:
             res = await conn.fetchrow(
                 "SELECT content FROM snippet WHERE name=$1 AND guild=$2", name.lower(), ctx.guild.id
@@ -68,7 +71,7 @@ class Snippet(commands.Cog):
         "can be used.",
         usage="snippetadd <name> <content>",
     )
-    async def snippetadd(self, ctx, name: str, *, content: str):
+    async def snippetadd(self, ctx: Context, name: str, *, content: str) -> None:
         if len(name) > 100:
             await ctx.send(ErrorEmbed("The snippet name cannot exceed 100 characters."))
             return
@@ -97,7 +100,7 @@ class Snippet(commands.Cog):
     @checks.is_mod()
     @commands.guild_only()
     @commands.command(description="Remove a snippet.", usage="snippetremove <name>")
-    async def snippetremove(self, ctx, *, name: str):
+    async def snippetremove(self, ctx: Context, *, name: str) -> None:
         async with self.bot.pool.acquire() as conn:
             res = await conn.execute(
                 "DELETE FROM snippet WHERE name=$1 AND guild=$2", name, ctx.guild.id
@@ -114,7 +117,7 @@ class Snippet(commands.Cog):
     @checks.is_mod()
     @commands.guild_only()
     @commands.command(description="Remove all the snippets.", usage="snippetclear")
-    async def snippetclear(self, ctx):
+    async def snippetclear(self, ctx: Context) -> None:
         async with self.bot.pool.acquire() as conn:
             await conn.execute("DELETE FROM snippet WHERE guild=$1", ctx.guild.id)
 
@@ -130,7 +133,7 @@ class Snippet(commands.Cog):
         aliases=["viewsnippets", "snippetlist", "vs"],
         usage="viewsnippet [name]",
     )
-    async def viewsnippet(self, ctx, *, name: str = None):
+    async def viewsnippet(self, ctx: Context, *, name: str | None = None) -> None:
         if name:
             async with self.bot.pool.acquire() as conn:
                 res = await conn.fetchrow(
@@ -180,5 +183,5 @@ class Snippet(commands.Cog):
         await tools.create_paginator(self.bot, ctx, all_pages)
 
 
-async def setup(bot):
+async def setup(bot: ModMail) -> None:
     await bot.add_cog(Snippet(bot))

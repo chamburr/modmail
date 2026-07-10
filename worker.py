@@ -1,8 +1,13 @@
+from __future__ import annotations
+
 import asyncio
 import logging
 import sys
 
+from typing import Any
+
 from classes.bot import ModMail
+from classes.message import Message
 from utils import tools
 from utils.config import Config
 
@@ -23,7 +28,7 @@ logger.addHandler(handler)
 log = logging.getLogger(__name__)
 
 
-async def command_prefix(bot2, message):
+async def command_prefix(bot2: ModMail, message: Message) -> list[str | None]:
     prefix = await tools.get_guild_prefix(bot2, message.guild)
     return [f"<@{bot.id}> ", f"<@!{bot.id}> ", prefix]
 
@@ -42,13 +47,14 @@ bot = ModMail(
 
 
 @bot.event
-async def on_message(_):
+async def on_message(_: Any) -> None:
     pass
 
 
-async def main():
+async def main() -> None:
     async with bot:
         await bot.start()
+
 
 try:
     loop.run_until_complete(main())

@@ -1,20 +1,31 @@
+from __future__ import annotations
+
 import logging
 import time
+import typing
+
+from typing import TYPE_CHECKING, Any
 
 import discord
 
+from discord.ext import commands
 from discord.http import Route
 from discord.user import User
 
-from classes.channel import DMChannel
+from classes.channel import DMChannel, TextChannel
 from classes.embed import Embed, ErrorEmbed
 from classes.http import HTTPClient
 from classes.message import Message
 
+if TYPE_CHECKING:
+    from classes.bot import ModMail
+    from classes.context import Context
+    from classes.guild import Guild
+
 log = logging.getLogger(__name__)
 
 
-def create_fake_user(user_id):
+def create_fake_user(user_id: int | str | None) -> User:
     return User(
         state=None,
         data={
@@ -26,11 +37,11 @@ def create_fake_user(user_id):
     )
 
 
-def create_fake_channel(bot, channel_id):
+def create_fake_channel(bot: ModMail, channel_id: int | str) -> DMChannel:
     return DMChannel(me=bot.user, state=bot.state, data={"id": channel_id})
 
 
-def create_fake_message(bot, channel, message_id):
+def create_fake_message(bot: ModMail, channel: DMChannel, message_id: int) -> Message:
     return Message(
         state=bot.state,
         channel=channel,
@@ -49,10 +60,68 @@ def create_fake_message(bot, channel, message_id):
     )
 
 
-async def create_paginator(bot, ctx, pages):
+def _slash_param_required(param: commands.Parameter) -> bool:
+    if param.default is not param.empty:
+        return False
+
+    if typing.get_origin(param.annotation) is typing.Union and type(None) in typing.get_args(
+        param.annotation
+    ):
+        return False
+
+    return True
+
+
+def build_slash_commands(bot: ModMail) -> list[dict[str, Any]]:
+    payload = []
+
+    for command in bot.commands:
+        if command.cog_name in ["Admin", "Owner"]:
+            continue
+
+        description = command.description or command.name
+        if len(description) > 100:
+            description = description[:97] + "..."
+
+        options = []
+        for param in command.clean_params.values():
+            options.append(
+                {
+                    "type": 3,
+                    "name": param.name.lower(),
+                    "description": f"The {param.name}.",
+                    "required": _slash_param_required(param),
+                }
+            )
+
+        options.sort(key=lambda option: not option["required"])
+
+        qualnames = [getattr(check, "__qualname__", "") for check in command.checks]
+        if any(qualname.startswith("guild_only.") for qualname in qualnames):
+            contexts = [0]
+        elif any(qualname.startswith("dm_only.") for qualname in qualnames):
+            contexts = [1]
+        else:
+            contexts = [0, 1]
+
+        entry = {
+            "type": 1,
+            "name": command.name,
+            "description": description,
+            "contexts": contexts,
+        }
+        if options:
+            entry["options"] = options
+
+        payload.append(entry)
+
+    return payload
+
+
+async def create_paginator(bot: ModMail, ctx: Context, pages: list[Embed]) -> None:
     if len(pages) == 1:
         embed = pages[0]
-        embed.set_footer(discord.Embed.Empty)
+        embed.set_footer()
         await ctx.send(embed)
         return
 
@@ -75,7 +144,7 @@ async def create_paginator(bot, ctx, pages):
     await bot.state.sadd("reaction_menu_keys", f"reaction_menu:{msg.channel.id}:{msg.id}")
 
 
-async def select_guild(bot, message, msg):
+async def select_guild(bot: ModMail, message: Message, msg: Message) -> None:
     guilds = {}
 
     user_guilds = await get_user_guilds(bot, message.author)
@@ -163,7 +232,9 @@ async def select_guild(bot, message, msg):
     await bot.state.sadd("reaction_menu_keys", f"reaction_menu:{msg.channel.id}:{msg.id}")
 
 
-async def get_reaction_menu(bot, payload, kind):
+async def get_reaction_menu(
+    bot: ModMail, payload: discord.RawReactionActionEvent, kind: str
+) -> tuple[dict[str, Any], DMChannel, Message] | tuple[None, None, None]:
     menu = await bot.state.get(f"reaction_menu:{payload.channel_id}:{payload.message_id}")
     if menu and menu["kind"] == kind:
         channel = create_fake_channel(bot, payload.channel_id)
@@ -174,7 +245,7 @@ async def get_reaction_menu(bot, payload, kind):
     return None, None, None
 
 
-async def get_data(bot, guild):
+async def get_data(bot: ModMail, guild: int) -> Any:
     async with bot.pool.acquire() as conn:
         res = await conn.fetchrow("SELECT * FROM data WHERE guild=$1", guild)
         if res:
@@ -200,7 +271,7 @@ async def get_data(bot, guild):
         )
 
 
-async def get_guild_prefix(bot, guild):
+async def get_guild_prefix(bot: ModMail, guild: Guild | None) -> str | None:
     if not guild:
         return bot.config.DEFAULT_PREFIX
 
@@ -221,12 +292,12 @@ async def get_guild_prefix(bot, guild):
     return bot.config.DEFAULT_PREFIX
 
 
-async def get_user_settings(bot, user):
+async def get_user_settings(bot: ModMail, user: int) -> Any:
     async with bot.pool.acquire() as conn:
         return await conn.fetchrow("SELECT confirmation FROM account WHERE identifier=$1", user)
 
 
-async def get_user_guilds(bot, member):
+async def get_user_guilds(bot: ModMail, member: discord.abc.Snowflake) -> list[int] | None:
     user_guilds = await bot.state.get(f"user_guilds:{member.id}")
     if user_guilds is not None:
         return [int(guild) for guild in user_guilds]
@@ -285,8 +356,8 @@ async def get_user_guilds(bot, member):
     return [int(guild) for guild in guilds]
 
 
-async def get_premium_slots(bot, user):
-    if str(user) in bot.config.OWNER_USERS.split(",") + bot.config.ADMIN_USERS.split(","):
+async def get_premium_slots(bot: ModMail, user: int) -> int:
+    if str(user) in (bot.config.OWNER_USERS or "").split(",") + (bot.config.ADMIN_USERS or "").split(","):
         return 1000
 
     guild = await bot.get_guild(int(bot.config.MAIN_SERVER))
@@ -309,7 +380,7 @@ async def get_premium_slots(bot, user):
     return 0
 
 
-async def remove_premium(bot, guild):
+async def remove_premium(bot: ModMail, guild: int) -> None:
     async with bot.pool.acquire() as conn:
         await conn.execute(
             "UPDATE data SET welcome=$1, goodbye=$2, loggingplus=$3, aiprompt=$4 WHERE guild=$5",
@@ -322,15 +393,15 @@ async def remove_premium(bot, guild):
         await conn.execute("DELETE FROM snippet WHERE guild=$1", guild)
 
 
-async def is_user_banned(bot, user):
+async def is_user_banned(bot: ModMail, user: discord.abc.Snowflake) -> bool:
     return await bot.state.sismember("banned_users", user.id)
 
 
-async def is_guild_banned(bot, guild):
+async def is_guild_banned(bot: ModMail, guild: discord.abc.Snowflake) -> bool:
     return await bot.state.sismember("banned_guilds", guild.id)
 
 
-def is_modmail_channel(channel, user_id=None):
+def is_modmail_channel(channel: Any, user_id: int | str | None = None) -> bool:
     if not getattr(channel, "topic", None) or not channel.topic.startswith("ModMail Channel "):
         return False
 
@@ -344,19 +415,19 @@ def is_modmail_channel(channel, user_id=None):
     return True
 
 
-def get_modmail_user(channel):
+def get_modmail_user(channel: TextChannel) -> User:
     return create_fake_user(channel.topic.replace("ModMail Channel ", "").split(" ")[0])
 
 
-def get_modmail_channel(bot, channel):
+def get_modmail_channel(bot: ModMail, channel: TextChannel) -> DMChannel:
     return create_fake_channel(bot, channel.topic.replace("ModMail Channel ", "").split(" ")[1])
 
 
-def perm_format(perm):
+def perm_format(perm: str) -> str:
     return perm.replace("_", " ").replace("guild", "server").title()
 
 
-def tag_format(message, author):
+def tag_format(message: str, author: Any) -> str:
     tags = {
         "{username}": author.name,
         "{userid}": str(author.id),

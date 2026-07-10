@@ -1,13 +1,19 @@
+from __future__ import annotations
+
 import asyncio
 import copy
 import io
 import logging
 import time
 
+from typing import Any
+
 import discord
 
 from discord.ext import commands
 
+from classes.bot import ModMail
+from classes.context import Context
 from classes.embed import Embed, ErrorEmbed
 from utils import checks, tools
 from utils.converters import UserConverter
@@ -16,7 +22,7 @@ log = logging.getLogger(__name__)
 
 
 class Core(commands.Cog):
-    def __init__(self, bot):
+    def __init__(self, bot: ModMail) -> None:
         self.bot = bot
 
     @checks.is_modmail_channel()
@@ -24,7 +30,7 @@ class Core(commands.Cog):
     @checks.is_mod()
     @commands.guild_only()
     @commands.command(description="Reply to the ticket.", usage="reply <message>", aliases=["r"])
-    async def reply(self, ctx, *, message):
+    async def reply(self, ctx: Context, *, message: str) -> None:
         ctx.message.content = message
         await self.bot.cogs["ModMailEvents"].send_mail_mod(ctx.message, ctx.prefix, anon=False)
 
@@ -35,7 +41,7 @@ class Core(commands.Cog):
     @commands.command(
         description="Reply to the ticket anonymously.", usage="areply <message>", aliases=["ar"]
     )
-    async def areply(self, ctx, *, message):
+    async def areply(self, ctx: Context, *, message: str) -> None:
         ctx.message.content = message
         await self.bot.cogs["ModMailEvents"].send_mail_mod(ctx.message, ctx.prefix, anon=True)
 
@@ -50,7 +56,7 @@ class Core(commands.Cog):
         usage="aireply <instructions>",
         aliases=["air"],
     )
-    async def aireply(self, ctx, *, instructions: str = None):
+    async def aireply(self, ctx: Context, *, instructions: str | None = None) -> None:
         if self.bot.ai is None:
             await ctx.send(ErrorEmbed("AI features are disabled."))
             return
@@ -103,7 +109,7 @@ class Core(commands.Cog):
             f"reaction_menu:{msg.channel.id}:{msg.id}",
         )
 
-    async def generate_history(self, channel):
+    async def generate_history(self, channel: Any) -> str:
         history = ""
         messages = [message async for message in channel.history(limit=10000)]
 
@@ -148,7 +154,7 @@ class Core(commands.Cog):
 
         return history
 
-    async def close_channel(self, ctx, reason, anon: bool = False):
+    async def close_channel(self, ctx: Context, reason: str | None, anon: bool = False) -> None:
         await ctx.send(Embed("Closing ticket..."))
 
         data = await tools.get_data(self.bot, ctx.guild.id)
@@ -167,7 +173,9 @@ class Core(commands.Cog):
             reason if reason else "No reason was provided.",
             timestamp=True,
         )
-        embed.set_footer(f"{ctx.guild.name} | {ctx.guild.id}", (ctx.guild.icon.url if ctx.guild.icon else None))
+        embed.set_footer(
+            f"{ctx.guild.name} | {ctx.guild.id}", (ctx.guild.icon.url if ctx.guild.icon else None)
+        )
 
         if anon is False:
             embed.set_author(str(ctx.author.name), ctx.author.display_avatar.url)
@@ -186,7 +194,10 @@ class Core(commands.Cog):
                     colour=0xFF4500,
                     timestamp=True,
                 )
-                embed2.set_footer(f"{ctx.guild.name} | {ctx.guild.id}", (ctx.guild.icon.url if ctx.guild.icon else None))
+                embed2.set_footer(
+                    f"{ctx.guild.name} | {ctx.guild.id}",
+                    (ctx.guild.icon.url if ctx.guild.icon else None),
+                )
                 try:
                     await dm_channel.send(embed2)
                 except discord.Forbidden:
@@ -266,7 +277,7 @@ class Core(commands.Cog):
     @checks.bot_has_permissions(manage_channels=True)
     @commands.guild_only()
     @commands.command(description="Close the ticket.", usage="close [reason]", aliases=["c"])
-    async def close(self, ctx, *, reason: str = None):
+    async def close(self, ctx: Context, *, reason: str | None = None) -> None:
         await self.close_channel(ctx, reason)
 
     @checks.is_modmail_channel()
@@ -277,7 +288,7 @@ class Core(commands.Cog):
     @commands.command(
         description="Close the ticket anonymously.", usage="aclose [reason]", aliases=["ac"]
     )
-    async def aclose(self, ctx, *, reason: str = None):
+    async def aclose(self, ctx: Context, *, reason: str | None = None) -> None:
         await self.close_channel(ctx, reason, True)
 
     @checks.in_database()
@@ -285,7 +296,7 @@ class Core(commands.Cog):
     @checks.bot_has_permissions(manage_channels=True)
     @commands.guild_only()
     @commands.command(description="Close all the tickets.", usage="closeall [reason]")
-    async def closeall(self, ctx, *, reason: str = None):
+    async def closeall(self, ctx: Context, *, reason: str | None = None) -> None:
         for channel in await ctx.guild.text_channels():
             if tools.is_modmail_channel(channel):
                 msg = copy.copy(ctx.message)
@@ -303,7 +314,7 @@ class Core(commands.Cog):
     @checks.bot_has_permissions(manage_channels=True)
     @commands.guild_only()
     @commands.command(description="Close all the tickets anonymously.", usage="acloseall [reason]")
-    async def acloseall(self, ctx, *, reason: str = None):
+    async def acloseall(self, ctx: Context, *, reason: str | None = None) -> None:
         for channel in await ctx.guild.text_channels():
             if tools.is_modmail_channel(channel):
                 msg = copy.copy(ctx.message)
@@ -325,7 +336,13 @@ class Core(commands.Cog):
         usage="blacklist [users]",
         aliases=["block"],
     )
-    async def blacklist(self, ctx, users: commands.Greedy[UserConverter] = None, *, check=None):
+    async def blacklist(
+        self,
+        ctx: Context,
+        users: commands.Greedy[UserConverter] = None,
+        *,
+        check: str | None = None,
+    ) -> None:
         if users is None:
             users = []
             if tools.is_modmail_channel(ctx.channel):
@@ -363,7 +380,13 @@ class Core(commands.Cog):
         usage="whitelist [users]",
         aliases=["unblock"],
     )
-    async def whitelist(self, ctx, users: commands.Greedy[UserConverter] = None, *, check=None):
+    async def whitelist(
+        self,
+        ctx: Context,
+        users: commands.Greedy[UserConverter] = None,
+        *,
+        check: str | None = None,
+    ) -> None:
         if users is None:
             users = []
             if tools.is_modmail_channel(ctx.channel):
@@ -396,7 +419,7 @@ class Core(commands.Cog):
     @checks.is_mod()
     @commands.guild_only()
     @commands.command(description="Remove all users from the blacklist.", usage="blacklistclear")
-    async def blacklistclear(self, ctx):
+    async def blacklistclear(self, ctx: Context) -> None:
         async with self.bot.pool.acquire() as conn:
             await conn.execute("UPDATE data SET blacklist=$1 WHERE guild=$2", [], ctx.guild.id)
 
@@ -406,7 +429,7 @@ class Core(commands.Cog):
     @checks.is_mod()
     @commands.guild_only()
     @commands.command(description="View the blacklist.", usage="viewblacklist")
-    async def viewblacklist(self, ctx):
+    async def viewblacklist(self, ctx: Context) -> None:
         blacklist = (await tools.get_data(self.bot, ctx.guild.id))[9]
         if not blacklist:
             await ctx.send(Embed("No one is blacklisted."))
@@ -427,5 +450,5 @@ class Core(commands.Cog):
         await tools.create_paginator(self.bot, ctx, all_pages)
 
 
-async def setup(bot):
+async def setup(bot: ModMail) -> None:
     await bot.add_cog(Core(bot))

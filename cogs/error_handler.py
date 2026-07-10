@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import logging
 import traceback
 
@@ -5,6 +7,8 @@ import discord
 
 from discord.ext import commands
 
+from classes.bot import ModMail
+from classes.context import Context
 from classes.embed import ErrorEmbed
 from utils import tools
 
@@ -12,11 +16,13 @@ log = logging.getLogger(__name__)
 
 
 class ErrorHandler(commands.Cog):
-    def __init__(self, bot):
+    def __init__(self, bot: ModMail) -> None:
         self.bot = bot
         bot.on_command_error = self._on_command_error
 
-    async def _on_command_error(self, ctx, error, bypass=False):
+    async def _on_command_error(
+        self, ctx: Context, error: commands.CommandError, bypass: bool = False
+    ) -> None:
         if (
             hasattr(ctx.command, "on_error")
             or (ctx.command and hasattr(ctx.cog, f"_{ctx.command.cog_name}__error"))
@@ -93,5 +99,5 @@ class ErrorHandler(commands.Cog):
                 pass
 
 
-async def setup(bot):
+async def setup(bot: ModMail) -> None:
     await bot.add_cog(ErrorHandler(bot))
