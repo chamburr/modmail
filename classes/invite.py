@@ -1,15 +1,24 @@
+from __future__ import annotations
+
 import logging
+
+from typing import TYPE_CHECKING, Any
 
 from discord import invite
 from discord.enums import ChannelType, try_enum
 from discord.invite import PartialInviteChannel, PartialInviteGuild
+
+if TYPE_CHECKING:
+    from classes.state import State
 
 log = logging.getLogger(__name__)
 
 
 class Invite(invite.Invite):
     @classmethod
-    async def from_incomplete(cls, *, state, data):
+    async def from_incomplete(
+        cls, *, state: State, data: dict[str, Any]
+    ) -> Invite:
         try:
             guild = await state._get_guild(int(data["guild"]["id"]))
             if guild is None:

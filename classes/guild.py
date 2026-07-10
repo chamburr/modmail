@@ -1,16 +1,13 @@
+from __future__ import annotations
+
 import logging
+
+from typing import TYPE_CHECKING, Any
 
 from discord import guild, utils
 from discord.channel import CategoryChannel
 from discord.emoji import Emoji
-from discord.enums import (
-    ChannelType,
-    ContentFilter,
-    NotificationLevel,
-    VerificationLevel,
-    VoiceRegion,
-    try_enum,
-)
+from discord.enums import ChannelType, ContentFilter, NotificationLevel, VerificationLevel, try_enum
 from discord.member import VoiceState
 from discord.role import Role
 
@@ -18,36 +15,45 @@ from classes.channel import TextChannel, _channel_factory
 from classes.invite import Invite
 from classes.member import Member
 
+if TYPE_CHECKING:
+    from classes.state import State
+
 log = logging.getLogger(__name__)
 
 
 class Guild(guild.Guild):
-    def __init__(self, *, data, state):
+    def __init__(self, *, data: dict[str, Any], state: State) -> None:
         self._state = state
         self._from_data(data)
 
-    def _add_channel(self, channel):
+    def _add_channel(self, channel: Any) -> None:
         return
 
-    def _remove_channel(self, channel):
+    def _remove_channel(self, channel: Any) -> None:
         return
 
-    def _add_member(self, member):
+    def _add_member(self, member: Any) -> None:
         return
 
-    def _remove_member(self, member):
+    def _remove_member(self, member: Any) -> None:
         return
 
-    def _update_voice_state(self, data, channel_id):
+    def _update_voice_state(
+        self, data: dict[str, Any], channel_id: int | None
+    ) -> None:
         return
 
-    def _add_role(self, role):
+    def _add_role(self, role: Any) -> None:
         return
 
-    def _remove_role(self, role_id):
+    def _remove_role(
+        self, role_id: int
+    ) -> None:
         return
 
-    def _from_data(self, guild):
+    def _from_data(
+        self, guild: dict[str, Any]
+    ) -> None:
         member_count = guild.get("member_count", None)
         if member_count is not None:
             self._member_count = member_count
@@ -55,7 +61,6 @@ class Guild(guild.Guild):
             self._member_count = 0
 
         self.name = guild.get("name")
-        self.region = try_enum(VoiceRegion, guild.get("region"))
         self.verification_level = try_enum(VerificationLevel, guild.get("verification_level"))
         self.default_notifications = try_enum(
             NotificationLevel, guild.get("default_message_notifications")
@@ -64,13 +69,13 @@ class Guild(guild.Guild):
             ContentFilter, guild.get("explicit_content_filter", 0)
         )
         self.afk_timeout = guild.get("afk_timeout")
-        self.icon = guild.get("icon")
-        self.banner = guild.get("banner")
+        self._icon = guild.get("icon")
+        self._banner = guild.get("banner")
         self.unavailable = guild.get("unavailable", False)
         self.id = int(guild["id"])
         self.mfa_level = guild.get("mfa_level")
         self.features = guild.get("features", [])
-        self.splash = guild.get("splash")
+        self._splash = guild.get("splash")
         self._system_channel_id = utils._get_as_snowflake(guild, "system_channel_id")
         self.description = guild.get("description")
         self.max_presences = guild.get("max_presences")
@@ -80,7 +85,7 @@ class Guild(guild.Guild):
         self.premium_subscription_count = guild.get("premium_subscription_count") or 0
         self._system_channel_flags = guild.get("system_channel_flags", 0)
         self.preferred_locale = guild.get("preferred_locale")
-        self.discovery_splash = guild.get("discovery_splash")
+        self._discovery_splash = guild.get("discovery_splash")
         self._rules_channel_id = utils._get_as_snowflake(guild, "rules_channel_id")
         self._public_updates_channel_id = utils._get_as_snowflake(
             guild, "public_updates_channel_id"
@@ -90,24 +95,43 @@ class Guild(guild.Guild):
         self._afk_channel_id = utils._get_as_snowflake(guild, "afk_channel_id")
 
     async def create_text_channel(
-        self, name, *, overwrites=None, category=None, reason=None, **options
-    ):
+        self,
+        name: str,
+        *,
+        overwrites: Any = None,
+        category: CategoryChannel | None = None,
+        reason: str | None = None,
+        **options: Any,
+    ) -> TextChannel:
         data = await self._create_channel(
-            name, overwrites, ChannelType.text, category, reason=reason, **options
+            name,
+            ChannelType.text,
+            overwrites=overwrites or {},
+            category=category,
+            reason=reason,
+            **options,
         )
         return TextChannel(state=self._state, guild=self, data=data)
 
-    async def create_category(self, name, *, overwrites=None, reason=None, position=None):
+    async def create_category(
+        self,
+        name: str,
+        *,
+        overwrites: Any = None,
+        reason: str | None = None,
+        position: int | None = None,
+    ) -> CategoryChannel:
+        options = {} if position is None else {"position": position}
         data = await self._create_channel(
-            name, overwrites, ChannelType.category, reason=reason, position=position
+            name, ChannelType.category, overwrites=overwrites or {}, reason=reason, **options
         )
         return CategoryChannel(state=self._state, guild=self, data=data)
 
-    async def fetch_member(self, member_id):
+    async def fetch_member(self, member_id: int) -> Member:
         data = await self._state.http.get_member(self.id, member_id)
         return Member(data=data, state=self._state, guild=self)
 
-    async def _channels(self):
+    async def _channels(self) -> list[Any]:
         channels = []
         for channel in await self._state._members_get_all("guild", key_id=self.id, name="channel"):
             factory, _ = _channel_factory(channel["type"])
@@ -115,19 +139,19 @@ class Guild(guild.Guild):
 
         return channels
 
-    async def _emojis(self):
+    async def _emojis(self) -> list[Emoji]:
         return [
             Emoji(guild=self, state=self._state, data=x)
             for x in await self._state._members_get_all("guild", key_id=self.id, name="emoji")
         ]
 
-    async def _members(self):
+    async def _members(self) -> list[Member]:
         return [
             Member(guild=self, state=self._state, data=x)
             for x in await self._state._members_get_all("guild", key_id=self.id, name="member")
         ]
 
-    async def _roles(self):
+    async def _roles(self) -> list[Role]:
         return sorted(
             [
                 Role(guild=self, state=self._state, data=x)
@@ -135,7 +159,9 @@ class Guild(guild.Guild):
             ]
         )
 
-    async def _voice_states(self):
+    async def _voice_states(
+        self,
+    ) -> list[VoiceState]:
         voices = []
         for voice in await self._state._members_get_all("guild", key_id=self.id, name="voice"):
             if voice["channel_id"]:
@@ -146,7 +172,9 @@ class Guild(guild.Guild):
                 voices.append(VoiceState(channel=None, data=voice))
         return voices
 
-    async def _voice_state_for(self, user_id):
+    async def _voice_state_for(
+        self, user_id: int
+    ) -> VoiceState | None:
         state = await self._state.get(f"voice:{self.id}:{user_id}")
         if state and state["channel_id"]:
             channel = await self.get_channel(int(state["channel_id"]))
@@ -156,15 +184,19 @@ class Guild(guild.Guild):
             return VoiceState(channel=None, data=state)
         return None
 
-    async def channels(self):
+    async def channels(self) -> list[Any]:
         return await self._channels()
 
-    async def text_channels(self):
+    async def text_channels(
+        self,
+    ) -> list[TextChannel]:
         channels = [x for x in await self._channels() if isinstance(x, TextChannel)]
         channels.sort(key=lambda x: (x.position, x.id))
         return channels
 
-    async def get_channel(self, channel_id):
+    async def get_channel(
+        self, channel_id: int
+    ) -> Any:
         channel = await self._state.get(f"channel:{channel_id}")
 
         if not channel:
@@ -173,29 +205,33 @@ class Guild(guild.Guild):
         factory, _ = _channel_factory(channel["type"])
         return factory(guild=self, state=self._state, data=channel)
 
-    async def afk_channel(self):
+    async def afk_channel(self) -> Any:
         channel_id = self._afk_channel_id
         return channel_id and await self.get_channel(channel_id)
 
-    async def system_channel(self):
+    async def system_channel(self) -> Any:
         channel_id = self._system_channel_id
         return channel_id and await self.get_channel(channel_id)
 
-    async def rules_channel(self):
+    async def rules_channel(self) -> Any:
         channel_id = self._rules_channel_id
         return channel_id and await self.get_channel(channel_id)
 
-    async def public_updates_channel(self):
+    async def public_updates_channel(
+        self,
+    ) -> Any:
         channel_id = self._public_updates_channel_id
         return channel_id and await self.get_channel(channel_id)
 
-    async def emojis(self):
+    async def emojis(self) -> list[Emoji]:
         return await self._emojis()
 
-    async def members(self):
+    async def members(self) -> list[Member]:
         return await self._members()
 
-    async def get_member(self, user_id):
+    async def get_member(
+        self, user_id: int
+    ) -> Member | None:
         member = await self._state.get(f"member:{self.id}:{user_id}")
 
         if member:
@@ -203,7 +239,7 @@ class Guild(guild.Guild):
 
         return None
 
-    async def me(self):
+    async def me(self) -> Member:
         member = await self.get_member(self._state.id)
 
         if member:
@@ -211,10 +247,12 @@ class Guild(guild.Guild):
 
         return await self.fetch_member(self._state.id)
 
-    async def roles(self):
+    async def roles(self) -> list[Role]:
         return await self._roles()
 
-    async def get_role(self, role_id):
+    async def get_role(
+        self, role_id: int
+    ) -> Role | None:
         role = await self._state.get(f"role:{self.id}:{role_id}")
 
         if role:
@@ -222,10 +260,12 @@ class Guild(guild.Guild):
 
         return None
 
-    async def default_role(self):
+    async def default_role(
+        self,
+    ) -> Role | None:
         return await self.get_role(self.id)
 
-    async def invites(self):
+    async def invites(self) -> list[Invite]:
         data = await self._state.http.invites_from(self.id)
         result = []
         for invite in data:

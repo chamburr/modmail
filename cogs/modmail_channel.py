@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import io
 import logging
 
@@ -5,18 +7,20 @@ import discord
 
 from discord.ext import commands
 
+from classes.bot import ModMail
 from classes.embed import Embed, ErrorEmbed
+from classes.message import Message
 from utils import tools
 
 log = logging.getLogger(__name__)
 
 
 class ModMailEvents(commands.Cog):
-    def __init__(self, bot):
+    def __init__(self, bot: ModMail) -> None:
         self.bot = bot
 
     @commands.Cog.listener()
-    async def on_message(self, message):
+    async def on_message(self, message: Message) -> None:
         if message.author.bot or not message.guild or not tools.is_modmail_channel(message.channel):
             return
 
@@ -43,7 +47,9 @@ class ModMailEvents(commands.Cog):
 
         await self.send_mail_mod(message, prefix)
 
-    async def send_mail_mod(self, message, prefix, anon=False, snippet=False):
+    async def send_mail_mod(
+        self, message: Message, prefix: str, anon: bool = False, snippet: bool = False
+    ) -> None:
         self.bot.prom.tickets_message.inc({})
 
         data = await tools.get_data(self.bot, message.guild.id)
@@ -72,10 +78,13 @@ class ModMailEvents(commands.Cog):
             message.content = tools.tag_format(message.content, member)
 
         embed = Embed("Message Received", message.content, colour=0xFF4500, timestamp=True)
-        embed.set_footer(f"{message.guild.name} | {message.guild.id}", message.guild.icon_url)
+        embed.set_footer(
+            f"{message.guild.name} | {message.guild.id}",
+            (message.guild.icon.url if message.guild.icon else None),
+        )
 
         if anon is False:
-            embed.set_author(str(message.author.name), message.author.avatar_url)
+            embed.set_author(str(message.author.name), message.author.display_avatar.url)
 
         files = []
         for file in message.attachments:
@@ -98,9 +107,9 @@ class ModMailEvents(commands.Cog):
         embed.title = "Message Sent"
         embed.set_author(
             str(message.author.name) if anon is False else f"{message.author.name} (Anonymous)",
-            message.author.avatar_url,
+            message.author.display_avatar.url,
         )
-        embed.set_footer(f"{member.name} | {member.id}", member.avatar_url)
+        embed.set_footer(f"{member.name} | {member.id}", member.display_avatar.url)
 
         for count, attachment in enumerate(
             [attachment.url for attachment in dm_message.attachments], start=1
@@ -118,5 +127,5 @@ class ModMailEvents(commands.Cog):
             pass
 
 
-def setup(bot):
-    bot.add_cog(ModMailEvents(bot))
+async def setup(bot: ModMail) -> None:
+    await bot.add_cog(ModMailEvents(bot))

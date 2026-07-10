@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import io
 import logging
 import string
@@ -7,7 +9,10 @@ import discord
 
 from discord.ext import commands
 
+from classes.bot import ModMail
+from classes.context import Context
 from classes.embed import Embed, ErrorEmbed
+from classes.guild import Guild
 from classes.message import Message
 from utils import tools
 from utils.converters import GuildConverter
@@ -16,11 +21,11 @@ log = logging.getLogger(__name__)
 
 
 class DirectMessageEvents(commands.Cog, name="Direct Message"):
-    def __init__(self, bot):
+    def __init__(self, bot: ModMail) -> None:
         self.bot = bot
         self.guild = None
 
-    async def send_mail(self, message, guild):
+    async def send_mail(self, message: Message, guild: Guild | None) -> None:
         self.bot.prom.tickets_message.inc({})
 
         if not guild:
@@ -65,7 +70,9 @@ class DirectMessageEvents(commands.Cog, name="Direct Message"):
                     data[12] if data[12] else "No reason was provided.",
                     timestamp=True,
                 )
-                embed.set_footer(f"{guild.name} | {guild.id}", guild.icon_url)
+                embed.set_footer(
+                    f"{guild.name} | {guild.id}", (guild.icon.url if guild.icon else None)
+                )
                 await message.channel.send(embed)
                 return
 
@@ -123,7 +130,7 @@ class DirectMessageEvents(commands.Cog, name="Direct Message"):
                 )
                 embed.set_footer(
                     f"{message.author.name} | {message.author.id}",
-                    message.author.avatar_url,
+                    message.author.display_avatar.url,
                 )
 
                 try:
@@ -162,7 +169,7 @@ class DirectMessageEvents(commands.Cog, name="Direct Message"):
                 ),
             )
             embed.set_footer(
-                f"{message.author.name} | {message.author.id}", message.author.avatar_url
+                f"{message.author.name} | {message.author.id}", message.author.display_avatar.url
             )
 
             roles = []
@@ -191,12 +198,14 @@ class DirectMessageEvents(commands.Cog, name="Direct Message"):
                     colour=0xFF4500,
                     timestamp=True,
                 )
-                embed.set_footer(f"{guild.name} | {guild.id}", guild.icon_url)
+                embed.set_footer(
+                    f"{guild.name} | {guild.id}", (guild.icon.url if guild.icon else None)
+                )
 
                 await message.channel.send(embed)
 
         embed = Embed("Message Sent", message.content, colour=0x00FF00, timestamp=True)
-        embed.set_footer(f"{guild.name} | {guild.id}", guild.icon_url)
+        embed.set_footer(f"{guild.name} | {guild.id}", (guild.icon.url if guild.icon else None))
 
         files = []
         for file in message.attachments:
@@ -209,7 +218,7 @@ class DirectMessageEvents(commands.Cog, name="Direct Message"):
         embed.title = "Message Received"
         embed.set_footer(
             f"{message.author.name} | {message.author.id}",
-            message.author.avatar_url,
+            message.author.display_avatar.url,
         )
 
         for count, attachment in enumerate(
@@ -229,7 +238,7 @@ class DirectMessageEvents(commands.Cog, name="Direct Message"):
             )
 
     @commands.Cog.listener()
-    async def on_raw_reaction_add(self, payload):
+    async def on_raw_reaction_add(self, payload: discord.RawReactionActionEvent) -> None:
         if payload.user_id == self.bot.id:
             return
 
@@ -323,7 +332,7 @@ class DirectMessageEvents(commands.Cog, name="Direct Message"):
                         pass
 
     @commands.Cog.listener()
-    async def on_message(self, message):
+    async def on_message(self, message: Message) -> None:
         if (
             message.is_system()
             or message.author.bot
@@ -403,7 +412,7 @@ class DirectMessageEvents(commands.Cog, name="Direct Message"):
         usage="new <message>",
         aliases=["create", "switch", "change"],
     )
-    async def new(self, ctx, *, message: str):
+    async def new(self, ctx: Context, *, message: str) -> None:
         ctx.message.content = message
         ctx.message._data["content"] = message
 
@@ -414,7 +423,7 @@ class DirectMessageEvents(commands.Cog, name="Direct Message"):
     @commands.command(
         description="Shortcut to send message to a server.", usage="send <server ID> <message>"
     )
-    async def send(self, ctx, guild: GuildConverter, *, message: str):
+    async def send(self, ctx: Context, guild: GuildConverter, *, message: str) -> None:
         ctx.message.content = message
         await self.send_mail(ctx.message, guild)
 
@@ -422,7 +431,7 @@ class DirectMessageEvents(commands.Cog, name="Direct Message"):
     @commands.command(
         description="Enable or disable the confirmation message.", usage="confirmation"
     )
-    async def confirmation(self, ctx):
+    async def confirmation(self, ctx: Context) -> None:
         data = await tools.get_user_settings(self.bot, ctx.author.id)
 
         if not data or data[0] is True:
@@ -453,5 +462,5 @@ class DirectMessageEvents(commands.Cog, name="Direct Message"):
         await ctx.send(Embed("Confirmation messages are enabled."))
 
 
-def setup(bot):
-    bot.add_cog(DirectMessageEvents(bot))
+async def setup(bot: ModMail) -> None:
+    await bot.add_cog(DirectMessageEvents(bot))

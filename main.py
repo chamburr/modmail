@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import asyncio
 import json
 import os
@@ -5,8 +7,9 @@ import signal
 import sys
 import time
 
-from datetime import datetime
+from collections.abc import Awaitable, Callable
 from pathlib import Path
+from typing import Any
 
 import aiohttp
 import discord
@@ -24,7 +27,7 @@ VERSION = "3.4.0"
 
 
 class Instance:
-    def __init__(self, instance_id, loop, main):
+    def __init__(self, instance_id: int, loop: asyncio.AbstractEventLoop, main: Main) -> None:
         self.id = instance_id
         self.loop = loop
         self.main = main
@@ -34,10 +37,10 @@ class Instance:
         self.task.add_done_callback(self.main.dead_process_handler)
 
     @property
-    def is_active(self):
+    def is_active(self) -> bool:
         return self._process is not None and not self._process.returncode
 
-    async def read_stream(self, stream):
+    async def read_stream(self, stream: asyncio.StreamReader) -> None:
         while self.is_active:
             try:
                 line = await stream.readline()
@@ -50,7 +53,7 @@ class Instance:
             else:
                 break
 
-    async def start(self):
+    async def start(self) -> Instance | None:
         if self.is_active:
             print(f"[Cluster {self.id}] Already active.")
             return
@@ -76,11 +79,11 @@ class Instance:
 
         return self
 
-    def kill(self):
+    def kill(self) -> None:
         self.status = "stopped"
         os.killpg(os.getpgid(self._process.pid), signal.SIGTERM)
 
-    async def restart(self):
+    async def restart(self) -> None:
         if self.is_active:
             self.kill()
             await asyncio.sleep(1)
@@ -89,12 +92,12 @@ class Instance:
 
 
 class Scheduler:
-    def __init__(self, loop, bot):
+    def __init__(self, loop: asyncio.AbstractEventLoop, bot: ModMail) -> None:
         self.loop = loop
         self.bot = bot
         self.session = aiohttp.ClientSession()
 
-    async def run_task(self, task):
+    async def run_task(self, task: Callable[[], Awaitable[Any]]) -> None:
         while True:
             try:
                 await task()
@@ -104,12 +107,12 @@ class Scheduler:
                 print(f"[Cluster Manager] Task {task.__name__} crashed: {e}")
                 await asyncio.sleep(10)
 
-    async def premium_updater(self):
+    async def premium_updater(self) -> None:
         while True:
             async with self.bot.pool.acquire() as conn:
                 premium = await conn.fetch(
                     "SELECT identifier, guild FROM premium WHERE expiry IS NOT NULL AND expiry<$1",
-                    int(datetime.utcnow().timestamp() * 1000),
+                    int(discord.utils.utcnow().timestamp() * 1000),
                 )
 
                 for row in premium:
@@ -129,7 +132,7 @@ class Scheduler:
 
             await asyncio.sleep(60)
 
-    async def bot_stats_updater(self):
+    async def bot_stats_updater(self) -> None:
         while True:
             guilds = await self.bot.state.scard("guild_keys")
             shards = await self.bot.shard_count()
@@ -160,7 +163,7 @@ class Scheduler:
 
             await asyncio.sleep(900)
 
-    async def cleanup(self):
+    async def cleanup(self) -> None:
         while True:
             for menu_key in await self.bot.state.smembers("reaction_menu_keys"):
                 menu = await self.bot.state.get(menu_key)
@@ -227,7 +230,7 @@ class Scheduler:
 
             await asyncio.sleep(30)
 
-    async def launch(self):
+    async def launch(self) -> None:
         if config.ENVIRONMENT == "production":
             self.loop.create_task(self.run_task(self.bot_stats_updater))
 
@@ -236,13 +239,13 @@ class Scheduler:
 
 
 class Main:
-    def __init__(self, loop):
+    def __init__(self, loop: asyncio.AbstractEventLoop) -> None:
         self.loop = loop
-        self.instances = []
-        self.bot = None
+        self.instances: list[Instance] = []
+        self.bot: ModMail = discord.utils.MISSING
         self.shard_count = None
 
-    def dead_process_handler(self, result):
+    def dead_process_handler(self, result: asyncio.Task[Any]) -> None:
         instance = result.result()
         print(
             f"[Cluster {instance.id}] The cluster exited with code {instance._process.returncode}."
@@ -255,7 +258,7 @@ class Main:
         print(f"[Cluster {instance.id}] The cluster is restarting.")
         instance.loop.create_task(instance.start())
 
-    async def user_select_handler(self, body):
+    async def user_select_handler(self, body: dict[str, Any]) -> None:
         async with self.bot.pool.acquire() as conn:
             await conn.execute(
                 "INSERT INTO account VALUES ($1, TRUE, $2) ON CONFLICT (identifier) DO UPDATE SET "
@@ -276,7 +279,7 @@ class Main:
 
         await tools.select_guild(self.bot, message, msg)
 
-    async def handler(self, request):
+    async def handler(self, request: web.BaseRequest) -> web.Response | None:
         if request.method == "GET" and request.path == "/healthcheck":
             return web.Response(body='{"status":"Ok"}', content_type="application/json")
         elif request.method == "GET" and request.path == "/restart":
@@ -288,7 +291,7 @@ class Main:
             self.loop.create_task(self.user_select_handler(body))
             return web.Response(body='{"status":"Ok"}', content_type="application/json")
 
-    def write_targets(self):
+    def write_targets(self) -> None:
         data = []
 
         data.append({"labels": {"cluster": "0"}, "targets": ["localhost:6100"]})
@@ -298,7 +301,7 @@ class Main:
         with open("targets.json", "w") as file:
             json.dump(data, file, indent=2)
 
-    async def load_cache(self):
+    async def load_cache(self) -> None:
         async with self.bot.pool.acquire() as conn:
             data = await conn.fetch("SELECT guild, prefix FROM data")
             bans = await conn.fetch("SELECT identifier, category FROM ban")
@@ -314,7 +317,7 @@ class Main:
         if len([x[0] for x in bans if x[1] == 1]) >= 1:
             await self.bot.state.sadd("banned_guilds", *[x[0] for x in bans if x[1] == 1])
 
-    async def launch(self):
+    async def launch(self) -> None:
         print(f"[Cluster Manager] Starting a total of {config.BOT_CLUSTERS} clusters.")
 
         self.bot = ModMail(cluster_id=0, cluster_count=int(config.BOT_CLUSTERS))
@@ -350,7 +353,7 @@ try:
     loop.run_forever()
 except KeyboardInterrupt:
 
-    def shutdown_handler(_loop, context):
+    def shutdown_handler(_loop: asyncio.AbstractEventLoop, context: dict[str, Any]) -> None:
         if "exception" not in context or not isinstance(
             context["exception"], asyncio.CancelledError
         ):

@@ -1,10 +1,11 @@
+from __future__ import annotations
+
 import copy
 import io
 import logging
 import subprocess
 import textwrap
 import traceback
-import typing
 
 from contextlib import redirect_stdout
 
@@ -12,6 +13,8 @@ import discord
 
 from discord.ext import commands
 
+from classes.bot import ModMail
+from classes.context import Context
 from classes.embed import Embed, ErrorEmbed
 from utils import checks
 from utils.converters import ChannelConverter, GuildConverter, MemberConverter, UserConverter
@@ -20,12 +23,12 @@ log = logging.getLogger(__name__)
 
 
 class Owner(commands.Cog):
-    def __init__(self, bot):
+    def __init__(self, bot: ModMail) -> None:
         self.bot = bot
 
     @checks.is_owner()
     @commands.command(name="eval", description="Evaluate code.", usage="eval <code>")
-    async def _eval(self, ctx, *, body: str):
+    async def _eval(self, ctx: Context, *, body: str) -> None:
         env = {
             "bot": self.bot,
             "ctx": ctx,
@@ -70,7 +73,7 @@ class Owner(commands.Cog):
 
     @checks.is_owner()
     @commands.command(description="Execute code in bash.", usage="bash <command>")
-    async def bash(self, ctx, *, command: str):
+    async def bash(self, ctx: Context, *, command: str) -> None:
         try:
             output = subprocess.check_output(command.split(), stderr=subprocess.STDOUT).decode(
                 "utf-8"
@@ -81,7 +84,7 @@ class Owner(commands.Cog):
 
     @checks.is_owner()
     @commands.command(description="Execute SQL query.", usage="sql <query>")
-    async def sql(self, ctx, *, query: str):
+    async def sql(self, ctx: Context, *, query: str) -> None:
         async with self.bot.pool.acquire() as conn:
             try:
                 res = await conn.fetch(query)
@@ -102,12 +105,12 @@ class Owner(commands.Cog):
     )
     async def invoke(
         self,
-        ctx,
-        channel: typing.Optional[ChannelConverter],
+        ctx: Context,
+        channel: ChannelConverter | None,
         member: MemberConverter,
         *,
         command: str,
-    ):
+    ) -> None:
         msg = copy.copy(ctx.message)
         channel = channel or ctx.channel
         msg.channel = channel
@@ -119,7 +122,7 @@ class Owner(commands.Cog):
 
     @checks.is_owner()
     @commands.command(description="Ban a user from the bot", usage="banuser <user>")
-    async def banuser(self, ctx, *, user: UserConverter):
+    async def banuser(self, ctx: Context, *, user: UserConverter) -> None:
         async with self.bot.pool.acquire() as conn:
             await conn.execute("INSERT INTO ban VALUES ($1, $2)", user.id, 0)
 
@@ -129,7 +132,7 @@ class Owner(commands.Cog):
 
     @checks.is_owner()
     @commands.command(description="Unban a user from the bot", usage="unbanuser <user>")
-    async def unbanuser(self, ctx, *, user: UserConverter):
+    async def unbanuser(self, ctx: Context, *, user: UserConverter) -> None:
         async with self.bot.pool.acquire() as conn:
             res = await conn.execute(
                 "DELETE FROM ban WHERE identifier=$1 AND category=$2", user.id, 0
@@ -145,7 +148,7 @@ class Owner(commands.Cog):
 
     @checks.is_owner()
     @commands.command(description="Ban a server from the bot", usage="banserver <server ID>")
-    async def banserver(self, ctx, *, guild: GuildConverter):
+    async def banserver(self, ctx: Context, *, guild: GuildConverter) -> None:
         async with self.bot.pool.acquire() as conn:
             await conn.execute("INSERT INTO ban VALUES ($1, $2)", guild.id, 1)
 
@@ -155,7 +158,7 @@ class Owner(commands.Cog):
 
     @checks.is_owner()
     @commands.command(description="Unban a server from the bot", usage="unbanserver <server ID>")
-    async def unbanserver(self, ctx, *, guild: int):
+    async def unbanserver(self, ctx: Context, *, guild: int) -> None:
         async with self.bot.pool.acquire() as conn:
             res = await conn.execute(
                 "DELETE FROM ban WHERE identifier=$1 AND category=$2", guild, 1
@@ -170,5 +173,5 @@ class Owner(commands.Cog):
         await ctx.send(Embed("Successfully unbanned that server from the bot."))
 
 
-def setup(bot):
-    bot.add_cog(Owner(bot))
+async def setup(bot: ModMail) -> None:
+    await bot.add_cog(Owner(bot))

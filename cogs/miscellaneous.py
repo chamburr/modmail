@@ -1,7 +1,11 @@
+from __future__ import annotations
+
 import logging
 
 from discord.ext import commands
 
+from classes.bot import ModMail
+from classes.context import Context
 from classes.embed import Embed
 from utils import checks, tools
 from utils.converters import MemberConverter
@@ -10,7 +14,7 @@ log = logging.getLogger(__name__)
 
 
 class Miscellaneous(commands.Cog):
-    def __init__(self, bot):
+    def __init__(self, bot: ModMail) -> None:
         self.bot = bot
 
     @checks.has_permissions(administrator=True)
@@ -20,7 +24,9 @@ class Miscellaneous(commands.Cog):
         usage="permissions [member]",
         aliases=["perms"],
     )
-    async def permissions(self, ctx, member: MemberConverter = None):
+    async def permissions(
+        self, ctx: Context, member: MemberConverter = None
+    ) -> None:
         if member is None:
             member = ctx.message.member
 
@@ -45,7 +51,9 @@ class Miscellaneous(commands.Cog):
         usage="userinfo [member]",
         aliases=["memberinfo"],
     )
-    async def userinfo(self, ctx, *, member: MemberConverter = None):
+    async def userinfo(
+        self, ctx: Context, *, member: MemberConverter = None
+    ) -> None:
         if member is None:
             member = ctx.message.member
 
@@ -57,7 +65,9 @@ class Miscellaneous(commands.Cog):
         embed.add_field("Name", str(member) if member.bot else str(member.name), False)
         embed.add_field("ID", member.id)
         embed.add_field("Nickname", member.nick if member.nick else "*Not set*")
-        embed.add_field("Avatar", f"[Link]({member.avatar_url_as(static_format='png')})")
+        embed.add_field(
+            "Avatar", f"[Link]({member.display_avatar.replace(static_format='png').url})"
+        )
         embed.add_field(
             "Joined Server",
             f"<t:{round(member.joined_at.timestamp())}:R>" if member.joined_at else "Unknown",
@@ -67,7 +77,7 @@ class Miscellaneous(commands.Cog):
             "Roles",
             f"{len(roles)} roles" if len(", ".join(roles)) > 1000 else ", ".join(roles),
         )
-        embed.set_thumbnail(member.avatar_url)
+        embed.set_thumbnail(member.display_avatar.url)
 
         await ctx.send(embed)
 
@@ -77,7 +87,7 @@ class Miscellaneous(commands.Cog):
         usage="serverinfo",
         aliases=["guildinfo"],
     )
-    async def serverinfo(self, ctx):
+    async def serverinfo(self, ctx: Context) -> None:
         guild = await self.bot.get_guild(ctx.guild.id)
 
         embed = Embed(title="Server Information")
@@ -86,7 +96,7 @@ class Miscellaneous(commands.Cog):
         embed.add_field("Owner", f"<@{guild.owner_id}>" if guild.owner_id else "Unknown")
         embed.add_field(
             "Icon",
-            f"[Link]({guild.icon_url_as(static_format='png')})" if guild.icon else "*Not set*",
+            f"[Link]({guild.icon.replace(static_format='png').url})" if guild.icon else "*Not set*",
         )
         embed.add_field("Server Created", f"<t:{round(guild.created_at.timestamp())}:R>")
         embed.add_field("Members", guild.member_count)
@@ -94,10 +104,10 @@ class Miscellaneous(commands.Cog):
         embed.add_field("Roles", str(len(await guild.roles())))
 
         if guild.icon:
-            embed.set_thumbnail(guild.icon_url)
+            embed.set_thumbnail((guild.icon.url if guild.icon else None))
 
         await ctx.send(embed)
 
 
-def setup(bot):
-    bot.add_cog(Miscellaneous(bot))
+async def setup(bot: ModMail) -> None:
+    await bot.add_cog(Miscellaneous(bot))

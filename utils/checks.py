@@ -1,4 +1,8 @@
+from __future__ import annotations
+
 import logging
+
+from typing import TYPE_CHECKING
 
 from discord.ext import commands
 from discord.ext.commands import BotMissingPermissions, MissingPermissions
@@ -7,12 +11,17 @@ from classes.channel import TextChannel
 from classes.embed import ErrorEmbed
 from utils import tools
 
+if TYPE_CHECKING:
+    from discord.ext.commands._types import Check
+
+    from classes.context import Context
+
 log = logging.getLogger(__name__)
 
 
-def is_owner():
-    def predicate(ctx):
-        if str(ctx.author.id) not in ctx.bot.config.OWNER_USERS.split(","):
+def is_owner() -> Check[Context]:
+    def predicate(ctx: Context) -> bool:
+        if str(ctx.author.id) not in (ctx.bot.config.OWNER_USERS or "").split(","):
             raise commands.NotOwner()
 
         return True
@@ -20,10 +29,11 @@ def is_owner():
     return commands.check(predicate)
 
 
-def is_admin():
-    def predicate(ctx):
+def is_admin() -> Check[Context]:
+    def predicate(ctx: Context) -> bool:
         if str(ctx.author.id) not in (
-            ctx.bot.config.OWNER_USERS.split(",") + ctx.bot.config.ADMIN_USERS.split(",")
+            (ctx.bot.config.OWNER_USERS or "").split(",")
+            + (ctx.bot.config.ADMIN_USERS or "").split(",")
         ):
             raise commands.NotOwner()
 
@@ -32,8 +42,8 @@ def is_admin():
     return commands.check(predicate)
 
 
-def in_database():
-    async def predicate(ctx):
+def in_database() -> Check[Context]:
+    async def predicate(ctx: Context) -> bool:
         async with ctx.bot.pool.acquire() as conn:
             res = await conn.fetchrow("SELECT category FROM data WHERE guild=$1", ctx.guild.id)
 
@@ -48,8 +58,8 @@ def in_database():
     return commands.check(predicate)
 
 
-def is_premium():
-    async def predicate(ctx):
+def is_premium() -> Check[Context]:
+    async def predicate(ctx: Context) -> bool:
         if not ctx.bot.config.MAIN_SERVER:
             return True
 
@@ -72,8 +82,8 @@ def is_premium():
     return commands.check(predicate)
 
 
-def is_patron():
-    async def predicate(ctx):
+def is_patron() -> Check[Context]:
+    async def predicate(ctx: Context) -> bool:
         async with ctx.bot.pool.acquire() as conn:
             res = await conn.fetchrow(
                 "SELECT identifier FROM premium WHERE identifier=$1", ctx.author.id
@@ -99,8 +109,8 @@ def is_patron():
     return commands.check(predicate)
 
 
-def is_modmail_channel():
-    async def predicate(ctx):
+def is_modmail_channel() -> Check[Context]:
+    async def predicate(ctx: Context) -> bool:
         if not tools.is_modmail_channel(ctx.channel):
             await ctx.send(ErrorEmbed("This channel is not a ModMail channel."))
             return False
@@ -110,8 +120,8 @@ def is_modmail_channel():
     return commands.check(predicate)
 
 
-def is_mod():
-    async def predicate(ctx):
+def is_mod() -> Check[Context]:
+    async def predicate(ctx: Context) -> bool:
         if (await ctx.message.member.guild_permissions()).administrator:
             return True
 
@@ -125,8 +135,8 @@ def is_mod():
     return commands.check(predicate)
 
 
-def has_permissions(**perms):
-    async def predicate(ctx):
+def has_permissions(**perms: bool) -> Check[Context]:
+    async def predicate(ctx: Context) -> bool:
         permissions = await ctx.channel.permissions_for(ctx.message.member)
         missing = [perm for perm, value in perms.items() if getattr(permissions, perm) != value]
 
@@ -138,8 +148,8 @@ def has_permissions(**perms):
     return commands.check(predicate)
 
 
-def bot_has_permissions(**perms):
-    async def predicate(ctx):
+def bot_has_permissions(**perms: bool) -> Check[Context]:
+    async def predicate(ctx: Context) -> bool:
         if not isinstance(ctx.channel, TextChannel):
             return True
 
