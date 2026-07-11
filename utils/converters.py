@@ -1,5 +1,10 @@
+from __future__ import annotations
+
+import datetime
 import logging
 import re
+
+from typing import TYPE_CHECKING
 
 import dateparser
 import discord
@@ -13,15 +18,20 @@ from discord.ext.commands.errors import (
     RoleNotFound,
     UserNotFound,
 )
+from discord.role import Role
 
 from classes.channel import TextChannel
 from classes.member import Member
+
+if TYPE_CHECKING:
+    from classes.context import Context
+    from classes.guild import Guild
 
 log = logging.getLogger(__name__)
 
 
 class ChannelConverter(commands.TextChannelConverter):
-    async def convert(self, ctx, argument):
+    async def convert(self, ctx: Context, argument: str) -> TextChannel:
         match = self._get_id_match(argument) or re.match(r"<#([0-9]+)>$", argument)
         if match:
             channel_id = int(match.group(1))
@@ -37,8 +47,8 @@ class ChannelConverter(commands.TextChannelConverter):
         raise ChannelNotFound(argument)
 
 
-class DateTimeConverter(commands.Converter):
-    async def convert(self, ctx, argument):
+class DateTimeConverter(commands.Converter[datetime.datetime]):
+    async def convert(self, ctx: Context, argument: str) -> datetime.datetime:
         date = dateparser.parse(
             argument,
             settings={
@@ -57,7 +67,7 @@ class DateTimeConverter(commands.Converter):
 
 
 class GuildConverter(commands.GuildConverter):
-    async def convert(self, ctx, argument):
+    async def convert(self, ctx: Context, argument: str) -> Guild:
         try:
             guild = await ctx.bot.get_guild(int(argument))
             if guild:
@@ -69,7 +79,7 @@ class GuildConverter(commands.GuildConverter):
 
 
 class MemberConverter(commands.MemberConverter):
-    async def convert(self, ctx, argument):
+    async def convert(self, ctx: Context, argument: str) -> Member:
         match = self._get_id_match(argument) or re.match(r"<@!?([0-9]+)>$", argument)
         if match:
             try:
@@ -85,7 +95,7 @@ class MemberConverter(commands.MemberConverter):
 
 
 class RoleConverter(commands.RoleConverter):
-    async def convert(self, ctx, argument):
+    async def convert(self, ctx: Context, argument: str) -> Role:
         if not ctx.guild:
             raise NoPrivateMessage()
 
@@ -103,7 +113,7 @@ class RoleConverter(commands.RoleConverter):
 
 
 class PingRoleConverter(RoleConverter):
-    async def convert(self, ctx, argument):
+    async def convert(self, ctx: Context, argument: str) -> Role | str:
         try:
             return await super().convert(ctx, argument)
         except commands.BadArgument:
@@ -111,7 +121,7 @@ class PingRoleConverter(RoleConverter):
 
 
 class UserConverter(commands.UserConverter):
-    async def convert(self, ctx, argument):
+    async def convert(self, ctx: Context, argument: str) -> discord.User:
         match = self._get_id_match(argument) or re.match(r"<@!?([0-9]+)>$", argument)
         if match:
             try:

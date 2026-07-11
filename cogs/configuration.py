@@ -1,11 +1,16 @@
+from __future__ import annotations
+
 import logging
-import typing
+
+from typing import Any
 
 from discord.errors import Forbidden
 from discord.ext import commands
 from discord.permissions import PermissionOverwrite
 from discord.role import Role
 
+from classes.bot import ModMail
+from classes.context import Context
 from classes.embed import Embed, ErrorEmbed
 from utils import checks, tools
 from utils.converters import ChannelConverter, PingRoleConverter, RoleConverter
@@ -14,10 +19,12 @@ log = logging.getLogger(__name__)
 
 
 class Configuration(commands.Cog):
-    def __init__(self, bot):
+    def __init__(self, bot: ModMail) -> None:
         self.bot = bot
 
-    async def _get_overwrites(self, ctx, roles):
+    async def _get_overwrites(
+        self, ctx: Context, roles: list[int]
+    ) -> dict[Any, PermissionOverwrite]:
         overwrites = {await ctx.guild.default_role(): PermissionOverwrite(read_messages=False)}
 
         for role in roles:
@@ -47,7 +54,7 @@ class Configuration(commands.Cog):
     @checks.has_permissions(administrator=True)
     @commands.guild_only()
     @commands.command(description="Set up ModMail.", usage="setup")
-    async def setup(self, ctx):
+    async def setup(self, ctx: Context) -> None:
         msg = await ctx.send(Embed("Setting up..."))
 
         data = await tools.get_data(self.bot, ctx.guild.id)
@@ -95,7 +102,7 @@ class Configuration(commands.Cog):
         usage="prefix [new prefix]",
         aliases=["setprefix"],
     )
-    async def prefix(self, ctx, *, prefix: str = None):
+    async def prefix(self, ctx: Context, *, prefix: str | None = None) -> None:
         if prefix is None:
             await ctx.send(Embed(f"The prefix for this server is `{ctx.prefix}`."))
             return
@@ -130,7 +137,7 @@ class Configuration(commands.Cog):
     @commands.command(
         description="Re-create the category for the ModMail channels.", usage="category [name]"
     )
-    async def category(self, ctx, *, name: str = "ModMail"):
+    async def category(self, ctx: Context, *, name: str = "ModMail") -> None:
         if len(name) > 100:
             await ctx.send(ErrorEmbed("The category name cannot be longer than 100 characters"))
             return
@@ -164,7 +171,13 @@ class Configuration(commands.Cog):
         aliases=["modrole", "supportrole"],
         usage="accessrole [roles]",
     )
-    async def accessrole(self, ctx, roles: commands.Greedy[RoleConverter] = None, *, check=None):
+    async def accessrole(
+        self,
+        ctx: Context,
+        roles: commands.Greedy[RoleConverter] = None,
+        *,
+        check: str | None = None,
+    ) -> None:
         if roles is None:
             roles = []
 
@@ -226,7 +239,11 @@ class Configuration(commands.Cog):
         aliases=["mentionrole"],
         usage="pingrole [roles]",
     )
-    async def pingrole(self, ctx, roles: commands.Greedy[PingRoleConverter] = None):
+    async def pingrole(
+        self,
+        ctx: Context,
+        roles: commands.Greedy[PingRoleConverter] = None,
+    ) -> None:
         if roles is None:
             roles = []
 
@@ -269,7 +286,7 @@ class Configuration(commands.Cog):
         aliases=["logs"],
         usage="logging [channel]",
     )
-    async def logging(self, ctx, channel: typing.Optional[ChannelConverter]):
+    async def logging(self, ctx: Context, channel: ChannelConverter | None) -> None:
         data = await tools.get_data(self.bot, ctx.guild.id)
 
         if data[4] and channel is None:
@@ -307,7 +324,7 @@ class Configuration(commands.Cog):
         aliases=["commandrequired"],
         usage="commandonly",
     )
-    async def commandonly(self, ctx):
+    async def commandonly(self, ctx: Context) -> None:
         data = await tools.get_data(self.bot, ctx.guild.id)
 
         async with self.bot.pool.acquire() as conn:
@@ -331,7 +348,7 @@ class Configuration(commands.Cog):
         aliases=["welcomemessage", "greetmessage"],
         usage="greetingmessage [text]",
     )
-    async def greetingmessage(self, ctx, *, text: str = None):
+    async def greetingmessage(self, ctx: Context, *, text: str | None = None) -> None:
         async with self.bot.pool.acquire() as conn:
             await conn.execute("UPDATE data SET welcome=$1 WHERE guild=$2", text, ctx.guild.id)
 
@@ -347,7 +364,7 @@ class Configuration(commands.Cog):
         aliases=["goodbyemessage", "closemessage"],
         usage="closingmessage [text]",
     )
-    async def closingmessage(self, ctx, *, text: str = None):
+    async def closingmessage(self, ctx: Context, *, text: str | None = None) -> None:
         async with self.bot.pool.acquire() as conn:
             await conn.execute("UPDATE data SET goodbye=$1 WHERE guild=$2", text, ctx.guild.id)
 
@@ -363,7 +380,7 @@ class Configuration(commands.Cog):
         aliases=["advancedlogging", "advancedlogs"],
         usage="loggingplus",
     )
-    async def loggingplus(self, ctx):
+    async def loggingplus(self, ctx: Context) -> None:
         data = await tools.get_data(self.bot, ctx.guild.id)
 
         async with self.bot.pool.acquire() as conn:
@@ -384,7 +401,7 @@ class Configuration(commands.Cog):
     @checks.has_permissions(administrator=True)
     @commands.guild_only()
     @commands.command(description="Toggle default anonymous messages.", usage="anonymous")
-    async def anonymous(self, ctx):
+    async def anonymous(self, ctx: Context) -> None:
         data = await tools.get_data(self.bot, ctx.guild.id)
 
         async with self.bot.pool.acquire() as conn:
@@ -406,7 +423,7 @@ class Configuration(commands.Cog):
         aliases=["enable", "disable"],
         usage="toggle [reason]",
     )
-    async def toggle(self, ctx, *, reason: str = ""):
+    async def toggle(self, ctx: Context, *, reason: str = "") -> None:
         data = await tools.get_data(self.bot, ctx.guild.id)
 
         async with self.bot.pool.acquire() as conn:
@@ -428,7 +445,7 @@ class Configuration(commands.Cog):
         description="Set or clear the additional AI prompt used by the `aireply` command.",
         usage="aiprompt [text]",
     )
-    async def aiprompt(self, ctx, *, text: str = None):
+    async def aiprompt(self, ctx: Context, *, text: str | None = None) -> None:
         async with self.bot.pool.acquire() as conn:
             await conn.execute("UPDATE data SET aiprompt=$1 WHERE guild=$2", text, ctx.guild.id)
 
@@ -440,7 +457,7 @@ class Configuration(commands.Cog):
     @commands.command(
         description="View the configurations for the current server.", usage="viewconfig"
     )
-    async def viewconfig(self, ctx):
+    async def viewconfig(self, ctx: Context) -> None:
         data = await tools.get_data(self.bot, ctx.guild.id)
         category = await ctx.guild.get_channel(data[2])
         logging = await ctx.guild.get_channel(data[4])
@@ -501,5 +518,5 @@ class Configuration(commands.Cog):
         await ctx.send(embed)
 
 
-def setup(bot):
-    bot.add_cog(Configuration(bot))
+async def setup(bot: ModMail) -> None:
+    await bot.add_cog(Configuration(bot))

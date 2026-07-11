@@ -1,5 +1,6 @@
+from __future__ import annotations
+
 import logging
-import typing
 
 from datetime import timezone
 
@@ -7,6 +8,8 @@ import discord
 
 from discord.ext import commands
 
+from classes.bot import ModMail
+from classes.context import Context
 from classes.embed import Embed, ErrorEmbed
 from utils import checks, tools
 from utils.converters import ChannelConverter, DateTimeConverter, GuildConverter, UserConverter
@@ -15,7 +18,7 @@ log = logging.getLogger(__name__)
 
 
 class Admin(commands.Cog):
-    def __init__(self, bot):
+    def __init__(self, bot: ModMail) -> None:
         self.bot = bot
 
     @checks.is_admin()
@@ -23,7 +26,7 @@ class Admin(commands.Cog):
         description="Get a list of servers the bot shares with the user.",
         usage="sharedservers <user>",
     )
-    async def sharedservers(self, ctx, *, user: UserConverter):
+    async def sharedservers(self, ctx: Context, *, user: UserConverter) -> None:
         guilds = [
             f"{guild.name} `{guild.id}` ({guild.member_count} members)"
             for guild in [
@@ -43,7 +46,7 @@ class Admin(commands.Cog):
             page = Embed(title="Shared Servers")
 
             for guild in chunk:
-                if page.description == discord.Embed.Empty:
+                if page.description is None:
                     page.description = guild
                 else:
                     page.description += f"\n{guild}"
@@ -57,7 +60,7 @@ class Admin(commands.Cog):
     @commands.command(
         description="Create an invite to the specified server.", usage="createinvite <server ID>"
     )
-    async def createinvite(self, ctx, *, guild: GuildConverter):
+    async def createinvite(self, ctx: Context, *, guild: GuildConverter) -> None:
         try:
             invite = (await guild.invites())[0]
         except (IndexError, discord.Forbidden):
@@ -73,7 +76,9 @@ class Admin(commands.Cog):
     @commands.command(
         description="Give a user temporary premium.", usage="givepremium <user> <expiry>"
     )
-    async def givepremium(self, ctx, user: UserConverter, *, expiry: DateTimeConverter):
+    async def givepremium(
+        self, ctx: Context, user: UserConverter, *, expiry: DateTimeConverter
+    ) -> None:
         premium = await tools.get_premium_slots(self.bot, user.id)
         if premium:
             await ctx.send(ErrorEmbed("That user already has premium."))
@@ -87,7 +92,7 @@ class Admin(commands.Cog):
 
     @checks.is_admin()
     @commands.command(description="Remove a user's premium.", usage="wipepremium <user>")
-    async def wipepremium(self, ctx, *, user: UserConverter):
+    async def wipepremium(self, ctx: Context, *, user: UserConverter) -> None:
         async with self.bot.pool.acquire() as conn:
             res = await conn.fetchrow("SELECT guild FROM premium WHERE identifier=$1", user.id)
             if res:
@@ -103,7 +108,9 @@ class Admin(commands.Cog):
         description="Transfer a user's premium to another user.",
         usage="transferpremium <user> <other>",
     )
-    async def transferpremium(self, ctx, user: UserConverter, *, other: UserConverter):
+    async def transferpremium(
+        self, ctx: Context, user: UserConverter, *, other: UserConverter
+    ) -> None:
         premium = await tools.get_premium_slots(self.bot, other.id)
         if premium:
             await ctx.send(ErrorEmbed("That user already has premium."))
@@ -118,17 +125,17 @@ class Admin(commands.Cog):
 
     @checks.is_admin()
     @commands.command(description="Make me say something.", usage="echo [channel] <message>")
-    async def echo(self, ctx, channel: typing.Optional[ChannelConverter], *, content: str):
+    async def echo(self, ctx: Context, channel: ChannelConverter | None, *, content: str) -> None:
         channel = channel or ctx.channel
         await ctx.message.delete()
         await channel.send(content, allowed_mentions=discord.AllowedMentions(everyone=False))
 
     @checks.is_admin()
     @commands.command(description="Restart all clusters.", usage="restart")
-    async def restart(self, ctx):
+    async def restart(self, ctx: Context) -> None:
         await ctx.send(Embed("Restarting..."))
         await self.bot.session.post(f"{self.bot.http_uri}/restart")
 
 
-def setup(bot):
-    bot.add_cog(Admin(bot))
+async def setup(bot: ModMail) -> None:
+    await bot.add_cog(Admin(bot))

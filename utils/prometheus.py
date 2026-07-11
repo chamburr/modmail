@@ -1,15 +1,22 @@
+from __future__ import annotations
+
 import asyncio
 import gc
 import os
 import platform
 import resource
 
-from aioprometheus import Counter, Gauge
+from typing import TYPE_CHECKING
+
+from aioprometheus.collectors import Counter, Gauge
 from aioprometheus.service import Service
+
+if TYPE_CHECKING:
+    from classes.bot import ModMail
 
 
 class Prometheus:
-    def __init__(self, bot):
+    def __init__(self, bot: ModMail) -> None:
         self.bot = bot
 
         self.msvr = Service()
@@ -43,7 +50,7 @@ class Prometheus:
         self.tickets = Counter("modmail_tickets", "Number of tickets created.")
         self.tickets_message = Counter("modmail_tickets_message", "Number of ticket messages sent.")
 
-    async def start(self):
+    async def start(self) -> None:
         await self.msvr.start(addr="127.0.0.1", port=6100 + self.bot.cluster)
         self.msvr._runner._server._kwargs["access_log"] = None
 
@@ -51,7 +58,7 @@ class Prometheus:
             self.bot.loop.create_task(self.update_process_stats())
             self.bot.loop.create_task(self.update_platform_stats())
 
-    async def update_process_stats(self):
+    async def update_process_stats(self) -> None:
         while True:
             with open(os.path.join(self.pid, "stat"), "rb") as stat:
                 parts = stat.read().split(b")")[-1].split()
@@ -64,7 +71,7 @@ class Prometheus:
 
             await asyncio.sleep(5)
 
-    async def update_platform_stats(self):
+    async def update_platform_stats(self) -> None:
         while True:
             self.info.set(
                 {

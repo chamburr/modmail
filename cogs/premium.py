@@ -1,7 +1,11 @@
+from __future__ import annotations
+
 import logging
 
 from discord.ext import commands
 
+from classes.bot import ModMail
+from classes.context import Context
 from classes.embed import Embed, ErrorEmbed
 from utils import checks, tools
 from utils.converters import GuildConverter
@@ -10,7 +14,7 @@ log = logging.getLogger(__name__)
 
 
 class Premium(commands.Cog):
-    def __init__(self, bot):
+    def __init__(self, bot: ModMail) -> None:
         self.bot = bot
 
     @commands.command(
@@ -18,7 +22,7 @@ class Premium(commands.Cog):
         usage="premium",
         aliases=["donate", "patron"],
     )
-    async def premium(self, ctx):
+    async def premium(self, ctx: Context) -> None:
         embed = Embed(
             "Premium",
             "Purchasing premium is the best way you can show support to us. As hosting this bot "
@@ -44,7 +48,7 @@ class Premium(commands.Cog):
     @checks.is_premium()
     @commands.guild_only()
     @commands.command(description="Get the premium status of this server.", usage="premiumstatus")
-    async def premiumstatus(self, ctx):
+    async def premiumstatus(self, ctx: Context) -> None:
         async with self.bot.pool.acquire() as conn:
             res = await conn.fetchrow(
                 "SELECT identifier FROM premium WHERE $1=any(guild)", ctx.guild.id
@@ -57,12 +61,13 @@ class Premium(commands.Cog):
         await ctx.send(Embed(f"This server has premium. Offered by: <@{res[0]}>."))
 
     @checks.is_patron()
+    @commands.guild_only()
     @commands.command(
         description="View a list of servers you assigned premium to.",
         usage="viewpremium",
         aliases=["premiumlist"],
     )
-    async def viewpremium(self, ctx):
+    async def viewpremium(self, ctx: Context) -> None:
         async with self.bot.pool.acquire() as conn:
             res = await conn.fetchrow(
                 "SELECT guild FROM premium WHERE identifier=$1", ctx.author.id
@@ -80,10 +85,11 @@ class Premium(commands.Cog):
         await ctx.send(Embed("Premium Servers", "\n".join(guilds)))
 
     @checks.is_patron()
+    @commands.guild_only()
     @commands.command(
         description="Assign premium slot to a server.", usage="premiumassign [server ID]"
     )
-    async def premiumassign(self, ctx, *, guild: GuildConverter = None):
+    async def premiumassign(self, ctx: Context, *, guild: GuildConverter = None) -> None:
         if guild is None:
             guild = ctx.guild
 
@@ -120,10 +126,11 @@ class Premium(commands.Cog):
         await ctx.send(Embed("The server now has premium."))
 
     @checks.is_patron()
+    @commands.guild_only()
     @commands.command(
         description="Remove premium slot from a server.", usage="premiumremove [server ID]"
     )
-    async def premiumremove(self, ctx, *, guild: int = None):
+    async def premiumremove(self, ctx: Context, *, guild: int = None) -> None:
         if guild is None:
             guild = ctx.guild.id
 
@@ -150,5 +157,5 @@ class Premium(commands.Cog):
         await ctx.send(Embed("The server no longer has premium."))
 
 
-def setup(bot):
-    bot.add_cog(Premium(bot))
+async def setup(bot: ModMail) -> None:
+    await bot.add_cog(Premium(bot))

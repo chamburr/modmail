@@ -1,21 +1,47 @@
+from __future__ import annotations
+
 import copy
 import logging
 
-from discord import message, utils
+from typing import TYPE_CHECKING, Any
+
+from discord import Role, User, message, utils
 from discord.enums import MessageType, try_enum
 from discord.flags import MessageFlags
+from discord.http import Route, handle_message_parameters
 from discord.message import Attachment, MessageReference, flatten_handlers
 from discord.reaction import Reaction
 
 from classes.embed import Embed
 from classes.member import Member
 
+if TYPE_CHECKING:
+    from classes.channel import DMChannel, TextChannel
+    from classes.state import State
+
 log = logging.getLogger(__name__)
+
+
+def interaction_body(content: Any = None, **kwargs: Any) -> dict[str, Any]:
+    body: dict[str, Any] = {}
+
+    embed = kwargs.get("embed")
+    if embed is None and isinstance(content, Embed):
+        embed = content
+        content = None
+
+    if embed is not None:
+        body["embeds"] = [embed.to_dict()]
+
+    if content is not None:
+        body["content"] = str(content)
+
+    return body
 
 
 @flatten_handlers
 class Message(message.Message):
-    def __init__(self, *, state, channel, data):
+    def __init__(self, *, state: State, channel: TextChannel | DMChannel, data: dict[str, Any]):
         self._state = state
         self._data = data
         self.id = int(data["id"])
@@ -25,6 +51,7 @@ class Message(message.Message):
         self.application = data.get("application")
         self.activity = data.get("activity")
         self.channel = channel
+        self.guild = getattr(channel, "guild", None)
         self._edited_timestamp = utils.parse_time(data["edited_timestamp"])
         self.type = try_enum(MessageType, data["type"])
         self.pinned = data["pinned"]
@@ -33,6 +60,7 @@ class Message(message.Message):
         self.tts = data["tts"]
         self.content = data["content"]
         self.nonce = data.get("nonce")
+        self._interaction = data.get("_interaction")
 
         ref = copy.copy(data.get("message_reference"))
         self.reference = MessageReference.with_state(state, ref) if ref is not None else None
@@ -43,12 +71,7 @@ class Message(message.Message):
             self._author = None
 
         try:
-            author = self._author
-            try:
-                author._update_from_message(self._data["member"])
-            except AttributeError:
-                author = Member._from_message(message=self, data=self._data["member"])
-            self._member = author
+            self._member = Member._from_message(message=self, data=self._data["member"])
         except KeyError:
             self._member = None
 
@@ -59,22 +82,24 @@ class Message(message.Message):
                 continue
 
     @property
-    def author(self):
+    def author(self) -> User | Member | None:
         return self._author
 
     @author.setter
-    def author(self, value):
+    def author(self, value: User | Member | None) -> None:
         self._author = value
 
     @property
-    def member(self):
+    def member(self) -> Member | None:
         return self._member
 
     @member.setter
-    def member(self, value):
+    def member(self, value: Any) -> None:
         return
 
-    async def reactions(self):
+    async def reactions(
+        self,
+    ) -> list[Reaction]:
         reactions = []
 
         for reaction in self._data.get("reactions", []):
@@ -83,10 +108,12 @@ class Message(message.Message):
 
         return reactions
 
-    async def mentions(self):
+    async def mentions(
+        self,
+    ) -> list[User | Member]:
         try:
             mentions = self._data["mentions"]
-            members = []
+            members: list[User | Member] = []
             guild = self.guild
             state = self._state
 
@@ -106,7 +133,9 @@ class Message(message.Message):
         except KeyError:
             return []
 
-    async def role_mentions(self):
+    async def role_mentions(
+        self,
+    ) -> list[Role]:
         try:
             mentions = self._data["mention_roles"]
             roles = []
@@ -122,9 +151,28 @@ class Message(message.Message):
         except KeyError:
             return []
 
-    async def edit(self, content=None, **kwargs):
+    async def edit(self, content: Any = None, **kwargs: Any) -> Message:
+        interaction = getattr(self, "_interaction", None)
+        if interaction is not None:
+            data = await self._state.http.request(
+                Route(
+                    "PATCH",
+                    "/webhooks/{application_id}/{interaction_token}/messages/{message_id}",
+                    application_id=interaction["application_id"],
+                    interaction_token=interaction["token"],
+                    message_id=self.id,
+                ),
+                json=interaction_body(content, **kwargs),
+            )
+            message = self._state.create_message(channel=self.channel, data=data)
+            message._interaction = interaction
+            return message
+
         if isinstance(content, Embed):
-            return await super().edit(embed=content, **kwargs)
+            kwargs["embed"] = content
         elif content is not None:
-            return await super().edit(content=content, **kwargs)
-        return await super().edit(**kwargs)
+            kwargs["content"] = content
+
+        params = handle_message_parameters(**kwargs)
+        data = await self._state.http.edit_message(self.channel.id, self.id, params=params)
+        return self._state.create_message(channel=self.channel, data=data)
