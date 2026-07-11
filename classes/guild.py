@@ -38,22 +38,16 @@ class Guild(guild.Guild):
     def _remove_member(self, member: Any) -> None:
         return
 
-    def _update_voice_state(
-        self, data: dict[str, Any], channel_id: int | None
-    ) -> None:
+    def _update_voice_state(self, data: dict[str, Any], channel_id: int | None) -> None:
         return
 
     def _add_role(self, role: Any) -> None:
         return
 
-    def _remove_role(
-        self, role_id: int
-    ) -> None:
+    def _remove_role(self, role_id: int) -> None:
         return
 
-    def _from_data(
-        self, guild: dict[str, Any]
-    ) -> None:
+    def _from_data(self, guild: dict[str, Any]) -> None:
         member_count = guild.get("member_count", None)
         if member_count is not None:
             self._member_count = member_count
@@ -172,9 +166,7 @@ class Guild(guild.Guild):
                 voices.append(VoiceState(channel=None, data=voice))
         return voices
 
-    async def _voice_state_for(
-        self, user_id: int
-    ) -> VoiceState | None:
+    async def _voice_state_for(self, user_id: int) -> VoiceState | None:
         state = await self._state.get(f"voice:{self.id}:{user_id}")
         if state and state["channel_id"]:
             channel = await self.get_channel(int(state["channel_id"]))
@@ -194,9 +186,7 @@ class Guild(guild.Guild):
         channels.sort(key=lambda x: (x.position, x.id))
         return channels
 
-    async def get_channel(
-        self, channel_id: int
-    ) -> Any:
+    async def get_channel(self, channel_id: int) -> Any:
         channel = await self._state.get(f"channel:{channel_id}")
 
         if not channel:
@@ -229,9 +219,7 @@ class Guild(guild.Guild):
     async def members(self) -> list[Member]:
         return await self._members()
 
-    async def get_member(
-        self, user_id: int
-    ) -> Member | None:
+    async def get_member(self, user_id: int) -> Member | None:
         member = await self._state.get(f"member:{self.id}:{user_id}")
 
         if member:
@@ -250,9 +238,7 @@ class Guild(guild.Guild):
     async def roles(self) -> list[Role]:
         return await self._roles()
 
-    async def get_role(
-        self, role_id: int
-    ) -> Role | None:
+    async def get_role(self, role_id: int) -> Role | None:
         role = await self._state.get(f"role:{self.id}:{role_id}")
 
         if role:

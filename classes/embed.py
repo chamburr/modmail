@@ -23,24 +23,16 @@ class Embed(embeds.Embed):
 
         super().__init__(**kwargs)
 
-    def set_author(
-        self, name: Any = None, icon_url: Any = None, **kwargs: Any
-    ) -> None:
+    def set_author(self, name: Any = None, icon_url: Any = None, **kwargs: Any) -> None:
         super().set_author(name=name, icon_url=icon_url, **kwargs)
 
-    def set_footer(
-        self, text: Any = None, icon_url: Any = None
-    ) -> None:
+    def set_footer(self, text: Any = None, icon_url: Any = None) -> None:
         super().set_footer(text=text, icon_url=icon_url)
 
-    def set_thumbnail(
-        self, url: Any = None
-    ) -> None:
+    def set_thumbnail(self, url: Any = None) -> None:
         super().set_thumbnail(url=url)
 
-    def add_field(
-        self, name: Any = None, value: Any = None, inline: bool = True
-    ) -> None:
+    def add_field(self, name: Any = None, value: Any = None, inline: bool = True) -> None:
         super().add_field(name=name, value=value, inline=inline)
 
 

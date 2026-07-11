@@ -29,9 +29,7 @@ class TextChannel(channel.TextChannel):
         self._type = data.get("type", 0)
         self._update(guild, data)
 
-    def _update(
-        self, guild: Guild, data: dict[str, Any]
-    ) -> None:
+    def _update(self, guild: Guild, data: dict[str, Any]) -> None:
         self.guild = guild
         self.name = data.get("name", "")
         self.category_id = utils._get_as_snowflake(data, "parent_id")
@@ -93,9 +91,7 @@ class TextChannel(channel.TextChannel):
 
         return base
 
-    async def permissions_for(
-        self, member: Member
-    ) -> Permissions:
+    async def permissions_for(self, member: Member) -> Permissions:
         base = await self._permissions_for(member)
 
         denied = Permissions.voice()

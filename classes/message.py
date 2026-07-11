@@ -86,9 +86,7 @@ class Message(message.Message):
         return self._author
 
     @author.setter
-    def author(
-        self, value: User | Member | None
-    ) -> None:
+    def author(self, value: User | Member | None) -> None:
         self._author = value
 
     @property

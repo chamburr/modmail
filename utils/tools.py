@@ -357,7 +357,9 @@ async def get_user_guilds(bot: ModMail, member: discord.abc.Snowflake) -> list[i
 
 
 async def get_premium_slots(bot: ModMail, user: int) -> int:
-    if str(user) in (bot.config.OWNER_USERS or "").split(",") + (bot.config.ADMIN_USERS or "").split(","):
+    if str(user) in (bot.config.OWNER_USERS or "").split(",") + (
+        bot.config.ADMIN_USERS or ""
+    ).split(","):
         return 1000
 
     guild = await bot.get_guild(int(bot.config.MAIN_SERVER))

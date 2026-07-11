@@ -151,24 +151,16 @@ class ModMail(commands.AutoShardedBot):
             int(x): Session(y) for x, y in (await self._connection.get("gateway_sessions")).items()
         }
 
-    async def get_channel(
-        self, channel_id: int | None
-    ) -> Any:
+    async def get_channel(self, channel_id: int | None) -> Any:
         return await self._connection.get_channel(channel_id)
 
-    async def get_guild(
-        self, guild_id: int | None
-    ) -> Guild | None:
+    async def get_guild(self, guild_id: int | None) -> Guild | None:
         return await self._connection._get_guild(guild_id)
 
-    async def get_user(
-        self, user_id: int
-    ) -> discord.User | None:
+    async def get_user(self, user_id: int) -> discord.User | None:
         return await self._connection.get_user(user_id)
 
-    async def get_emoji(
-        self, emoji_id: int | None
-    ) -> discord.Emoji | None:
+    async def get_emoji(self, emoji_id: int | None) -> discord.Emoji | None:
         return await self._connection.get_emoji(emoji_id)
 
     async def get_all_channels(
@@ -274,9 +266,7 @@ class ModMail(commands.AutoShardedBot):
         if self._amqp is not None:
             await self._amqp.close()
 
-    async def start(
-        self, worker: bool = True
-    ) -> None:
+    async def start(self, worker: bool = True) -> None:
         loop = asyncio.get_running_loop()
         self.loop = loop
         self.http.loop = loop

@@ -89,9 +89,7 @@ class Premium(commands.Cog):
     @commands.command(
         description="Assign premium slot to a server.", usage="premiumassign [server ID]"
     )
-    async def premiumassign(
-        self, ctx: Context, *, guild: GuildConverter = None
-    ) -> None:
+    async def premiumassign(self, ctx: Context, *, guild: GuildConverter = None) -> None:
         if guild is None:
             guild = ctx.guild
 
@@ -132,9 +130,7 @@ class Premium(commands.Cog):
     @commands.command(
         description="Remove premium slot from a server.", usage="premiumremove [server ID]"
     )
-    async def premiumremove(
-        self, ctx: Context, *, guild: int = None
-    ) -> None:
+    async def premiumremove(self, ctx: Context, *, guild: int = None) -> None:
         if guild is None:
             guild = ctx.guild.id
 

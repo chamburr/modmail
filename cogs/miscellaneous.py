@@ -24,9 +24,7 @@ class Miscellaneous(commands.Cog):
         usage="permissions [member]",
         aliases=["perms"],
     )
-    async def permissions(
-        self, ctx: Context, member: MemberConverter = None
-    ) -> None:
+    async def permissions(self, ctx: Context, member: MemberConverter = None) -> None:
         if member is None:
             member = ctx.message.member
 
@@ -51,9 +49,7 @@ class Miscellaneous(commands.Cog):
         usage="userinfo [member]",
         aliases=["memberinfo"],
     )
-    async def userinfo(
-        self, ctx: Context, *, member: MemberConverter = None
-    ) -> None:
+    async def userinfo(self, ctx: Context, *, member: MemberConverter = None) -> None:
         if member is None:
             member = ctx.message.member
 
