@@ -1,5 +1,6 @@
 import asyncio
 import logging
+import random
 import re
 import sys
 import traceback
@@ -218,7 +219,7 @@ class ModMail(commands.AutoShardedBot):
     async def ai_generate(self, text):
         completion = await self.ai.chat.completions.create(
             messages=[{"role": "user", "content": text}],
-            model=self.config.GROQ_MODEL,
+            model=random.choice([x.strip() for x in self.config.GROQ_MODEL.split(",")]),
         )
         return completion.choices[0].message.content
 
