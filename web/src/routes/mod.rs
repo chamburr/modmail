@@ -212,7 +212,7 @@ pub enum ApiError {
     ReqwestError(reqwest::Error),
     SerdeJsonError(serde_json::Error),
     SerdeUrlEncodedError(serde_urlencoded::de::Error),
-    TwilightHttpError(twilight_http::Error),
+    TwilightHttpError(Box<twilight_http::Error>),
     Utf8Error(Utf8Error),
 }
 
@@ -388,7 +388,7 @@ impl From<serde_urlencoded::de::Error> for ApiError {
 
 impl From<twilight_http::Error> for ApiError {
     fn from(err: twilight_http::Error) -> Self {
-        Self::TwilightHttpError(err)
+        Self::TwilightHttpError(Box::new(err))
     }
 }
 
